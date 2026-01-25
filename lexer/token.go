@@ -1,6 +1,8 @@
 package lexer
 
-// every token has a type(:TokenType) and value(:string)
+import "fmt"
+
+// every Token has a type(:TokenType) and value(:string)
 type TokenType string
 
 // <token_type, literal>
@@ -12,9 +14,9 @@ type Token struct {
 	Literal string
 }
 
-// constructor for Token
-func NewToken(tokenType TokenType, literal string) *Token {
-	return &Token{
+// NewToken(): constructor for Token
+func NewToken(tokenType TokenType, literal string) Token {
+	return Token{
 		Type:    tokenType,
 		Literal: literal,
 	}
@@ -30,13 +32,16 @@ const (
 	MINUS_OP TokenType = "-"
 	MUL_OP   TokenType = "*"
 	DIV_OP   TokenType = "/"
+
 	// Logical Operators
-	GT_OP TokenType = ">"
-	LT_OP TokenType = "<"
-	GE_OP TokenType = ">="
-	LE_OP TokenType = "<="
-	EQ_OP TokenType = "=="
-	NE_OP TokenType = "!="
+	GT_OP     TokenType = ">"
+	LT_OP     TokenType = "<"
+	GE_OP     TokenType = ">="
+	LE_OP     TokenType = "<="
+	EQ_OP     TokenType = "=="
+	NE_OP     TokenType = "!="
+	ASSIGN_OP TokenType = "="
+	NOT_OP    TokenType = "!"
 
 	// Keywords
 	FUNC_KEY     TokenType = "func"
@@ -54,6 +59,8 @@ const (
 
 	// Identifiers
 	IDENTIFIER_ID TokenType = "Identifier"
+	NUMBER_ID     TokenType = "[0-9]"
+	CHAR_ID       TokenType = "[a-zA-Z]"
 
 	// Literals
 	INT_LIT    TokenType = "IntLiteral"
@@ -73,3 +80,32 @@ const (
 	SEMICOLON_DELIM TokenType = ";"
 	COLON_DELIM     TokenType = ":"
 )
+
+// Print(): prints the token
+func (tok *Token) Print() {
+	fmt.Printf("%s:%v\n", tok.Literal, tok.Type)
+}
+
+// KEYWORDS_MAP: map of keywords to their token types
+var KEYWORDS_MAP = map[string]TokenType{
+	"func":     FUNC_KEY,
+	"new":      NEW_KEY,
+	"return":   RETURN_KEY,
+	"var":      VAR_KEY,
+	"true":     TRUE_KEY,
+	"false":    FALSE_KEY,
+	"if":       IF_KEY,
+	"else":     ELSE_KEY,
+	"while":    WHILE_KEY,
+	"for":      FOR_KEY,
+	"break":    BREAK_KEY,
+	"continue": CONTINUE_KEY,
+}
+
+// lookupIdent(): lookup the token type of an identifier
+func lookupIdent(ident string) TokenType {
+	if tok, ok := KEYWORDS_MAP[ident]; ok {
+		return tok
+	}
+	return IDENTIFIER_ID
+}
