@@ -276,3 +276,88 @@ func TestParser_Parse_UnaryExpressionSimple(t *testing.T) {
 	assert.Equal(t, "!!!!!!false", exp.Literal())
 	assert.Equal(t, 0, exp.Value)
 }
+
+func TestParser_Parse_ArithmeticExpression(t *testing.T) {
+	src := `1+2*3-4`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 1},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 2},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 3},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
+			&NumberLiteralExpressionNode{Value: 4},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	// check for correctness
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+	exp, ok := root.Statements[0].(*BinaryExpressionNode)
+	assert.True(t, ok)
+
+	assert.Equal(t, lexer.MINUS_OP, exp.Operation.Type)
+	assert.Equal(t, "1+2*3-4", exp.Literal())
+	assert.Equal(t, 3, exp.Value)
+}
+
+func TestParser_Parse_ArithmeticExpression_Complex1(t *testing.T) {
+	src := `1+2*3-4/2`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 1},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 2},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 3},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
+			&NumberLiteralExpressionNode{Value: 4},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "/"}},
+			&NumberLiteralExpressionNode{Value: 2},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	exp := root.Statements[0].(*BinaryExpressionNode)
+	assert.Equal(t, lexer.MINUS_OP, exp.Operation.Type)
+	assert.Equal(t, 5, exp.Value)
+}
+
+func TestParser_Parse_ArithmeticExpression_Complex2(t *testing.T) {
+	src := `20-5-5`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 20},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
+			&NumberLiteralExpressionNode{Value: 5},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
+			&NumberLiteralExpressionNode{Value: 5},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	exp := root.Statements[0].(*BinaryExpressionNode)
+	assert.Equal(t, 10, exp.Value)
+}
