@@ -12,6 +12,7 @@ type NodeVisitor interface {
 	VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode)
 	VisitBinaryExpressionNode(node BinaryExpressionNode)
 	VisitUnaryExpressionNode(node UnaryExpressionNode)
+	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -167,5 +168,31 @@ func (node *UnaryExpressionNode) Statement() {
 
 // UnaryExpressionNode.Expression(): every expression node is a node
 func (node *UnaryExpressionNode) Expression() {
+
+}
+
+// ParenthesizedExpressionNode: represents an expression in parentheses
+type ParenthesizedExpressionNode struct {
+	Expr  ExpressionNode
+	Value int
+}
+
+// ParenthesizedExpressionNode.Literal(): string represenation of the node
+func (node *ParenthesizedExpressionNode) Literal() string {
+	return "(" + node.Expr.Literal() + ")"
+}
+
+// ParenthesizedExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *ParenthesizedExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitParenthesizedExpressionNode(*node)
+}
+
+// ParenthesizedExpressionNode.Statement(): every expression is also a statement
+func (node *ParenthesizedExpressionNode) Statement() {
+
+}
+
+// ParenthesizedExpressionNode.Expression(): every expression node is a node
+func (node *ParenthesizedExpressionNode) Expression() {
 
 }

@@ -79,6 +79,15 @@ func (p *PrintingVisitor) VisitUnaryExpressionNode(node parser.UnaryExpressionNo
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitParenthesizedExpressionNode visits the parenthesized expression node
+func (p *PrintingVisitor) VisitParenthesizedExpressionNode(node parser.ParenthesizedExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Parenthesized Node (%s)\n", node.Literal()))
+	p.Indent += INDENT_SIZE
+	node.Expr.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()
@@ -88,21 +97,31 @@ func main() {
 
 	fmt.Println("Hello, go-mix!")
 
+	// binary expression
 	src1 := `1 + 2 * 3`
 	root1 := parser.NewParser(src1).Parse()
 	visitor1 := &PrintingVisitor{}
 	root1.Accept(visitor1)
 	fmt.Println(visitor1)
 
+	// unary expression
 	src2 := `!!true`
 	root2 := parser.NewParser(src2).Parse()
 	visitor2 := &PrintingVisitor{}
 	root2.Accept(visitor2)
 	fmt.Println(visitor2)
 
-	src3 := `1+2*3-4`
+	// parenthesised expression
+	src3 := `4-(1+2)+2+3*4/2`
 	root3 := parser.NewParser(src3).Parse()
 	visitor3 := &PrintingVisitor{}
 	root3.Accept(visitor3)
 	fmt.Println(visitor3)
+
+	// parenthesised expression
+	src4 := `4-(1+2)+(2+3)*4/2`
+	root4 := parser.NewParser(src4).Parse()
+	visitor4 := &PrintingVisitor{}
+	root4.Accept(visitor4)
+	fmt.Println(visitor4)
 }

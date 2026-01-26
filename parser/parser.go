@@ -1,13 +1,11 @@
 package parser
 
 import (
+	"fmt"
 	"strconv"
-	"testing"
 
 	"github.com/akashmaji946/go-mix/lexer"
 )
-
-var t *testing.T = &testing.T{}
 
 // operator precedence
 const (
@@ -16,11 +14,15 @@ const (
 	PLUS_PRIORITY    = 2
 	MUL_PRIORITY     = 3
 	PREFIX_PRIORITY  = 4
+
+	PAREN_PRIORITY = 5
 )
 
 // get the precedence of the operator
 func getPrecedence(token *lexer.Token) int {
 	switch token.Type {
+	case lexer.LEFT_PAREN:
+		return PAREN_PRIORITY
 	case lexer.NOT_OP:
 		return PREFIX_PRIORITY
 	case lexer.PLUS_OP, lexer.MINUS_OP:
@@ -28,7 +30,7 @@ func getPrecedence(token *lexer.Token) int {
 	case lexer.MUL_OP, lexer.DIV_OP:
 		return MUL_PRIORITY
 	default:
-		return MINIMUM_PRIORITY
+		return -1
 	}
 }
 
@@ -64,6 +66,7 @@ func (par *Parser) init() {
 	par.BinaryFuncs = make(map[lexer.TokenType]binaryParseFunction)
 
 	// register the functions
+	par.registerUnaryFuncs(par.parseParenthesizedExpression, lexer.LEFT_PAREN)
 	par.registerUnaryFuncs(par.parseNumberLiteral, lexer.NUMBER_ID)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
@@ -97,7 +100,9 @@ func (par *Parser) advance() {
 // expect the next token to be of the expected type and advance
 func (par *Parser) expectAdvance(expected lexer.TokenType) {
 	if par.NextToken.Type != expected {
-		t.Errorf("[ERROR] expected %s, got %s", expected, par.NextToken.Type)
+		msg := fmt.Sprintf("[ERROR] expected %s, got %s", expected, par.NextToken.Type)
+		fmt.Println(msg)
+		panic(msg)
 	}
 	par.advance()
 }
@@ -105,6 +110,35 @@ func (par *Parser) expectAdvance(expected lexer.TokenType) {
 // parse the source code
 // parse each statement and return the root node
 func (par *Parser) Parse() *RootNode {
+
+	// TestParser_Parse_OneNumberExpression
+	// root := &RootNode{}
+	// root.Statements = make([]StatementNode, 1)
+	// par.advance()
+	// par.advance()
+	// token := par.CurrToken
+	// root.Statements[0] = &NumberLiteralExpressionNode{
+	// 	Token: token,
+	// 	Value: 12,
+	// }
+	// return root
+
+	// TestParser_Parse_AddExpression
+	// root := &RootNode{}
+	// root.Statements = make([]StatementNode, 1)
+	// par.advance()
+	// par.advance()
+	// left := par.CurrToken
+	// par.advance()
+	// _ = par.CurrToken
+	// par.advance()
+	// right := par.CurrToken
+	// root.Statements[0] = &AddExpressionNode{
+	// 	Left:  &NumberLiteralExpressionNode{Token: left, Value: 12},
+	// 	Right: &NumberLiteralExpressionNode{Token: right, Value: 13},
+	// 	Value: 25,
+	// }
+	// return root
 
 	// a real parser
 	root := &RootNode{}
@@ -146,7 +180,41 @@ func (par *Parser) parseStatement() StatementNode {
 // currently only supports binary expressions and unary expressions (will be extended)
 func (par *Parser) parseExpression() ExpressionNode {
 
+	// switch par.CurrToken.Type {
+	// case lexer.NUMBER_ID:
+	// 	par.advance()
+	// 	leftToken := par.CurrToken
+
+	// 	par.expectAdvance(lexer.PLUS_OP)
+
+	// 	par.expectAdvance(lexer.NUMBER_ID)
+
+	// 	rightToken := par.CurrToken
+
+	// 	leftValue, _ := strconv.Atoi(leftToken.Literal)
+	// 	rightValue, _ := strconv.Atoi(rightToken.Literal)
+
+	// 	return &BinaryExpressionNode{
+	// 		Left:  &NumberLiteralExpressionNode{Token: leftToken, Value: leftValue},
+	// 		Right: &NumberLiteralExpressionNode{Token: rightToken, Value: rightValue},
+	// 		Value: leftValue + rightValue,
+	// 	}
+	// default:
+	// 	return nil
+	// }
+
 	return par.parseInternal(MINIMUM_PRIORITY)
+}
+
+// parse a parenthesis expression
+func (par *Parser) parseParenthesizedExpression() ExpressionNode {
+	// we are already at the LEFT_PAREN, so just advance
+	par.advance()
+	paren := &ParenthesizedExpressionNode{}
+	paren.Expr = par.parseExpression()
+	par.expectAdvance(lexer.RIGHT_PAREN)
+	// par.advance()
+	return paren
 }
 
 // parse a number literal
@@ -154,7 +222,9 @@ func (par *Parser) parseNumberLiteral() ExpressionNode {
 	token := par.CurrToken
 	val, err := strconv.ParseInt(token.Literal, 10, 32)
 	if err != nil {
-		t.Errorf("[ERROR] could not parse number literal: %s", token.Literal)
+		msg := fmt.Sprintf("[ERROR] could not parse number literal: %s", token.Literal)
+		fmt.Println(msg)
+		panic(msg)
 	}
 	return &NumberLiteralExpressionNode{
 		Token: token,
@@ -216,6 +286,8 @@ func eval(node ExpressionNode) int {
 			return 1
 		}
 		return 0
+	case *ParenthesizedExpressionNode:
+		return eval(n.Expr)
 	}
 	return 0
 }

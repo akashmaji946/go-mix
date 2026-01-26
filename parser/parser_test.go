@@ -361,3 +361,87 @@ func TestParser_Parse_ArithmeticExpression_Complex2(t *testing.T) {
 	exp := root.Statements[0].(*BinaryExpressionNode)
 	assert.Equal(t, 10, exp.Value)
 }
+
+func TestParser_Parse_ParenthesizedExpression(t *testing.T) {
+	src := `(10)`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 10},
+			&ParenthesizedExpressionNode{Expr: &NumberLiteralExpressionNode{Value: 10}},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	exp, ok := root.Statements[0].(*ParenthesizedExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "(10)", exp.Literal())
+
+}
+
+func TestParser_Parse_ParenthesizedExpression_Complex(t *testing.T) {
+	src := `(10-5)+5*1`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 10},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
+			&NumberLiteralExpressionNode{Value: 5},
+			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}}},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 5},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 1},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	exp, ok := root.Statements[0].(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "(10-5)+5*1", exp.Literal())
+	assert.Equal(t, 10, exp.Value)
+
+}
+
+func TestParser_Parse_ParenthesizedExpressionComplex(t *testing.T) {
+	src := `((10-5)+5)*1`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 10},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
+			&NumberLiteralExpressionNode{Value: 5},
+			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}}},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 5},
+			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 1},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	exp, ok := root.Statements[0].(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "((10-5)+5)*1", exp.Literal())
+	assert.Equal(t, 10, exp.Value)
+
+}

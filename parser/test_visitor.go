@@ -73,3 +73,18 @@ func (v *TestingVisitor) VisitUnaryExpressionNode(node UnaryExpressionNode) {
 	assert.Equal(v.t, node.Operation.Type, exp.Operation.Type)
 	v.ptr++
 }
+
+// TestingVisitor.VisitParenthesizedExpressionNode visits the parenthesized expression node
+func (v *TestingVisitor) VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode) {
+	node.Expr.Accept(v)
+	// assert on type
+	curr := v.expectedNodes[v.ptr]
+	_, ok := curr.(*ParenthesizedExpressionNode)
+	assert.True(v.t, ok)
+	v.ptr++
+}
+
+// TestingVisitor.String returns the string representation of the visitor
+func (v *TestingVisitor) String() string {
+	return ""
+}
