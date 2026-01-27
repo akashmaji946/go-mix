@@ -284,7 +284,7 @@ func TestParser_Parse_ArithmeticExpression(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&NumberLiteralExpressionNode{Value: 1},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
 			&NumberLiteralExpressionNode{Value: 2},
@@ -293,8 +293,8 @@ func TestParser_Parse_ArithmeticExpression(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
 			&NumberLiteralExpressionNode{Value: 4},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	// check for correctness
@@ -316,7 +316,7 @@ func TestParser_Parse_ArithmeticExpression_Complex1(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&NumberLiteralExpressionNode{Value: 1},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
 			&NumberLiteralExpressionNode{Value: 2},
@@ -327,8 +327,8 @@ func TestParser_Parse_ArithmeticExpression_Complex1(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "/"}},
 			&NumberLiteralExpressionNode{Value: 2},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -345,15 +345,15 @@ func TestParser_Parse_ArithmeticExpression_Complex2(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&NumberLiteralExpressionNode{Value: 20},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
 			&NumberLiteralExpressionNode{Value: 5},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
 			&NumberLiteralExpressionNode{Value: 5},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -369,12 +369,12 @@ func TestParser_Parse_ParenthesizedExpression(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&NumberLiteralExpressionNode{Value: 10},
 			&ParenthesizedExpressionNode{Expr: &NumberLiteralExpressionNode{Value: 10}},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -392,7 +392,7 @@ func TestParser_Parse_ParenthesizedExpression_Complex(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&NumberLiteralExpressionNode{Value: 10},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
 			&NumberLiteralExpressionNode{Value: 5},
@@ -402,8 +402,8 @@ func TestParser_Parse_ParenthesizedExpression_Complex(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
 			&NumberLiteralExpressionNode{Value: 1},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -422,7 +422,7 @@ func TestParser_Parse_ParenthesizedExpressionComplex(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&NumberLiteralExpressionNode{Value: 10},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
 			&NumberLiteralExpressionNode{Value: 5},
@@ -433,8 +433,8 @@ func TestParser_Parse_ParenthesizedExpressionComplex(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
 			&NumberLiteralExpressionNode{Value: 1},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -453,15 +453,15 @@ func TestParser_ParseDeclarativeStatement(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
 			},
 			&NumberLiteralExpressionNode{Value: 1},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -481,7 +481,7 @@ func TestParser_ParseDeclarativeStatement_Complex(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
@@ -492,8 +492,8 @@ func TestParser_ParseDeclarativeStatement_Complex(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
 			&NumberLiteralExpressionNode{Value: 3},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -513,7 +513,7 @@ func TestParser_ParseDeclarativeStatement_Complex2(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
@@ -525,8 +525,8 @@ func TestParser_ParseDeclarativeStatement_Complex2(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
 			&NumberLiteralExpressionNode{Value: 3},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -547,7 +547,7 @@ func TestParser_ParseDeclarativeStatement_Identifier(t *testing.T) {
 	assert.NotNil(t, root)
 
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
@@ -561,8 +561,8 @@ func TestParser_ParseDeclarativeStatement_Identifier(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
 			&NumberLiteralExpressionNode{Value: 10},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -591,7 +591,7 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 	root := par.Parse()
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
@@ -608,8 +608,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 			&NumberLiteralExpressionNode{Value: 2},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -637,7 +637,7 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 	root := par.Parse()
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
@@ -664,8 +664,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 			&NumberLiteralExpressionNode{Value: 3},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -698,7 +698,7 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement(t *tes
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
@@ -709,8 +709,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement(t *tes
 				Expr:        &IdentifierExpressionNode{Name: "a", Value: 1},
 			},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
@@ -737,7 +737,7 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_P
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
-		expectedNodes: []Node{
+		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: lexer.Token{Literal: "a"},
@@ -748,8 +748,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_P
 				Expr:        &ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 			},
 		},
-		ptr: 0,
-		t:   t,
+		Ptr: 0,
+		T:   t,
 	}
 
 	root.Accept(testingVisitor)
