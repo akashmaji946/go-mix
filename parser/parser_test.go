@@ -53,6 +53,41 @@ func TestParser_Parse_AddExpression(t *testing.T) {
 	assert.Equal(t, 25, exp.Value)
 }
 
+func TestParser_Parse_SubExpression(t *testing.T) {
+
+	src := `28 - 13 * 2`
+	par := NewParser(src)
+	root := par.Parse()
+	// root should not be nil
+	assert.NotNil(t, root)
+	// optional: print the root
+
+	// must: root has 1 statement
+	assert.Equal(t, 1, len(root.Statements))
+
+	exp, can := root.Statements[0].(*BinaryExpressionNode)
+	assert.True(t, can)
+	left, can := exp.Left.(*NumberLiteralExpressionNode)
+	assert.True(t, can)
+	right, can := exp.Right.(*BinaryExpressionNode)
+	assert.True(t, can)
+	rightLeft, can := right.Left.(*NumberLiteralExpressionNode)
+	assert.True(t, can)
+	rightRight, can := right.Right.(*NumberLiteralExpressionNode)
+	assert.True(t, can)
+
+	assert.Equal(t, "28", left.Literal())
+	assert.Equal(t, 28, left.Value)
+	assert.Equal(t, "13", rightLeft.Literal())
+	assert.Equal(t, 13, rightLeft.Value)
+	assert.Equal(t, "2", rightRight.Literal())
+	assert.Equal(t, 2, rightRight.Value)
+	assert.Equal(t, "13*2", right.Literal())
+	assert.Equal(t, 26, right.Value)
+	assert.Equal(t, "28-13*2", exp.Literal())
+	assert.Equal(t, 2, exp.Value)
+}
+
 func TestParser_Parse_MulExpression(t *testing.T) {
 
 	src := `12 * 13`
@@ -104,41 +139,6 @@ func TestParser_Parse_DivExpression(t *testing.T) {
 	assert.Equal(t, "13", right.Literal())
 	assert.Equal(t, 13, right.Value)
 	assert.Equal(t, "26/13", exp.Literal())
-	assert.Equal(t, 2, exp.Value)
-}
-
-func TestParser_Parse_SubExpression(t *testing.T) {
-
-	src := `28 - 13 * 2`
-	par := NewParser(src)
-	root := par.Parse()
-	// root should not be nil
-	assert.NotNil(t, root)
-	// optional: print the root
-
-	// must: root has 1 statement
-	assert.Equal(t, 1, len(root.Statements))
-
-	exp, can := root.Statements[0].(*BinaryExpressionNode)
-	assert.True(t, can)
-	left, can := exp.Left.(*NumberLiteralExpressionNode)
-	assert.True(t, can)
-	right, can := exp.Right.(*BinaryExpressionNode)
-	assert.True(t, can)
-	rightLeft, can := right.Left.(*NumberLiteralExpressionNode)
-	assert.True(t, can)
-	rightRight, can := right.Right.(*NumberLiteralExpressionNode)
-	assert.True(t, can)
-
-	assert.Equal(t, "28", left.Literal())
-	assert.Equal(t, 28, left.Value)
-	assert.Equal(t, "13", rightLeft.Literal())
-	assert.Equal(t, 13, rightLeft.Value)
-	assert.Equal(t, "2", rightRight.Literal())
-	assert.Equal(t, 2, rightRight.Value)
-	assert.Equal(t, "13*2", right.Literal())
-	assert.Equal(t, 26, right.Value)
-	assert.Equal(t, "28-13*2", exp.Literal())
 	assert.Equal(t, 2, exp.Value)
 }
 
@@ -416,7 +416,7 @@ func TestParser_Parse_ParenthesizedExpression_Complex(t *testing.T) {
 }
 
 func TestParser_Parse_ParenthesizedExpressionComplex(t *testing.T) {
-	src := `((10-5)+5)*1`
+	src := `((10 - 5)+5)*1`
 	par := NewParser(src)
 	root := par.Parse()
 	assert.NotNil(t, root)
@@ -691,4 +691,82 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 	assert.Equal(t, 61, stmt3.Value)
 
 	assert.Equal(t, "var a = 11;var b = (a+10*2);var c = (b+10*3);", root.Literal())
+}
+
+func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement(t *testing.T) {
+	src := `var a = 1;return a`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr:        &IdentifierExpressionNode{Name: "a", Value: 1},
+			},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// check first statement: var a = 1
+	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = 1", stmt1.Literal())
+	assert.Equal(t, 1, stmt1.Value)
+
+	// check second statement: return a
+	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "return a", stmt2.Literal())
+	assert.Equal(t, 1, stmt2.Value)
+
+	assert.Equal(t, "var a = 1;return a;", root.Literal())
+}
+
+func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_ParenthesizedExpression(t *testing.T) {
+	src := `var a = 1;return (a + 10 * 2)`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr:        &ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
+			},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// check first statement: var a = 1
+	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = 1", stmt1.Literal())
+	assert.Equal(t, 1, stmt1.Value)
+
+	// check second statement: return (a + 10 * 2)
+	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "return (a+10*2)", stmt2.Literal())
+	assert.Equal(t, 21, stmt2.Value)
+
+	assert.Equal(t, "var a = 1;return (a+10*2);", root.Literal())
 }

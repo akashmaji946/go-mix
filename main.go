@@ -81,4 +81,25 @@ func main() {
 	root9.Accept(visitor9)
 	fmt.Println(visitor9)
 
+	// return statement
+	src10 := `return 1`
+	root10 := parser.NewParser(src10).Parse()
+	visitor10 := &PrintingVisitor{}
+	root10.Accept(visitor10)
+	fmt.Println(visitor10)
+
+	// return statement
+	src11 := `return (1 + 2) * 100 + (2 * 3) * 100 + 100`
+	root11 := parser.NewParser(src11).Parse()
+	visitor11 := &PrintingVisitor{}
+	root11.Accept(visitor11)
+	fmt.Println(visitor11)
+
+	// return statement
+	src12 := `var a = (100 + 900); return ((a * 2) + 100 + 100 / 100);`
+	root12 := parser.NewParser(src12).Parse()
+	visitor12 := &PrintingVisitor{}
+	root12.Accept(visitor12)
+	fmt.Println(visitor12)
+
 }

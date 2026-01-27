@@ -110,6 +110,15 @@ func (v *TestingVisitor) VisitIdentifierExpressionNode(node IdentifierExpression
 	v.ptr++
 }
 
+// TestingVisitor.VisitReturnStatementNode visits the return statement node
+func (v *TestingVisitor) VisitReturnStatementNode(node ReturnStatementNode) {
+	// assert on type
+	curr := v.expectedNodes[v.ptr]
+	_, ok := curr.(*ReturnStatementNode)
+	assert.True(v.t, ok)
+	v.ptr++
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

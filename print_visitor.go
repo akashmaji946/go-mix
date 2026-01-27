@@ -103,6 +103,15 @@ func (p *PrintingVisitor) VisitIdentifierExpressionNode(node parser.IdentifierEx
 	p.Buf.WriteString(fmt.Sprintf("Visiting Identifier Node [%s] (%s => %d)\n", node.Literal(), node.Literal(), node.Value))
 }
 
+// VisitReturnStatementNode visits the return statement node
+func (p *PrintingVisitor) VisitReturnStatementNode(node parser.ReturnStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Return Statement Node [%s](%s => %d)\n", node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	node.Expr.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

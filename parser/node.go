@@ -15,6 +15,7 @@ type NodeVisitor interface {
 	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode)
 	VisitDeclarativeStatementNode(node DeclarativeStatementNode)
 	VisitIdentifierExpressionNode(node IdentifierExpressionNode)
+	VisitReturnStatementNode(node ReturnStatementNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -228,23 +229,55 @@ func (node *DeclarativeStatementNode) Statement() {
 // func (node *DeclarativeStatementNode) Expression() {
 // }
 
+// IdentifierExpressionNode: represents an identifier expression
 type IdentifierExpressionNode struct {
 	Name  string
 	Value int
 }
 
+// IdentifierExpressionNode.Literal(): string represenation of the node
 func (node *IdentifierExpressionNode) Literal() string {
 	return node.Name
 }
 
+// IdentifierExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)
 func (node *IdentifierExpressionNode) Accept(visitor NodeVisitor) {
 	visitor.VisitIdentifierExpressionNode(*node)
 }
 
+// IdentifierExpressionNode.Statement(): every expression is also a statement
 func (node *IdentifierExpressionNode) Statement() {
 
 }
 
+// IdentifierExpressionNode.Expression(): every expression node is a node
 func (node *IdentifierExpressionNode) Expression() {
+
+}
+
+// ReturnStatementNode():
+type ReturnStatementNode struct {
+	ReturnToken lexer.Token
+	Expr        ExpressionNode
+	Value       int
+}
+
+// ReturnStatementNode.Literal(): string represenation of the node
+func (node *ReturnStatementNode) Literal() string {
+	return node.ReturnToken.Literal + " " + node.Expr.Literal()
+}
+
+// ReturnStatementNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *ReturnStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitReturnStatementNode(*node)
+}
+
+// ReturnStatementNode.Statement(): every expression is also a statement
+func (node *ReturnStatementNode) Statement() {
+
+}
+
+// ReturnStatementNode.Expression(): every expression node is a node
+func (node *ReturnStatementNode) Expression() {
 
 }

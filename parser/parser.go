@@ -70,6 +70,7 @@ func (par *Parser) init() {
 	// register the functions
 	par.registerUnaryFuncs(par.parseParenthesizedExpression, lexer.LEFT_PAREN)
 	par.registerUnaryFuncs(par.parseNumberLiteral, lexer.NUMBER_ID)
+	par.registerUnaryFuncs(par.parseReturnStatement, lexer.RETURN_KEY)
 	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
@@ -300,6 +301,20 @@ func (par *Parser) parseIdentifierExpression() ExpressionNode {
 	}
 }
 
+// parse a return statement
+func (par *Parser) parseReturnStatement() ExpressionNode {
+	returnToken := par.CurrToken
+	par.advance()
+	expr := par.parseExpression()
+	// evaluating the expression
+	val := eval(expr)
+	return &ReturnStatementNode{
+		ReturnToken: returnToken,
+		Expr:        expr,
+		Value:       val,
+	}
+}
+
 // evaluate the expression
 func eval(node ExpressionNode) int {
 	switch n := node.(type) {
@@ -317,6 +332,8 @@ func eval(node ExpressionNode) int {
 	case *ParenthesizedExpressionNode:
 		return eval(n.Expr)
 	case *IdentifierExpressionNode:
+		return n.Value
+	case *ReturnStatementNode:
 		return n.Value
 	}
 	return 0
