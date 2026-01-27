@@ -445,3 +445,96 @@ func TestParser_Parse_ParenthesizedExpressionComplex(t *testing.T) {
 	assert.Equal(t, 10, exp.Value)
 
 }
+
+func TestParser_ParseDeclarativeStatement(t *testing.T) {
+	src := `var a = 1`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+	exp, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = 1", exp.Literal())
+	assert.Equal(t, 1, exp.Value)
+
+}
+
+func TestParser_ParseDeclarativeStatement_Complex(t *testing.T) {
+	src := `var a = 1 + 2 * 3`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 2},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 3},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+	exp, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = 1+2*3", exp.Literal())
+	assert.Equal(t, 7, exp.Value)
+
+}
+
+func TestParser_ParseDeclarativeStatement_Complex2(t *testing.T) {
+	src := `var a = (1 + 2) * 3`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 2},
+			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 3},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+	exp, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = (1+2)*3", exp.Literal())
+	assert.Equal(t, 9, exp.Value)
+
+}

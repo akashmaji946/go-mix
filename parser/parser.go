@@ -14,8 +14,7 @@ const (
 	PLUS_PRIORITY    = 2
 	MUL_PRIORITY     = 3
 	PREFIX_PRIORITY  = 4
-
-	PAREN_PRIORITY = 5
+	PAREN_PRIORITY   = 5
 )
 
 // get the precedence of the operator
@@ -111,35 +110,6 @@ func (par *Parser) expectAdvance(expected lexer.TokenType) {
 // parse each statement and return the root node
 func (par *Parser) Parse() *RootNode {
 
-	// TestParser_Parse_OneNumberExpression
-	// root := &RootNode{}
-	// root.Statements = make([]StatementNode, 1)
-	// par.advance()
-	// par.advance()
-	// token := par.CurrToken
-	// root.Statements[0] = &NumberLiteralExpressionNode{
-	// 	Token: token,
-	// 	Value: 12,
-	// }
-	// return root
-
-	// TestParser_Parse_AddExpression
-	// root := &RootNode{}
-	// root.Statements = make([]StatementNode, 1)
-	// par.advance()
-	// par.advance()
-	// left := par.CurrToken
-	// par.advance()
-	// _ = par.CurrToken
-	// par.advance()
-	// right := par.CurrToken
-	// root.Statements[0] = &AddExpressionNode{
-	// 	Left:  &NumberLiteralExpressionNode{Token: left, Value: 12},
-	// 	Right: &NumberLiteralExpressionNode{Token: right, Value: 13},
-	// 	Value: 25,
-	// }
-	// return root
-
 	// a real parser
 	root := &RootNode{}
 	root.Statements = make([]StatementNode, 0)
@@ -154,8 +124,11 @@ func (par *Parser) Parse() *RootNode {
 	// computes the value of the root node
 	// by evaluating the last statement
 	if len(root.Statements) > 0 {
-		if lastStmt, ok := root.Statements[len(root.Statements)-1].(ExpressionNode); ok {
-			root.Value = eval(lastStmt)
+		lastStmt := root.Statements[len(root.Statements)-1]
+		if exprNode, ok := lastStmt.(ExpressionNode); ok {
+			root.Value = eval(exprNode)
+		} else if declNode, ok := lastStmt.(*DeclarativeStatementNode); ok {
+			root.Value = declNode.Value
 		}
 	}
 
@@ -165,10 +138,13 @@ func (par *Parser) Parse() *RootNode {
 // parse a statement
 // currently only supports expression statements (will be extended)
 func (par *Parser) parseStatement() StatementNode {
-	switch par.CurrToken {
+	switch par.CurrToken.Type {
 
 	// TODO: add for statements like
 	// var a = 10;
+	case lexer.VAR_KEY:
+		return par.parseDeclarativeStatement()
+
 	// for (a < 10)
 
 	default:
@@ -179,29 +155,6 @@ func (par *Parser) parseStatement() StatementNode {
 // parse an expression
 // currently only supports binary expressions and unary expressions (will be extended)
 func (par *Parser) parseExpression() ExpressionNode {
-
-	// switch par.CurrToken.Type {
-	// case lexer.NUMBER_ID:
-	// 	par.advance()
-	// 	leftToken := par.CurrToken
-
-	// 	par.expectAdvance(lexer.PLUS_OP)
-
-	// 	par.expectAdvance(lexer.NUMBER_ID)
-
-	// 	rightToken := par.CurrToken
-
-	// 	leftValue, _ := strconv.Atoi(leftToken.Literal)
-	// 	rightValue, _ := strconv.Atoi(rightToken.Literal)
-
-	// 	return &BinaryExpressionNode{
-	// 		Left:  &NumberLiteralExpressionNode{Token: leftToken, Value: leftValue},
-	// 		Right: &NumberLiteralExpressionNode{Token: rightToken, Value: rightValue},
-	// 		Value: leftValue + rightValue,
-	// 	}
-	// default:
-	// 	return nil
-	// }
 
 	return par.parseInternal(MINIMUM_PRIORITY)
 }
@@ -272,6 +225,48 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 
 }
 
+// parse a unary expression
+func (par *Parser) parseUnaryExpression() ExpressionNode {
+	op := par.CurrToken
+	par.advance()
+	right := par.parseInternal(getPrecedence(&op) + 1)
+
+	val := 0
+	rVal := eval(right)
+	switch op.Type {
+	case lexer.NOT_OP:
+		if rVal == 0 {
+			val = 1
+		} else {
+			val = 0
+		}
+	case lexer.MINUS_OP:
+		val = -rVal
+	}
+
+	return &UnaryExpressionNode{
+		Operation: op,
+		Right:     right,
+		Value:     val,
+	}
+}
+
+// parse a declarative statement
+func (par *Parser) parseDeclarativeStatement() StatementNode {
+	varToken := par.CurrToken
+	par.expectAdvance(lexer.IDENTIFIER_ID)
+	identifier := par.CurrToken
+	par.expectAdvance(lexer.ASSIGN_OP)
+	par.advance()
+	expr := par.parseExpression()
+	return &DeclarativeStatementNode{
+		VarToken:   varToken,
+		Identifier: identifier,
+		Expr:       expr,
+		Value:      eval(expr),
+	}
+}
+
 // evaluate the expression
 func eval(node ExpressionNode) int {
 	switch n := node.(type) {
@@ -309,30 +304,4 @@ func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 		left = binary(left)
 	}
 	return left
-}
-
-// parse a unary expression
-func (par *Parser) parseUnaryExpression() ExpressionNode {
-	op := par.CurrToken
-	par.advance()
-	right := par.parseInternal(getPrecedence(&op) + 1)
-
-	val := 0
-	rVal := eval(right)
-	switch op.Type {
-	case lexer.NOT_OP:
-		if rVal == 0 {
-			val = 1
-		} else {
-			val = 0
-		}
-	case lexer.MINUS_OP:
-		val = -rVal
-	}
-
-	return &UnaryExpressionNode{
-		Operation: op,
-		Right:     right,
-		Value:     val,
-	}
 }

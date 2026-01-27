@@ -7,6 +7,9 @@ import (
 )
 
 // TestingVisitor is a visitor that asserts the expected nodes
+// The expected nodes are given in the in-order (like) traversal order
+// The change in order of flat nodes (in expected nodes list) in the test
+// should be failing comparison (in actual nodes list)
 type TestingVisitor struct {
 	expectedNodes []Node
 	ptr           int
@@ -82,6 +85,19 @@ func (v *TestingVisitor) VisitParenthesizedExpressionNode(node ParenthesizedExpr
 	_, ok := curr.(*ParenthesizedExpressionNode)
 	assert.True(v.t, ok)
 	v.ptr++
+}
+
+// TestingVisitor.VisitDeclarativeStatementNode visits the declarative statement node
+func (v *TestingVisitor) VisitDeclarativeStatementNode(node DeclarativeStatementNode) {
+	// assert on type
+	curr := v.expectedNodes[v.ptr]
+	currNode, ok := curr.(*DeclarativeStatementNode)
+	assert.True(v.t, ok)
+	assert.Equal(v.t, node.VarToken.Literal, currNode.VarToken.Literal)
+	assert.Equal(v.t, node.Identifier.Literal, currNode.Identifier.Literal)
+	v.ptr++
+
+	node.Expr.Accept(v)
 }
 
 // TestingVisitor.String returns the string representation of the visitor

@@ -13,6 +13,7 @@ type NodeVisitor interface {
 	VisitBinaryExpressionNode(node BinaryExpressionNode)
 	VisitUnaryExpressionNode(node UnaryExpressionNode)
 	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode)
+	VisitDeclarativeStatementNode(node DeclarativeStatementNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -196,3 +197,31 @@ func (node *ParenthesizedExpressionNode) Statement() {
 func (node *ParenthesizedExpressionNode) Expression() {
 
 }
+
+// DeclarativeStatementNode: represents a declarative statement
+type DeclarativeStatementNode struct {
+	VarToken   lexer.Token
+	Identifier lexer.Token
+	Expr       ExpressionNode
+	Value      int
+}
+
+// DeclarativeStatementNode.Literal(): string represenation of the node
+func (node *DeclarativeStatementNode) Literal() string {
+	return node.VarToken.Literal + " " + node.Identifier.Literal + " = " + node.Expr.Literal()
+}
+
+// DeclarativeStatementNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *DeclarativeStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitDeclarativeStatementNode(*node)
+}
+
+// DeclarativeStatementNode.Statement(): every expression is also a statement
+func (node *DeclarativeStatementNode) Statement() {
+
+}
+
+// DeclarativeStatementNode.Expression(): we should not have it
+//  why? because declarative statement is not an expression
+// func (node *DeclarativeStatementNode) Expression() {
+// }
