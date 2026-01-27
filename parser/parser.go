@@ -49,6 +49,8 @@ type Parser struct {
 
 	UnaryFuncs  map[lexer.TokenType]unaryParseFunction
 	BinaryFuncs map[lexer.TokenType]binaryParseFunction
+
+	Env map[string]int
 }
 
 func NewParser(src string) *Parser {
@@ -63,10 +65,12 @@ func NewParser(src string) *Parser {
 func (par *Parser) init() {
 	par.UnaryFuncs = make(map[lexer.TokenType]unaryParseFunction)
 	par.BinaryFuncs = make(map[lexer.TokenType]binaryParseFunction)
+	par.Env = make(map[string]int)
 
 	// register the functions
 	par.registerUnaryFuncs(par.parseParenthesizedExpression, lexer.LEFT_PAREN)
 	par.registerUnaryFuncs(par.parseNumberLiteral, lexer.NUMBER_ID)
+	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
 
@@ -139,6 +143,10 @@ func (par *Parser) Parse() *RootNode {
 // currently only supports expression statements (will be extended)
 func (par *Parser) parseStatement() StatementNode {
 	switch par.CurrToken.Type {
+
+	// ignore semicolons
+	case lexer.SEMICOLON_DELIM:
+		return nil
 
 	// TODO: add for statements like
 	// var a = 10;
@@ -259,11 +267,36 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 	par.expectAdvance(lexer.ASSIGN_OP)
 	par.advance()
 	expr := par.parseExpression()
+
+	// evaluating the expression
+	val := eval(expr)
+
+	// save the value in the environment
+	par.Env[identifier.Literal] = val
+
 	return &DeclarativeStatementNode{
 		VarToken:   varToken,
 		Identifier: identifier,
 		Expr:       expr,
-		Value:      eval(expr),
+		Value:      val,
+	}
+}
+
+// parse an identifier expression
+func (par *Parser) parseIdentifierExpression() ExpressionNode {
+	varToken := par.CurrToken
+
+	// we do not need to call parseExpression() here
+	// because we are already at the identifier token
+	// and we just need to return the node
+	// value := eval(par.parseExpression())
+
+	// get the value from the environment
+	val := par.Env[varToken.Literal]
+
+	return &IdentifierExpressionNode{
+		Name:  varToken.Literal,
+		Value: val,
 	}
 }
 
@@ -283,6 +316,8 @@ func eval(node ExpressionNode) int {
 		return 0
 	case *ParenthesizedExpressionNode:
 		return eval(n.Expr)
+	case *IdentifierExpressionNode:
+		return n.Value
 	}
 	return 0
 }

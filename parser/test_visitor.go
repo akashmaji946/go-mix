@@ -100,6 +100,16 @@ func (v *TestingVisitor) VisitDeclarativeStatementNode(node DeclarativeStatement
 	node.Expr.Accept(v)
 }
 
+// TestingVisitor.VisitIdentifierExpressionNode visits the identifier expression node
+func (v *TestingVisitor) VisitIdentifierExpressionNode(node IdentifierExpressionNode) {
+	// assert on type
+	curr := v.expectedNodes[v.ptr]
+	_, ok := curr.(*IdentifierExpressionNode)
+	assert.True(v.t, ok)
+	assert.Equal(v.t, node.Name, curr.(*IdentifierExpressionNode).Name)
+	v.ptr++
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

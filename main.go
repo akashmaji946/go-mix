@@ -38,17 +38,47 @@ func main() {
 	root4.Accept(visitor4)
 	fmt.Println(visitor4)
 
-	// declarative statement
+	// declarative statement (simple)
 	src5 := `var a = 1`
 	root5 := parser.NewParser(src5).Parse()
 	visitor5 := &PrintingVisitor{}
 	root5.Accept(visitor5)
 	fmt.Println(visitor5)
 
-	// declarative statement
+	// declarative statement (with parenthesised expression)
 	src6 := `var a = (1 + 2) * 3`
 	root6 := parser.NewParser(src6).Parse()
 	visitor6 := &PrintingVisitor{}
 	root6.Accept(visitor6)
 	fmt.Println(visitor6)
+
+	// declarative statement (with identifiers)
+	src7 := `var a = 11
+	var b = a + 10`
+	root7 := parser.NewParser(src7).Parse()
+	visitor7 := &PrintingVisitor{}
+	root7.Accept(visitor7)
+	fmt.Println(visitor7)
+
+	// declarative statement (with multiple statements)
+	src8 := `var a = (1 + 2) * 3
+	var b = (a + 10 * 2)
+	var c = (b + 10 * 4)
+	`
+	root8 := parser.NewParser(src8).Parse()
+	visitor8 := &PrintingVisitor{}
+	root8.Accept(visitor8)
+	fmt.Println(visitor8)
+
+	// declarative statement (with semicolons)
+	src9 := `var a = (1 + 2) * 3;
+	var b = (a + 10 * 2);
+	var c = (b + 10 * 4);
+	var d = (c + 10 * 5);
+	`
+	root9 := parser.NewParser(src9).Parse()
+	visitor9 := &PrintingVisitor{}
+	root9.Accept(visitor9)
+	fmt.Println(visitor9)
+
 }

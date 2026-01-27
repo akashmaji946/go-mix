@@ -538,3 +538,157 @@ func TestParser_ParseDeclarativeStatement_Complex2(t *testing.T) {
 	assert.Equal(t, 9, exp.Value)
 
 }
+
+func TestParser_ParseDeclarativeStatement_Identifier(t *testing.T) {
+	src := `var a=1
+	var b = a + 10`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "b"},
+			},
+			&IdentifierExpressionNode{Name: "a", Value: 1},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 10},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// check first statement: var a = 1
+	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = 1", stmt1.Literal())
+	assert.Equal(t, 1, stmt1.Value)
+
+	// check second statement: var b = a + 10
+	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var b = a+10", stmt2.Literal())
+	assert.Equal(t, 11, stmt2.Value)
+
+	assert.Equal(t, "var a = 1;var b = a+10;", root.Literal())
+}
+
+func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpression(t *testing.T) {
+	src := `var a=11
+	var b = (a + 10 * 2)`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 11},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "b"},
+			},
+			&IdentifierExpressionNode{Name: "a", Value: 11},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 10},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 2},
+			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// check first statement: var a = 11
+	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = 11", stmt1.Literal())
+	assert.Equal(t, 11, stmt1.Value)
+
+	// check second statement: var b = (a + 10 * 2)
+	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var b = (a+10*2)", stmt2.Literal())
+	assert.Equal(t, 31, stmt2.Value)
+
+	assert.Equal(t, "var a = 11;var b = (a+10*2);", root.Literal())
+}
+
+func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressionAndComma(t *testing.T) {
+	src := `var a=11;var b = (a + 10 * 2);var c = (b + 10 * 3)`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		expectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 11},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "b"},
+			},
+			&IdentifierExpressionNode{Name: "a", Value: 11},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 10},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 2},
+			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "c"},
+			},
+			&IdentifierExpressionNode{Name: "b", Value: 31},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
+			&NumberLiteralExpressionNode{Value: 10},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
+			&NumberLiteralExpressionNode{Value: 3},
+			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
+		},
+		ptr: 0,
+		t:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 3, len(root.Statements))
+
+	// check first statement: var a = 11
+	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = 11", stmt1.Literal())
+	assert.Equal(t, 11, stmt1.Value)
+
+	// check second statement: var b = (a + 10 * 2)
+	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var b = (a+10*2)", stmt2.Literal())
+	assert.Equal(t, 31, stmt2.Value)
+
+	// check third statement: var c = (b + 10 * 3	)
+	stmt3, ok := root.Statements[2].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var c = (b+10*3)", stmt3.Literal())
+	assert.Equal(t, 61, stmt3.Value)
+
+	assert.Equal(t, "var a = 11;var b = (a+10*2);var c = (b+10*3);", root.Literal())
+}

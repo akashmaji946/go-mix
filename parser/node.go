@@ -14,6 +14,7 @@ type NodeVisitor interface {
 	VisitUnaryExpressionNode(node UnaryExpressionNode)
 	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode)
 	VisitDeclarativeStatementNode(node DeclarativeStatementNode)
+	VisitIdentifierExpressionNode(node IdentifierExpressionNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -55,6 +56,7 @@ func (root *RootNode) Literal() string {
 	res := ""
 	for _, stmt := range root.Statements {
 		res += stmt.Literal()
+		res += ";"
 	}
 	return res
 }
@@ -222,6 +224,27 @@ func (node *DeclarativeStatementNode) Statement() {
 }
 
 // DeclarativeStatementNode.Expression(): we should not have it
-//  why? because declarative statement is not an expression
+// why? because declarative statement is not an expression
 // func (node *DeclarativeStatementNode) Expression() {
 // }
+
+type IdentifierExpressionNode struct {
+	Name  string
+	Value int
+}
+
+func (node *IdentifierExpressionNode) Literal() string {
+	return node.Name
+}
+
+func (node *IdentifierExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitIdentifierExpressionNode(*node)
+}
+
+func (node *IdentifierExpressionNode) Statement() {
+
+}
+
+func (node *IdentifierExpressionNode) Expression() {
+
+}

@@ -97,6 +97,12 @@ func (p *PrintingVisitor) VisitDeclarativeStatementNode(node parser.DeclarativeS
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitIdentifierExpressionNode visits the identifier expression node
+func (p *PrintingVisitor) VisitIdentifierExpressionNode(node parser.IdentifierExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Identifier Node [%s] (%s => %d)\n", node.Literal(), node.Literal(), node.Value))
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()
