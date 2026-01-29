@@ -85,6 +85,20 @@ func (lex *Lexer) NextToken() Token {
 		token = NewToken(SEMICOLON_DELIM, ";")
 	case ':':
 		token = NewToken(COLON_DELIM, ":")
+	case '&':
+		if lex.peek() == '&' {
+			lex.advance()
+			token = NewToken(AND_OP, "&&")
+		} else {
+			token = NewToken(BIT_AND_OP, "&")
+		}
+	case '|':
+		if lex.peek() == '|' {
+			lex.advance()
+			token = NewToken(OR_OP, "||")
+		} else {
+			token = NewToken(BIT_OR_OP, "|")
+		}
 	case 0:
 		token = NewToken(EOF_TYPE, "EOF")
 	// match string literals

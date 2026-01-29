@@ -43,6 +43,18 @@ const (
 	ASSIGN_OP TokenType = "="
 	NOT_OP    TokenType = "!"
 
+	// Boolean Operators
+	AND_OP TokenType = "&&"
+	OR_OP  TokenType = "||"
+
+	// Bitwise Operators
+	BIT_AND_OP   TokenType = "&"
+	BIT_OR_OP    TokenType = "|"
+	BIT_XOR_OP   TokenType = "^"
+	BIT_NOT_OP   TokenType = "~"
+	BIT_LEFT_OP  TokenType = "<<"
+	BIT_RIGHT_OP TokenType = ">>"
+
 	// Keywords
 	FUNC_KEY     TokenType = "func"
 	NEW_KEY      TokenType = "new"

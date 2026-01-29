@@ -102,4 +102,45 @@ func main() {
 	root12.Accept(visitor12)
 	fmt.Println(visitor12)
 
+	src13 := `var a = 1; var a = a + 10; return a;`
+	root13 := parser.NewParser(src13).Parse()
+	visitor13 := &PrintingVisitor{}
+	root13.Accept(visitor13)
+	fmt.Println(visitor13)
+
+	// BOOLEAN EXPRESSION
+	src14 := `true && false`
+	root14 := parser.NewParser(src14).Parse()
+	visitor14 := &PrintingVisitor{}
+	root14.Accept(visitor14)
+	fmt.Println(visitor14)
+
+	// BOOLEAN EXPRESSION
+	src15 := `true || false`
+	root15 := parser.NewParser(src15).Parse()
+	visitor15 := &PrintingVisitor{}
+	root15.Accept(visitor15)
+	fmt.Println(visitor15)
+
+	// BOOLEAN EXPRESSION
+	src16 := `true && (false || true)`
+	root16 := parser.NewParser(src16).Parse()
+	visitor16 := &PrintingVisitor{}
+	root16.Accept(visitor16)
+	fmt.Println(visitor16)
+
+	// BOOLEAN EXPRESSION
+	src17 := `return true && (false || true);`
+	root17 := parser.NewParser(src17).Parse()
+	visitor17 := &PrintingVisitor{}
+	root17.Accept(visitor17)
+	fmt.Println(visitor17)
+
+	// BOOLEAN EXPRESSION
+	src18 := `var a = true; var b = a && false; return b || true;`
+	root18 := parser.NewParser(src18).Parse()
+	visitor18 := &PrintingVisitor{}
+	root18.Accept(visitor18)
+	fmt.Println(visitor18)
+
 }

@@ -12,6 +12,7 @@ type NodeVisitor interface {
 	VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode)
 	VisitBinaryExpressionNode(node BinaryExpressionNode)
 	VisitUnaryExpressionNode(node UnaryExpressionNode)
+	VisitBooleanExpressionNode(node BooleanExpressionNode)
 	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode)
 	VisitDeclarativeStatementNode(node DeclarativeStatementNode)
 	VisitIdentifierExpressionNode(node IdentifierExpressionNode)
@@ -279,5 +280,33 @@ func (node *ReturnStatementNode) Statement() {
 
 // ReturnStatementNode.Expression(): every expression node is a node
 func (node *ReturnStatementNode) Expression() {
+
+}
+
+// BooleanExpressionNode: represents an expression with a boolean operator
+type BooleanExpressionNode struct {
+	Operation lexer.Token
+	Left      ExpressionNode
+	Right     ExpressionNode
+	Value     bool
+}
+
+// BooleanExpressionNode.Literal(): string represenation of the node
+func (node *BooleanExpressionNode) Literal() string {
+	return node.Left.Literal() + node.Operation.Literal + node.Right.Literal()
+}
+
+// BooleanExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *BooleanExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitBooleanExpressionNode(*node)
+}
+
+// BooleanExpressionNode.Statement(): every expression is also a statement
+func (node *BooleanExpressionNode) Statement() {
+
+}
+
+// BooleanExpressionNode.Expression(): every expression node is a node
+func (node *BooleanExpressionNode) Expression() {
 
 }

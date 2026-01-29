@@ -14,7 +14,9 @@ const (
 	PLUS_PRIORITY    = 2
 	MUL_PRIORITY     = 3
 	PREFIX_PRIORITY  = 4
-	PAREN_PRIORITY   = 5
+	AND_PRIORITY     = 6
+	OR_PRIORITY      = 5
+	PAREN_PRIORITY   = 10
 )
 
 // get the precedence of the operator
@@ -24,6 +26,12 @@ func getPrecedence(token *lexer.Token) int {
 		return PAREN_PRIORITY
 	case lexer.NOT_OP:
 		return PREFIX_PRIORITY
+
+	case lexer.AND_OP:
+		return AND_PRIORITY
+	case lexer.OR_OP:
+		return OR_PRIORITY
+
 	case lexer.PLUS_OP, lexer.MINUS_OP:
 		return PLUS_PRIORITY
 	case lexer.MUL_OP, lexer.DIV_OP:
@@ -72,10 +80,12 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseNumberLiteral, lexer.NUMBER_ID)
 	par.registerUnaryFuncs(par.parseReturnStatement, lexer.RETURN_KEY)
 	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID)
-	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
+
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
 
 	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.PLUS_OP, lexer.MINUS_OP, lexer.MUL_OP, lexer.DIV_OP)
+	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
+	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP)
 
 	par.advance()
 	par.advance()
@@ -150,9 +160,11 @@ func (par *Parser) parseStatement() StatementNode {
 		return nil
 
 	// TODO: add for statements like
+
 	// var a = 10;
 	case lexer.VAR_KEY:
 		return par.parseDeclarativeStatement()
+	// var a = (true && true);
 
 	// for (a < 10)
 
@@ -315,6 +327,35 @@ func (par *Parser) parseReturnStatement() ExpressionNode {
 	}
 }
 
+// parse a boolean expression
+func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
+	// we are already at the left expression
+	// so just parse the right expression
+	op := par.CurrToken
+	par.advance()
+	right := par.parseInternal(getPrecedence(&op) + 1)
+
+	lVal := eval(left)
+	rVal := eval(right)
+	val := false
+	switch op.Type {
+	case lexer.AND_OP:
+		if lVal != 0 && rVal != 0 {
+			val = true
+		}
+	case lexer.OR_OP:
+		if lVal != 0 || rVal != 0 {
+			val = true
+		}
+	}
+	return &BooleanExpressionNode{
+		Operation: op,
+		Left:      left,
+		Right:     right,
+		Value:     val,
+	}
+}
+
 // evaluate the expression
 func eval(node ExpressionNode) int {
 	switch n := node.(type) {
@@ -335,6 +376,11 @@ func eval(node ExpressionNode) int {
 		return n.Value
 	case *ReturnStatementNode:
 		return n.Value
+	case *BooleanExpressionNode:
+		if n.Value {
+			return 1
+		}
+		return 0
 	}
 	return 0
 }

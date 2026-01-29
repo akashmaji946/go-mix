@@ -112,6 +112,16 @@ func (p *PrintingVisitor) VisitReturnStatementNode(node parser.ReturnStatementNo
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitBooleanExpressionNode visits the boolean expression node
+func (p *PrintingVisitor) VisitBooleanExpressionNode(node parser.BooleanExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Boolean Node [%s] (%s => %t)\n", node.Operation.Literal, node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	node.Left.Accept(p)
+	node.Right.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

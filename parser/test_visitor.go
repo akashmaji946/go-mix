@@ -119,6 +119,17 @@ func (v *TestingVisitor) VisitReturnStatementNode(node ReturnStatementNode) {
 	v.Ptr++
 }
 
+// TestingVisitor.VisitBooleanExpressionNode visits the boolean expression node
+func (v *TestingVisitor) VisitBooleanExpressionNode(node BooleanExpressionNode) {
+	node.Left.Accept(v)
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*BooleanExpressionNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+	node.Right.Accept(v)
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""
