@@ -143,4 +143,53 @@ func main() {
 	root18.Accept(visitor18)
 	fmt.Println(visitor18)
 
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
+	src19 := `false || 1 < 2`
+	root19 := parser.NewParser(src19).Parse()
+	visitor19 := &PrintingVisitor{}
+	root19.Accept(visitor19)
+	fmt.Println(visitor19)
+
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
+	src20 := `return false || 1 < 2`
+	root20 := parser.NewParser(src20).Parse()
+	visitor20 := &PrintingVisitor{}
+	root20.Accept(visitor20)
+	fmt.Println(visitor20)
+
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
+	src21 := `return false || (1 <= 2 && true)`
+	root21 := parser.NewParser(src21).Parse()
+	visitor21 := &PrintingVisitor{}
+	root21.Accept(visitor21)
+	fmt.Println(visitor21)
+
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
+	src22 := `var a = false; return a || (10 <= 20 && true);`
+	root22 := parser.NewParser(src22).Parse()
+	visitor22 := &PrintingVisitor{}
+	root22.Accept(visitor22)
+	fmt.Println(visitor22)
+
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
+	src23 := `(10 <= 20 && (10 != 20) && (true != false) && (true == true))`
+	root23 := parser.NewParser(src23).Parse()
+	visitor23 := &PrintingVisitor{}
+	root23.Accept(visitor23)
+	fmt.Println(visitor23)
+
+	// BITWISE EXPRESSION
+	src24 := `(3 & 7) == 3 && true || false && true`
+	root24 := parser.NewParser(src24).Parse()
+	visitor24 := &PrintingVisitor{}
+	root24.Accept(visitor24)
+	fmt.Println(visitor24)
+
+	// BITWISE EXPRESSION
+	src25 := `return ((3&7)!=3&&true||false&&true)||true`
+	root25 := parser.NewParser(src25).Parse()
+	visitor25 := &PrintingVisitor{}
+	root25.Accept(visitor25)
+	fmt.Println(visitor25)
+
 }

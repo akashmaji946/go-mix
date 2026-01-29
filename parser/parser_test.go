@@ -986,3 +986,349 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_P
 	assert.Equal(t, 1, root.Value)
 
 }
+
+func TestParser_Parse_RelationalOperator(t *testing.T) {
+	src := `1 < 2`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 1},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<"}},
+			&NumberLiteralExpressionNode{Value: 2},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// check first statement: 1 < 2
+	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "1<2", stmt1.Literal())
+	assert.Equal(t, true, stmt1.Value)
+
+	assert.Equal(t, "1<2;", root.Literal())
+	assert.Equal(t, 1, root.Value)
+}
+
+func TestParser_Parse_RelationalOperatorSimple(t *testing.T) {
+	src := `false || 1 < 2`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&BooleanLiteralExpressionNode{Value: false, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
+			&NumberLiteralExpressionNode{Value: 1},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<"}},
+			&NumberLiteralExpressionNode{Value: 2},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// check first statement: 1 < 2
+	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "false||1<2", stmt1.Literal())
+	assert.Equal(t, true, stmt1.Value)
+
+	assert.Equal(t, "false||1<2;", root.Literal())
+	assert.Equal(t, 1, root.Value)
+}
+
+func TestParser_Parse_RelationalOperatorComplex(t *testing.T) {
+	src := `false || 10 <= 20 && true`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&BooleanLiteralExpressionNode{Value: false, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
+			&NumberLiteralExpressionNode{Value: 10},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<="}},
+			&NumberLiteralExpressionNode{Value: 20},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
+			&BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// check first statement: 1 < 2
+	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "false||10<=20&&true", stmt1.Literal())
+	assert.Equal(t, true, stmt1.Value)
+
+	assert.Equal(t, "false||10<=20&&true;", root.Literal())
+	assert.Equal(t, 1, root.Value)
+}
+
+func TestParser_Parse_RelationalOperatorWithParenthesizedExpression(t *testing.T) {
+	src := `false || (10 <= 20 && true)`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&BooleanLiteralExpressionNode{Value: false, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
+			&NumberLiteralExpressionNode{Value: 10},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<="}},
+			&NumberLiteralExpressionNode{Value: 20},
+			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
+			&BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&ParenthesizedExpressionNode{
+				Expr: &BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
+			},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// check first statement: 1 < 2
+	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "false||(10<=20&&true)", stmt1.Literal())
+	assert.Equal(t, true, stmt1.Value)
+
+	assert.Equal(t, "false||(10<=20&&true);", root.Literal())
+	assert.Equal(t, 1, root.Value)
+}
+
+func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndVariable(t *testing.T) {
+	src := `var a = false; return a || (10 <= 20 && true);`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&BooleanLiteralExpressionNode{Value: false, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr: &BooleanExpressionNode{
+					Operation: lexer.Token{Literal: "||"},
+					Left:      &IdentifierExpressionNode{Name: "a"},
+					Right: &BooleanExpressionNode{
+						Operation: lexer.Token{Literal: "&&"},
+						Left: &BooleanExpressionNode{
+							Operation: lexer.Token{Literal: "<="},
+							Left:      &NumberLiteralExpressionNode{Value: 10},
+							Right:     &NumberLiteralExpressionNode{Value: 20},
+						},
+						Right: &BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+					},
+				},
+			},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// check first statement: var a = false
+	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = false", stmt1.Literal())
+	assert.Equal(t, 0, stmt1.Value)
+
+	// check second statement: return a || (10 <= 20 && true)
+	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "return a||(10<=20&&true)", stmt2.Literal())
+	assert.Equal(t, 1, stmt2.Value)
+
+	assert.Equal(t, "var a = false;return a||(10<=20&&true);", root.Literal())
+	assert.Equal(t, 1, root.Value)
+
+}
+
+func TestParser_Parse_BitwiseOperator(t *testing.T) {
+	src := `3 & 7 == 3`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&NumberLiteralExpressionNode{Value: 3},
+			&BinaryExpressionNode{Operation: lexer.Token{Literal: "&"}},
+			&NumberLiteralExpressionNode{Value: 7},
+			&BooleanExpressionNode{
+				Operation: lexer.Token{Literal: "=="},
+				Left: &BooleanExpressionNode{
+					Operation: lexer.Token{Literal: "&"},
+					Left:      &NumberLiteralExpressionNode{Value: 3},
+					Right:     &NumberLiteralExpressionNode{Value: 7},
+				},
+				Right: &NumberLiteralExpressionNode{Value: 3},
+			},
+			&NumberLiteralExpressionNode{Value: 3},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// check first statement: 1 < 2
+	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "3&7==3", stmt1.Literal())
+	assert.Equal(t, true, stmt1.Value)
+
+	assert.Equal(t, "3&7==3;", root.Literal())
+	assert.Equal(t, 1, root.Value)
+}
+
+func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndBitwiseOperator(t *testing.T) {
+	src := `return ((3&7)!=3&&true||false&&true)||true;`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr: &BooleanExpressionNode{
+					Operation: lexer.Token{Literal: "||"},
+					Left: &BooleanExpressionNode{
+						Operation: lexer.Token{Literal: "&&"},
+						Left: &BooleanExpressionNode{
+							Operation: lexer.Token{Literal: "!="},
+							Left: &ParenthesizedExpressionNode{
+								Expr: &BooleanExpressionNode{
+									Operation: lexer.Token{Literal: "&"},
+									Left:      &NumberLiteralExpressionNode{Value: 3},
+									Right:     &NumberLiteralExpressionNode{Value: 7},
+								},
+							},
+							Right: &NumberLiteralExpressionNode{Value: 3},
+						},
+						Right: &BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+					},
+					Right: &BooleanExpressionNode{
+						Operation: lexer.Token{Literal: "&&"},
+						Left:      &BooleanLiteralExpressionNode{Value: false, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+						Right:     &BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+					},
+				},
+				// Right: &BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// check first statement: return ((3&7)!=3&&true||false&&true)||true
+	stmt1, ok := root.Statements[0].(*ReturnStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "return ((3&7)!=3&&true||false&&true)||true", stmt1.Literal())
+	assert.Equal(t, 1, stmt1.Value)
+
+	assert.Equal(t, "return ((3&7)!=3&&true||false&&true)||true;", root.Literal())
+	assert.Equal(t, 1, root.Value)
+}
+
+func TestParser_Parse_BitwiseOperatorWithParenthesizedExpression(t *testing.T) {
+	src := `var a = (3&7); return (a==3) && true;`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 3},
+			&BinaryExpressionNode{
+				Operation: lexer.Token{Literal: "&"},
+				Left:      &NumberLiteralExpressionNode{Value: 3},
+				Right:     &NumberLiteralExpressionNode{Value: 7},
+			},
+			&NumberLiteralExpressionNode{Value: 7},
+			&ParenthesizedExpressionNode{
+				Expr: &BooleanExpressionNode{
+					Operation: lexer.Token{Literal: "&"},
+					Left:      &NumberLiteralExpressionNode{Value: 3},
+					Right:     &NumberLiteralExpressionNode{Value: 7},
+				},
+			},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr: &BooleanExpressionNode{
+					Operation: lexer.Token{Literal: "||"},
+					Left: &BooleanExpressionNode{
+						Operation: lexer.Token{Literal: "&&"},
+						Left: &BooleanExpressionNode{
+							Operation: lexer.Token{Literal: "!="},
+							Left: &ParenthesizedExpressionNode{
+								Expr: &BooleanExpressionNode{
+									Operation: lexer.Token{Literal: "&"},
+									Left:      &NumberLiteralExpressionNode{Value: 3},
+									Right:     &NumberLiteralExpressionNode{Value: 7},
+								},
+							},
+							Right: &NumberLiteralExpressionNode{Value: 3},
+						},
+						Right: &BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+					},
+					Right: &BooleanExpressionNode{
+						Operation: lexer.Token{Literal: "&&"},
+						Left:      &BooleanLiteralExpressionNode{Value: false, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+						Right:     &BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+					},
+				},
+				// Right: &BooleanLiteralExpressionNode{Value: true, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// check first statement: var a = (3&7)
+	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "var a = (3&7)", stmt1.Literal())
+	assert.Equal(t, 3, stmt1.Value)
+
+	// check second statement: return (a==3) && true
+	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "return (a==3)&&true", stmt2.Literal())
+	assert.Equal(t, 1, stmt2.Value)
+
+	assert.Equal(t, "var a = (3&7);return (a==3)&&true;", root.Literal())
+	assert.Equal(t, 1, root.Value)
+
+}

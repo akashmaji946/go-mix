@@ -10,22 +10,37 @@ import (
 // operator precedence
 const (
 	MINIMUM_PRIORITY = 0
-	OTHER_PRIORITY   = 1
-	PLUS_PRIORITY    = 2
-	MUL_PRIORITY     = 3
-	PREFIX_PRIORITY  = 4
-	AND_PRIORITY     = 6
-	OR_PRIORITY      = 5
-	PAREN_PRIORITY   = 10
+
+	OTHER_PRIORITY = 10
+
+	PLUS_PRIORITY = 20
+	MUL_PRIORITY  = 30
+
+	PREFIX_PRIORITY = 40
+
+	OR_PRIORITY  = 50
+	AND_PRIORITY = 60
+
+	RELATIONAL_PRIORITY = 70
+	BITWISE_PRIORITY    = 80
+
+	PAREN_PRIORITY = 100
 )
 
 // get the precedence of the operator
 func getPrecedence(token *lexer.Token) int {
 	switch token.Type {
+
 	case lexer.LEFT_PAREN:
 		return PAREN_PRIORITY
 	case lexer.NOT_OP:
 		return PREFIX_PRIORITY
+
+	case lexer.BIT_AND_OP, lexer.BIT_OR_OP, lexer.BIT_XOR_OP, lexer.BIT_NOT_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP:
+		return BITWISE_PRIORITY
+
+	case lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP:
+		return RELATIONAL_PRIORITY
 
 	case lexer.AND_OP:
 		return AND_PRIORITY
@@ -36,6 +51,7 @@ func getPrecedence(token *lexer.Token) int {
 		return PLUS_PRIORITY
 	case lexer.MUL_OP, lexer.DIV_OP:
 		return MUL_PRIORITY
+
 	default:
 		return -1
 	}
@@ -84,8 +100,11 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
 
 	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.PLUS_OP, lexer.MINUS_OP, lexer.MUL_OP, lexer.DIV_OP)
+	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.BIT_AND_OP, lexer.BIT_OR_OP)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
-	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP)
+
+	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP)
+	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
 
 	par.advance()
 	par.advance()
@@ -225,6 +244,7 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 	rVal := eval(right)
 	val := 0
 	switch op.Type {
+	// arithmetic operators
 	case lexer.PLUS_OP:
 		val = lVal + rVal
 	case lexer.MINUS_OP:
@@ -233,6 +253,19 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 		val = lVal * rVal
 	case lexer.DIV_OP:
 		val = lVal / rVal
+	// bitwise operators
+	case lexer.BIT_AND_OP:
+		val = lVal & rVal
+	case lexer.BIT_OR_OP:
+		val = lVal | rVal
+	case lexer.BIT_XOR_OP:
+		val = lVal ^ rVal
+	case lexer.BIT_NOT_OP:
+		val = ^lVal
+	case lexer.BIT_LEFT_OP:
+		val = lVal << rVal
+	case lexer.BIT_RIGHT_OP:
+		val = lVal >> rVal
 	}
 
 	binaryExpr := &BinaryExpressionNode{
@@ -345,6 +378,30 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 		}
 	case lexer.OR_OP:
 		if lVal != 0 || rVal != 0 {
+			val = true
+		}
+	case lexer.GT_OP:
+		if lVal > rVal {
+			val = true
+		}
+	case lexer.LT_OP:
+		if lVal < rVal {
+			val = true
+		}
+	case lexer.GE_OP:
+		if lVal >= rVal {
+			val = true
+		}
+	case lexer.LE_OP:
+		if lVal <= rVal {
+			val = true
+		}
+	case lexer.EQ_OP:
+		if lVal == rVal {
+			val = true
+		}
+	case lexer.NE_OP:
+		if lVal != rVal {
 			val = true
 		}
 	}

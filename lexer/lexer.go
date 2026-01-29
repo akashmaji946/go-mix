@@ -236,7 +236,7 @@ func (lex *Lexer) ConsumeTokens() []Token {
 	tokens := make([]Token, 0)
 	for {
 		token := lex.NextToken()
-		token.Print()
+		// token.Print()
 		if token.Type == EOF_TYPE {
 			break
 		}
