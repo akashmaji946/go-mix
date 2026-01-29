@@ -17,6 +17,8 @@ type NodeVisitor interface {
 	VisitDeclarativeStatementNode(node DeclarativeStatementNode)
 	VisitIdentifierExpressionNode(node IdentifierExpressionNode)
 	VisitReturnStatementNode(node ReturnStatementNode)
+	VisitBlockStatementNode(node BlockStatementNode)
+	VisitAssignmentExpressionNode(node AssignmentExpressionNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -176,6 +178,14 @@ func (node *UnaryExpressionNode) Expression() {
 
 }
 
+// BooleanExpressionNode: represents an expression with a boolean operator
+type BooleanExpressionNode struct {
+	Operation lexer.Token
+	Left      ExpressionNode
+	Right     ExpressionNode
+	Value     bool
+}
+
 // ParenthesizedExpressionNode: represents an expression in parentheses
 type ParenthesizedExpressionNode struct {
 	Expr  ExpressionNode
@@ -283,12 +293,36 @@ func (node *ReturnStatementNode) Expression() {
 
 }
 
-// BooleanExpressionNode: represents an expression with a boolean operator
-type BooleanExpressionNode struct {
-	Operation lexer.Token
-	Left      ExpressionNode
-	Right     ExpressionNode
-	Value     bool
+// BlockStatementNode: represents a block of statements
+type BlockStatementNode struct {
+	Statements []Node
+	Value      int
+}
+
+// BlockStatementNode.Literal(): string represenation of the node
+func (node *BlockStatementNode) Literal() string {
+	str := "{"
+	for _, stmt := range node.Statements {
+		str += stmt.Literal()
+		str += ";"
+	}
+	str += "}"
+	return str
+}
+
+// BlockStatementNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *BlockStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitBlockStatementNode(*node)
+}
+
+// BlockStatementNode.Statement(): every expression is also a statement
+func (node *BlockStatementNode) Statement() {
+
+}
+
+// BlockStatementNode.Expression(): every expression node is a node
+func (node *BlockStatementNode) Expression() {
+
 }
 
 // BooleanExpressionNode.Literal(): string represenation of the node
@@ -308,5 +342,33 @@ func (node *BooleanExpressionNode) Statement() {
 
 // BooleanExpressionNode.Expression(): every expression node is a node
 func (node *BooleanExpressionNode) Expression() {
+
+}
+
+// AssignmentExpressionNode: represents an assignment expression
+type AssignmentExpressionNode struct {
+	Operation lexer.Token
+	Left      string
+	Right     ExpressionNode
+	Value     int
+}
+
+// AssignmentExpressionNode.Literal(): string represenation of the node
+func (node *AssignmentExpressionNode) Literal() string {
+	return node.Left + " " + node.Operation.Literal + " " + node.Right.Literal()
+}
+
+// AssignmentExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *AssignmentExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitAssignmentExpressionNode(*node)
+}
+
+// AssignmentExpressionNode.Statement(): every expression is also a statement
+func (node *AssignmentExpressionNode) Statement() {
+
+}
+
+// AssignmentExpressionNode.Expression(): every expression node is a node
+func (node *AssignmentExpressionNode) Expression() {
 
 }

@@ -122,6 +122,26 @@ func (p *PrintingVisitor) VisitBooleanExpressionNode(node parser.BooleanExpressi
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitBlockStatementNode visits the block statement node
+func (p *PrintingVisitor) VisitBlockStatementNode(node parser.BlockStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Block Statement Node (%s) => %d\n", node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	for _, stmt := range node.Statements {
+		stmt.Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
+// VisitAssignmentExpressionNode visits the assignment expression node
+func (p *PrintingVisitor) VisitAssignmentExpressionNode(node parser.AssignmentExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Assignment Node [%s] (%s => %d)\n", node.Operation.Literal, node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	node.Right.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

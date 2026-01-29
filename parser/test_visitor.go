@@ -130,6 +130,31 @@ func (v *TestingVisitor) VisitBooleanExpressionNode(node BooleanExpressionNode) 
 	node.Right.Accept(v)
 }
 
+// TestingVisitor.VisitBlockStatementNode visits the block statement node
+func (v *TestingVisitor) VisitBlockStatementNode(node BlockStatementNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*BlockStatementNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	for _, stmt := range node.Statements {
+		stmt.Accept(v)
+	}
+}
+
+// TestingVisitor.VisitAssignmentExpressionNode visits the assignment expression node
+func (v *TestingVisitor) VisitAssignmentExpressionNode(node AssignmentExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*AssignmentExpressionNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.Operation.Literal, curr.(*AssignmentExpressionNode).Operation.Literal)
+	assert.Equal(v.T, node.Left, curr.(*AssignmentExpressionNode).Left)
+	assert.Equal(v.T, node.Right.Literal(), curr.(*AssignmentExpressionNode).Right.Literal())
+	v.Ptr++
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

@@ -192,4 +192,99 @@ func main() {
 	root25.Accept(visitor25)
 	fmt.Println(visitor25)
 
+	src26 := `7 > 2 + 1`
+	root26 := parser.NewParser(src26).Parse()
+	visitor26 := &PrintingVisitor{}
+	root26.Accept(visitor26)
+	fmt.Println(visitor26)
+
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
+	src27 := `return 7-1>2+1`
+	root27 := parser.NewParser(src27).Parse()
+	visitor27 := &PrintingVisitor{}
+	root27.Accept(visitor27)
+	fmt.Println(visitor27)
+
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
+	src28 := `var a = 7; var b = 1; var c = 2; var d = 1; return ((a-b)>(c+d));`
+	root28 := parser.NewParser(src28).Parse()
+	visitor28 := &PrintingVisitor{}
+	root28.Accept(visitor28)
+	fmt.Println(visitor28)
+
+	// block statement
+	src29 := `{var a = 10; var b = a + 100;}`
+	root29 := parser.NewParser(src29).Parse()
+	visitor29 := &PrintingVisitor{}
+	root29.Accept(visitor29)
+	fmt.Println(visitor29)
+
+	// block statement with return statement
+	src30 := `
+	{
+	var a = 10;
+	var b = a + 10;
+	var c = b * 100;
+	var d =  c + 1000;
+	{
+	var e = d + 1000;
+	return e;
+	}
+	return 0;
+	}`
+	root30 := parser.NewParser(src30).Parse()
+	visitor30 := &PrintingVisitor{}
+	root30.Accept(visitor30)
+	fmt.Println(visitor30)
+
+	// block statement with return statement and assignment
+	src31 := `
+	var X = 1234;
+	{
+	var a = 10;
+	var b = a + 10;
+	var c = b * 100;
+	var d =  c + 1000;
+	{
+	var e = d + 1000;
+	return e;
+	}
+	X = 111111 * 2;
+	return X;
+	}
+	`
+	root31 := parser.NewParser(src31).Parse()
+	visitor31 := &PrintingVisitor{}
+	root31.Accept(visitor31)
+	fmt.Println(visitor31)
+
+	// block statement with assignment
+	src32 := `	
+	var X = 1234;
+	{
+	X = X + 1;
+	}
+	X = X * 100 + 2;
+	return X;`
+	root32 := parser.NewParser(src32).Parse()
+	visitor32 := &PrintingVisitor{}
+	root32.Accept(visitor32)
+	fmt.Println(visitor32)
+
+	// currently block scope is overwriting the outer scope
+	//  ok for now, will fix later
+	src33 := `	
+	var X = 1234;
+	{
+	var X = 6789;
+	X = X + 1;
+	}
+	X = X + 1;
+	return X;
+	`
+	root33 := parser.NewParser(src33).Parse()
+	visitor33 := &PrintingVisitor{}
+	root33.Accept(visitor33)
+	fmt.Println(visitor33)
+
 }

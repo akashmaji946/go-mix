@@ -11,18 +11,17 @@ import (
 const (
 	MINIMUM_PRIORITY = 0
 
-	OTHER_PRIORITY = 10
+	ASSIGN_PRIORITY = 10
 
-	PLUS_PRIORITY = 20
-	MUL_PRIORITY  = 30
+	OR_PRIORITY  = 20
+	AND_PRIORITY = 30
 
-	PREFIX_PRIORITY = 40
+	RELATIONAL_PRIORITY = 40
 
-	OR_PRIORITY  = 50
-	AND_PRIORITY = 60
+	PLUS_PRIORITY = 50 // + - | ^
+	MUL_PRIORITY  = 60 // * / % << >> & &^
 
-	RELATIONAL_PRIORITY = 70
-	BITWISE_PRIORITY    = 80
+	PREFIX_PRIORITY = 70
 
 	PAREN_PRIORITY = 100
 )
@@ -36,8 +35,13 @@ func getPrecedence(token *lexer.Token) int {
 	case lexer.NOT_OP:
 		return PREFIX_PRIORITY
 
-	case lexer.BIT_AND_OP, lexer.BIT_OR_OP, lexer.BIT_XOR_OP, lexer.BIT_NOT_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP:
-		return BITWISE_PRIORITY
+	// Mul level: * / & << >>
+	case lexer.MUL_OP, lexer.DIV_OP, lexer.BIT_AND_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP:
+		return MUL_PRIORITY
+
+	// Add level: + - | ^
+	case lexer.PLUS_OP, lexer.MINUS_OP, lexer.BIT_OR_OP, lexer.BIT_XOR_OP:
+		return PLUS_PRIORITY
 
 	case lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP:
 		return RELATIONAL_PRIORITY
@@ -47,10 +51,8 @@ func getPrecedence(token *lexer.Token) int {
 	case lexer.OR_OP:
 		return OR_PRIORITY
 
-	case lexer.PLUS_OP, lexer.MINUS_OP:
-		return PLUS_PRIORITY
-	case lexer.MUL_OP, lexer.DIV_OP:
-		return MUL_PRIORITY
+	case lexer.ASSIGN_OP:
+		return ASSIGN_PRIORITY
 
 	default:
 		return -1
@@ -105,6 +107,7 @@ func (par *Parser) init() {
 
 	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
+	par.registerBinaryFuncs(par.parseAssignmentExpression, lexer.ASSIGN_OP)
 
 	par.advance()
 	par.advance()
@@ -160,9 +163,13 @@ func (par *Parser) Parse() *RootNode {
 	if len(root.Statements) > 0 {
 		lastStmt := root.Statements[len(root.Statements)-1]
 		if exprNode, ok := lastStmt.(ExpressionNode); ok {
-			root.Value = eval(exprNode)
+			root.Value = eval(par, exprNode)
 		} else if declNode, ok := lastStmt.(*DeclarativeStatementNode); ok {
 			root.Value = declNode.Value
+		} else if returnNode, ok := lastStmt.(*ReturnStatementNode); ok {
+			root.Value = returnNode.Value
+		} else if blockNode, ok := lastStmt.(*BlockStatementNode); ok {
+			root.Value = blockNode.Value
 		}
 	}
 
@@ -186,6 +193,10 @@ func (par *Parser) parseStatement() StatementNode {
 	// var a = (true && true);
 
 	// for (a < 10)
+
+	// {.....}
+	case lexer.LEFT_BRACE:
+		return par.parseBlockStatement()
 
 	default:
 		return par.parseExpression()
@@ -240,8 +251,8 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 	par.advance()
 	right := par.parseInternal(getPrecedence(&op) + 1)
 
-	lVal := eval(left)
-	rVal := eval(right)
+	lVal := eval(par, left)
+	rVal := eval(par, right)
 	val := 0
 	switch op.Type {
 	// arithmetic operators
@@ -286,7 +297,7 @@ func (par *Parser) parseUnaryExpression() ExpressionNode {
 	right := par.parseInternal(getPrecedence(&op) + 1)
 
 	val := 0
-	rVal := eval(right)
+	rVal := eval(par, right)
 	switch op.Type {
 	case lexer.NOT_OP:
 		if rVal == 0 {
@@ -315,7 +326,7 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 	expr := par.parseExpression()
 
 	// evaluating the expression
-	val := eval(expr)
+	val := eval(par, expr)
 
 	// save the value in the environment
 	par.Env[identifier.Literal] = val
@@ -352,7 +363,7 @@ func (par *Parser) parseReturnStatement() ExpressionNode {
 	par.advance()
 	expr := par.parseExpression()
 	// evaluating the expression
-	val := eval(expr)
+	val := eval(par, expr)
 	return &ReturnStatementNode{
 		ReturnToken: returnToken,
 		Expr:        expr,
@@ -368,8 +379,8 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 	par.advance()
 	right := par.parseInternal(getPrecedence(&op) + 1)
 
-	lVal := eval(left)
-	rVal := eval(right)
+	lVal := eval(par, left)
+	rVal := eval(par, right)
 	val := false
 	switch op.Type {
 	case lexer.AND_OP:
@@ -413,8 +424,57 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 	}
 }
 
+// parse a block statement
+// parse a block statement
+func (par *Parser) parseBlockStatement() StatementNode {
+	block := &BlockStatementNode{}
+	block.Statements = make([]Node, 0)
+	par.advance()
+	for par.CurrToken.Type != lexer.RIGHT_BRACE {
+		stmt := par.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		par.advance()
+	}
+
+	// computes the value of the block node
+	// by evaluating the last statement
+	if len(block.Statements) > 0 {
+		lastStmt := block.Statements[len(block.Statements)-1]
+		if exprNode, ok := lastStmt.(ExpressionNode); ok {
+			block.Value = eval(par, exprNode)
+		} else if declNode, ok := lastStmt.(*DeclarativeStatementNode); ok {
+			block.Value = declNode.Value
+		} else if returnNode, ok := lastStmt.(*ReturnStatementNode); ok {
+			block.Value = returnNode.Value
+		} else if blockNode, ok := lastStmt.(*BlockStatementNode); ok {
+			block.Value = blockNode.Value
+		}
+	}
+
+	return block
+}
+
+// parse an assignment expression
+func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode {
+	op := par.CurrToken
+	par.advance()
+	right := par.parseInternal(getPrecedence(&op) + 1)
+
+	val := eval(par, right)
+	par.Env[left.(*IdentifierExpressionNode).Name] = val
+
+	return &AssignmentExpressionNode{
+		Operation: op,
+		Left:      left.(*IdentifierExpressionNode).Name,
+		Right:     right,
+		Value:     val,
+	}
+}
+
 // evaluate the expression
-func eval(node ExpressionNode) int {
+func eval(par *Parser, node ExpressionNode) int {
 	switch n := node.(type) {
 	case *NumberLiteralExpressionNode:
 		return n.Value
@@ -428,9 +488,9 @@ func eval(node ExpressionNode) int {
 		}
 		return 0
 	case *ParenthesizedExpressionNode:
-		return eval(n.Expr)
+		return eval(par, n.Expr)
 	case *IdentifierExpressionNode:
-		return n.Value
+		return par.Env[n.Name]
 	case *ReturnStatementNode:
 		return n.Value
 	case *BooleanExpressionNode:
@@ -438,6 +498,10 @@ func eval(node ExpressionNode) int {
 			return 1
 		}
 		return 0
+	case *BlockStatementNode:
+		return n.Value
+	case *AssignmentExpressionNode:
+		return n.Value
 	}
 	return 0
 }
@@ -447,14 +511,18 @@ func eval(node ExpressionNode) int {
 func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 	unary, has := par.UnaryFuncs[par.CurrToken.Type]
 	if !has {
-		panic("[ERROR] could not parse binary expression")
+		msg := fmt.Sprintf("[ERROR] could not parse unary expression: %s", par.CurrToken.Literal)
+		fmt.Println(msg)
+		panic(msg)
 	}
 	left := unary()
 	for par.NextToken.Type != lexer.EOF_TYPE && getPrecedence(&par.NextToken) >= currPrecedence {
 		binary, has := par.BinaryFuncs[par.NextToken.Type]
 		par.advance()
 		if !has {
-			panic("[ERROR] could not parse binary expression")
+			msg := fmt.Sprintf("[ERROR] could not parse binary expression: %s", par.NextToken.Literal)
+			fmt.Println(msg)
+			panic(msg)
 		}
 		left = binary(left)
 	}
