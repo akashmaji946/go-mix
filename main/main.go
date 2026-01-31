@@ -372,4 +372,11 @@ func main() {
 	root40.Accept(visitor40)
 	fmt.Println(visitor40)
 
+	// string literal
+	src41 := `"hello world" "C++" Pascal 2026 1234567890 "123"`
+	root41 := parser.NewParser(src41).Parse()
+	visitor41 := &PrintingVisitor{}
+	root41.Accept(visitor41)
+	fmt.Println(visitor41)
+
 }

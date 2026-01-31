@@ -164,6 +164,30 @@ func TestNewLexer_ConsumeTokens(t *testing.T) {
 				NewToken(RIGHT_BRACE, "}"),
 			},
 		},
+
+		{
+			Input: `"hello" a 123`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "hello"),
+				NewToken(IDENTIFIER_ID, "a"),
+				NewToken(NUMBER_ID, "123"),
+			},
+		},
+
+		{
+			Input: `var func return if else for while true false`,
+			ExpectedTokens: []Token{
+				NewToken(VAR_KEY, "var"),
+				NewToken(FUNC_KEY, "func"),
+				NewToken(RETURN_KEY, "return"),
+				NewToken(IF_KEY, "if"),
+				NewToken(ELSE_KEY, "else"),
+				NewToken(FOR_KEY, "for"),
+				NewToken(WHILE_KEY, "while"),
+				NewToken(TRUE_KEY, "true"),
+				NewToken(FALSE_KEY, "false"),
+			},
+		},
 	}
 
 	for _, test := range tests {

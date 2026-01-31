@@ -157,6 +157,12 @@ func (p *PrintingVisitor) VisitIfExpressionNode(node parser.IfExpressionNode) {
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitStringLiteral visits the string literal node
+func (p *PrintingVisitor) VisitStringLiteral(node parser.StringLiteral) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting String Literal Node [\"%s\"] (\"%s\" => \"%s\")\n", node.Literal(), node.Literal(), node.Value))
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

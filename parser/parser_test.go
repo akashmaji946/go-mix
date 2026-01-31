@@ -1534,3 +1534,55 @@ func TestParser_Parse_ElseIf_EvaluationAgainAgainAgain(t *testing.T) {
 	root.Accept(testingVisitor)
 
 }
+
+// parse string literal
+func TestParser_Parse_StringLiteral_Simple(t *testing.T) {
+	src := `"hello"`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StringLiteral{
+				Token: lexer.Token{Literal: "hello"},
+				Value: "hello",
+			},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `hello;`, root.Literal())
+}
+
+// parse string literal
+func TestParser_Parse_StringLiteral(t *testing.T) {
+	src := `"hello" "there" boy 123`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StringLiteral{
+				Token: lexer.Token{Literal: "hello"},
+				Value: "hello",
+			},
+			&StringLiteral{
+				Token: lexer.Token{Literal: "there"},
+				Value: "there",
+			},
+			&IdentifierExpressionNode{Name: "boy"},
+			&NumberLiteralExpressionNode{Value: 123},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 4, len(root.Statements))
+	assert.Equal(t, 123, root.Value)
+	assert.Equal(t, `hello;there;boy;123;`, root.Literal())
+}

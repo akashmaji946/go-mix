@@ -100,6 +100,7 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID)
 
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
+	par.registerUnaryFuncs(par.parseStringLiteral, lexer.STRING_LIT)
 
 	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.PLUS_OP, lexer.MINUS_OP, lexer.MUL_OP, lexer.DIV_OP)
 	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.BIT_AND_OP, lexer.BIT_OR_OP)
@@ -505,6 +506,14 @@ func (par *Parser) parseIfStatement() StatementNode {
 		}
 	}
 	return ifNode
+}
+
+// parse a string literal
+func (par *Parser) parseStringLiteral() ExpressionNode {
+	return &StringLiteral{
+		Token: par.CurrToken,
+		Value: par.CurrToken.Literal,
+	}
 }
 
 // evaluate the expression

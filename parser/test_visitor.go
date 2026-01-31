@@ -168,6 +168,16 @@ func (v *TestingVisitor) VisitIfExpressionNode(node IfExpressionNode) {
 	// (&node.ElseBlock).Accept(v)
 }
 
+// TestingVisitor.VisitStringLiteral visits the string literal node
+func (v *TestingVisitor) VisitStringLiteral(node StringLiteral) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*StringLiteral)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.Value, curr.(*StringLiteral).Value)
+	v.Ptr++
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

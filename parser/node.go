@@ -22,6 +22,7 @@ type NodeVisitor interface {
 	VisitBlockStatementNode(node BlockStatementNode)
 	VisitAssignmentExpressionNode(node AssignmentExpressionNode)
 	VisitIfExpressionNode(node IfExpressionNode)
+	VisitStringLiteral(StringLiteral)
 }
 
 // Node: base interface for all nodes of the AST
@@ -426,4 +427,25 @@ func NewIfStatement() *IfExpressionNode {
 		ConditionValue: 0,
 		IfToken:        lexer.Token{},
 	}
+}
+
+type StringLiteral struct {
+	Token lexer.Token
+	Value string
+}
+
+func (node *StringLiteral) Literal() string {
+	return node.Value
+}
+
+func (node *StringLiteral) Accept(visitor NodeVisitor) {
+	visitor.VisitStringLiteral(*node)
+}
+
+func (node *StringLiteral) Statement() {
+
+}
+
+func (node *StringLiteral) Expression() {
+
 }
