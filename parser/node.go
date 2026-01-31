@@ -1,6 +1,8 @@
 package parser
 
-import "github.com/akashmaji946/go-mix/lexer"
+import (
+	"github.com/akashmaji946/go-mix/lexer"
+)
 
 // NodeVisitor: visitor pattern
 // used to traverse the AST
@@ -19,6 +21,7 @@ type NodeVisitor interface {
 	VisitReturnStatementNode(node ReturnStatementNode)
 	VisitBlockStatementNode(node BlockStatementNode)
 	VisitAssignmentExpressionNode(node AssignmentExpressionNode)
+	VisitIfExpressionNode(node IfExpressionNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -371,4 +374,56 @@ func (node *AssignmentExpressionNode) Statement() {
 // AssignmentExpressionNode.Expression(): every expression node is a node
 func (node *AssignmentExpressionNode) Expression() {
 
+}
+
+// if expression node
+type IfExpressionNode struct {
+	IfToken        lexer.Token
+	Condition      ExpressionNode
+	ConditionValue int
+	ThenBlock      BlockStatementNode
+	ElseBlock      BlockStatementNode
+}
+
+// IfExpressionNode.Literal(): string represenation of the node
+func (node *IfExpressionNode) Literal() string {
+	res := node.IfToken.Literal + " " + node.Condition.Literal() + " " + node.ThenBlock.Literal()
+	if len(node.ElseBlock.Statements) > 0 {
+		if len(node.ElseBlock.Statements) == 1 {
+			if nestedIf, ok := node.ElseBlock.Statements[0].(*IfExpressionNode); ok {
+				return res + " else " + nestedIf.Literal()
+			}
+		}
+		return res + " else " + node.ElseBlock.Literal()
+	}
+	return res
+}
+
+// IfExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *IfExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitIfExpressionNode(*node)
+}
+
+// IfExpressionNode.Statement(): every expression is also a statement
+func (node *IfExpressionNode) Statement() {
+
+}
+
+// IfExpressionNode.Expression(): every expression node is a node
+func (node *IfExpressionNode) Expression() {
+
+}
+
+var EMPTY_BLOCK = &BlockStatementNode{
+	Statements: []Node{},
+}
+
+func NewIfStatement() *IfExpressionNode {
+	return &IfExpressionNode{
+		Condition:      &BinaryExpressionNode{},
+		ThenBlock:      *EMPTY_BLOCK,
+		ElseBlock:      *EMPTY_BLOCK,
+		ConditionValue: 0,
+		IfToken:        lexer.Token{},
+	}
 }

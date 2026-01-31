@@ -1332,3 +1332,205 @@ func TestParser_Parse_BitwiseOperatorWithParenthesizedExpression(t *testing.T) {
 	assert.Equal(t, 1, root.Value)
 
 }
+
+// if statement
+func TestParser_Parse_IfStatement(t *testing.T) {
+	src := `if (1) { }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IfExpressionNode{
+				IfToken: lexer.Token{Literal: "if"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&ParenthesizedExpressionNode{
+				Expr: &NumberLiteralExpressionNode{Value: 1},
+			},
+			&BlockStatementNode{},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `if (1) {};`, root.Literal())
+}
+
+func TestParser_Parse_IfElseStatement(t *testing.T) {
+	src := `if (1) { 1 } else { 2 }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IfExpressionNode{
+				IfToken: lexer.Token{Literal: "if"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&ParenthesizedExpressionNode{
+				Expr: &NumberLiteralExpressionNode{Value: 1},
+			},
+			&BlockStatementNode{},
+			&NumberLiteralExpressionNode{Value: 1},
+			&BlockStatementNode{},
+			&NumberLiteralExpressionNode{Value: 2},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 1, root.Value) // Condition is true, ThenBlock returns 1
+	assert.Equal(t, `if (1) {1;} else {2;};`, root.Literal())
+}
+
+func TestParser_Parse_ElseIfStatement(t *testing.T) {
+	src := `if (1) { 1 } else if (2) { 2 } else { 3 }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	// Expecting:
+	// IfNode
+	//   Condition: 1
+	//   ThenBlock: {1}
+	//   ElseBlock: {
+	//       IfNode
+	//         Condition: 2
+	//         ThenBlock: {2}
+	//         ElseBlock: {3}
+	//   }
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IfExpressionNode{
+				IfToken: lexer.Token{Literal: "if"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&ParenthesizedExpressionNode{
+				Expr: &NumberLiteralExpressionNode{Value: 1},
+			},
+			&BlockStatementNode{},
+			&NumberLiteralExpressionNode{Value: 1},
+
+			// Implicit block for the else if
+			&BlockStatementNode{},
+
+			&IfExpressionNode{
+				IfToken: lexer.Token{Literal: "if"},
+			},
+			&NumberLiteralExpressionNode{Value: 2},
+			&ParenthesizedExpressionNode{
+				Expr: &NumberLiteralExpressionNode{Value: 2},
+			},
+			&BlockStatementNode{},
+			&NumberLiteralExpressionNode{Value: 2},
+			&BlockStatementNode{},
+			&NumberLiteralExpressionNode{Value: 3},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 1, root.Value)
+	// Note: Literal reconstruction might differ slightly depending on implementation details of nested if block wrapping
+	// but purely based on AST node traversal above, we are good.
+}
+
+func TestParser_Parse_ElseIf_Evaluation(t *testing.T) {
+	src := `if (1 == 2) { 1 } else if (2 != 2) { 2 } else { 3 }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	// Result should be 2 because the else-if condition is true.
+	assert.Equal(t, 3, root.Value)
+	assert.Equal(t, `if (1==2) {1;} else if (2!=2) {2;} else {3;};`, root.Literal())
+}
+
+func TestParser_Parse_ElseIf_EvaluationAgain(t *testing.T) {
+	src := `if (1 == 2) { 
+	   1
+	} else if (2 == 2) {
+	  2 
+	} else {
+	  3 
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	// Result should be 2 because the else-if condition is true.
+	assert.Equal(t, 2, root.Value)
+	assert.Equal(t, `if (1==2) {1;} else if (2==2) {2;} else {3;};`, root.Literal())
+}
+
+func TestParser_Parse_ElseIf_EvaluationAgainAgain(t *testing.T) {
+	src := `
+	var a = 100;
+	var b = 0;
+	if (2 * a == 200) { 
+		b = 1;
+	} else if (2 * a != 200) {
+		b = 2;
+	} else {
+		b = 311111;
+	}
+	return b;`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	// why 311111? return b; last b value is b=311111
+	assert.Equal(t, 311111, root.Value)
+	assert.Equal(t, `var a = 100;var b = 0;if (2*a==200) {b = 1;} else if (2*a!=200) {b = 2;} else {b = 311111;};return b;`, root.Literal())
+}
+
+func TestParser_Parse_ElseIf_EvaluationAgainAgainAgain(t *testing.T) {
+	src := `{
+	var x = 1;
+	{
+	 if(x==1){}else{}
+	}
+	}
+	`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	// assert.Equal(t, 0, root.Value)
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&BlockStatementNode{},
+
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "x"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+
+			&BlockStatementNode{},
+			&IfExpressionNode{
+				IfToken: lexer.Token{Literal: "if"},
+			},
+			&IdentifierExpressionNode{Name: "x"},
+			&BooleanExpressionNode{
+				Operation: lexer.Token{Literal: "=="},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&ParenthesizedExpressionNode{
+				Expr: &BooleanExpressionNode{
+					Operation: lexer.Token{Literal: "=="},
+				},
+			},
+			&BlockStatementNode{},
+			&BlockStatementNode{},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+
+}

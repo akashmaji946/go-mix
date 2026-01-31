@@ -109,6 +109,8 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
 	par.registerBinaryFuncs(par.parseAssignmentExpression, lexer.ASSIGN_OP)
 
+	// par.registerBinaryFuncs(par.parseIfStatement, lexer.IF_KEY)
+
 	par.advance()
 	par.advance()
 }
@@ -197,6 +199,9 @@ func (par *Parser) parseStatement() StatementNode {
 	// {.....}
 	case lexer.LEFT_BRACE:
 		return par.parseBlockStatement()
+
+	case lexer.IF_KEY:
+		return par.parseIfStatement()
 
 	default:
 		return par.parseExpression()
@@ -425,12 +430,11 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 }
 
 // parse a block statement
-// parse a block statement
-func (par *Parser) parseBlockStatement() StatementNode {
+func (par *Parser) parseBlockStatement() *BlockStatementNode {
 	block := &BlockStatementNode{}
 	block.Statements = make([]Node, 0)
 	par.advance()
-	for par.CurrToken.Type != lexer.RIGHT_BRACE {
+	for par.CurrToken.Type != lexer.RIGHT_BRACE && par.CurrToken.Type != lexer.EOF_TYPE {
 		stmt := par.parseStatement()
 		if stmt != nil {
 			block.Statements = append(block.Statements, stmt)
@@ -473,6 +477,36 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 	}
 }
 
+// parse an if statement
+func (par *Parser) parseIfStatement() StatementNode {
+	ifNode := NewIfStatement()
+	ifNode.IfToken = par.CurrToken
+	par.expectAdvance(lexer.LEFT_PAREN)
+	ifNode.Condition = par.parseInternal(MINIMUM_PRIORITY)
+	par.expectAdvance(lexer.LEFT_BRACE)
+	ifNode.ThenBlock = *par.parseBlockStatement()
+	if par.NextToken.Type == lexer.ELSE_KEY {
+		par.advance() // consume closing brace of if block
+		par.advance() // consume else
+		if par.CurrToken.Type == lexer.IF_KEY {
+			// else if case
+			// treat it as a nested if statement
+			// wrap it in a block statement
+			elseBlock := &BlockStatementNode{}
+			elseBlock.Statements = make([]Node, 0)
+			nestedIf := par.parseIfStatement()
+			elseBlock.Statements = append(elseBlock.Statements, nestedIf)
+			if exprNode, ok := nestedIf.(ExpressionNode); ok {
+				elseBlock.Value = eval(par, exprNode)
+			}
+			ifNode.ElseBlock = *elseBlock
+		} else {
+			ifNode.ElseBlock = *par.parseBlockStatement()
+		}
+	}
+	return ifNode
+}
+
 // evaluate the expression
 func eval(par *Parser, node ExpressionNode) int {
 	switch n := node.(type) {
@@ -502,6 +536,13 @@ func eval(par *Parser, node ExpressionNode) int {
 		return n.Value
 	case *AssignmentExpressionNode:
 		return n.Value
+	case *IfExpressionNode:
+		cond := eval(par, n.Condition)
+		n.ConditionValue = cond
+		if cond != 0 {
+			return eval(par, &n.ThenBlock)
+		}
+		return eval(par, &n.ElseBlock)
 	}
 	return 0
 }

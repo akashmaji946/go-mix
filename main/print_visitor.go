@@ -142,6 +142,21 @@ func (p *PrintingVisitor) VisitAssignmentExpressionNode(node parser.AssignmentEx
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitIfExpressionNode visits the if expression node
+func (p *PrintingVisitor) VisitIfExpressionNode(node parser.IfExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting If Expression Node [%s] (%s => %d)\n", node.IfToken.Literal, node.Condition.Literal(), node.ConditionValue))
+	p.Indent += INDENT_SIZE
+	node.Condition.Accept(p)
+	if &node.ThenBlock != parser.EMPTY_BLOCK {
+		node.ThenBlock.Accept(p)
+	}
+	if &node.ElseBlock != parser.EMPTY_BLOCK {
+		node.ElseBlock.Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

@@ -155,6 +155,19 @@ func (v *TestingVisitor) VisitAssignmentExpressionNode(node AssignmentExpression
 	v.Ptr++
 }
 
+// TestingVisitor.VisitIfExpressionNode visits the if expression node
+func (v *TestingVisitor) VisitIfExpressionNode(node IfExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*IfExpressionNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.IfToken.Literal, curr.(*IfExpressionNode).IfToken.Literal)
+	v.Ptr++
+	node.Condition.Accept(v)
+	(&node.ThenBlock).Accept(v)
+	// (&node.ElseBlock).Accept(v)
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

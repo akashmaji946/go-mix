@@ -287,4 +287,89 @@ func main() {
 	root33.Accept(visitor33)
 	fmt.Println(visitor33)
 
+	// if expression
+	src34 := `if (1 + 1 == 2) { 
+	 2 + 3;
+	}`
+	root34 := parser.NewParser(src34).Parse()
+	visitor34 := &PrintingVisitor{}
+	root34.Accept(visitor34)
+	fmt.Println(visitor34)
+
+	// IF ELSE
+	src35 := `if (1 + 1 == 2) { 
+	 2 + 3;
+	} else {
+	 2 + 4;
+	}`
+	root35 := parser.NewParser(src35).Parse()
+	visitor35 := &PrintingVisitor{}
+	root35.Accept(visitor35)
+	fmt.Println(visitor35)
+
+	// IF ELSE IF ELSE
+	src36 := `if (1 + 1 == 21) { 
+	 2 + 3;
+	} else if (2 + 2 == 4) {
+	 2 + 4;
+	} else {	
+	 2 + 6;
+	}`
+	root36 := parser.NewParser(src36).Parse()
+	visitor36 := &PrintingVisitor{}
+	root36.Accept(visitor36)
+	fmt.Println(visitor36)
+
+	// IF ELSE IF ELSE
+	src37 := `if (1 + 1 == 3) { 
+	 2 + 3;
+	} else if (2 + 2 == 5) {
+	 2 + 4;
+	} else if (3 + 3 == 7){	
+	 2 + 6;
+	}`
+	root37 := parser.NewParser(src37).Parse()
+	visitor37 := &PrintingVisitor{}
+	root37.Accept(visitor37)
+	fmt.Println(visitor37)
+
+	// IF ELSE IF ELSE
+	src38 := `
+	var a = 100;
+	var b = 0;
+	if (2 * a == 200) {
+		var c = 1; 
+		b = 1;
+	} else if (2 * a != 200) {
+	 	var d = (2 * a + 2 + 2 - 2 + 3 * 5 / 2 + 1);
+		b = 2;
+	} else {
+		b = 311111;
+	}
+	return b;`
+	root38 := parser.NewParser(src38).Parse()
+	visitor38 := &PrintingVisitor{}
+	root38.Accept(visitor38)
+	fmt.Println(visitor38)
+
+	// if else if else with empty blocks
+	src39 := `{
+	var x = 1;
+	if(x==9){}else{}
+	if(x==10){}else{}
+	if(x==11){}else{}
+	if(x==12){}else{}
+	}`
+	root39 := parser.NewParser(src39).Parse()
+	visitor39 := &PrintingVisitor{}
+	root39.Accept(visitor39)
+	fmt.Println(visitor39)
+
+	// IF ELSE IF ELSE with empty blocks and nested blocks
+	src40 := `{{{var x=1;{{{{if(x==9){}else{x+1;}}}}}}}}`
+	root40 := parser.NewParser(src40).Parse()
+	visitor40 := &PrintingVisitor{}
+	root40.Accept(visitor40)
+	fmt.Println(visitor40)
+
 }
