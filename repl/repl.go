@@ -4,20 +4,31 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/akashmaji946/go-mix/eval"
 	"github.com/akashmaji946/go-mix/parser"
 )
 
 type Repl struct {
+	Banner   string
+	Version  string
+	Author   string
+	Line     string
+	Lincence string
 }
 
-func NewRepl() *Repl {
-	return &Repl{}
+func NewRepl(banner string, version string, author string, line string, lincence string) *Repl {
+	return &Repl{Banner: banner, Version: version, Author: author, Line: line, Lincence: lincence}
 }
 
 func (r *Repl) Start(reader io.Reader, writer io.Writer) {
-	fmt.Println("Welcome to go-mix!")
+	fmt.Println(r.Line)
+	fmt.Println(r.Banner)
+	fmt.Println(r.Line)
+	fmt.Println("Version: " + r.Version + " | Author: " + r.Author + " | Lincense: " + r.Lincence)
+	fmt.Println(r.Line)
+	fmt.Println("Welcome to Go-Mix!")
 	fmt.Println("Type your code and press enter")
 	fmt.Println("Type '.exit' to quit")
 	fmt.Println("")
@@ -33,6 +44,9 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 		}
 
 		line := scanner.Text()
+		if strings.Trim(line, " \n\t\r") == "" {
+			continue
+		}
 		if line == ".exit" {
 			writer.Write([]byte("Good Bye!\n"))
 			break
