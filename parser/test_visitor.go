@@ -178,6 +178,21 @@ func (v *TestingVisitor) VisitStringLiteral(node StringLiteral) {
 	v.Ptr++
 }
 
+// TestingVisitor.VisitFunctionStatementNode visits the function statement node
+func (v *TestingVisitor) VisitFunctionStatementNode(node FunctionStatementNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*FunctionStatementNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.FuncName.Literal(), curr.(*FunctionStatementNode).FuncName.Literal())
+	v.Ptr++
+
+	for _, param := range node.FuncParams {
+		param.Accept(v)
+	}
+	node.FuncBody.Accept(v)
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

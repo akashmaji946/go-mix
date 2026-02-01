@@ -1586,3 +1586,129 @@ func TestParser_Parse_StringLiteral(t *testing.T) {
 	assert.Equal(t, 123, root.Value)
 	assert.Equal(t, `hello;there;boy;123;`, root.Literal())
 }
+
+// function statements
+func TestParser_Parse_FunctionStatement(t *testing.T) {
+	src := `func foo() {  }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&FunctionStatementNode{
+				FuncName: IdentifierExpressionNode{Name: "foo"},
+			},
+			&BlockStatementNode{},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `func foo () {};`, root.Literal())
+}
+
+func TestParser_Parse_FunctionStatementWithReturn(t *testing.T) {
+	src := `func foo(a, b) { return a + b; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&FunctionStatementNode{
+				FuncName: IdentifierExpressionNode{Name: "foo"},
+			},
+			&IdentifierExpressionNode{Name: "a"},
+			&IdentifierExpressionNode{Name: "b"},
+			&BlockStatementNode{},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr: &BinaryExpressionNode{
+					Left: &IdentifierExpressionNode{
+						Name: "a",
+					},
+					Operation: lexer.Token{Literal: "+"},
+					Right: &IdentifierExpressionNode{
+						Name: "b",
+					},
+				},
+			},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `func foo (a,b) {return a+b;};`, root.Literal())
+}
+
+// complex function definition
+func TestParser_Parse_FunctionStatementComplex(t *testing.T) {
+	src := `func foo(a, b) {
+		if (a == b) {
+			return a + b;
+		} else {
+			return a - b;
+		}
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&FunctionStatementNode{
+				FuncName: IdentifierExpressionNode{Name: "foo"},
+			},
+			&IdentifierExpressionNode{Name: "a"},
+			&IdentifierExpressionNode{Name: "b"},
+			&BlockStatementNode{},
+			&IfExpressionNode{
+				IfToken: lexer.Token{Literal: "if"},
+			},
+			&IdentifierExpressionNode{Name: "a"},
+			&BooleanExpressionNode{
+				Operation: lexer.Token{Literal: "=="},
+			},
+			&IdentifierExpressionNode{Name: "b"},
+			&ParenthesizedExpressionNode{},
+
+			&BlockStatementNode{},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr: &BinaryExpressionNode{
+					Left: &IdentifierExpressionNode{
+						Name: "a",
+					},
+					Operation: lexer.Token{Literal: "+"},
+					Right: &IdentifierExpressionNode{
+						Name: "b",
+					},
+				},
+			},
+			&BlockStatementNode{},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Literal: "return"},
+				Expr: &BinaryExpressionNode{
+					Left: &IdentifierExpressionNode{
+						Name: "a",
+					},
+					Operation: lexer.Token{Literal: "-"},
+					Right: &IdentifierExpressionNode{
+						Name: "b",
+					},
+				},
+			},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `func foo (a,b) {if (a==b) {return a+b;} else {return a-b;};};`, root.Literal())
+}

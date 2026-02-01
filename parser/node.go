@@ -23,6 +23,7 @@ type NodeVisitor interface {
 	VisitAssignmentExpressionNode(node AssignmentExpressionNode)
 	VisitIfExpressionNode(node IfExpressionNode)
 	VisitStringLiteral(StringLiteral)
+	VisitFunctionStatementNode(node FunctionStatementNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -448,4 +449,49 @@ func (node *StringLiteral) Statement() {
 
 func (node *StringLiteral) Expression() {
 
+}
+
+type FunctionStatementNode struct {
+	FuncToken  lexer.Token
+	FuncName   IdentifierExpressionNode
+	FuncParams []*IdentifierExpressionNode
+	FuncBody   BlockStatementNode
+	Value      int
+}
+
+// FunctionStatementNode.Literal(): string represenation of the node
+func (node *FunctionStatementNode) Literal() string {
+
+	funcParams := ""
+	for _, param := range node.FuncParams {
+		funcParams += param.Literal() + ","
+	}
+	if len(funcParams) > 0 {
+		funcParams = funcParams[:len(funcParams)-1]
+	}
+	return node.FuncToken.Literal + " " + node.FuncName.Literal() + " (" + funcParams + ") " + node.FuncBody.Literal()
+}
+
+// FunctionStatementNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *FunctionStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitFunctionStatementNode(*node)
+}
+
+// FunctionStatementNode.Statement(): every expression is also a statement
+func (node *FunctionStatementNode) Statement() {
+
+}
+
+// FunctionStatementNode.Expression(): every expression node is a node
+func (node *FunctionStatementNode) Expression() {
+
+}
+
+func NewFunctionStatementNode() *FunctionStatementNode {
+	return &FunctionStatementNode{
+		FuncToken:  lexer.Token{Type: lexer.FUNC_KEY, Literal: "func"},
+		FuncName:   IdentifierExpressionNode{Name: "foo", Value: 0},
+		FuncParams: make([]*IdentifierExpressionNode, 0),
+		FuncBody:   *EMPTY_BLOCK,
+	}
 }

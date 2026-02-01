@@ -110,8 +110,6 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
 	par.registerBinaryFuncs(par.parseAssignmentExpression, lexer.ASSIGN_OP)
 
-	// par.registerBinaryFuncs(par.parseIfStatement, lexer.IF_KEY)
-
 	par.advance()
 	par.advance()
 }
@@ -173,6 +171,8 @@ func (par *Parser) Parse() *RootNode {
 			root.Value = returnNode.Value
 		} else if blockNode, ok := lastStmt.(*BlockStatementNode); ok {
 			root.Value = blockNode.Value
+		} else if funcNode, ok := lastStmt.(*FunctionStatementNode); ok {
+			root.Value = funcNode.Value
 		}
 	}
 
@@ -203,6 +203,9 @@ func (par *Parser) parseStatement() StatementNode {
 
 	case lexer.IF_KEY:
 		return par.parseIfStatement()
+
+	case lexer.FUNC_KEY:
+		return par.parseFunctionStatement()
 
 	default:
 		return par.parseExpression()
@@ -455,6 +458,8 @@ func (par *Parser) parseBlockStatement() *BlockStatementNode {
 			block.Value = returnNode.Value
 		} else if blockNode, ok := lastStmt.(*BlockStatementNode); ok {
 			block.Value = blockNode.Value
+		} else if funcNode, ok := lastStmt.(*FunctionStatementNode); ok {
+			block.Value = funcNode.Value
 		}
 	}
 
@@ -508,6 +513,44 @@ func (par *Parser) parseIfStatement() StatementNode {
 	return ifNode
 }
 
+// parse a function statement
+func (par *Parser) parseFunctionStatement() StatementNode {
+	funcNode := NewFunctionStatementNode()
+	funcNode.FuncToken = par.CurrToken
+	par.expectAdvance(lexer.IDENTIFIER_ID)
+	funcNode.FuncName = IdentifierExpressionNode{
+		Name:  par.CurrToken.Literal,
+		Value: 0,
+	}
+	par.expectAdvance(lexer.LEFT_PAREN)
+
+	// Handle empty parameters case
+	if par.NextToken.Type != lexer.RIGHT_PAREN {
+		// First parameter
+		par.expectAdvance(lexer.IDENTIFIER_ID)
+		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+			Name:  par.CurrToken.Literal,
+			Value: 0,
+		})
+
+		// Subsequent parameters
+		for par.NextToken.Type == lexer.COMMA_DELIM {
+			par.advance() // Consume comma
+			par.expectAdvance(lexer.IDENTIFIER_ID)
+			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+				Name:  par.CurrToken.Literal,
+				Value: 0,
+			})
+		}
+	}
+	par.expectAdvance(lexer.RIGHT_PAREN)
+
+	par.expectAdvance(lexer.LEFT_BRACE)
+	funcNode.FuncBody = *par.parseBlockStatement()
+	funcNode.Value = funcNode.FuncBody.Value
+	return funcNode
+}
+
 // parse a string literal
 func (par *Parser) parseStringLiteral() ExpressionNode {
 	return &StringLiteral{
@@ -552,6 +595,10 @@ func eval(par *Parser, node ExpressionNode) int {
 			return eval(par, &n.ThenBlock)
 		}
 		return eval(par, &n.ElseBlock)
+	case *StringLiteral:
+		return 0
+	case *FunctionStatementNode:
+		return n.Value
 	}
 	return 0
 }

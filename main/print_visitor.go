@@ -163,6 +163,19 @@ func (p *PrintingVisitor) VisitStringLiteral(node parser.StringLiteral) {
 	p.Buf.WriteString(fmt.Sprintf("Visiting String Literal Node [\"%s\"] (\"%s\" => \"%s\")\n", node.Literal(), node.Literal(), node.Value))
 }
 
+// VisitFunctionStatementNode visits the function statement node
+func (p *PrintingVisitor) VisitFunctionStatementNode(node parser.FunctionStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Function Statement Node [%s] (%s => %d)\n", node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	node.FuncName.Accept(p)
+	for _, param := range node.FuncParams {
+		param.Accept(p)
+	}
+	node.FuncBody.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

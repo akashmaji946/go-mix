@@ -379,4 +379,25 @@ func main() {
 	root41.Accept(visitor41)
 	fmt.Println(visitor41)
 
+	// function statement
+	src42 := `func foo() { var a = 1; var b = 2; return a + b; }`
+	root42 := parser.NewParser(src42).Parse()
+	visitor42 := &PrintingVisitor{}
+	root42.Accept(visitor42)
+	fmt.Println(visitor42)
+
+	// function statement
+	src43 := `func foo(a, b, c, d) { var a = 1; var b = 2; return a * b; }`
+	root43 := parser.NewParser(src43).Parse()
+	visitor43 := &PrintingVisitor{}
+	root43.Accept(visitor43)
+	fmt.Println(visitor43)
+
+	// function statement
+	src44 := `func foo(a) { if(a==1){a=a+1;}else if(a==2){a=a+2;}else{a=a+3;} return a;}`
+	root44 := parser.NewParser(src44).Parse()
+	visitor44 := &PrintingVisitor{}
+	root44.Accept(visitor44)
+	fmt.Println(visitor44)
+
 }
