@@ -2,6 +2,7 @@ package eval
 
 import (
 	"github.com/akashmaji946/go-mix/lexer"
+	"github.com/akashmaji946/go-mix/objects"
 	"github.com/akashmaji946/go-mix/parser"
 )
 
@@ -13,20 +14,20 @@ func NewEvaluator() *Evaluator {
 	return &Evaluator{}
 }
 
-func (e *Evaluator) Eval(n parser.Node) GoMixObject {
+func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 	switch n := n.(type) {
 	case *parser.RootNode:
 		return e.evalStatements(n.Statements)
 	case *parser.BooleanLiteralExpressionNode:
-		return &Boolean{Value: n.Value}
+		return n.Value
 	case *parser.IntegerLiteralExpressionNode:
-		return &Integer{Value: int64(n.Value)}
+		return n.Value
 	case *parser.StringLiteralExpressionNode:
-		return &String{Value: n.Value}
+		return n.Value
 	case *parser.FloatLiteralExpressionNode:
-		return &Float{Value: n.Value}
+		return n.Value
 	case *parser.NilLiteralExpressionNode:
-		return &Nil{}
+		return &objects.Nil{}
 	case *parser.BinaryExpressionNode:
 		return e.evalBinaryExpression(n)
 	case *parser.UnaryExpressionNode:
@@ -40,22 +41,22 @@ func (e *Evaluator) Eval(n parser.Node) GoMixObject {
 	}
 }
 
-func (e *Evaluator) evalStatements(stmts []parser.StatementNode) GoMixObject {
-	var result GoMixObject
+func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixObject {
+	var result objects.GoMixObject
 	for _, stmt := range stmts {
 		result = e.Eval(stmt)
 	}
 	return result
 }
 
-func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) GoMixObject {
+func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects.GoMixObject {
 	left := e.Eval(n.Left)
 	right := e.Eval(n.Right)
 
-	if left.GetType() != IntegerType && left.GetType() != FloatType {
+	if left.GetType() != objects.IntegerType && left.GetType() != objects.FloatType {
 		panic("not implemented")
 	}
-	if right.GetType() != IntegerType && right.GetType() != FloatType {
+	if right.GetType() != objects.IntegerType && right.GetType() != objects.FloatType {
 		panic("not implemented")
 	}
 
@@ -64,93 +65,93 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) GoMixOb
 
 	switch n.Operation.Type {
 	case lexer.PLUS_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value + right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value + right.(*objects.Integer).Value}
 		}
-		return &Float{Value: toFloat64(left) + toFloat64(right)}
+		return &objects.Float{Value: toFloat64(left) + toFloat64(right)}
 	case lexer.MINUS_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value - right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value - right.(*objects.Integer).Value}
 		}
-		return &Float{Value: toFloat64(left) - toFloat64(right)}
+		return &objects.Float{Value: toFloat64(left) - toFloat64(right)}
 	case lexer.MUL_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value * right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value * right.(*objects.Integer).Value}
 		}
-		return &Float{Value: toFloat64(left) * toFloat64(right)}
+		return &objects.Float{Value: toFloat64(left) * toFloat64(right)}
 	case lexer.DIV_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value / right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value / right.(*objects.Integer).Value}
 		}
-		return &Float{Value: toFloat64(left) / toFloat64(right)}
+		return &objects.Float{Value: toFloat64(left) / toFloat64(right)}
 	case lexer.MOD_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value % right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value % right.(*objects.Integer).Value}
 		}
 		panic("not implemented")
 	case lexer.BIT_AND_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value & right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value & right.(*objects.Integer).Value}
 		}
 		panic("not implemented")
 	case lexer.BIT_OR_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value | right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value | right.(*objects.Integer).Value}
 		}
 		panic("not implemented")
 	case lexer.BIT_XOR_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value ^ right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value ^ right.(*objects.Integer).Value}
 		}
 		panic("not implemented")
 
 	case lexer.BIT_LEFT_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value << right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value << right.(*objects.Integer).Value}
 		}
 		panic("not implemented")
 	case lexer.BIT_RIGHT_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Integer{Value: left.(*Integer).Value >> right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Integer{Value: left.(*objects.Integer).Value >> right.(*objects.Integer).Value}
 		}
 		panic("not implemented")
 	}
-	return &Nil{}
+	return &objects.Nil{}
 }
 
-func toFloat64(obj GoMixObject) float64 {
-	if obj.GetType() == IntegerType {
-		return float64(obj.(*Integer).Value)
+func toFloat64(obj objects.GoMixObject) float64 {
+	if obj.GetType() == objects.IntegerType {
+		return float64(obj.(*objects.Integer).Value)
 	}
-	return obj.(*Float).Value
+	return obj.(*objects.Float).Value
 }
 
-func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) GoMixObject {
+func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.GoMixObject {
 	right := e.Eval(n.Right)
 
 	switch n.Operation.Type {
 	case lexer.NOT_OP:
-		if right.GetType() != BooleanType {
+		if right.GetType() != objects.BooleanType {
 			panic("not implemented")
 		}
-		return &Boolean{Value: !right.(*Boolean).Value}
+		return &objects.Boolean{Value: !right.(*objects.Boolean).Value}
 	case lexer.BIT_NOT_OP:
-		if right.GetType() == IntegerType {
-			return &Integer{Value: ^right.(*Integer).Value}
+		if right.GetType() == objects.IntegerType {
+			return &objects.Integer{Value: ^right.(*objects.Integer).Value}
 		}
 		panic("not implemented")
 	case lexer.MINUS_OP:
-		if right.GetType() == IntegerType {
-			return &Integer{Value: -right.(*Integer).Value}
-		} else if right.GetType() == FloatType {
-			return &Float{Value: -right.(*Float).Value}
+		if right.GetType() == objects.IntegerType {
+			return &objects.Integer{Value: -right.(*objects.Integer).Value}
+		} else if right.GetType() == objects.FloatType {
+			return &objects.Float{Value: -right.(*objects.Float).Value}
 		}
 		panic("not implemented")
 	}
-	return &Nil{}
+	return &objects.Nil{}
 }
 
-func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) GoMixObject {
+func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objects.GoMixObject {
 	left := e.Eval(n.Left)
 	right := e.Eval(n.Right)
 
@@ -159,33 +160,33 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) GoMix
 
 	switch n.Operation.Type {
 	case lexer.EQ_OP:
-		return &Boolean{Value: left.ToString() == right.ToString()}
+		return &objects.Boolean{Value: left.ToString() == right.ToString()}
 	case lexer.NE_OP:
-		return &Boolean{Value: left.ToString() != right.ToString()}
+		return &objects.Boolean{Value: left.ToString() != right.ToString()}
 	case lexer.GT_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Boolean{Value: left.(*Integer).Value > right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Boolean{Value: left.(*objects.Integer).Value > right.(*objects.Integer).Value}
 		}
-		return &Boolean{Value: toFloat64(left) > toFloat64(right)}
+		return &objects.Boolean{Value: toFloat64(left) > toFloat64(right)}
 	case lexer.LT_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Boolean{Value: left.(*Integer).Value < right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Boolean{Value: left.(*objects.Integer).Value < right.(*objects.Integer).Value}
 		}
-		return &Boolean{Value: toFloat64(left) < toFloat64(right)}
+		return &objects.Boolean{Value: toFloat64(left) < toFloat64(right)}
 	case lexer.GE_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Boolean{Value: left.(*Integer).Value >= right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Boolean{Value: left.(*objects.Integer).Value >= right.(*objects.Integer).Value}
 		}
-		return &Boolean{Value: toFloat64(left) >= toFloat64(right)}
+		return &objects.Boolean{Value: toFloat64(left) >= toFloat64(right)}
 	case lexer.LE_OP:
-		if leftType == IntegerType && rightType == IntegerType {
-			return &Boolean{Value: left.(*Integer).Value <= right.(*Integer).Value}
+		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+			return &objects.Boolean{Value: left.(*objects.Integer).Value <= right.(*objects.Integer).Value}
 		}
-		return &Boolean{Value: toFloat64(left) <= toFloat64(right)}
+		return &objects.Boolean{Value: toFloat64(left) <= toFloat64(right)}
 	case lexer.AND_OP:
-		return &Boolean{Value: left.(*Boolean).Value && right.(*Boolean).Value}
+		return &objects.Boolean{Value: left.(*objects.Boolean).Value && right.(*objects.Boolean).Value}
 	case lexer.OR_OP:
-		return &Boolean{Value: left.(*Boolean).Value || right.(*Boolean).Value}
+		return &objects.Boolean{Value: left.(*objects.Boolean).Value || right.(*objects.Boolean).Value}
 	}
-	return &Nil{}
+	return &objects.Nil{}
 }

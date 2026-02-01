@@ -1,4 +1,4 @@
-package eval
+package objects
 
 import "fmt"
 
@@ -10,6 +10,7 @@ const (
 	StringType  GoMixType = "string"
 	BooleanType GoMixType = "bool"
 	NilType     GoMixType = "nil"
+	ErrorType   GoMixType = "error"
 )
 
 type GoMixObject interface {
@@ -82,4 +83,16 @@ func (n *Nil) GetType() GoMixType {
 
 func (n *Nil) ToString() string {
 	return "nil"
+}
+
+type Error struct {
+	Message string
+}
+
+func (e *Error) GetType() GoMixType {
+	return ErrorType
+}
+
+func (e *Error) ToString() string {
+	return fmt.Sprintf("[ERROR]: %s", e.Message)
 }

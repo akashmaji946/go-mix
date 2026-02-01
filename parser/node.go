@@ -2,6 +2,7 @@ package parser
 
 import (
 	"github.com/akashmaji946/go-mix/lexer"
+	"github.com/akashmaji946/go-mix/objects"
 )
 
 // NodeVisitor: visitor pattern
@@ -63,8 +64,8 @@ type ExpressionNode interface {
 // Statements: list of statements in the program
 // Value: value of the program (for expressions, or value of final expression below root)
 type RootNode struct {
-	Statements []StatementNode // every line of code is a statement
-	Value      int64           // (e.g. 2 + 3 * 4 + 2 => 16)
+	Statements []StatementNode     // every line of code is a statement
+	Value      objects.GoMixObject // (e.g. 2 + 3 * 4 + 2 => 16)
 }
 
 // RootNode.Literal(): string represenation of the root node's statement/expression
@@ -86,7 +87,7 @@ func (root *RootNode) Accept(visitor NodeVisitor) {
 // IntegerLiteralExpressionNode: represents a number literal
 type IntegerLiteralExpressionNode struct {
 	Token lexer.Token
-	Value int64
+	Value objects.GoMixObject
 }
 
 // NumberLiteralExpressionNode.Literal(): string represenation of the node
@@ -109,10 +110,36 @@ func (node *IntegerLiteralExpressionNode) Expression() {
 
 }
 
+// FloatLiteralExpressionNode: represents a float literal
+type FloatLiteralExpressionNode struct {
+	Token lexer.Token
+	Value objects.GoMixObject
+}
+
+// FloatLiteralExpressionNode.Literal(): string represenation of the node
+func (node *FloatLiteralExpressionNode) Literal() string {
+	return node.Token.Literal
+}
+
+// FloatLiteralExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)
+func (node *FloatLiteralExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitFloatLiteralExpressionNode(*node)
+}
+
+// FloatLiteralExpressionNode.Statement(): every expression is also a statement
+func (node *FloatLiteralExpressionNode) Statement() {
+
+}
+
+// FloatLiteralExpressionNode.Expression(): every expression node is a node
+func (node *FloatLiteralExpressionNode) Expression() {
+
+}
+
 // BooleanLiteralExpressionNode: represents a boolean literal
 type BooleanLiteralExpressionNode struct {
 	Token lexer.Token
-	Value bool
+	Value objects.GoMixObject
 }
 
 // BooleanLiteralExpressionNode.Literal(): string represenation of the node
@@ -140,7 +167,7 @@ type BinaryExpressionNode struct {
 	Operation lexer.Token
 	Left      ExpressionNode
 	Right     ExpressionNode
-	Value     int64
+	Value     objects.GoMixObject
 }
 
 // BinaryExpressionNode.Literal(): string represenation of the node
@@ -167,7 +194,7 @@ func (node *BinaryExpressionNode) Expression() {
 type UnaryExpressionNode struct {
 	Operation lexer.Token
 	Right     ExpressionNode
-	Value     int64
+	Value     objects.GoMixObject
 }
 
 // UnaryExpressionNode.Literal(): string represenation of the node
@@ -195,13 +222,13 @@ type BooleanExpressionNode struct {
 	Operation lexer.Token
 	Left      ExpressionNode
 	Right     ExpressionNode
-	Value     bool
+	Value     objects.GoMixObject
 }
 
 // ParenthesizedExpressionNode: represents an expression in parentheses
 type ParenthesizedExpressionNode struct {
 	Expr  ExpressionNode
-	Value int64
+	Value objects.GoMixObject
 }
 
 // ParenthesizedExpressionNode.Literal(): string represenation of the node
@@ -229,7 +256,7 @@ type DeclarativeStatementNode struct {
 	VarToken   lexer.Token
 	Identifier lexer.Token
 	Expr       ExpressionNode
-	Value      int64
+	Value      objects.GoMixObject
 }
 
 // DeclarativeStatementNode.Literal(): string represenation of the node
@@ -255,7 +282,7 @@ func (node *DeclarativeStatementNode) Statement() {
 // IdentifierExpressionNode: represents an identifier expression
 type IdentifierExpressionNode struct {
 	Name  string
-	Value int64
+	Value objects.GoMixObject
 }
 
 // IdentifierExpressionNode.Literal(): string represenation of the node
@@ -282,7 +309,7 @@ func (node *IdentifierExpressionNode) Expression() {
 type ReturnStatementNode struct {
 	ReturnToken lexer.Token
 	Expr        ExpressionNode
-	Value       int64
+	Value       objects.GoMixObject
 }
 
 // ReturnStatementNode.Literal(): string represenation of the node
@@ -308,7 +335,7 @@ func (node *ReturnStatementNode) Expression() {
 // BlockStatementNode: represents a block of statements
 type BlockStatementNode struct {
 	Statements []Node
-	Value      int64
+	Value      objects.GoMixObject
 }
 
 // BlockStatementNode.Literal(): string represenation of the node
@@ -362,7 +389,7 @@ type AssignmentExpressionNode struct {
 	Operation lexer.Token
 	Left      string
 	Right     ExpressionNode
-	Value     int64
+	Value     objects.GoMixObject
 }
 
 // AssignmentExpressionNode.Literal(): string represenation of the node
@@ -389,7 +416,7 @@ func (node *AssignmentExpressionNode) Expression() {
 type IfExpressionNode struct {
 	IfToken        lexer.Token
 	Condition      ExpressionNode
-	ConditionValue int64
+	ConditionValue objects.GoMixObject
 	ThenBlock      BlockStatementNode
 	ElseBlock      BlockStatementNode
 }
@@ -434,7 +461,7 @@ func NewIfStatement() *IfExpressionNode {
 		Condition:      &BinaryExpressionNode{},
 		ThenBlock:      *EMPTY_BLOCK,
 		ElseBlock:      *EMPTY_BLOCK,
-		ConditionValue: 0,
+		ConditionValue: &objects.Nil{},
 		IfToken:        lexer.Token{},
 	}
 }
@@ -442,12 +469,12 @@ func NewIfStatement() *IfExpressionNode {
 // string literal node
 type StringLiteralExpressionNode struct {
 	Token lexer.Token
-	Value string
+	Value objects.GoMixObject
 }
 
 // StringLiteral.Literal(): string represenation of the node
 func (node *StringLiteralExpressionNode) Literal() string {
-	return node.Value
+	return node.Token.Literal
 }
 
 // StringLiteral.Accept(): accepts a visitor (eg PrintVisitor)
@@ -465,36 +492,10 @@ func (node *StringLiteralExpressionNode) Expression() {
 
 }
 
-// float literal node
-type FloatLiteralExpressionNode struct {
-	Token lexer.Token
-	Value float64
-}
-
-// FloatLiteral.Literal(): string represenation of the node
-func (node *FloatLiteralExpressionNode) Literal() string {
-	return node.Token.Literal
-}
-
-// FloatLiteral.Accept(): accepts a visitor (eg PrintVisitor)
-func (node *FloatLiteralExpressionNode) Accept(visitor NodeVisitor) {
-	visitor.VisitFloatLiteralExpressionNode(*node)
-}
-
-// FloatLiteral.Statement(): every expression is also a statement
-func (node *FloatLiteralExpressionNode) Statement() {
-
-}
-
-// FloatLiteral.Expression(): every expression node is a node
-func (node *FloatLiteralExpressionNode) Expression() {
-
-}
-
 // null literal node
 type NilLiteralExpressionNode struct {
 	Token lexer.Token
-	Value interface{}
+	Value objects.GoMixObject
 }
 
 // NullLiteral.Literal(): string represenation of the node
@@ -522,7 +523,7 @@ type FunctionStatementNode struct {
 	FuncName   IdentifierExpressionNode
 	FuncParams []*IdentifierExpressionNode
 	FuncBody   BlockStatementNode
-	Value      int64
+	Value      objects.GoMixObject
 }
 
 // FunctionStatementNode.Literal(): string represenation of the node
@@ -556,7 +557,7 @@ func (node *FunctionStatementNode) Expression() {
 func NewFunctionStatementNode() *FunctionStatementNode {
 	return &FunctionStatementNode{
 		FuncToken:  lexer.Token{Type: lexer.FUNC_KEY, Literal: "func"},
-		FuncName:   IdentifierExpressionNode{Name: "foo", Value: 0},
+		FuncName:   IdentifierExpressionNode{Name: "foo", Value: &objects.Nil{}},
 		FuncParams: make([]*IdentifierExpressionNode, 0),
 		FuncBody:   *EMPTY_BLOCK,
 	}
@@ -565,7 +566,7 @@ func NewFunctionStatementNode() *FunctionStatementNode {
 type CallExpressionNode struct {
 	FunctionIdentifier IdentifierExpressionNode
 	Arguments          []ExpressionNode
-	Value              int64
+	Value              objects.GoMixObject
 }
 
 // CallExpressionNode.Literal(): string represenation of the node
