@@ -102,6 +102,7 @@ func main() {
 	root12.Accept(visitor12)
 	fmt.Println(visitor12)
 
+	// works but not ok. (why? a is reassigned)(will fix later)
 	src13 := `var a = 1; var a = a + 10; return a;`
 	root13 := parser.NewParser(src13).Parse()
 	visitor13 := &PrintingVisitor{}
@@ -192,6 +193,7 @@ func main() {
 	root25.Accept(visitor25)
 	fmt.Println(visitor25)
 
+	// BOOLEAN EXPRESSION WITH RELATIONAL OPERATOR
 	src26 := `7 > 2 + 1`
 	root26 := parser.NewParser(src26).Parse()
 	visitor26 := &PrintingVisitor{}

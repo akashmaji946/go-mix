@@ -31,11 +31,11 @@ func (v *TestingVisitor) VisitExpressionNode(node ExpressionNode) {
 func (v *TestingVisitor) VisitStatementNode(node StatementNode) {
 }
 
-// TestingVisitor.VisitNumberLiteralExpressionNode visits the number literal expression node
-func (v *TestingVisitor) VisitNumberLiteralExpressionNode(node NumberLiteralExpressionNode) {
+// TestingVisitor.VisitIntegerLiteralExpressionNode visits the number literal expression node
+func (v *TestingVisitor) VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
-	exp, ok := curr.(*NumberLiteralExpressionNode)
+	exp, ok := curr.(*IntegerLiteralExpressionNode)
 	assert.True(v.T, ok)
 	assert.Equal(v.T, node.Value, exp.Value)
 	v.Ptr++
@@ -169,12 +169,32 @@ func (v *TestingVisitor) VisitIfExpressionNode(node IfExpressionNode) {
 }
 
 // TestingVisitor.VisitStringLiteral visits the string literal node
-func (v *TestingVisitor) VisitStringLiteral(node StringLiteral) {
+func (v *TestingVisitor) VisitStringLiteralExpressionNode(node StringLiteralExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
-	_, ok := curr.(*StringLiteral)
+	_, ok := curr.(*StringLiteralExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Value, curr.(*StringLiteral).Value)
+	assert.Equal(v.T, node.Value, curr.(*StringLiteralExpressionNode).Value)
+	v.Ptr++
+}
+
+// TestingVisitor.VisitFloatLiteralExpressionNode visits the float literal node
+func (v *TestingVisitor) VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*FloatLiteralExpressionNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.Value, curr.(*FloatLiteralExpressionNode).Value)
+	v.Ptr++
+}
+
+// TestingVisitor.VisitNilLiteralExpressionNode visits the nil literal node
+func (v *TestingVisitor) VisitNilLiteralExpressionNode(node NilLiteralExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*NilLiteralExpressionNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.Value, curr.(*NilLiteralExpressionNode).Value)
 	v.Ptr++
 }
 

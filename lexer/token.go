@@ -32,6 +32,7 @@ const (
 	MINUS_OP TokenType = "-"
 	MUL_OP   TokenType = "*"
 	DIV_OP   TokenType = "/"
+	MOD_OP   TokenType = "%"
 
 	// Logical Operators
 	GT_OP     TokenType = ">"
@@ -78,6 +79,8 @@ const (
 	INT_LIT    TokenType = "IntLiteral"
 	FLOAT_LIT  TokenType = "FloatLiteral"
 	STRING_LIT TokenType = "StringLiteral"
+	BOOL_LIT   TokenType = "BoolLiteral"
+	NIL_LIT    TokenType = "NilLiteral"
 
 	// Structural Tokens
 	LEFT_PAREN    TokenType = "("
@@ -112,6 +115,7 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"for":      FOR_KEY,
 	"break":    BREAK_KEY,
 	"continue": CONTINUE_KEY,
+	"nil":      NIL_LIT,
 }
 
 // lookupIdent(): lookup the token type of an identifier

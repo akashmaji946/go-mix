@@ -35,8 +35,8 @@ func getPrecedence(token *lexer.Token) int {
 	case lexer.NOT_OP:
 		return PREFIX_PRIORITY
 
-	// Mul level: * / & << >>
-	case lexer.MUL_OP, lexer.DIV_OP, lexer.BIT_AND_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP:
+	// Mul level: * / % & << >>
+	case lexer.MUL_OP, lexer.DIV_OP, lexer.MOD_OP, lexer.BIT_AND_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP:
 		return MUL_PRIORITY
 
 	// Add level: + - | ^
@@ -76,7 +76,7 @@ type Parser struct {
 	UnaryFuncs  map[lexer.TokenType]unaryParseFunction
 	BinaryFuncs map[lexer.TokenType]binaryParseFunction
 
-	Env map[string]int
+	Env map[string]int64
 }
 
 func NewParser(src string) *Parser {
@@ -91,20 +91,24 @@ func NewParser(src string) *Parser {
 func (par *Parser) init() {
 	par.UnaryFuncs = make(map[lexer.TokenType]unaryParseFunction)
 	par.BinaryFuncs = make(map[lexer.TokenType]binaryParseFunction)
-	par.Env = make(map[string]int)
+	par.Env = make(map[string]int64)
 
 	// register the functions
 	par.registerUnaryFuncs(par.parseParenthesizedExpression, lexer.LEFT_PAREN)
-	par.registerUnaryFuncs(par.parseNumberLiteral, lexer.NUMBER_ID)
+	par.registerUnaryFuncs(par.parseNumberLiteral, lexer.INT_LIT)
+	par.registerUnaryFuncs(par.parseFloatLiteral, lexer.FLOAT_LIT)
 	par.registerUnaryFuncs(par.parseReturnStatement, lexer.RETURN_KEY)
 	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID)
 
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
-	par.registerUnaryFuncs(par.parseStringLiteral, lexer.STRING_LIT)
 
-	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.PLUS_OP, lexer.MINUS_OP, lexer.MUL_OP, lexer.DIV_OP)
-	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.BIT_AND_OP, lexer.BIT_OR_OP)
-	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
+	par.registerUnaryFuncs(par.parseStringLiteral, lexer.STRING_LIT)
+	par.registerUnaryFuncs(par.parseNilLiteral, lexer.NIL_LIT)
+
+	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.PLUS_OP, lexer.MINUS_OP, lexer.MUL_OP, lexer.DIV_OP, lexer.MOD_OP)
+	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.BIT_AND_OP, lexer.BIT_OR_OP, lexer.BIT_XOR_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP)
+
+	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP, lexer.BIT_NOT_OP)
 
 	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
@@ -233,15 +237,39 @@ func (par *Parser) parseParenthesizedExpression() ExpressionNode {
 // parse a number literal
 func (par *Parser) parseNumberLiteral() ExpressionNode {
 	token := par.CurrToken
-	val, err := strconv.ParseInt(token.Literal, 10, 32)
+	val, err := strconv.ParseInt(token.Literal, 10, 64)
 	if err != nil {
-		msg := fmt.Sprintf("[ERROR] could not parse number literal: %s", token.Literal)
+		// try unsigned int for the edge case of -9223372036854775808
+		// which is 9223372036854775808 in unsigned int
+		// strconv.ParseInt fails for this value, but ParseUint succeeds
+		// and we can cast it to int64
+		uVal, uErr := strconv.ParseUint(token.Literal, 10, 64)
+		if uErr == nil {
+			val = int64(uVal)
+		} else {
+			msg := fmt.Sprintf("[ERROR] could not parse number literal: %s", token.Literal)
+			fmt.Println(msg)
+			panic(msg)
+		}
+	}
+	return &IntegerLiteralExpressionNode{
+		Token: token,
+		Value: val,
+	}
+}
+
+// parse a float literal
+func (par *Parser) parseFloatLiteral() ExpressionNode {
+	token := par.CurrToken
+	val, err := strconv.ParseFloat(token.Literal, 64)
+	if err != nil {
+		msg := fmt.Sprintf("[ERROR] could not parse float literal: %s", token.Literal)
 		fmt.Println(msg)
 		panic(msg)
 	}
-	return &NumberLiteralExpressionNode{
+	return &FloatLiteralExpressionNode{
 		Token: token,
-		Value: int(val),
+		Value: val,
 	}
 }
 
@@ -254,6 +282,14 @@ func (par *Parser) parseBooleanLiteral() ExpressionNode {
 	}
 }
 
+// parse a null literal
+func (par *Parser) parseNilLiteral() ExpressionNode {
+	return &NilLiteralExpressionNode{
+		Token: par.CurrToken,
+		Value: nil,
+	}
+}
+
 // parse a binary expression
 func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 	op := par.CurrToken
@@ -262,7 +298,7 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 
 	lVal := eval(par, left)
 	rVal := eval(par, right)
-	val := 0
+	var val int64 = 0
 	switch op.Type {
 	// arithmetic operators
 	case lexer.PLUS_OP:
@@ -273,6 +309,8 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 		val = lVal * rVal
 	case lexer.DIV_OP:
 		val = lVal / rVal
+	case lexer.MOD_OP:
+		val = lVal % rVal
 	// bitwise operators
 	case lexer.BIT_AND_OP:
 		val = lVal & rVal
@@ -281,7 +319,7 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 	case lexer.BIT_XOR_OP:
 		val = lVal ^ rVal
 	case lexer.BIT_NOT_OP:
-		val = ^lVal
+		val = ^rVal
 	case lexer.BIT_LEFT_OP:
 		val = lVal << rVal
 	case lexer.BIT_RIGHT_OP:
@@ -305,7 +343,7 @@ func (par *Parser) parseUnaryExpression() ExpressionNode {
 	par.advance()
 	right := par.parseInternal(getPrecedence(&op) + 1)
 
-	val := 0
+	var val int64 = 0
 	rVal := eval(par, right)
 	switch op.Type {
 	case lexer.NOT_OP:
@@ -581,16 +619,16 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 
 // parse a string literal
 func (par *Parser) parseStringLiteral() ExpressionNode {
-	return &StringLiteral{
+	return &StringLiteralExpressionNode{
 		Token: par.CurrToken,
 		Value: par.CurrToken.Literal,
 	}
 }
 
 // evaluate the expression
-func eval(par *Parser, node ExpressionNode) int {
+func eval(par *Parser, node ExpressionNode) int64 {
 	switch n := node.(type) {
-	case *NumberLiteralExpressionNode:
+	case *IntegerLiteralExpressionNode:
 		return n.Value
 	case *BinaryExpressionNode:
 		return n.Value
@@ -623,7 +661,7 @@ func eval(par *Parser, node ExpressionNode) int {
 			return eval(par, &n.ThenBlock)
 		}
 		return eval(par, &n.ElseBlock)
-	case *StringLiteral:
+	case *StringLiteralExpressionNode:
 		return 0
 	case *FunctionStatementNode:
 		return n.Value

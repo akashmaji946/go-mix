@@ -47,10 +47,10 @@ func (p *PrintingVisitor) VisitStatementNode(node parser.StatementNode) {
 
 }
 
-// VisitNumberLiteralExpressionNode visits the number literal expression node
-func (p *PrintingVisitor) VisitNumberLiteralExpressionNode(node parser.NumberLiteralExpressionNode) {
+// VisitIntegerLiteralExpressionNode visits the number literal expression node
+func (p *PrintingVisitor) VisitIntegerLiteralExpressionNode(node parser.IntegerLiteralExpressionNode) {
 	p.indent()
-	p.Buf.WriteString(fmt.Sprintf("Visiting Number Node [%s] (%s => %d)\n", node.Literal(), node.Literal(), node.Value))
+	p.Buf.WriteString(fmt.Sprintf("Visiting Integer Node [%s] (%s => %d)\n", node.Literal(), node.Literal(), node.Value))
 
 }
 
@@ -158,9 +158,21 @@ func (p *PrintingVisitor) VisitIfExpressionNode(node parser.IfExpressionNode) {
 }
 
 // VisitStringLiteral visits the string literal node
-func (p *PrintingVisitor) VisitStringLiteral(node parser.StringLiteral) {
+func (p *PrintingVisitor) VisitStringLiteralExpressionNode(node parser.StringLiteralExpressionNode) {
 	p.indent()
 	p.Buf.WriteString(fmt.Sprintf("Visiting String Literal Node [\"%s\"] (\"%s\" => \"%s\")\n", node.Literal(), node.Literal(), node.Value))
+}
+
+// VisitFloatLiteral visits the float literal node
+func (p *PrintingVisitor) VisitFloatLiteralExpressionNode(node parser.FloatLiteralExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Float Literal Node [%s] (%s => %f)\n", node.Literal(), node.Literal(), node.Value))
+}
+
+// VisitNilLiteral visits the nil literal node
+func (p *PrintingVisitor) VisitNilLiteralExpressionNode(node parser.NilLiteralExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Nil Literal Node [%s] (%s => %s)\n", node.Literal(), node.Literal(), node.Value))
 }
 
 // VisitFunctionStatementNode visits the function statement node

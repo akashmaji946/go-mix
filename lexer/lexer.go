@@ -49,6 +49,9 @@ func (lex *Lexer) NextToken() Token {
 		if lex.peek() == '=' {
 			lex.advance()
 			token = NewToken(LE_OP, "<=")
+		} else if lex.peek() == '<' {
+			lex.advance()
+			token = NewToken(BIT_LEFT_OP, "<<")
 		} else {
 			token = NewToken(LT_OP, "<")
 		}
@@ -56,6 +59,9 @@ func (lex *Lexer) NextToken() Token {
 		if lex.peek() == '=' {
 			lex.advance()
 			token = NewToken(GE_OP, ">=")
+		} else if lex.peek() == '>' {
+			lex.advance()
+			token = NewToken(BIT_RIGHT_OP, ">>")
 		} else {
 			token = NewToken(GT_OP, ">")
 		}
@@ -67,6 +73,12 @@ func (lex *Lexer) NextToken() Token {
 		token = NewToken(MUL_OP, "*")
 	case '/':
 		token = NewToken(DIV_OP, "/")
+	case '%':
+		token = NewToken(MOD_OP, "%")
+	case '^':
+		token = NewToken(BIT_XOR_OP, "^")
+	case '~':
+		token = NewToken(BIT_NOT_OP, "~")
 	case '(':
 		token = NewToken(LEFT_PAREN, "(")
 	case ')':
@@ -142,19 +154,36 @@ func readStringLiteral(lex *Lexer) Token {
 // readNumber(): reads a number in the source code
 // TODO: add support for other formats
 // eg. 0, 10, -10, 10.123, 1e9, 1.4e9, -12E-2, -123.123, 0x16, 0777
+// readNumber(): reads a number in the source code
+// TODO: add support for other formats
+// eg. 0, 10, -10, 10.123, 1e9, 1.4e9, -12E-2, -123.123, 0x16, 0777
 func readNumber(lex *Lexer) Token {
 	position := lex.Position
+	hasDot := false
+
 	if isNumeric(lex.Current) {
 		lex.advance()
 	} else {
 		// TODO: do better error handling
 		panic("[ERROR] Malformed number literal")
 	}
-	for isNumeric(lex.Current) {
+
+	for isNumeric(lex.Current) || lex.Current == '.' {
+		if lex.Current == '.' {
+			if hasDot {
+				break
+			}
+			hasDot = true
+		}
 		lex.advance()
 	}
-	// TODO: support other formats too
-	return NewToken(NUMBER_ID, lex.Src[position:lex.Position])
+
+	tokenType := INT_LIT
+	if hasDot {
+		tokenType = FLOAT_LIT
+	}
+
+	return NewToken(tokenType, lex.Src[position:lex.Position])
 }
 
 // readIdentifier(): reads an identifier in the source code
