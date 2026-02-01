@@ -400,4 +400,25 @@ func main() {
 	root44.Accept(visitor44)
 	fmt.Println(visitor44)
 
+	// function call expression
+	src45 := `foo(1, 2, 3, 4)`
+	root45 := parser.NewParser(src45).Parse()
+	visitor45 := &PrintingVisitor{}
+	root45.Accept(visitor45)
+	fmt.Println(visitor45)
+
+	// function call expression
+	src46 := `foo(1 + 2 * 3 - 8, true, (2==3), !!!!!true)`
+	root46 := parser.NewParser(src46).Parse()
+	visitor46 := &PrintingVisitor{}
+	root46.Accept(visitor46)
+	fmt.Println(visitor46)
+
+	// function call expression with return value
+	src47 := `var b = 1; var a = foo(b, 2, 3); b = a + 1;`
+	root47 := parser.NewParser(src47).Parse()
+	visitor47 := &PrintingVisitor{}
+	root47.Accept(visitor47)
+	fmt.Println(visitor47)
+
 }

@@ -350,12 +350,13 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 
 // parse an identifier expression
 func (par *Parser) parseIdentifierExpression() ExpressionNode {
-	varToken := par.CurrToken
 
-	// we do not need to call parseExpression() here
-	// because we are already at the identifier token
-	// and we just need to return the node
-	// value := eval(par.parseExpression())
+	// may be an identifier expression or a function call expression
+	if par.NextToken.Type == lexer.LEFT_PAREN {
+		return par.parseCallExpression()
+	}
+
+	varToken := par.CurrToken
 
 	// get the value from the environment
 	val := par.Env[varToken.Literal]
@@ -364,6 +365,33 @@ func (par *Parser) parseIdentifierExpression() ExpressionNode {
 		Name:  varToken.Literal,
 		Value: val,
 	}
+}
+
+// parse a call expression
+func (par *Parser) parseCallExpression() ExpressionNode {
+	callNode := &CallExpressionNode{}
+	callNode.FunctionIdentifier = IdentifierExpressionNode{
+		Name:  par.CurrToken.Literal,
+		Value: 0,
+	}
+
+	par.expectAdvance(lexer.LEFT_PAREN)
+	// if there are arguments, parse them
+	if par.NextToken.Type != lexer.RIGHT_PAREN {
+		par.advance()
+		for {
+			callNode.Arguments = append(callNode.Arguments, par.parseExpression())
+			if par.NextToken.Type == lexer.COMMA_DELIM {
+				par.advance()
+				par.advance()
+			} else {
+				break
+			}
+		}
+	}
+
+	par.expectAdvance(lexer.RIGHT_PAREN)
+	return callNode
 }
 
 // parse a return statement
@@ -598,6 +626,8 @@ func eval(par *Parser, node ExpressionNode) int {
 	case *StringLiteral:
 		return 0
 	case *FunctionStatementNode:
+		return n.Value
+	case *CallExpressionNode:
 		return n.Value
 	}
 	return 0

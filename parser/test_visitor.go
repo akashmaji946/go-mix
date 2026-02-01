@@ -193,6 +193,20 @@ func (v *TestingVisitor) VisitFunctionStatementNode(node FunctionStatementNode) 
 	node.FuncBody.Accept(v)
 }
 
+// TestingVisitor.VisitCallExpressionNode visits the call expression node
+func (v *TestingVisitor) VisitCallExpressionNode(node CallExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*CallExpressionNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.FunctionIdentifier.Literal(), curr.(*CallExpressionNode).FunctionIdentifier.Literal())
+	v.Ptr++
+
+	for _, arg := range node.Arguments {
+		arg.Accept(v)
+	}
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

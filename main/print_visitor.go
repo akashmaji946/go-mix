@@ -176,6 +176,18 @@ func (p *PrintingVisitor) VisitFunctionStatementNode(node parser.FunctionStateme
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitCallExpressionNode visits the call expression node
+func (p *PrintingVisitor) VisitCallExpressionNode(node parser.CallExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting Call Expression Node [%s] (%s => %d)\n", node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	node.FunctionIdentifier.Accept(p)
+	for _, arg := range node.Arguments {
+		arg.Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

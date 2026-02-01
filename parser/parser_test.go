@@ -1712,3 +1712,95 @@ func TestParser_Parse_FunctionStatementComplex(t *testing.T) {
 	assert.Equal(t, 0, root.Value)
 	assert.Equal(t, `func foo (a,b) {if (a==b) {return a+b;} else {return a-b;};};`, root.Literal())
 }
+
+// function call arguments
+func TestParser_Parse_FunctionCallArguments(t *testing.T) {
+	src := `foo(1, 2, 3)`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&CallExpressionNode{
+				FunctionIdentifier: IdentifierExpressionNode{Name: "foo"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&NumberLiteralExpressionNode{Value: 2},
+			&NumberLiteralExpressionNode{Value: 3},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `foo(1,2,3);`, root.Literal())
+}
+
+// function call expression
+func TestParser_Parse_FunctionCallArguments_Simple(t *testing.T) {
+	src := `
+	var a  = 1;
+	var b = 2;
+	foo(a, b);
+	`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "b"},
+			},
+			&NumberLiteralExpressionNode{Value: 2},
+			&CallExpressionNode{
+				FunctionIdentifier: IdentifierExpressionNode{Name: "foo"},
+			},
+			&IdentifierExpressionNode{Name: "a"},
+			&IdentifierExpressionNode{Name: "b"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 3, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `var a = 1;var b = 2;foo(a,b);`, root.Literal())
+}
+
+// function call expression with return value
+func TestParser_Parse_FunctionCallExpression(t *testing.T) {
+	src := `var a = foo(1, 2, 3);`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: lexer.Token{Literal: "a"},
+			},
+			&CallExpressionNode{
+				FunctionIdentifier: IdentifierExpressionNode{Name: "foo"},
+			},
+			&NumberLiteralExpressionNode{Value: 1},
+			&NumberLiteralExpressionNode{Value: 2},
+			&NumberLiteralExpressionNode{Value: 3},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+
+	root.Accept(testingVisitor)
+	assert.Equal(t, 1, len(root.Statements))
+	assert.Equal(t, 0, root.Value)
+	assert.Equal(t, `var a = foo(1,2,3);`, root.Literal())
+}
