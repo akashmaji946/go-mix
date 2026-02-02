@@ -15,9 +15,13 @@ type Lexer struct {
 
 // NewLexer(): constructor for Lexer
 func NewLexer(src string) Lexer {
+	current := byte(0)
+	if len(src) > 0 {
+		current = src[0]
+	}
 	return Lexer{
 		Src:       src,
-		Current:   src[0],
+		Current:   current,
 		Position:  0,
 		SrcLength: len(src),
 	}

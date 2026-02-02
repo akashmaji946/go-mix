@@ -109,7 +109,8 @@ func (par *Parser) init() {
 	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.PLUS_OP, lexer.MINUS_OP, lexer.MUL_OP, lexer.DIV_OP, lexer.MOD_OP)
 	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.BIT_AND_OP, lexer.BIT_OR_OP, lexer.BIT_XOR_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP)
 
-	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP, lexer.BIT_NOT_OP)
+	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP, lexer.PLUS_OP, lexer.BIT_NOT_OP)
+	par.registerUnaryFuncs(par.parseIfStatement, lexer.IF_KEY)
 
 	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
@@ -141,12 +142,17 @@ func (par *Parser) advance() {
 
 // expect the next token to be of the expected type and advance
 func (par *Parser) expectAdvance(expected lexer.TokenType) {
+	par.expectNext(expected)
+	par.advance()
+}
+
+// expect the next token to be of the expected type
+func (par *Parser) expectNext(expected lexer.TokenType) {
 	if par.NextToken.Type != expected {
 		msg := fmt.Sprintf("[ERROR] expected %s, got %s", expected, par.NextToken.Type)
 		fmt.Println(msg)
 		panic(msg)
 	}
-	par.advance()
 }
 
 // parse the source code
@@ -232,7 +238,7 @@ func (par *Parser) parseParenthesizedExpression() ExpressionNode {
 	paren.Expr = par.parseExpression()
 	paren.Value = eval(par, paren.Expr)
 	par.expectAdvance(lexer.RIGHT_PAREN)
-	// par.advance()
+
 	return paren
 }
 
@@ -489,6 +495,8 @@ func (par *Parser) parseUnaryExpression() ExpressionNode {
 		} else if rVal.GetType() == objects.FloatType {
 			val = &objects.Float{Value: -rVal.(*objects.Float).Value}
 		}
+	case lexer.PLUS_OP:
+		val = rVal
 	case lexer.BIT_NOT_OP:
 		if rVal.GetType() == objects.IntegerType {
 			val = &objects.Integer{Value: ^rVal.(*objects.Integer).Value}
@@ -680,7 +688,7 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 // parse a block statement
 func (par *Parser) parseBlockStatement() *BlockStatementNode {
 	block := &BlockStatementNode{}
-	block.Statements = make([]Node, 0)
+	block.Statements = make([]StatementNode, 0)
 	par.advance()
 	for par.CurrToken.Type != lexer.RIGHT_BRACE && par.CurrToken.Type != lexer.EOF_TYPE {
 		stmt := par.parseStatement()
@@ -730,7 +738,7 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 }
 
 // parse an if statement
-func (par *Parser) parseIfStatement() StatementNode {
+func (par *Parser) parseIfStatement() ExpressionNode {
 	ifNode := NewIfStatement()
 	ifNode.IfToken = par.CurrToken
 	par.expectAdvance(lexer.LEFT_PAREN)
@@ -745,7 +753,7 @@ func (par *Parser) parseIfStatement() StatementNode {
 			// treat it as a nested if statement
 			// wrap it in a block statement
 			elseBlock := &BlockStatementNode{}
-			elseBlock.Statements = make([]Node, 0)
+			elseBlock.Statements = make([]StatementNode, 0)
 			nestedIf := par.parseIfStatement()
 			elseBlock.Statements = append(elseBlock.Statements, nestedIf)
 			if exprNode, ok := nestedIf.(ExpressionNode); ok {

@@ -112,6 +112,7 @@ func TestEvaluator_Nil(t *testing.T) {
 		expected interface{}
 	}{
 		{"nil", nil},
+		{``, nil},
 	}
 
 	for _, tt := range tests {
@@ -162,7 +163,7 @@ func TestEvaluator_ExpressionInteger(t *testing.T) {
 		expected int64
 	}{
 		// arithemetic operations
-		{"1 + 2", 3},
+		{"(1) + 2", 3},
 		{"1 - 2", -1},
 		{"1 * 2", 2},
 		{"1 / 2", 0},
@@ -174,6 +175,21 @@ func TestEvaluator_ExpressionInteger(t *testing.T) {
 		{"~1", -2},
 		{"1 << 2", 4},
 		{"1 >> 2", 0},
+		// parenthesized expression
+		{"(1 + 2) * 3", 9},
+		{"(1 - 2) * 3", -3},
+		{"(1 * 2) * 3", 6},
+		{"(1 / 2) * 3", 0},
+		{"(1 % 2) * 3", 3},
+		{"(1 & 2) * 3", 0},
+		{"(1 | 2) * 3", 9},
+		{"(1 ^ 2) * 3", 9},
+		{"(~1) * 3", -6},
+		{"(1 << 2) * 3", 12},
+		{"(((1 >> 2) * (3)))", 0},
+		// unary operations
+		{"-1", -1},
+		{"+1", 1},
 	}
 
 	for _, tt := range tests {
@@ -186,5 +202,221 @@ func TestEvaluator_ExpressionInteger(t *testing.T) {
 		if result.(*objects.Integer).Value != tt.expected {
 			t.Errorf("expected %d, got %d", tt.expected, result.(*objects.Integer).Value)
 		}
+	}
+}
+
+func TestEvaluator_ExpressionErrror(t *testing.T) {
+	tests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			"1 + true",
+			"[ERROR]: Operator (+) not implemented for (int) and (bool)",
+		},
+		{
+			"1 - true",
+			"[ERROR]: Operator (-) not implemented for (int) and (bool)",
+		},
+		{
+			"1 * true",
+			"[ERROR]: Operator (*) not implemented for (int) and (bool)",
+		},
+		{
+			"1 / true",
+			"[ERROR]: Operator (/) not implemented for (int) and (bool)",
+		},
+		{
+			"1 % true",
+			"[ERROR]: Operator (%) not implemented for (int) and (bool)",
+		},
+		{
+			"1 & true",
+			"[ERROR]: Operator (&) not implemented for (int) and (bool)",
+		},
+		{
+			"1 | true",
+			"[ERROR]: Operator (|) not implemented for (int) and (bool)",
+		},
+		{
+			"1 ^ true",
+			"[ERROR]: Operator (^) not implemented for (int) and (bool)",
+		},
+		{
+			"~true",
+			"[ERROR]: Operator (~) not implemented for (bool)",
+		},
+		{
+			"1 << true",
+			"[ERROR]: Operator (<<) not implemented for (int) and (bool)",
+		},
+		{
+			"1 >> true",
+			"[ERROR]: Operator (>>) not implemented for (int) and (bool)",
+		},
+		{
+			"true + true",
+			"[ERROR]: Operator (+) not implemented for (bool) and (bool)",
+		},
+		{
+			"true - true",
+			"[ERROR]: Operator (-) not implemented for (bool) and (bool)",
+		},
+		{
+			"true * true",
+			"[ERROR]: Operator (*) not implemented for (bool) and (bool)",
+		},
+		{
+			"true / true",
+			"[ERROR]: Operator (/) not implemented for (bool) and (bool)",
+		},
+		{
+			"true % true",
+			"[ERROR]: Operator (%) not implemented for (bool) and (bool)",
+		},
+		{
+			"true & true",
+			"[ERROR]: Operator (&) not implemented for (bool) and (bool)",
+		},
+		{
+			"true | true",
+			"[ERROR]: Operator (|) not implemented for (bool) and (bool)",
+		},
+		{
+			"true ^ true",
+			"[ERROR]: Operator (^) not implemented for (bool) and (bool)",
+		},
+		{
+			"~true",
+			"[ERROR]: Operator (~) not implemented for (bool)",
+		},
+		{
+			"true << true",
+			"[ERROR]: Operator (<<) not implemented for (bool) and (bool)",
+		},
+		{
+			"true >> true",
+			"[ERROR]: Operator (>>) not implemented for (bool) and (bool)",
+		},
+
+		{
+			`
+				if (true) {
+					!1
+					false
+				}
+				`,
+			"[ERROR]: Operator (!) not implemented for (int)",
+		},
+	}
+
+	for _, tt := range tests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		if result.GetType() != objects.ErrorType {
+			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		}
+		if result.(*objects.Error).Message != tt.ExpectedErrorMsg {
+			t.Errorf("expected %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		}
+
+	}
+
+}
+
+func TestEvaluator_Eval_Conditionals(t *testing.T) {
+	tests := []struct {
+		Src      string
+		Expected bool
+	}{
+		{
+			`if(true) { true }`,
+			true,
+		},
+		{
+			`if(false) { true } else { false }`,
+			false,
+		},
+		{
+			`if(1 < 2) { true }`,
+			true,
+		},
+		{
+			`if(1 == 1) { true }`,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		AssertBoolean(t, result, tt.Expected)
+
+	}
+
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`if(1) { true }`,
+			"[ERROR]: Conditional expression must be (bool)",
+		},
+		{
+			`if(2 + 2 * 3) { true }`,
+			"[ERROR]: Conditional expression must be (bool)",
+		},
+	}
+	for _, tt := range errorTests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		if result.GetType() != objects.ErrorType {
+			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		}
+		if result.(*objects.Error).Message != tt.ExpectedErrorMsg {
+			t.Errorf("expected %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		}
+
+	}
+}
+
+func TestEvaluator_Eval_ReturnStatement(t *testing.T) {
+	tests := []struct {
+		Src      string
+		Expected int64
+	}{
+		{
+			"return 10",
+			10,
+		},
+		{
+			`9 * 9
+				return 10`,
+			10,
+		},
+		{
+			`9 * 9
+				return 10
+				8 + 10`,
+			18,
+		},
+		{
+			`if(true) {
+					if (true) {
+						return 10
+					}
+					return 1
+				}`, 1,
+		},
+	}
+
+	for _, tt := range tests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.Expected)
+
 	}
 }

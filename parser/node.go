@@ -14,7 +14,6 @@ type NodeVisitor interface {
 
 	VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode)
 	VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode)
-	// VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode)
 	VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode)
 	VisitStringLiteralExpressionNode(node StringLiteralExpressionNode)
 	VisitNilLiteralExpressionNode(node NilLiteralExpressionNode)
@@ -22,6 +21,7 @@ type NodeVisitor interface {
 	VisitBinaryExpressionNode(node BinaryExpressionNode)
 	VisitUnaryExpressionNode(node UnaryExpressionNode)
 	VisitBooleanExpressionNode(node BooleanExpressionNode)
+
 	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode)
 	VisitDeclarativeStatementNode(node DeclarativeStatementNode)
 	VisitIdentifierExpressionNode(node IdentifierExpressionNode)
@@ -334,7 +334,7 @@ func (node *ReturnStatementNode) Expression() {
 
 // BlockStatementNode: represents a block of statements
 type BlockStatementNode struct {
-	Statements []Node
+	Statements []StatementNode
 	Value      objects.GoMixObject
 }
 
@@ -412,7 +412,7 @@ func (node *AssignmentExpressionNode) Expression() {
 
 }
 
-// if expression node
+// IfExpressionNode: represents an if expression
 type IfExpressionNode struct {
 	IfToken        lexer.Token
 	Condition      ExpressionNode
@@ -452,7 +452,7 @@ func (node *IfExpressionNode) Expression() {
 
 // empty block statement node
 var EMPTY_BLOCK = &BlockStatementNode{
-	Statements: []Node{},
+	Statements: []StatementNode{},
 }
 
 // new if statement node
@@ -554,6 +554,7 @@ func (node *FunctionStatementNode) Expression() {
 
 }
 
+// FunctionStatementNode constructor
 func NewFunctionStatementNode() *FunctionStatementNode {
 	return &FunctionStatementNode{
 		FuncToken:  lexer.Token{Type: lexer.FUNC_KEY, Literal: "func"},
@@ -563,6 +564,7 @@ func NewFunctionStatementNode() *FunctionStatementNode {
 	}
 }
 
+// CallExpressionNode represnts a function call
 type CallExpressionNode struct {
 	FunctionIdentifier IdentifierExpressionNode
 	Arguments          []ExpressionNode
