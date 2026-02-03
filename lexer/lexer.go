@@ -1,6 +1,9 @@
 package lexer
 
-import "unicode"
+import (
+	"fmt"
+	"unicode"
+)
 
 type Lexer struct {
 	// entire source code in plain text format
@@ -141,13 +144,15 @@ func readStringLiteral(lex *Lexer) Token {
 	position := lex.Position
 	if lex.Current != '"' {
 		// TODO: do better error handling
-		panic("[ERROR] Malformed string literal")
+		fmt.Errorf("[ERROR] Malformed string literal")
+		return NewToken(INVALID_TYPE, "")
 	}
 	lex.advance()
 	for lex.Current != '"' {
 		if isEscape(lex.Current) {
 			// TODO: do better error handling
-			panic("[ERROR] String literal not terminated")
+			fmt.Errorf("[ERROR] String literal not terminated")
+			return NewToken(INVALID_TYPE, "")
 		}
 		lex.advance()
 	}
@@ -169,7 +174,8 @@ func readNumber(lex *Lexer) Token {
 		lex.advance()
 	} else {
 		// TODO: do better error handling
-		panic("[ERROR] Malformed number literal")
+		fmt.Errorf("[ERROR] Malformed number literal")
+		return NewToken(INVALID_TYPE, "")
 	}
 
 	for isNumeric(lex.Current) || lex.Current == '.' {
@@ -198,7 +204,8 @@ func readIdentifier(lex *Lexer) Token {
 		lex.advance()
 	} else {
 		// TODO: do better error handling
-		panic("[ERROR] Malformed identifier")
+		fmt.Errorf("[ERROR] Malformed identifier")
+		return NewToken(INVALID_TYPE, "")
 	}
 	for isAlphanumeric(lex.Current) || lex.Current == '_' {
 		lex.advance()

@@ -572,7 +572,7 @@ func TestParser_ParseDeclarativeStatement(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 		},
@@ -600,7 +600,7 @@ func TestParser_ParseDeclarativeStatement_Complex(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
@@ -632,7 +632,7 @@ func TestParser_ParseDeclarativeStatement_Complex2(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
@@ -666,12 +666,12 @@ func TestParser_ParseDeclarativeStatement_Identifier(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
@@ -710,12 +710,12 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 11}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 11}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
@@ -756,12 +756,12 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 11}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 11}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
@@ -771,7 +771,7 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "c"},
+				Identifier: IdentifierExpressionNode{Name: "c"},
 			},
 			&IdentifierExpressionNode{Name: "b", Value: &objects.Integer{Value: 31}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
@@ -817,7 +817,7 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement(t *tes
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&ReturnStatementNode{
@@ -856,7 +856,7 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_P
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&ReturnStatementNode{
@@ -958,12 +958,12 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_P
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 1}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
@@ -1138,7 +1138,7 @@ func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndVariable(t
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&ReturnStatementNode{
@@ -1281,7 +1281,7 @@ func TestParser_Parse_BitwiseOperatorWithParenthesizedExpression(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
 			&BinaryExpressionNode{
@@ -1358,22 +1358,22 @@ func TestParser_Parse_RelationalOperatorAndReturn(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "c"},
+				Identifier: IdentifierExpressionNode{Name: "c"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "d"},
+				Identifier: IdentifierExpressionNode{Name: "d"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&ReturnStatementNode{
@@ -1476,13 +1476,13 @@ func TestParser_Parse_BlockStatement(t *testing.T) {
 			&BlockStatementNode{},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
 
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IdentifierExpressionNode{Name: "a"},
 			&BinaryExpressionNode{
@@ -1492,7 +1492,7 @@ func TestParser_Parse_BlockStatement(t *testing.T) {
 
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "c"},
+				Identifier: IdentifierExpressionNode{Name: "c"},
 			},
 			&IdentifierExpressionNode{Name: "b"},
 			&BinaryExpressionNode{
@@ -1535,12 +1535,12 @@ func TestParser_Parse_BlockStatementWithReturnStatement(t *testing.T) {
 			&BlockStatementNode{},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IdentifierExpressionNode{Name: "a"},
 			&BinaryExpressionNode{
@@ -1549,7 +1549,7 @@ func TestParser_Parse_BlockStatementWithReturnStatement(t *testing.T) {
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "c"},
+				Identifier: IdentifierExpressionNode{Name: "c"},
 			},
 			&IdentifierExpressionNode{Name: "b"},
 			&BinaryExpressionNode{
@@ -1745,7 +1745,7 @@ func TestParser_Parse_ElseIf_EvaluationAgainAgainAgain(t *testing.T) {
 
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "x"},
+				Identifier: IdentifierExpressionNode{Name: "x"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 
@@ -1991,12 +1991,12 @@ func TestParser_Parse_FunctionCallArguments_Simple(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "b"},
+				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
 			&CallExpressionNode{
@@ -2025,7 +2025,7 @@ func TestParser_Parse_FunctionCallExpression(t *testing.T) {
 		ExpectedNodes: []Node{
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
-				Identifier: lexer.Token{Literal: "a"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
 			&CallExpressionNode{
 				FunctionIdentifier: IdentifierExpressionNode{Name: "foo"},

@@ -254,14 +254,14 @@ func (node *ParenthesizedExpressionNode) Expression() {
 // DeclarativeStatementNode: represents a declarative statement
 type DeclarativeStatementNode struct {
 	VarToken   lexer.Token
-	Identifier lexer.Token
+	Identifier IdentifierExpressionNode
 	Expr       ExpressionNode
 	Value      objects.GoMixObject
 }
 
 // DeclarativeStatementNode.Literal(): string represenation of the node
 func (node *DeclarativeStatementNode) Literal() string {
-	return node.VarToken.Literal + " " + node.Identifier.Literal + " = " + node.Expr.Literal()
+	return node.VarToken.Literal + " " + node.Identifier.Name + " = " + node.Expr.Literal()
 }
 
 // DeclarativeStatementNode.Accept(): accepts a visitor (eg PrintVisitor)
@@ -283,6 +283,7 @@ func (node *DeclarativeStatementNode) Statement() {
 type IdentifierExpressionNode struct {
 	Name  string
 	Value objects.GoMixObject
+	Type  string
 }
 
 // IdentifierExpressionNode.Literal(): string represenation of the node
@@ -387,14 +388,14 @@ func (node *BooleanExpressionNode) Expression() {
 // AssignmentExpressionNode: represents an assignment expression
 type AssignmentExpressionNode struct {
 	Operation lexer.Token
-	Left      string
+	Left      IdentifierExpressionNode
 	Right     ExpressionNode
 	Value     objects.GoMixObject
 }
 
 // AssignmentExpressionNode.Literal(): string represenation of the node
 func (node *AssignmentExpressionNode) Literal() string {
-	return node.Left + " " + node.Operation.Literal + " " + node.Right.Literal()
+	return node.Left.Name + " " + node.Operation.Literal + " " + node.Right.Literal()
 }
 
 // AssignmentExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)
@@ -461,7 +462,7 @@ func NewIfStatement() *IfExpressionNode {
 		Condition:      &BinaryExpressionNode{},
 		ThenBlock:      *EMPTY_BLOCK,
 		ElseBlock:      *EMPTY_BLOCK,
-		ConditionValue: nil,
+		ConditionValue: &objects.Nil{},
 		IfToken:        lexer.Token{},
 	}
 }
@@ -558,7 +559,7 @@ func (node *FunctionStatementNode) Expression() {
 func NewFunctionStatementNode() *FunctionStatementNode {
 	return &FunctionStatementNode{
 		FuncToken:  lexer.Token{Type: lexer.FUNC_KEY, Literal: "func"},
-		FuncName:   IdentifierExpressionNode{Name: "foo", Value: nil},
+		FuncName:   IdentifierExpressionNode{Name: "", Value: &objects.Nil{}},
 		FuncParams: make([]*IdentifierExpressionNode, 0),
 		FuncBody:   *EMPTY_BLOCK,
 	}

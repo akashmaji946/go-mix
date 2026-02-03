@@ -445,4 +445,18 @@ func TestMain(t *testing.T) {
 	root50.Accept(visitor50)
 	fmt.Println(visitor50)
 
+	// function expression
+	src51 := `var foo = func(a) { if(a) {return 1;} else {return 2;}};;;;foo(true);`
+	root51 := parser.NewParser(src51).Parse()
+	visitor51 := &PrintingVisitor{}
+	root51.Accept(visitor51)
+	fmt.Println(visitor51)
+
+	// constant
+	src52 := `var a = 1; const b = 2; a = 14;`
+	root52 := parser.NewParser(src52).Parse()
+	visitor52 := &PrintingVisitor{}
+	root52.Accept(visitor52)
+	fmt.Println(visitor51)
+
 }

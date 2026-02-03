@@ -150,6 +150,8 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.registerFunction(n)
 	case *parser.CallExpressionNode:
 		return e.evalCallExpression(n)
+	case *parser.AssignmentExpressionNode:
+		return e.evalAssignmentExpression(n)
 	default:
 		return &objects.Nil{}
 	}
@@ -164,11 +166,11 @@ func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.Go
 		Name:   n.FuncName.Name,
 		Params: n.FuncParams,
 		Body:   &n.FuncBody,
-		Scp:    e.Scp,
+		Scp:    e.Scp.Copy(),
 	}
 	// redeclared?
-	has := e.Scp.Bind(n.FuncName.Name, function)
-	if has {
+	name, has := e.Scp.Bind(n.FuncName.Name, function)
+	if has && name != "" {
 		return CreateError("function redeclaration found: (%s)", n.FuncName.Name)
 	}
 	e.Scp.Bind(n.FuncName.Name, function)
@@ -178,6 +180,27 @@ func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.Go
 	// Params []*parser.IdentifierExpressionNode
 	// Body   *parser.BlockStatementNode
 	// Scp    *scope.Scope
+}
+
+func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode) objects.GoMixObject {
+	val := e.Eval(n.Right)
+	if IsError(val) {
+		return val
+	}
+	// Check if the variable exists in the current scope or any parent scope
+	_, exists := e.Scp.LookUp(n.Left.Name)
+	if !exists {
+		return CreateError("identifier not found: (%s)", n.Left.Name)
+	}
+	// Check if it's a constant using the new IsConstant method
+	if e.Scp.IsConstant(n.Left.Name) {
+		return CreateError("can't assign to constant (%s)", n.Left.Name)
+	}
+	// Use Assign to update the variable in the scope where it was defined
+	// This is essential for closures to work correctly
+	e.Scp.Assign(n.Left.Name, val)
+
+	return val
 }
 
 func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoMixObject {
@@ -210,7 +233,16 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 
 	// Unwrap return value if present
 	if retVal, isReturn := result.(*objects.ReturnValue); isReturn {
-		return retVal.Value
+		returnVal := retVal.Value
+		// If returning a function, update its captured scope to the current scope
+		// This is essential for closures to work correctly
+		// Only copy if the call site scope has variables not in the function's existing scope
+		if fn, isFunc := returnVal.(*function.Function); isFunc {
+			if len(callSiteScope.Variables) > len(fn.Scp.Variables) {
+				fn.Scp = callSiteScope.Copy()
+			}
+		}
+		return returnVal
 	}
 	return result
 
@@ -246,11 +278,15 @@ func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode)
 		return val
 	}
 	// redeclared?
-	has := e.Scp.Bind(n.Identifier.Literal, val)
+	_, has := e.Scp.Bind(n.Identifier.Name, val)
 	if has {
-		return CreateError("identifier redeclaration found: (%s)", n.Identifier.Literal)
+		return CreateError("identifier redeclaration found: (%s)", n.Identifier.Name)
 	}
-	e.Scp.Bind(n.Identifier.Literal, val)
+
+	if n.VarToken.Type == lexer.CONST_KEY {
+		e.Scp.Consts[n.Identifier.Name] = true
+	}
+	e.Scp.Bind(n.Identifier.Name, val)
 	return val
 }
 
@@ -299,11 +335,9 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 	err := CreateError("Operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
 
 	if left.GetType() != objects.IntegerType && left.GetType() != objects.FloatType {
-		// panic("not implemented")
 		return err
 	}
 	if right.GetType() != objects.IntegerType && right.GetType() != objects.FloatType {
-		// panic("not implemented")
 		return err
 	}
 

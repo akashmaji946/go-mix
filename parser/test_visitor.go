@@ -94,7 +94,7 @@ func (v *TestingVisitor) VisitDeclarativeStatementNode(node DeclarativeStatement
 	currNode, ok := curr.(*DeclarativeStatementNode)
 	assert.True(v.T, ok)
 	assert.Equal(v.T, node.VarToken.Literal, currNode.VarToken.Literal)
-	assert.Equal(v.T, node.Identifier.Literal, currNode.Identifier.Literal)
+	assert.Equal(v.T, node.Identifier.Name, currNode.Identifier.Name)
 	v.Ptr++
 
 	node.Expr.Accept(v)

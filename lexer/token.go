@@ -25,7 +25,8 @@ func NewToken(tokenType TokenType, literal string) Token {
 // TokenTypes
 const (
 	// Special Types
-	EOF_TYPE TokenType = "EOF"
+	EOF_TYPE     TokenType = "EOF"
+	INVALID_TYPE TokenType = "INVALID"
 
 	// Arithmetic Operators
 	PLUS_OP  TokenType = "+"
@@ -61,6 +62,7 @@ const (
 	NEW_KEY      TokenType = "new"
 	RETURN_KEY   TokenType = "return"
 	VAR_KEY      TokenType = "var"
+	CONST_KEY    TokenType = "const"
 	TRUE_KEY     TokenType = "true"
 	FALSE_KEY    TokenType = "false"
 	IF_KEY       TokenType = "if"
@@ -107,6 +109,7 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"new":      NEW_KEY,
 	"return":   RETURN_KEY,
 	"var":      VAR_KEY,
+	"const":    CONST_KEY,
 	"true":     TRUE_KEY,
 	"false":    FALSE_KEY,
 	"if":       IF_KEY,

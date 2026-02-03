@@ -78,6 +78,8 @@ type Parser struct {
 	BinaryFuncs map[lexer.TokenType]binaryParseFunction
 
 	Env map[string]objects.GoMixObject
+	// Track which variables are const
+	Consts map[string]bool
 }
 
 func NewParser(src string) *Parser {
@@ -93,6 +95,7 @@ func (par *Parser) init() {
 	par.UnaryFuncs = make(map[lexer.TokenType]unaryParseFunction)
 	par.BinaryFuncs = make(map[lexer.TokenType]binaryParseFunction)
 	par.Env = make(map[string]objects.GoMixObject)
+	par.Consts = make(map[string]bool)
 
 	// register the functions
 	par.registerUnaryFuncs(par.parseParenthesizedExpression, lexer.LEFT_PAREN)
@@ -111,6 +114,7 @@ func (par *Parser) init() {
 
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP, lexer.PLUS_OP, lexer.BIT_NOT_OP)
 	par.registerUnaryFuncs(par.parseIfStatement, lexer.IF_KEY)
+	par.registerUnaryFuncs(par.parseFunctionAssignment, lexer.FUNC_KEY)
 
 	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
@@ -190,6 +194,38 @@ func (par *Parser) Parse() *RootNode {
 	return root
 }
 
+// parseFunctionAssignment
+func (par *Parser) parseFunctionAssignment() ExpressionNode {
+	funcNode := NewFunctionStatementNode()
+	par.expectAdvance(lexer.LEFT_PAREN)
+
+	// Handle empty parameters case
+	if par.NextToken.Type != lexer.RIGHT_PAREN {
+		// First parameter
+		par.expectAdvance(lexer.IDENTIFIER_ID)
+		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+			Name:  par.CurrToken.Literal,
+			Value: &objects.Nil{}, // Default value for identifier
+		})
+
+		// Subsequent parameters
+		for par.NextToken.Type == lexer.COMMA_DELIM {
+			par.advance() // Consume comma
+			par.expectAdvance(lexer.IDENTIFIER_ID)
+			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+				Name:  par.CurrToken.Literal,
+				Value: &objects.Nil{}, // Default value for identifier
+			})
+		}
+	}
+	par.expectAdvance(lexer.RIGHT_PAREN)
+
+	par.expectAdvance(lexer.LEFT_BRACE)
+	funcNode.FuncBody = *par.parseBlockStatement()
+	funcNode.Value = funcNode.FuncBody.Value
+	return funcNode
+}
+
 // parse a statement
 // currently only supports expression statements (will be extended)
 func (par *Parser) parseStatement() StatementNode {
@@ -203,6 +239,8 @@ func (par *Parser) parseStatement() StatementNode {
 
 	// var a = 10;
 	case lexer.VAR_KEY:
+		return par.parseDeclarativeStatement()
+	case lexer.CONST_KEY:
 		return par.parseDeclarativeStatement()
 	// var a = (true && true);
 
@@ -294,7 +332,7 @@ func (par *Parser) parseBooleanLiteral() ExpressionNode {
 func (par *Parser) parseNilLiteral() ExpressionNode {
 	return &NilLiteralExpressionNode{
 		Token: par.CurrToken,
-		Value: nil,
+		Value: &objects.Nil{},
 	}
 }
 
@@ -515,6 +553,12 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 	varToken := par.CurrToken
 	par.expectAdvance(lexer.IDENTIFIER_ID)
 	identifier := par.CurrToken
+	typ := "var"
+	if varToken.Type == lexer.CONST_KEY {
+		// fmt.Println("Setting")
+		typ = "const"
+		par.Consts[identifier.Literal] = true
+	}
 	par.expectAdvance(lexer.ASSIGN_OP)
 	par.advance()
 	expr := par.parseExpression()
@@ -527,7 +571,7 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 
 	return &DeclarativeStatementNode{
 		VarToken:   varToken,
-		Identifier: identifier,
+		Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ},
 		Expr:       expr,
 		Value:      val,
 	}
@@ -545,11 +589,23 @@ func (par *Parser) parseIdentifierExpression() ExpressionNode {
 
 	// get the value from the environment
 	val := par.Env[varToken.Literal]
+	if val == nil {
+		val = &objects.Nil{}
+	}
 
-	return &IdentifierExpressionNode{
+	// Determine if this is a const or var
+	ident := &IdentifierExpressionNode{
 		Name:  varToken.Literal,
 		Value: val,
+		Type:  "var", // default type
 	}
+
+	// Check if this identifier is a const
+	if par.Consts[varToken.Literal] {
+		ident.Type = "const"
+	}
+
+	return ident
 }
 
 // parse a call expression
@@ -727,11 +783,19 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 	right := par.parseInternal(getPrecedence(&op) + 1)
 
 	val := eval(par, right)
-	par.Env[left.(*IdentifierExpressionNode).Name] = val
 
+	// if left is const
+	if _, ok := left.(*IdentifierExpressionNode); ok {
+		if left.(*IdentifierExpressionNode).Type == "const" {
+			panic("Cannot assign to a const variable")
+		}
+	}
+
+	par.Env[left.(*IdentifierExpressionNode).Name] = val
+	// fmt.Println("Reassigned")
 	return &AssignmentExpressionNode{
 		Operation: op,
-		Left:      left.(*IdentifierExpressionNode).Name,
+		Left:      *left.(*IdentifierExpressionNode),
 		Right:     right,
 		Value:     val,
 	}

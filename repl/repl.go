@@ -35,8 +35,9 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 
 	scanner := bufio.NewScanner(reader)
 	evaluator := eval.NewEvaluator()
+
 	for {
-		fmt.Print(">>> ")
+		fmt.Print("Go-Mix >>> ")
 		scanned := scanner.Scan()
 		if !scanned {
 			writer.Write([]byte("Good Bye!\n"))
@@ -51,13 +52,14 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 			writer.Write([]byte("Good Bye!\n"))
 			break
 		}
-		parser := parser.NewParser(line)
-		rootNode := parser.Parse()
+		par := parser.NewParser(line)
+		rootNode := par.Parse()
 		if rootNode == nil {
 			writer.Write([]byte("Invalid syntax or parser error\n"))
 			continue
 		}
 
+		evaluator.SetParser(par)
 		result := evaluator.Eval(rootNode)
 
 		if result != nil {
