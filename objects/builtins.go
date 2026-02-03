@@ -27,10 +27,21 @@ var Builtins = []*Builtin{
 		Name:     "length",
 		Callback: length,
 	},
+	{
+		Name:     "tostring",
+		Callback: tostring,
+	},
 }
 
 func createError(format string, a ...interface{}) *Error {
 	return &Error{Message: fmt.Sprintf(format, a...)}
+}
+
+func tostring(args ...GoMixObject) GoMixObject {
+	if len(args) == 0 {
+		return createError("wrong number of arguments. got=%d, want=1", len(args))
+	}
+	return &String{Value: fmt.Sprintf("\"%s\"", args[0].ToString())}
 }
 
 func print(args ...GoMixObject) GoMixObject {

@@ -185,7 +185,7 @@ func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.Go
 		Name:   n.FuncName.Name,
 		Params: n.FuncParams,
 		Body:   &n.FuncBody,
-		Scp:    e.Scp.Copy(),
+		Scp:    e.Scp, // Reference the current scope directly, not a copy
 	}
 	// redeclared?
 	name, has := e.Scp.Bind(n.FuncName.Name, function)
@@ -194,11 +194,6 @@ func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.Go
 	}
 	e.Scp.Bind(n.FuncName.Name, function)
 	return function
-
-	// 	Name   string
-	// Params []*parser.IdentifierExpressionNode
-	// Body   *parser.BlockStatementNode
-	// Scp    *scope.Scope
 }
 
 func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode) objects.GoMixObject {
