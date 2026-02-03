@@ -34,7 +34,7 @@ func IsError(obj objects.GoMixObject) bool {
 
 func CreateError(format string, a ...interface{}) *objects.Error {
 	msg := fmt.Sprintf(format, a...)
-	msg = fmt.Sprintf("[ERROR]: %s", msg)
+	msg = fmt.Sprintf("%s", msg)
 	return &objects.Error{Message: msg}
 }
 
@@ -214,6 +214,13 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 	}
 	functionObject := obj.(*function.Function)
 
+	// Validate argument count
+	expectedArgs := len(functionObject.Params)
+	actualArgs := len(n.Arguments)
+	if actualArgs != expectedArgs {
+		return CreateError("wrong number of arguments: expected %d, got %d", expectedArgs, actualArgs)
+	}
+
 	// Create a new scope with the function's captured scope as parent
 	var parentScope *scope.Scope
 	if functionObject.Scp != nil {
@@ -332,7 +339,7 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 		return right
 	}
 
-	err := CreateError("Operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
+	err := CreateError("operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
 
 	if left.GetType() != objects.IntegerType && left.GetType() != objects.FloatType {
 		return err
@@ -412,7 +419,7 @@ func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.G
 		return right
 	}
 
-	err := CreateError("Operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
+	err := CreateError("operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
 
 	switch n.Operation.Type {
 	case lexer.NOT_OP:

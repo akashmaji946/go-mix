@@ -80,6 +80,8 @@ type Parser struct {
 	Env map[string]objects.GoMixObject
 	// Track which variables are const
 	Consts map[string]bool
+	// Collect parsing errors instead of panicking
+	Errors []string
 }
 
 func NewParser(src string) *Parser {
@@ -96,6 +98,7 @@ func (par *Parser) init() {
 	par.BinaryFuncs = make(map[lexer.TokenType]binaryParseFunction)
 	par.Env = make(map[string]objects.GoMixObject)
 	par.Consts = make(map[string]bool)
+	par.Errors = make([]string, 0)
 
 	// register the functions
 	par.registerUnaryFuncs(par.parseParenthesizedExpression, lexer.LEFT_PAREN)
@@ -145,18 +148,37 @@ func (par *Parser) advance() {
 }
 
 // expect the next token to be of the expected type and advance
-func (par *Parser) expectAdvance(expected lexer.TokenType) {
-	par.expectNext(expected)
+func (par *Parser) expectAdvance(expected lexer.TokenType) bool {
+	if !par.expectNext(expected) {
+		return false
+	}
 	par.advance()
+	return true
 }
 
 // expect the next token to be of the expected type
-func (par *Parser) expectNext(expected lexer.TokenType) {
+func (par *Parser) expectNext(expected lexer.TokenType) bool {
 	if par.NextToken.Type != expected {
-		msg := fmt.Sprintf("[ERROR] expected %s, got %s", expected, par.NextToken.Type)
-		fmt.Println(msg)
-		panic(msg)
+		msg := fmt.Sprintf("[LEXER ERROR] expected %s, got %s", expected, par.NextToken.Type)
+		par.addError(msg)
+		return false
 	}
+	return true
+}
+
+// addError adds an error message to the parser's error list
+func (par *Parser) addError(msg string) {
+	par.Errors = append(par.Errors, msg)
+}
+
+// HasErrors returns true if there are parsing errors
+func (par *Parser) HasErrors() bool {
+	return len(par.Errors) > 0
+}
+
+// GetErrors returns all parsing errors
+func (par *Parser) GetErrors() []string {
+	return par.Errors
 }
 
 // parse the source code
@@ -197,12 +219,16 @@ func (par *Parser) Parse() *RootNode {
 // parseFunctionAssignment
 func (par *Parser) parseFunctionAssignment() ExpressionNode {
 	funcNode := NewFunctionStatementNode()
-	par.expectAdvance(lexer.LEFT_PAREN)
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
 
 	// Handle empty parameters case
 	if par.NextToken.Type != lexer.RIGHT_PAREN {
 		// First parameter
-		par.expectAdvance(lexer.IDENTIFIER_ID)
+		if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+			return nil
+		}
 		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 			Name:  par.CurrToken.Literal,
 			Value: &objects.Nil{}, // Default value for identifier
@@ -211,16 +237,22 @@ func (par *Parser) parseFunctionAssignment() ExpressionNode {
 		// Subsequent parameters
 		for par.NextToken.Type == lexer.COMMA_DELIM {
 			par.advance() // Consume comma
-			par.expectAdvance(lexer.IDENTIFIER_ID)
+			if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+				return nil
+			}
 			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 				Name:  par.CurrToken.Literal,
 				Value: &objects.Nil{}, // Default value for identifier
 			})
 		}
 	}
-	par.expectAdvance(lexer.RIGHT_PAREN)
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
 
-	par.expectAdvance(lexer.LEFT_BRACE)
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
 	funcNode.FuncBody = *par.parseBlockStatement()
 	funcNode.Value = funcNode.FuncBody.Value
 	return funcNode
@@ -274,8 +306,13 @@ func (par *Parser) parseParenthesizedExpression() ExpressionNode {
 	par.advance()
 	paren := &ParenthesizedExpressionNode{}
 	paren.Expr = par.parseExpression()
+	if paren.Expr == nil {
+		return nil
+	}
 	paren.Value = eval(par, paren.Expr)
-	par.expectAdvance(lexer.RIGHT_PAREN)
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
 
 	return paren
 }
@@ -293,9 +330,9 @@ func (par *Parser) parseNumberLiteral() ExpressionNode {
 		if uErr == nil {
 			val = int64(uVal)
 		} else {
-			msg := fmt.Sprintf("[ERROR] could not parse number literal: %s", token.Literal)
-			fmt.Println(msg)
-			panic(msg)
+			msg := fmt.Sprintf("[LEXER ERROR] could not parse number literal: %s", token.Literal)
+			par.addError(msg)
+			return nil
 		}
 	}
 	return &IntegerLiteralExpressionNode{
@@ -309,9 +346,9 @@ func (par *Parser) parseFloatLiteral() ExpressionNode {
 	token := par.CurrToken
 	val, err := strconv.ParseFloat(token.Literal, 64)
 	if err != nil {
-		msg := fmt.Sprintf("[ERROR] could not parse float literal: %s", token.Literal)
-		fmt.Println(msg)
-		panic(msg)
+		msg := fmt.Sprintf("[LEXER ERROR] could not parse float literal: %s", token.Literal)
+		par.addError(msg)
+		return nil
 	}
 	return &FloatLiteralExpressionNode{
 		Token: token,
@@ -408,6 +445,9 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 	op := par.CurrToken
 	par.advance()
 	right := par.parseInternal(getPrecedence(&op) + 1)
+	if right == nil {
+		return nil
+	}
 
 	lVal := eval(par, left)
 	rVal := eval(par, right)
@@ -473,17 +513,28 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 // parse an if expression
 func (par *Parser) parseIfExpression() ExpressionNode {
 	ifToken := par.CurrToken
-	par.expectAdvance(lexer.LEFT_PAREN)
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
 	par.advance()
 	condition := par.parseExpression()
-	par.expectAdvance(lexer.RIGHT_PAREN)
-	par.expectAdvance(lexer.LEFT_BRACE)
+	if condition == nil {
+		return nil
+	}
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
 	thenBlock := par.parseBlockStatement()
 
 	var elseBlock *BlockStatementNode
 	if par.CurrToken.Type == lexer.ELSE_KEY {
 		par.advance()
-		par.expectAdvance(lexer.LEFT_BRACE)
+		if !par.expectAdvance(lexer.LEFT_BRACE) {
+			return nil
+		}
 		elseBlock = par.parseBlockStatement()
 	} else {
 		elseBlock = &BlockStatementNode{} // Default empty block
@@ -511,6 +562,9 @@ func (par *Parser) parseUnaryExpression() ExpressionNode {
 	op := par.CurrToken
 	par.advance()
 	right := par.parseInternal(getPrecedence(&op) + 1)
+	if right == nil {
+		return nil
+	}
 
 	rVal := eval(par, right)
 	var val objects.GoMixObject = &objects.Nil{}
@@ -551,7 +605,9 @@ func (par *Parser) parseUnaryExpression() ExpressionNode {
 // parse a declarative statement
 func (par *Parser) parseDeclarativeStatement() StatementNode {
 	varToken := par.CurrToken
-	par.expectAdvance(lexer.IDENTIFIER_ID)
+	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+		return nil
+	}
 	identifier := par.CurrToken
 	typ := "var"
 	if varToken.Type == lexer.CONST_KEY {
@@ -559,9 +615,14 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 		typ = "const"
 		par.Consts[identifier.Literal] = true
 	}
-	par.expectAdvance(lexer.ASSIGN_OP)
+	if !par.expectAdvance(lexer.ASSIGN_OP) {
+		return nil
+	}
 	par.advance()
 	expr := par.parseExpression()
+	if expr == nil {
+		return nil
+	}
 
 	// evaluating the expression
 	val := eval(par, expr)
@@ -618,12 +679,18 @@ func (par *Parser) parseCallExpression() ExpressionNode {
 		Value: &objects.Nil{}, // Default value for identifier
 	}
 
-	par.expectAdvance(lexer.LEFT_PAREN)
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
 	// if there are arguments, parse them
 	if par.NextToken.Type != lexer.RIGHT_PAREN {
 		par.advance()
 		for {
-			callNode.Arguments = append(callNode.Arguments, par.parseExpression())
+			arg := par.parseExpression()
+			if arg == nil {
+				return nil
+			}
+			callNode.Arguments = append(callNode.Arguments, arg)
 			if par.NextToken.Type == lexer.COMMA_DELIM {
 				par.advance()
 				par.advance()
@@ -633,7 +700,9 @@ func (par *Parser) parseCallExpression() ExpressionNode {
 		}
 	}
 
-	par.expectAdvance(lexer.RIGHT_PAREN)
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
 	return callNode
 }
 
@@ -642,6 +711,9 @@ func (par *Parser) parseReturnStatement() ExpressionNode {
 	returnToken := par.CurrToken
 	par.advance()
 	expr := par.parseExpression()
+	if expr == nil {
+		return nil
+	}
 	// evaluating the expression
 	val := eval(par, expr)
 	return &ReturnStatementNode{
@@ -656,6 +728,9 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 	op := par.CurrToken
 	par.advance()
 	right := par.parseInternal(getPrecedence(&op) + 1)
+	if right == nil {
+		return nil
+	}
 
 	lVal := eval(par, left)
 	rVal := eval(par, right)
@@ -781,33 +856,47 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 	op := par.CurrToken
 	par.advance()
 	right := par.parseInternal(getPrecedence(&op) + 1)
+	if right == nil {
+		return nil
+	}
 
 	val := eval(par, right)
 
 	// if left is const
-	if _, ok := left.(*IdentifierExpressionNode); ok {
-		if left.(*IdentifierExpressionNode).Type == "const" {
-			panic("Cannot assign to a const variable")
+	if ident, ok := left.(*IdentifierExpressionNode); ok {
+		if ident.Type == "const" {
+			msg := "[LEXER ERROR] Cannot assign to a const variable"
+			par.addError(msg)
+			return nil
+		}
+		par.Env[ident.Name] = val
+		return &AssignmentExpressionNode{
+			Operation: op,
+			Left:      *ident,
+			Right:     right,
+			Value:     val,
 		}
 	}
 
-	par.Env[left.(*IdentifierExpressionNode).Name] = val
-	// fmt.Println("Reassigned")
-	return &AssignmentExpressionNode{
-		Operation: op,
-		Left:      *left.(*IdentifierExpressionNode),
-		Right:     right,
-		Value:     val,
-	}
+	msg := "[LEXER ERROR] Invalid assignment target"
+	par.addError(msg)
+	return nil
 }
 
 // parse an if statement
 func (par *Parser) parseIfStatement() ExpressionNode {
 	ifNode := NewIfStatement()
 	ifNode.IfToken = par.CurrToken
-	par.expectAdvance(lexer.LEFT_PAREN)
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
 	ifNode.Condition = par.parseInternal(MINIMUM_PRIORITY)
-	par.expectAdvance(lexer.LEFT_BRACE)
+	if ifNode.Condition == nil {
+		return nil
+	}
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
 	ifNode.ThenBlock = *par.parseBlockStatement()
 	if par.NextToken.Type == lexer.ELSE_KEY {
 		par.advance() // consume closing brace of if block
@@ -819,6 +908,9 @@ func (par *Parser) parseIfStatement() ExpressionNode {
 			elseBlock := &BlockStatementNode{}
 			elseBlock.Statements = make([]StatementNode, 0)
 			nestedIf := par.parseIfStatement()
+			if nestedIf == nil {
+				return nil
+			}
 			elseBlock.Statements = append(elseBlock.Statements, nestedIf)
 			if exprNode, ok := nestedIf.(ExpressionNode); ok {
 				elseBlock.Value = eval(par, exprNode)
@@ -852,17 +944,23 @@ func (par *Parser) parseIfStatement() ExpressionNode {
 func (par *Parser) parseFunctionStatement() StatementNode {
 	funcNode := NewFunctionStatementNode()
 	funcNode.FuncToken = par.CurrToken
-	par.expectAdvance(lexer.IDENTIFIER_ID)
+	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+		return nil
+	}
 	funcNode.FuncName = IdentifierExpressionNode{
 		Name:  par.CurrToken.Literal,
 		Value: &objects.Nil{}, // Default value for identifier
 	}
-	par.expectAdvance(lexer.LEFT_PAREN)
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
 
 	// Handle empty parameters case
 	if par.NextToken.Type != lexer.RIGHT_PAREN {
 		// First parameter
-		par.expectAdvance(lexer.IDENTIFIER_ID)
+		if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+			return nil
+		}
 		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 			Name:  par.CurrToken.Literal,
 			Value: &objects.Nil{}, // Default value for identifier
@@ -871,16 +969,22 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 		// Subsequent parameters
 		for par.NextToken.Type == lexer.COMMA_DELIM {
 			par.advance() // Consume comma
-			par.expectAdvance(lexer.IDENTIFIER_ID)
+			if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+				return nil
+			}
 			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 				Name:  par.CurrToken.Literal,
 				Value: &objects.Nil{}, // Default value for identifier
 			})
 		}
 	}
-	par.expectAdvance(lexer.RIGHT_PAREN)
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
 
-	par.expectAdvance(lexer.LEFT_BRACE)
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
 	funcNode.FuncBody = *par.parseBlockStatement()
 	funcNode.Value = funcNode.FuncBody.Value
 	return funcNode
@@ -899,20 +1003,26 @@ func (par *Parser) parseStringLiteral() ExpressionNode {
 func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 	unary, has := par.UnaryFuncs[par.CurrToken.Type]
 	if !has {
-		msg := fmt.Sprintf("[ERROR] could not parse unary expression: %s", par.CurrToken.Literal)
-		fmt.Println(msg)
-		panic(msg)
+		msg := fmt.Sprintf("[LEXER ERROR] unexpected token: %s", par.CurrToken.Literal)
+		par.addError(msg)
+		return nil
 	}
 	left := unary()
+	if left == nil {
+		return nil
+	}
 	for par.NextToken.Type != lexer.EOF_TYPE && getPrecedence(&par.NextToken) >= currPrecedence {
 		binary, has := par.BinaryFuncs[par.NextToken.Type]
 		par.advance()
 		if !has {
-			msg := fmt.Sprintf("[ERROR] could not parse binary expression: %s", par.NextToken.Literal)
-			fmt.Println(msg)
-			panic(msg)
+			msg := fmt.Sprintf("[LEXER ERROR] unexpected operator: %s", par.CurrToken.Literal)
+			par.addError(msg)
+			return nil
 		}
 		left = binary(left)
+		if left == nil {
+			return nil
+		}
 	}
 	return left
 }

@@ -52,20 +52,41 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 			writer.Write([]byte("Good Bye!\n"))
 			break
 		}
-		par := parser.NewParser(line)
-		rootNode := par.Parse()
-		if rootNode == nil {
-			writer.Write([]byte("Invalid syntax or parser error\n"))
-			continue
+
+		// Execute parsing and evaluation with panic recovery
+		r.executeWithRecovery(writer, line, evaluator)
+	}
+}
+
+// executeWithRecovery handles parsing and evaluation with panic recovery
+func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eval.Evaluator) {
+	// Recover from any panics that might occur during parsing or evaluation
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			writer.Write([]byte(fmt.Sprintf("[RUNTIME ERROR] %v\n", recovered)))
 		}
+	}()
 
-		evaluator.SetParser(par)
-		result := evaluator.Eval(rootNode)
+	par := parser.NewParser(line)
+	rootNode := par.Parse()
 
-		if result != nil {
-			writer.Write([]byte(result.ToObject() + "\n"))
+	// Check for parser errors
+	if par.HasErrors() {
+		for _, err := range par.GetErrors() {
+			writer.Write([]byte(err + "\n"))
 		}
-
+		return
 	}
 
+	if rootNode == nil {
+		writer.Write([]byte("[LEXER ERROR] Invalid syntax or parser error\n"))
+		return
+	}
+
+	evaluator.SetParser(par)
+	result := evaluator.Eval(rootNode)
+
+	if result != nil {
+		writer.Write([]byte(result.ToString() + "\n"))
+	}
 }

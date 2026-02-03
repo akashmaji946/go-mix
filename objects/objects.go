@@ -121,7 +121,7 @@ func (e *Error) GetType() GoMixType {
 }
 
 func (e *Error) ToString() string {
-	return fmt.Sprintf("[ERROR]: %s", e.Message)
+	return fmt.Sprintf("%s", e.Message)
 }
 
 func (e *Error) ToObject() string {

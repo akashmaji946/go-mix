@@ -212,91 +212,91 @@ func TestEvaluator_ExpressionErrror(t *testing.T) {
 	}{
 		{
 			"1 + true",
-			"[ERROR]: Operator (+) not implemented for (int) and (bool)",
+			"operator (+) not implemented for (int) and (bool)",
 		},
 		{
 			"1 - true",
-			"[ERROR]: Operator (-) not implemented for (int) and (bool)",
+			"operator (-) not implemented for (int) and (bool)",
 		},
 		{
 			"1 * true",
-			"[ERROR]: Operator (*) not implemented for (int) and (bool)",
+			"operator (*) not implemented for (int) and (bool)",
 		},
 		{
 			"1 / true",
-			"[ERROR]: Operator (/) not implemented for (int) and (bool)",
+			"operator (/) not implemented for (int) and (bool)",
 		},
 		{
 			"1 % true",
-			"[ERROR]: Operator (%) not implemented for (int) and (bool)",
+			"operator (%) not implemented for (int) and (bool)",
 		},
 		{
 			"1 & true",
-			"[ERROR]: Operator (&) not implemented for (int) and (bool)",
+			"operator (&) not implemented for (int) and (bool)",
 		},
 		{
 			"1 | true",
-			"[ERROR]: Operator (|) not implemented for (int) and (bool)",
+			"operator (|) not implemented for (int) and (bool)",
 		},
 		{
 			"1 ^ true",
-			"[ERROR]: Operator (^) not implemented for (int) and (bool)",
+			"operator (^) not implemented for (int) and (bool)",
 		},
 		{
 			"~true",
-			"[ERROR]: Operator (~) not implemented for (bool)",
+			"operator (~) not implemented for (bool)",
 		},
 		{
 			"1 << true",
-			"[ERROR]: Operator (<<) not implemented for (int) and (bool)",
+			"operator (<<) not implemented for (int) and (bool)",
 		},
 		{
 			"1 >> true",
-			"[ERROR]: Operator (>>) not implemented for (int) and (bool)",
+			"operator (>>) not implemented for (int) and (bool)",
 		},
 		{
 			"true + true",
-			"[ERROR]: Operator (+) not implemented for (bool) and (bool)",
+			"operator (+) not implemented for (bool) and (bool)",
 		},
 		{
 			"true - true",
-			"[ERROR]: Operator (-) not implemented for (bool) and (bool)",
+			"operator (-) not implemented for (bool) and (bool)",
 		},
 		{
 			"true * true",
-			"[ERROR]: Operator (*) not implemented for (bool) and (bool)",
+			"operator (*) not implemented for (bool) and (bool)",
 		},
 		{
 			"true / true",
-			"[ERROR]: Operator (/) not implemented for (bool) and (bool)",
+			"operator (/) not implemented for (bool) and (bool)",
 		},
 		{
 			"true % true",
-			"[ERROR]: Operator (%) not implemented for (bool) and (bool)",
+			"operator (%) not implemented for (bool) and (bool)",
 		},
 		{
 			"true & true",
-			"[ERROR]: Operator (&) not implemented for (bool) and (bool)",
+			"operator (&) not implemented for (bool) and (bool)",
 		},
 		{
 			"true | true",
-			"[ERROR]: Operator (|) not implemented for (bool) and (bool)",
+			"operator (|) not implemented for (bool) and (bool)",
 		},
 		{
 			"true ^ true",
-			"[ERROR]: Operator (^) not implemented for (bool) and (bool)",
+			"operator (^) not implemented for (bool) and (bool)",
 		},
 		{
 			"~true",
-			"[ERROR]: Operator (~) not implemented for (bool)",
+			"operator (~) not implemented for (bool)",
 		},
 		{
 			"true << true",
-			"[ERROR]: Operator (<<) not implemented for (bool) and (bool)",
+			"operator (<<) not implemented for (bool) and (bool)",
 		},
 		{
 			"true >> true",
-			"[ERROR]: Operator (>>) not implemented for (bool) and (bool)",
+			"operator (>>) not implemented for (bool) and (bool)",
 		},
 
 		{
@@ -306,7 +306,7 @@ func TestEvaluator_ExpressionErrror(t *testing.T) {
 					false
 				}
 				`,
-			"[ERROR]: Operator (!) not implemented for (int)",
+			"operator (!) not implemented for (int)",
 		},
 	}
 
@@ -361,11 +361,11 @@ func TestEvaluator_Eval_Conditionals(t *testing.T) {
 	}{
 		{
 			`if(1) { true }`,
-			"[ERROR]: Conditional expression must be (bool)",
+			"Conditional expression must be (bool)",
 		},
 		{
 			`if(2 + 2 * 3) { true }`,
-			"[ERROR]: Conditional expression must be (bool)",
+			"Conditional expression must be (bool)",
 		},
 	}
 	for _, tt := range errorTests {
@@ -472,15 +472,15 @@ func TestEvaluator_Eval_DeclarationError(t *testing.T) {
 	}{
 		{
 			`var a = b * 10;`,
-			"[ERROR]: identifier not found: (b)",
+			"identifier not found: (b)",
 		},
 		{
 			`var a = 1; var b = 2; var c = a + b + c;`,
-			"[ERROR]: identifier not found: (c)",
+			"identifier not found: (c)",
 		},
 		{
 			`var a = 1; var a = 2; var c = a;`,
-			"[ERROR]: identifier redeclaration found: (a)",
+			"identifier redeclaration found: (a)",
 		},
 	}
 
@@ -499,4 +499,71 @@ func TestEvaluator_Eval_DeclarationError(t *testing.T) {
 
 }
 
-// function declarartion
+// function declaration
+func TestEvaluator_Eval_FunctionCall(t *testing.T) {
+	tests := []struct {
+		Src      string
+		Expected int64
+	}{
+		{
+			`var g = func(a) { return a + 1; }; g(1)`,
+			2,
+		},
+		{
+			`var add = func(a, b) { return a + b; }; add(2, 3)`,
+			5,
+		},
+		{
+			`var noArgs = func() { return 42; }; noArgs()`,
+			42,
+		},
+	}
+
+	for _, tt := range tests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.Expected)
+	}
+}
+
+func TestEvaluator_Eval_FunctionCallArgumentCountError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`var g = func(a) { return a + 1; }; g()`,
+			"wrong number of arguments: expected 1, got 0",
+		},
+		{
+			`var g = func(a) { return a + 1; }; g(1, 2)`,
+			"wrong number of arguments: expected 1, got 2",
+		},
+		{
+			`var g = func(a) { return a + 1; }; g(1, 2, 3, 4)`,
+			"wrong number of arguments: expected 1, got 4",
+		},
+		{
+			`var add = func(a, b) { return a + b; }; add(1)`,
+			"wrong number of arguments: expected 2, got 1",
+		},
+		{
+			`var add = func(a, b) { return a + b; }; add(1, 2, 3)`,
+			"wrong number of arguments: expected 2, got 3",
+		},
+		{
+			`var noArgs = func() { return 42; }; noArgs(1)`,
+			"wrong number of arguments: expected 0, got 1",
+		},
+	}
+
+	for _, tt := range errorTests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		AssertError(t, result, tt.ExpectedErrorMsg)
+	}
+}
+
+// function declarartion (legacy comment)
