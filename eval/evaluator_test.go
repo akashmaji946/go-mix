@@ -393,14 +393,14 @@ func TestEvaluator_Eval_ReturnStatement(t *testing.T) {
 		},
 		{
 			`9 * 9
-				return 10`,
+			return 10`,
 			10,
 		},
 		{
 			`9 * 9
 				return 10
 				8 + 10`,
-			18,
+			10,
 		},
 		{
 			`if(true) {
@@ -408,7 +408,7 @@ func TestEvaluator_Eval_ReturnStatement(t *testing.T) {
 						return 10
 					}
 					return 1
-				}`, 1,
+				}`, 10,
 		},
 	}
 
@@ -420,3 +420,83 @@ func TestEvaluator_Eval_ReturnStatement(t *testing.T) {
 
 	}
 }
+
+func TestEvaluator_Eval_Declarations(t *testing.T) {
+	tests := []struct {
+		Src      string
+		Expected int64
+	}{
+		{
+			`var a = 1
+				a
+				`,
+			1,
+		},
+		{
+			`var a = 1 * 2 + 1
+				a
+				`,
+			3,
+		},
+
+		{
+			`var a = 1 * 2 + 1
+                 var c = 10
+				 var d = a * c
+				 d
+				`,
+			30,
+		},
+		{
+			`var a = 1 * 2 + 1;
+             var c = 10;
+			 var d = a * c; 
+			`,
+			30,
+		},
+	}
+
+	for _, tt := range tests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.Expected)
+
+	}
+}
+
+func TestEvaluator_Eval_DeclarationError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`var a = b * 10;`,
+			"[ERROR]: identifier not found: (b)",
+		},
+		{
+			`var a = 1; var b = 2; var c = a + b + c;`,
+			"[ERROR]: identifier not found: (c)",
+		},
+		{
+			`var a = 1; var a = 2; var c = a;`,
+			"[ERROR]: identifier redeclaration found: (a)",
+		},
+	}
+
+	for _, tt := range errorTests {
+		rootNode := parser.NewParser(tt.Src).Parse()
+		evaluator := NewEvaluator()
+		result := evaluator.Eval(rootNode)
+		if result.GetType() != objects.ErrorType {
+			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		}
+		if result.(*objects.Error).Message != tt.ExpectedErrorMsg {
+			t.Errorf("expected %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		}
+
+	}
+
+}
+
+// function declarartion

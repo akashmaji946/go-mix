@@ -61,7 +61,7 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 		result := evaluator.Eval(rootNode)
 
 		if result != nil {
-			writer.Write([]byte(result.ToString() + "\n"))
+			writer.Write([]byte(result.ToObject() + "\n"))
 		}
 
 	}

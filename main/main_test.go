@@ -424,4 +424,25 @@ func TestMain(t *testing.T) {
 	root47.Accept(visitor47)
 	fmt.Println(visitor47)
 
+	// redeclaration
+	src48 := `var a = 1; var a = 2; var c = a;`
+	root48 := parser.NewParser(src48).Parse()
+	visitor48 := &PrintingVisitor{}
+	root48.Accept(visitor48)
+	fmt.Println(visitor48)
+
+	// function declaration
+	src49 := `func foo(a) { if(a) {return 1;} else {return 2;}}`
+	root49 := parser.NewParser(src49).Parse()
+	visitor49 := &PrintingVisitor{}
+	root49.Accept(visitor49)
+	fmt.Println(visitor49)
+
+	// function call
+	src50 := `func fib(n) { if(n==0){return 0;} else if(n == 1) {return 1;} else {return fib(n-1) + fib(n-2);}} fib(10);`
+	root50 := parser.NewParser(src50).Parse()
+	visitor50 := &PrintingVisitor{}
+	root50.Accept(visitor50)
+	fmt.Println(visitor50)
+
 }

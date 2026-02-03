@@ -4,17 +4,25 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/akashmaji946/go-mix/function"
 	"github.com/akashmaji946/go-mix/lexer"
 	"github.com/akashmaji946/go-mix/objects"
 	"github.com/akashmaji946/go-mix/parser"
+	"github.com/akashmaji946/go-mix/scope"
 )
 
+// Evaluates expressions in a repl
 type Evaluator struct {
-	parser *parser.Parser
+	Par *parser.Parser
+	Scp *scope.Scope
 }
 
+// Evaluator constructor
 func NewEvaluator() *Evaluator {
-	return &Evaluator{}
+	return &Evaluator{
+		Par: nil,
+		Scp: scope.NewScope(nil),
+	}
 }
 
 func IsError(obj objects.GoMixObject) bool {
@@ -28,6 +36,13 @@ func CreateError(format string, a ...interface{}) *objects.Error {
 	msg := fmt.Sprintf(format, a...)
 	msg = fmt.Sprintf("[ERROR]: %s", msg)
 	return &objects.Error{Message: msg}
+}
+
+func UnwrapReturnValue(obj objects.GoMixObject) objects.GoMixObject {
+	if retVal, isReturn := obj.(*objects.ReturnValue); isReturn {
+		return retVal.Value
+	}
+	return obj
 }
 
 func AssertError(t *testing.T, obj objects.GoMixObject, expected string) {
@@ -94,10 +109,15 @@ func AssertString(t *testing.T, obj objects.GoMixObject, expected string) {
 	}
 }
 
+// Evaluates the given node into a GoMixObject
+// If the node is a statement a Nil object is returned
+// Errors are GoMixObject instances as well,
+// and they are designed to block the evaluation process.
 func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 	switch n := n.(type) {
 	case *parser.RootNode:
-		return e.evalStatements(n.Statements)
+		result := e.evalStatements(n.Statements)
+		return UnwrapReturnValue(result)
 	case *parser.BooleanLiteralExpressionNode:
 		return n.Value
 	case *parser.IntegerLiteralExpressionNode:
@@ -126,26 +146,86 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalBlockStatement(n)
 	case *parser.IdentifierExpressionNode:
 		return e.evalIdentifierExpression(n)
+	case *parser.FunctionStatementNode:
+		return e.registerFunction(n)
 	case *parser.CallExpressionNode:
 		return e.evalCallExpression(n)
 	default:
-		return CreateError("Not implemented.")
+		return &objects.Nil{}
 	}
 }
 
 func (e *Evaluator) SetParser(p *parser.Parser) {
-	e.parser = p
+	e.Par = p
+}
+
+func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.GoMixObject {
+	function := &function.Function{
+		Name:   n.FuncName.Name,
+		Params: n.FuncParams,
+		Body:   &n.FuncBody,
+		Scp:    e.Scp,
+	}
+	// redeclared?
+	has := e.Scp.Bind(n.FuncName.Name, function)
+	if has {
+		return CreateError("function redeclaration found: (%s)", n.FuncName.Name)
+	}
+	e.Scp.Bind(n.FuncName.Name, function)
+	return function
+
+	// 	Name   string
+	// Params []*parser.IdentifierExpressionNode
+	// Body   *parser.BlockStatementNode
+	// Scp    *scope.Scope
 }
 
 func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoMixObject {
-	return &objects.Nil{}
+	// lookup for function name
+	obj, ok := e.Scp.LookUp(n.FunctionIdentifier.Name)
+	if !ok {
+		return CreateError("function not found: (%s)", n.FunctionIdentifier.Name)
+	}
+	if obj.GetType() != objects.FunctionType {
+		return CreateError("not a function: (%s)", n.FunctionIdentifier.Name)
+	}
+	functionObject := obj.(*function.Function)
+
+	// Create a new scope with the function's captured scope as parent
+	var parentScope *scope.Scope
+	if functionObject.Scp != nil {
+		parentScope = functionObject.Scp
+	} else {
+		parentScope = e.Scp
+	}
+	callSiteScope := scope.NewScope(parentScope)
+
+	for i, param := range functionObject.Params {
+		callSiteScope.Bind(param.Name, e.Eval(n.Arguments[i]))
+	}
+	oldScope := e.Scp
+	e.Scp = callSiteScope
+	result := e.Eval(functionObject.Body)
+	e.Scp = oldScope
+
+	// Unwrap return value if present
+	if retVal, isReturn := result.(*objects.ReturnValue); isReturn {
+		return retVal.Value
+	}
+	return result
+
 }
 
 func (e *Evaluator) evalIdentifierExpression(n *parser.IdentifierExpressionNode) objects.GoMixObject {
-	if val, ok := e.parser.Env[n.Name]; ok {
-		return val
+	// if val, ok := e.parser.Env[n.Name]; ok {
+	// 	return val
+	// }
+	// return &objects.Nil{}
+	val, ok := e.Scp.LookUp(n.Name)
+	if !ok {
+		return CreateError("identifier not found: (%s)", n.Name)
 	}
-	return &objects.Nil{}
+	return val
 }
 
 func (e *Evaluator) evalBlockStatement(n *parser.BlockStatementNode) objects.GoMixObject {
@@ -157,7 +237,7 @@ func (e *Evaluator) evalReturnStatement(n *parser.ReturnStatementNode) objects.G
 	if IsError(val) {
 		return val
 	}
-	return val
+	return &objects.ReturnValue{Value: val}
 }
 
 func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode) objects.GoMixObject {
@@ -165,12 +245,21 @@ func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode)
 	if IsError(val) {
 		return val
 	}
-	e.parser.Env[n.Identifier.Literal] = val
+	// redeclared?
+	has := e.Scp.Bind(n.Identifier.Literal, val)
+	if has {
+		return CreateError("identifier redeclaration found: (%s)", n.Identifier.Literal)
+	}
+	e.Scp.Bind(n.Identifier.Literal, val)
 	return val
 }
 
 func (e *Evaluator) evalConditionalExpression(n *parser.IfExpressionNode) objects.GoMixObject {
 	condition := e.Eval(n.Condition)
+	if IsError(condition) {
+		return condition
+	}
+
 	if condition.GetType() != objects.BooleanType {
 		return CreateError("Conditional expression must be (bool)")
 	}
@@ -188,6 +277,10 @@ func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixOb
 		if IsError(result) {
 			return result
 		}
+		// Stop evaluation if we hit a return statement
+		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+			return result
+		}
 	}
 	return result
 }
@@ -195,6 +288,13 @@ func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixOb
 func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects.GoMixObject {
 	left := e.Eval(n.Left)
 	right := e.Eval(n.Right)
+
+	if IsError(left) {
+		return left
+	}
+	if IsError(right) {
+		return right
+	}
 
 	err := CreateError("Operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
 
@@ -274,6 +374,9 @@ func toFloat64(obj objects.GoMixObject) float64 {
 
 func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.GoMixObject {
 	right := e.Eval(n.Right)
+	if IsError(right) {
+		return right
+	}
 
 	err := CreateError("Operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
 

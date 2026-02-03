@@ -461,7 +461,7 @@ func NewIfStatement() *IfExpressionNode {
 		Condition:      &BinaryExpressionNode{},
 		ThenBlock:      *EMPTY_BLOCK,
 		ElseBlock:      *EMPTY_BLOCK,
-		ConditionValue: &objects.Nil{},
+		ConditionValue: nil,
 		IfToken:        lexer.Token{},
 	}
 }
@@ -558,7 +558,7 @@ func (node *FunctionStatementNode) Expression() {
 func NewFunctionStatementNode() *FunctionStatementNode {
 	return &FunctionStatementNode{
 		FuncToken:  lexer.Token{Type: lexer.FUNC_KEY, Literal: "func"},
-		FuncName:   IdentifierExpressionNode{Name: "foo", Value: &objects.Nil{}},
+		FuncName:   IdentifierExpressionNode{Name: "foo", Value: nil},
 		FuncParams: make([]*IdentifierExpressionNode, 0),
 		FuncBody:   *EMPTY_BLOCK,
 	}

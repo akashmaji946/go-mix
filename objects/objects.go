@@ -1,6 +1,8 @@
 package objects
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type GoMixType string
 
@@ -11,11 +13,14 @@ const (
 	BooleanType GoMixType = "bool"
 	NilType     GoMixType = "nil"
 	ErrorType   GoMixType = "error"
+
+	FunctionType GoMixType = "func"
 )
 
 type GoMixObject interface {
 	GetType() GoMixType
 	ToString() string
+	ToObject() string
 }
 
 // types
@@ -32,6 +37,10 @@ func (i *Integer) ToString() string {
 	return fmt.Sprintf("%d", i.Value)
 }
 
+func (i *Integer) ToObject() string {
+	return fmt.Sprintf("<int(%d)>", i.Value)
+}
+
 // Float: float64
 type Float struct {
 	Value float64
@@ -43,6 +52,10 @@ func (f *Float) GetType() GoMixType {
 
 func (f *Float) ToString() string {
 	return fmt.Sprintf("%f", f.Value)
+}
+
+func (f *Float) ToObject() string {
+	return fmt.Sprintf("<float(%f)>", f.Value)
 }
 
 // String: string
@@ -58,6 +71,10 @@ func (s *String) ToString() string {
 	return s.Value
 }
 
+func (s *String) ToObject() string {
+	return fmt.Sprintf("<string(%s)>", s.Value)
+}
+
 // Boolean: bool
 type Boolean struct {
 	Value bool
@@ -69,6 +86,10 @@ func (b *Boolean) GetType() GoMixType {
 
 func (b *Boolean) ToString() string {
 	return fmt.Sprintf("%t", b.Value)
+}
+
+func (b *Boolean) ToObject() string {
+	return fmt.Sprintf("<bool(%t)>", b.Value)
 }
 
 // Null: nil
@@ -85,6 +106,12 @@ func (n *Nil) ToString() string {
 	return "nil"
 }
 
+func (n *Nil) ToObject() string {
+	return "<nil()>"
+}
+
+// Error: error
+
 type Error struct {
 	Message string
 }
@@ -95,4 +122,25 @@ func (e *Error) GetType() GoMixType {
 
 func (e *Error) ToString() string {
 	return fmt.Sprintf("[ERROR]: %s", e.Message)
+}
+
+func (e *Error) ToObject() string {
+	return fmt.Sprintf("<error(%s)>", e.Message)
+}
+
+// ReturnValue wraps a value returned from a function
+type ReturnValue struct {
+	Value GoMixObject
+}
+
+func (r *ReturnValue) GetType() GoMixType {
+	return r.Value.GetType()
+}
+
+func (r *ReturnValue) ToString() string {
+	return r.Value.ToString()
+}
+
+func (r *ReturnValue) ToObject() string {
+	return r.Value.ToObject()
 }
