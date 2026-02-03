@@ -1,13 +1,22 @@
 package repl
 
 import (
-	"fmt"
 	"io"
 	"strings"
 
 	"github.com/akashmaji946/go-mix/eval"
 	"github.com/akashmaji946/go-mix/parser"
 	"github.com/chzyer/readline"
+	"github.com/fatih/color"
+)
+
+// Color definitions for REPL output
+var (
+	blueColor   = color.New(color.FgBlue)
+	yellowColor = color.New(color.FgYellow)
+	redColor    = color.New(color.FgRed)
+	greenColor  = color.New(color.FgGreen)
+	cyanColor   = color.New(color.FgCyan)
 )
 
 type Repl struct {
@@ -23,18 +32,27 @@ func NewRepl(banner string, version string, author string, line string, license 
 	return &Repl{Banner: banner, Version: version, Author: author, Line: line, License: license, Prompt: prompt}
 }
 
-func (r *Repl) Start(reader io.Reader, writer io.Writer) {
-	fmt.Println(r.Line)
-	fmt.Println(r.Banner)
-	fmt.Println(r.Line)
-	fmt.Println("Version: " + r.Version + " | Author: " + r.Author + " | Lincense: " + r.License)
-	fmt.Println(r.Line)
-	fmt.Println("Welcome to Go-Mix!")
-	fmt.Println("Type your code and press enter")
-	fmt.Println("Type '.exit' to quit")
-	fmt.Println("Use up/down arrows to navigate command history")
-	fmt.Println(r.Line)
+func (r *Repl) PrintBannerInfo(writer io.Writer) {
 
+	blueColor.Fprintf(writer, "%s\n", r.Line)
+	greenColor.Fprintf(writer, "%s\n", r.Banner)
+	blueColor.Fprintf(writer, "%s\n", r.Line)
+	yellowColor.Fprintln(writer, "Version: "+r.Version+" | Author: "+r.Author+" | Lincense: "+r.License)
+	blueColor.Fprintf(writer, "%s\n", r.Line)
+
+	cyanColor.Fprintf(writer, "%s\n", "Welcome to Go-Mix!")
+	cyanColor.Fprintf(writer, "%s\n", "Type your code and press enter")
+	cyanColor.Fprintf(writer, "%s\n", "Type '.exit' to quit")
+	cyanColor.Fprintf(writer, "%s\n", "Use up/down arrows to navigate command history")
+	blueColor.Fprintf(writer, "%s\n", r.Line)
+}
+
+func (r *Repl) Start(reader io.Reader, writer io.Writer) {
+
+	// print the banner
+	r.PrintBannerInfo(writer)
+
+	// create a new readline instance
 	rl, err := readline.New(r.Prompt)
 	if err != nil {
 		panic(err)
@@ -61,7 +79,10 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 
 		rl.SaveHistory(line)
 
-		// Execute parsing and evaluation with panic recovery
+		// echo input in blue
+		// blueColor.Fprintf(writer, ">> %s\n", line)
+
+		// execute parsing and evaluation with panic recovery
 		r.executeWithRecovery(writer, line, evaluator)
 	}
 }
@@ -71,7 +92,7 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 	// Recover from any panics that might occur during parsing or evaluation
 	defer func() {
 		if recovered := recover(); recovered != nil {
-			writer.Write([]byte(fmt.Sprintf("[RUNTIME ERROR] %v\n", recovered)))
+			redColor.Fprintf(writer, "[RUNTIME ERROR] %v\n", recovered)
 		}
 	}()
 
@@ -81,13 +102,13 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 	// Check for parser errors
 	if par.HasErrors() {
 		for _, err := range par.GetErrors() {
-			writer.Write([]byte(err + "\n"))
+			redColor.Fprintf(writer, "%s\n", err)
 		}
 		return
 	}
 
 	if rootNode == nil {
-		writer.Write([]byte("[LEXER ERROR] Invalid syntax or parser error\n"))
+		redColor.Fprintf(writer, "[LEXER ERROR] Invalid syntax or parser error\n")
 		return
 	}
 
@@ -95,6 +116,10 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 	result := evaluator.Eval(rootNode)
 
 	if result != nil {
-		writer.Write([]byte(result.ToString() + "\n"))
+		if result.GetType() == "error" {
+			redColor.Fprintf(writer, "%s\n", result.ToString())
+		} else {
+			yellowColor.Fprintf(writer, "%s\n", result.ToString())
+		}
 	}
 }

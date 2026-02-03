@@ -13,16 +13,35 @@ import (
 
 // Evaluates expressions in a repl
 type Evaluator struct {
-	Par *parser.Parser
-	Scp *scope.Scope
+	Par      *parser.Parser
+	Scp      *scope.Scope
+	Builtins map[string]*objects.Builtin
 }
 
 // Evaluator constructor
 func NewEvaluator() *Evaluator {
-	return &Evaluator{
-		Par: nil,
-		Scp: scope.NewScope(nil),
+	ev := &Evaluator{
+		Par:      nil,
+		Scp:      scope.NewScope(nil),
+		Builtins: make(map[string]*objects.Builtin),
 	}
+	for _, builtin := range objects.Builtins {
+		ev.Builtins[builtin.Name] = builtin
+	}
+	return ev
+}
+
+func (e *Evaluator) IsBuiltin(name string) bool {
+	_, ok := e.Builtins[name]
+	return ok
+}
+
+func (e *Evaluator) InvokeBuiltin(name string, args ...objects.GoMixObject) objects.GoMixObject {
+
+	if builtin, ok := e.Builtins[name]; ok {
+		return builtin.Callback(args...)
+	}
+	return &objects.Nil{}
 }
 
 func IsError(obj objects.GoMixObject) bool {
@@ -204,13 +223,28 @@ func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode)
 }
 
 func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoMixObject {
+
+	// look for builtin name
+	funcName := n.FunctionIdentifier.Name
+	if ok := e.IsBuiltin(funcName); ok {
+		args := make([]objects.GoMixObject, len(n.Arguments))
+		for i, arg := range n.Arguments {
+			args[i] = e.Eval(arg)
+		}
+		rv := e.InvokeBuiltin(funcName, args...)
+		if rv.GetType() != objects.ErrorType {
+			fmt.Println("")
+		}
+		return rv
+	}
+
 	// lookup for function name
-	obj, ok := e.Scp.LookUp(n.FunctionIdentifier.Name)
+	obj, ok := e.Scp.LookUp(funcName)
 	if !ok {
-		return CreateError("function not found: (%s)", n.FunctionIdentifier.Name)
+		return CreateError("function not found: (%s)", funcName)
 	}
 	if obj.GetType() != objects.FunctionType {
-		return CreateError("not a function: (%s)", n.FunctionIdentifier.Name)
+		return CreateError("not a function: (%s)", funcName)
 	}
 	functionObject := obj.(*function.Function)
 

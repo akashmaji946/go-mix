@@ -186,6 +186,43 @@ func TestNewLexer_ConsumeTokens(t *testing.T) {
 				NewToken(NIL_LIT, "nil"),
 			},
 		},
+		// Test escape sequences in string literals
+		{
+			Input: `"hello\nworld"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "hello\nworld"),
+			},
+		},
+		{
+			Input: `"tab\there"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "tab\there"),
+			},
+		},
+		{
+			Input: `"escaped\\backslash"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "escaped\\backslash"),
+			},
+		},
+		{
+			Input: `"escaped\"quote"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "escaped\"quote"),
+			},
+		},
+		{
+			Input: `"multiple\n\t\rescapes"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "multiple\n\t\rescapes"),
+			},
+		},
+		{
+			Input: `"hello there \t \n hii"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "hello there \t \n hii"),
+			},
+		},
 	}
 
 	for _, test := range tests {

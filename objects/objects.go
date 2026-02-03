@@ -23,6 +23,26 @@ type GoMixObject interface {
 	ToObject() string
 }
 
+func ExtractValue(obj GoMixObject) (interface{}, error) {
+	switch obj.GetType() {
+	case IntegerType:
+		return obj.(*Integer).Value, nil
+	case FloatType:
+		return obj.(*Float).Value, nil
+	case StringType:
+		return obj.(*String).Value, nil
+	case BooleanType:
+		return obj.(*Boolean).Value, nil
+	case NilType:
+		return obj.(*Nil).Value, nil
+	case ErrorType:
+		return obj.(*Error).Message, nil
+	default:
+		return nil, fmt.Errorf("unsupported type: %s", obj.GetType())
+	}
+
+}
+
 // types
 // Integer: int64
 type Integer struct {

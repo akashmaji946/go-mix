@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
 )
 
@@ -138,26 +139,71 @@ func (lex *Lexer) NextToken() Token {
 }
 
 // readStringLiteral(): reads a string literal in the source code
-// TODO: add support for escape sequences
-// e.g. "\n", "\t", "\r", "\f", "\v", "\\", "\"", "\'"
+// Supports escape sequences: \n, \t, \r, \f, \v, \\, \", \', \0
 func readStringLiteral(lex *Lexer) Token {
-	position := lex.Position
 	if lex.Current != '"' {
 		// TODO: do better error handling
 		fmt.Errorf("[ERROR] Malformed string literal")
 		return NewToken(INVALID_TYPE, "")
 	}
-	lex.advance()
+	lex.advance() // consume opening quote
+
+	var builder strings.Builder
+
 	for lex.Current != '"' {
-		if isEscape(lex.Current) {
-			// TODO: do better error handling
-			fmt.Errorf("[ERROR] String literal not terminated")
+		// Check for unterminated string (EOF or actual newline in source)
+		if lex.Current == 0 {
+			fmt.Errorf("[ERROR] String literal not terminated - unexpected EOF")
 			return NewToken(INVALID_TYPE, "")
 		}
+
+		// Handle escape sequences
+		if lex.Current == '\\' {
+			lex.advance() // consume the backslash
+			escapedChar, valid := escapeChar(lex.Current)
+			if !valid {
+				fmt.Errorf("[ERROR] Invalid escape sequence: \\%c", lex.Current)
+				return NewToken(INVALID_TYPE, "")
+			}
+			builder.WriteByte(escapedChar)
+			lex.advance()
+			continue
+		}
+
+		// Regular character
+		builder.WriteByte(lex.Current)
 		lex.advance()
 	}
-	lex.advance()
-	return NewToken(STRING_LIT, lex.Src[position+1:lex.Position-1])
+
+	lex.advance() // consume closing quote
+	return NewToken(STRING_LIT, builder.String())
+}
+
+// escapeChar(): converts an escape sequence character to its actual value
+// e.g., 'n' -> '\n', 't' -> '\t', etc.
+func escapeChar(c byte) (byte, bool) {
+	switch c {
+	case 'n':
+		return '\n', true
+	case 't':
+		return '\t', true
+	case 'r':
+		return '\r', true
+	case 'f':
+		return '\f', true
+	case 'v':
+		return '\v', true
+	case '\\':
+		return '\\', true
+	case '"':
+		return '"', true
+	case '\'':
+		return '\'', true
+	case '0':
+		return 0, true
+	default:
+		return 0, false
+	}
 }
 
 // readNumber(): reads a number in the source code
@@ -265,6 +311,8 @@ func isAlpha(curr byte) bool {
 }
 
 // isEscape(): check if current byte is an escape character or not
+// This function is kept for backward compatibility but is no longer used
+// in readStringLiteral as escape sequences are now handled properly
 func isEscape(curr byte) bool {
 	return curr == '\\' || curr == '\'' || curr == 0 ||
 		curr == '\n' || curr == '\t' || curr == '\r' || curr == '\f' || curr == '\v'
