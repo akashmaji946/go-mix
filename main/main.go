@@ -9,6 +9,7 @@ import (
 var VERSION = "v0.1"
 var AUTHOR = "akashmaji(@iisc.ac.in)"
 var LICENCE = "MIT"
+var PROMPT = "GO-MIX >>> "
 var BANNER = `                                                        
     ▄▄▄▄                       ▄▄▄  ▄▄▄     ██              
   ██▀▀▀▀█                      ███  ███     ▀▀              
@@ -21,8 +22,6 @@ var BANNER = `
 var LINE = "----------------------------------------------------------------"
 
 func main() {
-	// This will only work for arithmetic, bitwise, boolean expressions
-	// For now, it works only with binary and boolean expressions involving literals
-	repler := repl.NewRepl(BANNER, VERSION, AUTHOR, LINE, LICENCE)
+	repler := repl.NewRepl(BANNER, VERSION, AUTHOR, LINE, LICENCE, PROMPT)
 	repler.Start(os.Stdin, os.Stdout)
 }

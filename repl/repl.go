@@ -1,13 +1,13 @@
 package repl
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/akashmaji946/go-mix/eval"
 	"github.com/akashmaji946/go-mix/parser"
+	"github.com/chzyer/readline"
 )
 
 type Repl struct {
@@ -16,10 +16,11 @@ type Repl struct {
 	Author  string
 	Line    string
 	License string
+	Prompt  string
 }
 
-func NewRepl(banner string, version string, author string, line string, license string) *Repl {
-	return &Repl{Banner: banner, Version: version, Author: author, Line: line, License: license}
+func NewRepl(banner string, version string, author string, line string, license string, prompt string) *Repl {
+	return &Repl{Banner: banner, Version: version, Author: author, Line: line, License: license, Prompt: prompt}
 }
 
 func (r *Repl) Start(reader io.Reader, writer io.Writer) {
@@ -31,27 +32,34 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 	fmt.Println("Welcome to Go-Mix!")
 	fmt.Println("Type your code and press enter")
 	fmt.Println("Type '.exit' to quit")
+	fmt.Println("Use up/down arrows to navigate command history")
 	fmt.Println(r.Line)
 
-	scanner := bufio.NewScanner(reader)
+	rl, err := readline.New(r.Prompt)
+	if err != nil {
+		panic(err)
+	}
+	defer rl.Close()
+
 	evaluator := eval.NewEvaluator()
 
 	for {
-		fmt.Print("Go-Mix >>> ")
-		scanned := scanner.Scan()
-		if !scanned {
+		line, err := rl.Readline()
+		if err != nil {
 			writer.Write([]byte("Good Bye!\n"))
 			break
 		}
 
-		line := scanner.Text()
-		if strings.Trim(line, " \n\t\r") == "" {
+		line = strings.Trim(line, " \n\t\r")
+		if line == "" {
 			continue
 		}
 		if line == ".exit" {
 			writer.Write([]byte("Good Bye!\n"))
 			break
 		}
+
+		rl.SaveHistory(line)
 
 		// Execute parsing and evaluation with panic recovery
 		r.executeWithRecovery(writer, line, evaluator)
