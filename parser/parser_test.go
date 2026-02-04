@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -2052,7 +2051,7 @@ func TestParser_Parse_WhileLoop_SingleCondition(t *testing.T) {
 	assert.Equal(t, 2, len(root.Statements))
 
 	// Check while loop statement
-	whileStmt, ok := root.Statements[1].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[1].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(whileStmt.Conditions))
 	assert.Equal(t, "while(i<5){i = i+1;}", whileStmt.Literal())
@@ -2066,7 +2065,7 @@ func TestParser_Parse_WhileLoop_TwoConditions(t *testing.T) {
 	assert.Equal(t, 3, len(root.Statements))
 
 	// Check while loop statement
-	whileStmt, ok := root.Statements[2].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[2].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(whileStmt.Conditions))
 	assert.Equal(t, "while(i<5 && j>5){i = i+1;j = j-1;}", whileStmt.Literal())
@@ -2080,7 +2079,7 @@ func TestParser_Parse_WhileLoop_ThreeConditions(t *testing.T) {
 	assert.Equal(t, 4, len(root.Statements))
 
 	// Check while loop statement
-	whileStmt, ok := root.Statements[3].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[3].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 3, len(whileStmt.Conditions))
 	assert.Equal(t, "while(a<10 && b>10 && c>5){a = a+1;b = b-1;c = c-1;}", whileStmt.Literal())
@@ -2094,7 +2093,7 @@ func TestParser_Parse_WhileLoop_ComplexConditions(t *testing.T) {
 	assert.Equal(t, 3, len(root.Statements))
 
 	// Check while loop statement
-	whileStmt, ok := root.Statements[2].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[2].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 3, len(whileStmt.Conditions))
 
@@ -2120,7 +2119,7 @@ func TestParser_Parse_WhileLoop_EmptyBody(t *testing.T) {
 	assert.Equal(t, 2, len(root.Statements))
 
 	// Check while loop statement
-	whileStmt, ok := root.Statements[1].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[1].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(whileStmt.Conditions))
 	assert.Equal(t, 0, len(whileStmt.Body.Statements))
@@ -2144,7 +2143,7 @@ func TestParser_Parse_WhileLoop_NestedInBlock(t *testing.T) {
 	assert.Equal(t, 2, len(blockStmt.Statements))
 
 	// Check while loop inside block
-	whileStmt, ok := blockStmt.Statements[1].(*WhileLoopNode)
+	whileStmt, ok := blockStmt.Statements[1].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(whileStmt.Conditions))
 }
@@ -2157,7 +2156,7 @@ func TestParser_Parse_ForLoop_MultipleInitializersAndUpdates(t *testing.T) {
 	assert.Equal(t, 1, len(root.Statements))
 
 	// Check for loop statement
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(forStmt.Initializers))
 	assert.Equal(t, 2, len(forStmt.Updates))
@@ -2181,7 +2180,7 @@ func TestParser_Parse_WhileLoop_ConditionTypes(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(whileStmt.Conditions))
 
@@ -2196,7 +2195,7 @@ func TestParser_Parse_WhileLoop_MultipleConditionsWithDifferentOperators(t *test
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 4, len(whileStmt.Conditions))
 
@@ -2227,7 +2226,7 @@ func TestParser_Parse_WhileLoop_BodyWithMultipleStatements(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 3, len(whileStmt.Body.Statements))
 
@@ -2250,12 +2249,12 @@ func TestParser_Parse_WhileLoop_NestedWhileLoops(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	outerWhile, ok := root.Statements[0].(*WhileLoopNode)
+	outerWhile, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(outerWhile.Body.Statements))
 
 	// Check nested while loop
-	innerWhile, ok := outerWhile.Body.Statements[0].(*WhileLoopNode)
+	innerWhile, ok := outerWhile.Body.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(innerWhile.Conditions))
 	assert.Equal(t, 1, len(innerWhile.Body.Statements))
@@ -2271,7 +2270,7 @@ func TestParser_Parse_WhileLoop_WithIfStatement(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(whileStmt.Body.Statements))
 
@@ -2287,7 +2286,7 @@ func TestParser_Parse_WhileLoop_ConditionWithComplexExpression(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(whileStmt.Conditions))
 
@@ -2302,7 +2301,7 @@ func TestParser_Parse_WhileLoop_ValueField(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 
 	// Value field should be initialized to &objects.Nil{}
@@ -2327,7 +2326,7 @@ func TestParser_Parse_ForLoop_SingleInitializer(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(forStmt.Initializers))
 	assert.Equal(t, 1, len(forStmt.Updates))
@@ -2339,7 +2338,7 @@ func TestParser_Parse_ForLoop_MultipleInitializers(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 3, len(forStmt.Initializers))
 
@@ -2355,7 +2354,7 @@ func TestParser_Parse_ForLoop_MultipleUpdates(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 3, len(forStmt.Updates))
 
@@ -2371,7 +2370,7 @@ func TestParser_Parse_ForLoop_NoInitializer(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(forStmt.Initializers))
 	assert.NotNil(t, forStmt.Condition)
@@ -2383,7 +2382,7 @@ func TestParser_Parse_ForLoop_NoCondition(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(forStmt.Initializers))
 	assert.Nil(t, forStmt.Condition)
@@ -2395,7 +2394,7 @@ func TestParser_Parse_ForLoop_NoUpdate(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(forStmt.Initializers))
 	assert.NotNil(t, forStmt.Condition)
@@ -2407,7 +2406,7 @@ func TestParser_Parse_ForLoop_ComplexCondition(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.NotNil(t, forStmt.Condition)
 
@@ -2425,7 +2424,7 @@ func TestParser_Parse_ForLoop_BodyWithMultipleStatements(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 3, len(forStmt.Body.Statements))
 
@@ -2445,12 +2444,12 @@ func TestParser_Parse_ForLoop_NestedForLoops(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	outerFor, ok := root.Statements[0].(*ForLoopNode)
+	outerFor, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(outerFor.Body.Statements))
 
 	// Check nested for loop
-	innerFor, ok := outerFor.Body.Statements[0].(*ForLoopNode)
+	innerFor, ok := outerFor.Body.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(innerFor.Initializers))
 	assert.Equal(t, 1, len(innerFor.Updates))
@@ -2466,7 +2465,7 @@ func TestParser_Parse_ForLoop_WithIfStatement(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(forStmt.Body.Statements))
 
@@ -2480,7 +2479,7 @@ func TestParser_Parse_ForLoop_ValueField(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 
 	// Value field should be initialized to &objects.Nil{}
@@ -2493,7 +2492,7 @@ func TestParser_Parse_ForLoop_EmptyLoop(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(forStmt.Initializers))
 	assert.Nil(t, forStmt.Condition)
@@ -2510,12 +2509,12 @@ func TestParser_Parse_ForLoop_WithWhileLoop(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(forStmt.Body.Statements))
 
 	// Check while loop inside for loop
-	_, ok = forStmt.Body.Statements[0].(*WhileLoopNode)
+	_, ok = forStmt.Body.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 }
 
@@ -2529,12 +2528,12 @@ func TestParser_Parse_WhileLoop_WithForLoop(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(whileStmt.Body.Statements))
 
 	// Check for loop inside while loop
-	_, ok = whileStmt.Body.Statements[0].(*ForLoopNode)
+	_, ok = whileStmt.Body.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 }
 
@@ -2543,7 +2542,7 @@ func TestParser_Parse_ForLoop_Literal(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 
 	// Check literal representation
@@ -2556,7 +2555,7 @@ func TestParser_Parse_WhileLoop_Literal(t *testing.T) {
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 
-	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	whileStmt, ok := root.Statements[0].(*WhileLoopStatementNode)
 	assert.True(t, ok)
 
 	// Check literal representation
@@ -2758,7 +2757,7 @@ func TestParser_Parse_CompoundAssignment_InForLoop(t *testing.T) {
 	assert.Equal(t, 1, len(root.Statements))
 
 	// Check for loop statement
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 1, len(forStmt.Initializers))
 	assert.Equal(t, 1, len(forStmt.Updates))
@@ -2773,7 +2772,7 @@ func TestParser_Parse_CompoundAssignment_MultipleInForLoop(t *testing.T) {
 	assert.Equal(t, 1, len(root.Statements))
 
 	// Check for loop statement
-	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	forStmt, ok := root.Statements[0].(*ForLoopStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(forStmt.Initializers))
 	assert.Equal(t, 2, len(forStmt.Updates))
@@ -2817,7 +2816,6 @@ func TestParser_Parse_CompoundAssignment_Chained(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "a", assignStmt3.Left.Name)
 
-	fmt.Println(assignStmt3.Value)
 	// Value should be the result of the compound assignment: a -= 10
 	// After: var a = 10 (a=10), a += 5 (a=15), a *= 2 (a=30), a -= 10 (a=20)
 	assert.Equal(t, assignStmt3.Value, &objects.Integer{Value: 20})

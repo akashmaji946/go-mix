@@ -200,8 +200,8 @@ func (p *PrintingVisitor) VisitCallExpressionNode(node parser.CallExpressionNode
 	p.Indent -= INDENT_SIZE
 }
 
-// VisitForLoopNode
-func (p *PrintingVisitor) VisitForLoopNode(node parser.ForLoopNode) {
+// VisitForLoopStatementNode
+func (p *PrintingVisitor) VisitForLoopStatementNode(node parser.ForLoopStatementNode) {
 	p.indent()
 	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "For", node.Literal(), node.Literal(), node.Value.ToString()))
 	p.Indent += INDENT_SIZE
@@ -218,8 +218,8 @@ func (p *PrintingVisitor) VisitForLoopNode(node parser.ForLoopNode) {
 	p.Indent -= INDENT_SIZE
 }
 
-// VisitWhileLoopNode visits the while loop node
-func (p *PrintingVisitor) VisitWhileLoopNode(node parser.WhileLoopNode) {
+// VisitWhileLoopStatementNode visits the while loop node
+func (p *PrintingVisitor) VisitWhileLoopStatementNode(node parser.WhileLoopStatementNode) {
 	p.indent()
 	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "While", node.Literal(), node.Literal(), node.Value.ToString()))
 	p.Indent += INDENT_SIZE

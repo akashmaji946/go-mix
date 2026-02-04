@@ -32,8 +32,8 @@ type NodeVisitor interface {
 
 	VisitFunctionStatementNode(node FunctionStatementNode)
 	VisitCallExpressionNode(node CallExpressionNode)
-	VisitForLoopNode(node ForLoopNode)
-	VisitWhileLoopNode(node WhileLoopNode)
+	VisitForLoopStatementNode(node ForLoopStatementNode)
+	VisitWhileLoopStatementNode(node WhileLoopStatementNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -602,8 +602,8 @@ func (node *CallExpressionNode) Expression() {
 
 }
 
-// ForLoopNode: represents a for loop statement
-type ForLoopNode struct {
+// ForLoopStatementNode: represents a for loop statement
+type ForLoopStatementNode struct {
 	ForToken     lexer.Token
 	Initializers []StatementNode  // Multiple initializers like i=0, j=0 or var i=0, j=0
 	Condition    ExpressionNode   // Loop condition like i <= 10 && j <= 100
@@ -613,7 +613,7 @@ type ForLoopNode struct {
 }
 
 // ForLoopNode.Literal(): string representation of the node
-func (node *ForLoopNode) Literal() string {
+func (node *ForLoopStatementNode) Literal() string {
 	res := "for("
 	// Add initializers
 	for i, init := range node.Initializers {
@@ -639,17 +639,17 @@ func (node *ForLoopNode) Literal() string {
 }
 
 // ForLoopNode.Accept(): accepts a visitor
-func (node *ForLoopNode) Accept(visitor NodeVisitor) {
-	visitor.VisitForLoopNode(*node)
+func (node *ForLoopStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitForLoopStatementNode(*node)
 }
 
 // ForLoopNode.Statement(): every for loop is a statement
-func (node *ForLoopNode) Statement() {
+func (node *ForLoopStatementNode) Statement() {
 
 }
 
-// WhileLoopNode: represents a while loop statement
-type WhileLoopNode struct {
+// WhileLoopStatementNode: represents a while loop statement
+type WhileLoopStatementNode struct {
 	WhileToken lexer.Token
 	Conditions []ExpressionNode
 	Body       BlockStatementNode
@@ -657,7 +657,7 @@ type WhileLoopNode struct {
 }
 
 // WhileLoopNode.Literal(): string representation of the node
-func (node *WhileLoopNode) Literal() string {
+func (node *WhileLoopStatementNode) Literal() string {
 	conds := ""
 	for i, cond := range node.Conditions {
 		if i > 0 {
@@ -669,11 +669,11 @@ func (node *WhileLoopNode) Literal() string {
 }
 
 // WhileLoopNode.Accept(): accepts a visitor
-func (node *WhileLoopNode) Accept(visitor NodeVisitor) {
-	visitor.VisitWhileLoopNode(*node)
+func (node *WhileLoopStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitWhileLoopStatementNode(*node)
 }
 
 // WhileLoopNode.Statement(): every while loop is a statement
-func (node *WhileLoopNode) Statement() {
+func (node *WhileLoopStatementNode) Statement() {
 
 }

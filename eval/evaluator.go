@@ -172,9 +172,9 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalCallExpression(n)
 	case *parser.AssignmentExpressionNode:
 		return e.evalAssignmentExpression(n)
-	case *parser.ForLoopNode:
+	case *parser.ForLoopStatementNode:
 		return e.evalForLoop(n)
-	case *parser.WhileLoopNode:
+	case *parser.WhileLoopStatementNode:
 		return e.evalWhileLoop(n)
 	default:
 		return &objects.Nil{}
@@ -545,7 +545,7 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 }
 
 // evalForLoop evaluates a for loop node
-func (e *Evaluator) evalForLoop(n *parser.ForLoopNode) objects.GoMixObject {
+func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObject {
 	// Create a new scope for the entire for loop (for initializers and loop variables)
 	loopScope := scope.NewScope(e.Scp)
 	oldScope := e.Scp
@@ -619,7 +619,7 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopNode) objects.GoMixObject {
 }
 
 // evalWhileLoop evaluates a while loop node
-func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopNode) objects.GoMixObject {
+func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMixObject {
 	// Create a new scope for the entire while loop
 	loopScope := scope.NewScope(e.Scp)
 	oldScope := e.Scp

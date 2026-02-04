@@ -227,11 +227,11 @@ func (v *TestingVisitor) VisitCallExpressionNode(node CallExpressionNode) {
 	}
 }
 
-// TestingVisitor.VisitForLoopNode visits the for loop node
-func (v *TestingVisitor) VisitForLoopNode(node ForLoopNode) {
+// TestingVisitor.VisitForLoopStatementNode visits the for loop node
+func (v *TestingVisitor) VisitForLoopStatementNode(node ForLoopStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
-	_, ok := curr.(*ForLoopNode)
+	_, ok := curr.(*ForLoopStatementNode)
 	assert.True(v.T, ok)
 	v.Ptr++
 
@@ -251,11 +251,11 @@ func (v *TestingVisitor) VisitForLoopNode(node ForLoopNode) {
 	node.Body.Accept(v)
 }
 
-// TestingVisitor.VisitWhileLoopNode visits the while loop node
-func (v *TestingVisitor) VisitWhileLoopNode(node WhileLoopNode) {
+// TestingVisitor.VisitWhileLoopStatementNode visits the while loop node
+func (v *TestingVisitor) VisitWhileLoopStatementNode(node WhileLoopStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
-	_, ok := curr.(*WhileLoopNode)
+	_, ok := curr.(*WhileLoopStatementNode)
 	assert.True(v.T, ok)
 	v.Ptr++
 

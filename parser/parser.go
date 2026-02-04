@@ -273,9 +273,9 @@ func (par *Parser) Parse() *RootNode {
 			root.Value = blockNode.Value
 		} else if funcNode, ok := lastStmt.(*FunctionStatementNode); ok {
 			root.Value = funcNode.Value
-		} else if forLoopNode, ok := lastStmt.(*ForLoopNode); ok {
+		} else if forLoopNode, ok := lastStmt.(*ForLoopStatementNode); ok {
 			root.Value = forLoopNode.Value
-		} else if whileLoopNode, ok := lastStmt.(*WhileLoopNode); ok {
+		} else if whileLoopNode, ok := lastStmt.(*WhileLoopStatementNode); ok {
 			root.Value = whileLoopNode.Value
 		} else {
 			root.Value = &objects.Nil{}
@@ -1054,9 +1054,9 @@ func (par *Parser) parseBlockStatement() *BlockStatementNode {
 			block.Value = blockNode.Value
 		} else if funcNode, ok := lastStmt.(*FunctionStatementNode); ok {
 			block.Value = funcNode.Value
-		} else if forLoopNode, ok := lastStmt.(*ForLoopNode); ok {
+		} else if forLoopNode, ok := lastStmt.(*ForLoopStatementNode); ok {
 			block.Value = forLoopNode.Value
-		} else if whileLoopNode, ok := lastStmt.(*WhileLoopNode); ok {
+		} else if whileLoopNode, ok := lastStmt.(*WhileLoopStatementNode); ok {
 			block.Value = whileLoopNode.Value
 		} else {
 			block.Value = &objects.Nil{}
@@ -1387,7 +1387,7 @@ func (par *Parser) parseForLoop() StatementNode {
 
 	body := par.parseBlockStatement()
 
-	return &ForLoopNode{
+	return &ForLoopStatementNode{
 		ForToken:     forToken,
 		Initializers: initializers,
 		Condition:    condition,
@@ -1437,7 +1437,7 @@ func (par *Parser) parseWhileLoop() StatementNode {
 
 	body := par.parseBlockStatement()
 
-	return &WhileLoopNode{
+	return &WhileLoopStatementNode{
 		WhileToken: whileToken,
 		Conditions: conditions,
 		Body:       *body,
