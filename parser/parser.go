@@ -8,50 +8,105 @@ import (
 	"github.com/akashmaji946/go-mix/objects"
 )
 
-// operator precedence
+// operator precedence (following C-based language standards)
+// Higher number = higher precedence (binds tighter)
 const (
 	MINIMUM_PRIORITY = 0
 
-	ASSIGN_PRIORITY = 10 // =
+	// Assignment operators (lowest precedence, right-to-left associativity)
+	// = += -= *= /= %= &= |= ^= <<= >>=
+	ASSIGN_PRIORITY = 10
 
-	OR_PRIORITY  = 20 // ||
-	AND_PRIORITY = 30 // &&
+	// Logical OR: ||
+	OR_PRIORITY = 40
 
-	RELATIONAL_PRIORITY = 40 // < > <= >= == !=
+	// Logical AND: &&
+	AND_PRIORITY = 50
 
-	PLUS_PRIORITY = 50 // + - | ^
-	MUL_PRIORITY  = 60 // * / % << >> & &^
+	// Bitwise OR: |
+	BIT_OR_PRIORITY = 60
 
-	PREFIX_PRIORITY = 70 // ! ~
+	// Bitwise XOR: ^
+	BIT_XOR_PRIORITY = 70
 
-	PAREN_PRIORITY = 100 // ()
+	// Bitwise AND: &
+	BIT_AND_PRIORITY = 80
+
+	// Equality operators: == !=
+	EQUALITY_PRIORITY = 90
+
+	// Relational operators: < > <= >=
+	RELATIONAL_PRIORITY = 100
+
+	// Shift operators: << >>
+	SHIFT_PRIORITY = 110
+
+	// Additive operators: + -
+	PLUS_PRIORITY = 120
+
+	// Multiplicative operators: * / %
+	MUL_PRIORITY = 130
+
+	// Unary/Prefix operators: ! ~ + -
+	PREFIX_PRIORITY = 140
+
+	// Parentheses (highest precedence)
+	PAREN_PRIORITY = 150
 )
 
 // get the precedence of the operator
 func getPrecedence(token *lexer.Token) int {
 	switch token.Type {
 
+	// Parentheses - highest precedence
 	case lexer.LEFT_PAREN:
 		return PAREN_PRIORITY
-	case lexer.NOT_OP:
+
+	// Unary/Prefix operators: ! ~
+	case lexer.NOT_OP, lexer.BIT_NOT_OP:
 		return PREFIX_PRIORITY
 
-	// Mul level: * / % & << >>
-	case lexer.MUL_OP, lexer.DIV_OP, lexer.MOD_OP, lexer.BIT_AND_OP, lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP:
+	// Multiplicative: * / %
+	case lexer.MUL_OP, lexer.DIV_OP, lexer.MOD_OP:
 		return MUL_PRIORITY
 
-	// Add level: + - | ^
-	case lexer.PLUS_OP, lexer.MINUS_OP, lexer.BIT_OR_OP, lexer.BIT_XOR_OP:
+	// Additive: + -
+	case lexer.PLUS_OP, lexer.MINUS_OP:
 		return PLUS_PRIORITY
 
-	case lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP:
+	// Shift: << >>
+	case lexer.BIT_LEFT_OP, lexer.BIT_RIGHT_OP:
+		return SHIFT_PRIORITY
+
+	// Relational: < > <= >=
+	case lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP:
 		return RELATIONAL_PRIORITY
 
+	// Equality: == !=
+	case lexer.EQ_OP, lexer.NE_OP:
+		return EQUALITY_PRIORITY
+
+	// Bitwise AND: &
+	case lexer.BIT_AND_OP:
+		return BIT_AND_PRIORITY
+
+	// Bitwise XOR: ^
+	case lexer.BIT_XOR_OP:
+		return BIT_XOR_PRIORITY
+
+	// Bitwise OR: |
+	case lexer.BIT_OR_OP:
+		return BIT_OR_PRIORITY
+
+	// Logical AND: &&
 	case lexer.AND_OP:
 		return AND_PRIORITY
+
+	// Logical OR: ||
 	case lexer.OR_OP:
 		return OR_PRIORITY
 
+	// Assignment operators (lowest precedence)
 	case lexer.ASSIGN_OP, lexer.PLUS_ASSIGN, lexer.MINUS_ASSIGN, lexer.MUL_ASSIGN, lexer.DIV_ASSIGN, lexer.MOD_ASSIGN,
 		lexer.BIT_AND_ASSIGN, lexer.BIT_OR_ASSIGN, lexer.BIT_XOR_ASSIGN, lexer.BIT_LEFT_ASSIGN, lexer.BIT_RIGHT_ASSIGN:
 		return ASSIGN_PRIORITY

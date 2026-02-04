@@ -1185,7 +1185,10 @@ func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndVariable(t
 }
 
 func TestParser_Parse_BitwiseOperator(t *testing.T) {
-	src := `3 & 7 == 3`
+	// In C-based languages, == has higher precedence than &
+	// So `3 & 7 == 3` is parsed as `3 & (7 == 3)` = `3 & false` = `3 & 0` = 0
+	// To get `(3 & 7) == 3`, you need explicit parentheses
+	src := `(3 & 7) == 3`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
@@ -1193,14 +1196,9 @@ func TestParser_Parse_BitwiseOperator(t *testing.T) {
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "&"}},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+			&ParenthesizedExpressionNode{},
 			&BooleanExpressionNode{
 				Operation: lexer.Token{Literal: "=="},
-				Left: &BooleanExpressionNode{
-					Operation: lexer.Token{Literal: "&"},
-					Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
-					Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
-				},
-				Right: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
 			},
 			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
 		},
@@ -1212,13 +1210,13 @@ func TestParser_Parse_BitwiseOperator(t *testing.T) {
 
 	assert.Equal(t, 1, len(root.Statements))
 
-	// check first statement: 1 < 2
+	// check first statement: (3 & 7) == 3
 	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "3&7==3", stmt1.Literal())
+	assert.Equal(t, "(3&7)==3", stmt1.Literal())
 	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
 
-	assert.Equal(t, "3&7==3;", root.Literal())
+	assert.Equal(t, "(3&7)==3;", root.Literal())
 	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
 }
 
