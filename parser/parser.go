@@ -210,7 +210,15 @@ func (par *Parser) Parse() *RootNode {
 			root.Value = blockNode.Value
 		} else if funcNode, ok := lastStmt.(*FunctionStatementNode); ok {
 			root.Value = funcNode.Value
+		} else if forLoopNode, ok := lastStmt.(*ForLoopNode); ok {
+			root.Value = forLoopNode.Value
+		} else if whileLoopNode, ok := lastStmt.(*WhileLoopNode); ok {
+			root.Value = whileLoopNode.Value
+		} else {
+			root.Value = &objects.Nil{}
 		}
+	} else {
+		root.Value = &objects.Nil{}
 	}
 
 	return root
@@ -287,6 +295,12 @@ func (par *Parser) parseStatement() StatementNode {
 
 	case lexer.FUNC_KEY:
 		return par.parseFunctionStatement()
+
+	case lexer.FOR_KEY:
+		return par.parseForLoop()
+
+	case lexer.WHILE_KEY:
+		return par.parseWhileLoop()
 
 	default:
 		return par.parseExpression()
@@ -843,6 +857,12 @@ func (par *Parser) parseBlockStatement() *BlockStatementNode {
 			block.Value = blockNode.Value
 		} else if funcNode, ok := lastStmt.(*FunctionStatementNode); ok {
 			block.Value = funcNode.Value
+		} else if forLoopNode, ok := lastStmt.(*ForLoopNode); ok {
+			block.Value = forLoopNode.Value
+		} else if whileLoopNode, ok := lastStmt.(*WhileLoopNode); ok {
+			block.Value = whileLoopNode.Value
+		} else {
+			block.Value = &objects.Nil{}
 		}
 	} else {
 		block.Value = &objects.Nil{} // Default value for an empty block
@@ -988,6 +1008,146 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 	funcNode.FuncBody = *par.parseBlockStatement()
 	funcNode.Value = funcNode.FuncBody.Value
 	return funcNode
+}
+
+// parse a for loop statement
+func (par *Parser) parseForLoop() StatementNode {
+	forToken := par.CurrToken
+
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
+
+	// Parse initializers (comma-separated assignment expressions)
+	initializers := make([]ExpressionNode, 0)
+
+	// Parse first initializer if present
+	if par.NextToken.Type != lexer.SEMICOLON_DELIM {
+		par.advance()
+		init := par.parseExpression()
+		if init == nil {
+			return nil
+		}
+		initializers = append(initializers, init)
+
+		// Parse additional initializers separated by commas
+		for par.NextToken.Type == lexer.COMMA_DELIM {
+			par.advance() // consume comma
+			par.advance() // move to next expression
+			init := par.parseExpression()
+			if init == nil {
+				return nil
+			}
+			initializers = append(initializers, init)
+		}
+	}
+
+	if !par.expectAdvance(lexer.SEMICOLON_DELIM) {
+		return nil
+	}
+
+	// Parse condition if present
+	var condition ExpressionNode
+	if par.NextToken.Type != lexer.SEMICOLON_DELIM {
+		par.advance()
+		condition = par.parseExpression()
+		if condition == nil {
+			return nil
+		}
+	}
+
+	if !par.expectAdvance(lexer.SEMICOLON_DELIM) {
+		return nil
+	}
+
+	// Parse updates (comma-separated assignment expressions)
+	updates := make([]ExpressionNode, 0)
+	if par.NextToken.Type != lexer.RIGHT_PAREN {
+		par.advance()
+		update := par.parseExpression()
+		if update == nil {
+			return nil
+		}
+		updates = append(updates, update)
+
+		// Parse additional updates separated by commas
+		for par.NextToken.Type == lexer.COMMA_DELIM {
+			par.advance() // consume comma
+			par.advance() // move to next expression
+			update := par.parseExpression()
+			if update == nil {
+				return nil
+			}
+			updates = append(updates, update)
+		}
+	}
+
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
+
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
+
+	body := par.parseBlockStatement()
+
+	return &ForLoopNode{
+		ForToken:     forToken,
+		Initializers: initializers,
+		Condition:    condition,
+		Updates:      updates,
+		Body:         *body,
+		Value:        &objects.Nil{},
+	}
+}
+
+// parse a while loop statement
+func (par *Parser) parseWhileLoop() StatementNode {
+	whileToken := par.CurrToken
+
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
+
+	// Parse conditions (comma-separated)
+	conditions := make([]ExpressionNode, 0)
+
+	// Parse first condition
+	par.advance()
+	condition := par.parseExpression()
+	if condition == nil {
+		return nil
+	}
+	conditions = append(conditions, condition)
+
+	// Parse additional conditions separated by commas
+	for par.NextToken.Type == lexer.COMMA_DELIM {
+		par.advance() // consume comma
+		par.advance() // move to next expression
+		condition := par.parseExpression()
+		if condition == nil {
+			return nil
+		}
+		conditions = append(conditions, condition)
+	}
+
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
+
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
+
+	body := par.parseBlockStatement()
+
+	return &WhileLoopNode{
+		WhileToken: whileToken,
+		Conditions: conditions,
+		Body:       *body,
+		Value:      &objects.Nil{},
+	}
 }
 
 // parse a string literal

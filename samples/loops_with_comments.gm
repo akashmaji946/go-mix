@@ -1,0 +1,21 @@
+// Test for loop with multiple initializers and updates
+var sum = 0
+var i = 0
+var j = 0
+
+for(i = 0, j = 0; i <= 10 && j <= 100; i = i + 1, j = j + 10){
+    sum = sum + i + j
+    print("i:", i, "j:", j, "sum:", sum)
+}
+
+print("Final sum:", sum)
+
+// Test while loop with multiple conditions
+var count = 0
+var maxCount = 5
+while(count < maxCount && count < 10){
+    print("Count:", count)
+    count = count + 1
+}
+
+print("Done!")

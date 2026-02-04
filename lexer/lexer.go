@@ -36,7 +36,7 @@ func NewLexer(src string) Lexer {
 func (lex *Lexer) NextToken() Token {
 
 	var token Token
-	lex.ignoreWhitespaces()
+	lex.ignoreWhitespacesAndComments()
 
 	switch lex.Current {
 	case '=':
@@ -283,9 +283,49 @@ func (lex *Lexer) advance() {
 
 }
 
-// ignoreWhitespaces(): ignores all whitespaces in the source code
-func (lex *Lexer) ignoreWhitespaces() {
-	for isWhitespace(lex.Current) {
+// ignoreWhitespacesAndComments(): ignores all whitespaces and comments in the source code
+func (lex *Lexer) ignoreWhitespacesAndComments() {
+	for {
+		if isWhitespace(lex.Current) {
+			lex.advance()
+		} else if lex.Current == '/' && lex.peek() == '/' {
+			// Skip single-line comment
+			lex.skipSingleLineComment()
+		} else if lex.Current == '/' && lex.peek() == '*' {
+			// Skip multi-line comment
+			lex.skipMultiLineComment()
+		} else {
+			break
+		}
+	}
+}
+
+// skipSingleLineComment(): skips a single-line comment (// ...)
+func (lex *Lexer) skipSingleLineComment() {
+	// Skip the // characters
+	lex.advance()
+	lex.advance()
+
+	// Skip until end of line or end of file
+	for lex.Current != '\n' && lex.Current != 0 {
+		lex.advance()
+	}
+}
+
+// skipMultiLineComment(): skips a multi-line comment (/* ... */)
+func (lex *Lexer) skipMultiLineComment() {
+	// Skip the /* characters
+	lex.advance()
+	lex.advance()
+
+	// Skip until we find */
+	for lex.Current != 0 {
+		if lex.Current == '*' && lex.peek() == '/' {
+			// Skip the */ characters
+			lex.advance()
+			lex.advance()
+			break
+		}
 		lex.advance()
 	}
 }

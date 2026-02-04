@@ -32,6 +32,8 @@ type NodeVisitor interface {
 
 	VisitFunctionStatementNode(node FunctionStatementNode)
 	VisitCallExpressionNode(node CallExpressionNode)
+	VisitForLoopNode(node ForLoopNode)
+	VisitWhileLoopNode(node WhileLoopNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -596,5 +598,81 @@ func (node *CallExpressionNode) Statement() {
 
 // CallExpressionNode.Expression(): every expression node is a node
 func (node *CallExpressionNode) Expression() {
+
+}
+
+// ForLoopNode: represents a for loop statement
+type ForLoopNode struct {
+	ForToken     lexer.Token
+	Initializers []ExpressionNode // Multiple initializers like i=0, j=0
+	Condition    ExpressionNode   // Loop condition like i <= 10 && j <= 100
+	Updates      []ExpressionNode // Multiple updates like i=i+1, j=j+1
+	Body         BlockStatementNode
+	Value        objects.GoMixObject
+}
+
+// ForLoopNode.Literal(): string representation of the node
+func (node *ForLoopNode) Literal() string {
+	res := "for("
+	// Add initializers
+	for i, init := range node.Initializers {
+		if i > 0 {
+			res += ","
+		}
+		res += init.Literal()
+	}
+	res += ";"
+	if node.Condition != nil {
+		res += node.Condition.Literal()
+	}
+	res += ";"
+	// Add updates
+	for i, update := range node.Updates {
+		if i > 0 {
+			res += ","
+		}
+		res += update.Literal()
+	}
+	res += ")" + node.Body.Literal()
+	return res
+}
+
+// ForLoopNode.Accept(): accepts a visitor
+func (node *ForLoopNode) Accept(visitor NodeVisitor) {
+	visitor.VisitForLoopNode(*node)
+}
+
+// ForLoopNode.Statement(): every for loop is a statement
+func (node *ForLoopNode) Statement() {
+
+}
+
+// WhileLoopNode: represents a while loop statement
+type WhileLoopNode struct {
+	WhileToken lexer.Token
+	Conditions []ExpressionNode
+	Body       BlockStatementNode
+	Value      objects.GoMixObject
+}
+
+// WhileLoopNode.Literal(): string representation of the node
+func (node *WhileLoopNode) Literal() string {
+	conds := ""
+	for i, cond := range node.Conditions {
+		if i > 0 {
+			conds += " && "
+		}
+		conds += cond.Literal()
+	}
+	return "while(" + conds + ")" + node.Body.Literal()
+}
+
+// WhileLoopNode.Accept(): accepts a visitor
+func (node *WhileLoopNode) Accept(visitor NodeVisitor) {
+	visitor.VisitWhileLoopNode(*node)
+}
+
+// WhileLoopNode.Statement(): every while loop is a statement
+func (node *WhileLoopNode) Statement() {
 
 }

@@ -227,6 +227,46 @@ func (v *TestingVisitor) VisitCallExpressionNode(node CallExpressionNode) {
 	}
 }
 
+// TestingVisitor.VisitForLoopNode visits the for loop node
+func (v *TestingVisitor) VisitForLoopNode(node ForLoopNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*ForLoopNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	// Visit initializers
+	for _, init := range node.Initializers {
+		init.Accept(v)
+	}
+	// Visit condition
+	if node.Condition != nil {
+		node.Condition.Accept(v)
+	}
+	// Visit updates
+	for _, update := range node.Updates {
+		update.Accept(v)
+	}
+	// Visit body
+	node.Body.Accept(v)
+}
+
+// TestingVisitor.VisitWhileLoopNode visits the while loop node
+func (v *TestingVisitor) VisitWhileLoopNode(node WhileLoopNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*WhileLoopNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	// Visit conditions
+	for _, cond := range node.Conditions {
+		cond.Accept(v)
+	}
+	// Visit body
+	node.Body.Accept(v)
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

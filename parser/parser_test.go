@@ -2043,3 +2043,524 @@ func TestParser_Parse_FunctionCallExpression(t *testing.T) {
 	assert.Equal(t, &objects.Nil{}, root.Value)
 	assert.Equal(t, `var a = foo(1,2,3);`, root.Literal())
 }
+
+// While loop tests
+func TestParser_Parse_WhileLoop_SingleCondition(t *testing.T) {
+	src := `var i = 0; while(i < 5){ i = i + 1; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check while loop statement
+	whileStmt, ok := root.Statements[1].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(whileStmt.Conditions))
+	assert.Equal(t, "while(i<5){i = i+1;}", whileStmt.Literal())
+}
+
+func TestParser_Parse_WhileLoop_TwoConditions(t *testing.T) {
+	src := `var i = 0; var j = 10; while(i < 5, j > 5){ i = i + 1; j = j - 1; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 3, len(root.Statements))
+
+	// Check while loop statement
+	whileStmt, ok := root.Statements[2].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(whileStmt.Conditions))
+	assert.Equal(t, "while(i<5 && j>5){i = i+1;j = j-1;}", whileStmt.Literal())
+}
+
+func TestParser_Parse_WhileLoop_ThreeConditions(t *testing.T) {
+	src := `var a = 0; var b = 20; var c = 10; while(a < 10, b > 10, c > 5){ a = a + 1; b = b - 1; c = c - 1; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 4, len(root.Statements))
+
+	// Check while loop statement
+	whileStmt, ok := root.Statements[3].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(whileStmt.Conditions))
+	assert.Equal(t, "while(a<10 && b>10 && c>5){a = a+1;b = b-1;c = c-1;}", whileStmt.Literal())
+}
+
+func TestParser_Parse_WhileLoop_ComplexConditions(t *testing.T) {
+	src := `var x = 0; var y = 0; while(x < 5, y < 10, x + y < 12){ x = x + 1; y = y + 2; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 3, len(root.Statements))
+
+	// Check while loop statement
+	whileStmt, ok := root.Statements[2].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(whileStmt.Conditions))
+
+	// Verify each condition is parsed correctly
+	cond1, ok := whileStmt.Conditions[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.LT_OP, cond1.Operation.Type)
+
+	cond2, ok := whileStmt.Conditions[1].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.LT_OP, cond2.Operation.Type)
+
+	cond3, ok := whileStmt.Conditions[2].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.LT_OP, cond3.Operation.Type)
+}
+
+func TestParser_Parse_WhileLoop_EmptyBody(t *testing.T) {
+	src := `var i = 0; while(i < 5, i >= 0){}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check while loop statement
+	whileStmt, ok := root.Statements[1].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(whileStmt.Conditions))
+	assert.Equal(t, 0, len(whileStmt.Body.Statements))
+}
+
+func TestParser_Parse_WhileLoop_NestedInBlock(t *testing.T) {
+	src := `{
+		var count = 0;
+		while(count < 3){
+			count = count + 1;
+		}
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check block statement
+	blockStmt, ok := root.Statements[0].(*BlockStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(blockStmt.Statements))
+
+	// Check while loop inside block
+	whileStmt, ok := blockStmt.Statements[1].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(whileStmt.Conditions))
+}
+
+func TestParser_Parse_ForLoop_MultipleInitializersAndUpdates(t *testing.T) {
+	src := `for(i = 0, j = 10; i < 5 && j > 5; i = i + 1, j = j - 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check for loop statement
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(forStmt.Initializers))
+	assert.Equal(t, 2, len(forStmt.Updates))
+	assert.NotNil(t, forStmt.Condition)
+}
+
+// Comprehensive While Loop Tests
+
+func TestParser_Parse_WhileLoop_RootValueNotNil(t *testing.T) {
+	src := `var i = 0; while(i < 5){ i = i + 1; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	// Root value should not be nil - it should be &objects.Nil{}
+	assert.NotNil(t, root.Value)
+	assert.Equal(t, &objects.Nil{}, root.Value)
+}
+
+func TestParser_Parse_WhileLoop_ConditionTypes(t *testing.T) {
+	src := `while(true){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(whileStmt.Conditions))
+
+	// Check condition is a boolean literal
+	boolCond, ok := whileStmt.Conditions[0].(*BooleanLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, true, boolCond.Value.(*objects.Boolean).Value)
+}
+
+func TestParser_Parse_WhileLoop_MultipleConditionsWithDifferentOperators(t *testing.T) {
+	src := `while(a < 10, b >= 5, c != 0, d == 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 4, len(whileStmt.Conditions))
+
+	// Verify each condition type
+	cond1, ok := whileStmt.Conditions[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.LT_OP, cond1.Operation.Type)
+
+	cond2, ok := whileStmt.Conditions[1].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.GE_OP, cond2.Operation.Type)
+
+	cond3, ok := whileStmt.Conditions[2].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.NE_OP, cond3.Operation.Type)
+
+	cond4, ok := whileStmt.Conditions[3].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.EQ_OP, cond4.Operation.Type)
+}
+
+func TestParser_Parse_WhileLoop_BodyWithMultipleStatements(t *testing.T) {
+	src := `while(i < 5){
+		var a = i;
+		var b = a + 1;
+		i = b;
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(whileStmt.Body.Statements))
+
+	// Verify body statements
+	_, ok = whileStmt.Body.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	_, ok = whileStmt.Body.Statements[1].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	_, ok = whileStmt.Body.Statements[2].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+}
+
+func TestParser_Parse_WhileLoop_NestedWhileLoops(t *testing.T) {
+	src := `while(i < 5){
+		while(j < 10){
+			j = j + 1;
+		}
+		i = i + 1;
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	outerWhile, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(outerWhile.Body.Statements))
+
+	// Check nested while loop
+	innerWhile, ok := outerWhile.Body.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(innerWhile.Conditions))
+	assert.Equal(t, 1, len(innerWhile.Body.Statements))
+}
+
+func TestParser_Parse_WhileLoop_WithIfStatement(t *testing.T) {
+	src := `while(i < 10){
+		if(i == 5){
+			break;
+		}
+		i = i + 1;
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(whileStmt.Body.Statements))
+
+	// Check if statement inside while
+	_, ok = whileStmt.Body.Statements[0].(*IfExpressionNode)
+	assert.True(t, ok)
+}
+
+func TestParser_Parse_WhileLoop_ConditionWithComplexExpression(t *testing.T) {
+	src := `while((a + b) < (c * d), x > y){
+		a = a + 1;
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(whileStmt.Conditions))
+
+	// First condition should be a boolean expression with parenthesized expressions
+	cond1, ok := whileStmt.Conditions[0].(*BooleanExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.LT_OP, cond1.Operation.Type)
+}
+
+func TestParser_Parse_WhileLoop_ValueField(t *testing.T) {
+	src := `while(i < 5){ i = i + 1; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+
+	// Value field should be initialized to &objects.Nil{}
+	assert.NotNil(t, whileStmt.Value)
+	assert.Equal(t, &objects.Nil{}, whileStmt.Value)
+}
+
+// Comprehensive For Loop Tests
+
+func TestParser_Parse_ForLoop_RootValueNotNil(t *testing.T) {
+	src := `for(i = 0; i < 5; i = i + 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	// Root value should not be nil - it should be &objects.Nil{}
+	assert.NotNil(t, root.Value)
+	assert.Equal(t, &objects.Nil{}, root.Value)
+}
+
+func TestParser_Parse_ForLoop_SingleInitializer(t *testing.T) {
+	src := `for(i = 0; i < 5; i = i + 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(forStmt.Initializers))
+	assert.Equal(t, 1, len(forStmt.Updates))
+	assert.NotNil(t, forStmt.Condition)
+}
+
+func TestParser_Parse_ForLoop_MultipleInitializers(t *testing.T) {
+	src := `for(i = 0, j = 10, k = 20; i < 5; i = i + 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(forStmt.Initializers))
+
+	// Verify each initializer is an assignment
+	for _, init := range forStmt.Initializers {
+		_, ok := init.(*AssignmentExpressionNode)
+		assert.True(t, ok)
+	}
+}
+
+func TestParser_Parse_ForLoop_MultipleUpdates(t *testing.T) {
+	src := `for(i = 0; i < 5; i = i + 1, j = j - 1, k = k * 2){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(forStmt.Updates))
+
+	// Verify each update is an assignment
+	for _, update := range forStmt.Updates {
+		_, ok := update.(*AssignmentExpressionNode)
+		assert.True(t, ok)
+	}
+}
+
+func TestParser_Parse_ForLoop_NoInitializer(t *testing.T) {
+	src := `for(; i < 5; i = i + 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 0, len(forStmt.Initializers))
+	assert.NotNil(t, forStmt.Condition)
+	assert.Equal(t, 1, len(forStmt.Updates))
+}
+
+func TestParser_Parse_ForLoop_NoCondition(t *testing.T) {
+	src := `for(i = 0; ; i = i + 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(forStmt.Initializers))
+	assert.Nil(t, forStmt.Condition)
+	assert.Equal(t, 1, len(forStmt.Updates))
+}
+
+func TestParser_Parse_ForLoop_NoUpdate(t *testing.T) {
+	src := `for(i = 0; i < 5; ){ i = i + 1; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(forStmt.Initializers))
+	assert.NotNil(t, forStmt.Condition)
+	assert.Equal(t, 0, len(forStmt.Updates))
+}
+
+func TestParser_Parse_ForLoop_ComplexCondition(t *testing.T) {
+	src := `for(i = 0; i < 5 && j > 0 || k == 10; i = i + 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.NotNil(t, forStmt.Condition)
+
+	// Condition should be a boolean expression
+	_, ok = forStmt.Condition.(*BooleanExpressionNode)
+	assert.True(t, ok)
+}
+
+func TestParser_Parse_ForLoop_BodyWithMultipleStatements(t *testing.T) {
+	src := `for(i = 0; i < 5; i = i + 1){
+		var a = i;
+		var b = a * 2;
+		var c = b + 10;
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(forStmt.Body.Statements))
+
+	// Verify all body statements are declarations
+	for _, stmt := range forStmt.Body.Statements {
+		_, ok := stmt.(*DeclarativeStatementNode)
+		assert.True(t, ok)
+	}
+}
+
+func TestParser_Parse_ForLoop_NestedForLoops(t *testing.T) {
+	src := `for(i = 0; i < 5; i = i + 1){
+		for(j = 0; j < 10; j = j + 1){
+			var c = i + j;
+		}
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	outerFor, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(outerFor.Body.Statements))
+
+	// Check nested for loop
+	innerFor, ok := outerFor.Body.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(innerFor.Initializers))
+	assert.Equal(t, 1, len(innerFor.Updates))
+	assert.Equal(t, 1, len(innerFor.Body.Statements))
+}
+
+func TestParser_Parse_ForLoop_WithIfStatement(t *testing.T) {
+	src := `for(i = 0; i < 10; i = i + 1){
+		if(i == 5){
+			var x = i;
+		}
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(forStmt.Body.Statements))
+
+	// Check if statement inside for loop
+	_, ok = forStmt.Body.Statements[0].(*IfExpressionNode)
+	assert.True(t, ok)
+}
+
+func TestParser_Parse_ForLoop_ValueField(t *testing.T) {
+	src := `for(i = 0; i < 5; i = i + 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+
+	// Value field should be initialized to &objects.Nil{}
+	assert.NotNil(t, forStmt.Value)
+	assert.Equal(t, &objects.Nil{}, forStmt.Value)
+}
+
+func TestParser_Parse_ForLoop_EmptyLoop(t *testing.T) {
+	src := `for(;;){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 0, len(forStmt.Initializers))
+	assert.Nil(t, forStmt.Condition)
+	assert.Equal(t, 0, len(forStmt.Updates))
+	assert.Equal(t, 0, len(forStmt.Body.Statements))
+}
+
+func TestParser_Parse_ForLoop_WithWhileLoop(t *testing.T) {
+	src := `for(i = 0; i < 5; i = i + 1){
+		while(j < 10){
+			j = j + 1;
+		}
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(forStmt.Body.Statements))
+
+	// Check while loop inside for loop
+	_, ok = forStmt.Body.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+}
+
+func TestParser_Parse_WhileLoop_WithForLoop(t *testing.T) {
+	src := `while(i < 5){
+		for(j = 0; j < 10; j = j + 1){
+			var c = i + j;
+		}
+		i = i + 1;
+	}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(whileStmt.Body.Statements))
+
+	// Check for loop inside while loop
+	_, ok = whileStmt.Body.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+}
+
+func TestParser_Parse_ForLoop_Literal(t *testing.T) {
+	src := `for(i = 0, j = 10; i < 5 && j > 5; i = i + 1, j = j - 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+
+	// Check literal representation
+	expected := "for(i = 0,j = 10;i<5&&j>5;i = i+1,j = j-1){}"
+	assert.Equal(t, expected, forStmt.Literal())
+}
+
+func TestParser_Parse_WhileLoop_Literal(t *testing.T) {
+	src := `while(i < 5, j > 0, k == 10 && l != 20){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	whileStmt, ok := root.Statements[0].(*WhileLoopNode)
+	assert.True(t, ok)
+
+	// Check literal representation
+	expected := "while(i<5 && j>0 && k==10&&l!=20){}"
+	assert.Equal(t, expected, whileStmt.Literal())
+}

@@ -457,6 +457,105 @@ func TestMain(t *testing.T) {
 	root52 := parser.NewParser(src52).Parse()
 	visitor52 := &PrintingVisitor{}
 	root52.Accept(visitor52)
-	fmt.Println(visitor51)
+	fmt.Println(visitor52)
 
+	// while loops
+	src53 := `var i = 0; while(i < 5){ i = i + 1; }`
+	root53 := parser.NewParser(src53).Parse()
+	visitor53 := &PrintingVisitor{}
+	root53.Accept(visitor53)
+	fmt.Println(visitor53)
+
+	// while loops
+	src54 := `var i = 0; var j = 10; while(i < 5, j > 5){ i = i + 1; j = j - 1; }`
+	root54 := parser.NewParser(src54).Parse()
+	visitor54 := &PrintingVisitor{}
+	root54.Accept(visitor54)
+	fmt.Println(visitor54)
+
+	// while loops
+	src55 := `var a = 0; var b = 20; var c = 10; while(a < 10, b > 10, c > 5){ a = a + 1; b = b - 1; c = c - 1; }`
+	root55 := parser.NewParser(src55).Parse()
+	visitor55 := &PrintingVisitor{}
+	root55.Accept(visitor55)
+	fmt.Println(visitor55)
+
+	// for loops
+	src56 := `for(i = 0, j = 10; i < 5 && j > 5; i = i + 1, j = j - 1){ }`
+	root56 := parser.NewParser(src56).Parse()
+	visitor56 := &PrintingVisitor{}
+	root56.Accept(visitor56)
+	fmt.Println(visitor56)
+
+	// multiple loops with comments
+	src57 := `
+	// Test multiple conditions in while loops
+
+	print("=== Test 1: While with 2 conditions ===")
+	var i = 0
+	var j = 10
+	while(i < 5, j > 5){
+		print("i:", i, "j:", j)
+		i = i + 1
+		j = j - 1
+	}
+
+	print("\n=== Test 2: While with 3 conditions ===")
+	var a = 0
+	var b = 20
+	var c = 10
+	while(a < 10, b > 10, c > 5){
+		print("a:", a, "b:", b, "c:", c)
+		a = a + 1
+		b = b - 1
+		c = c - 1
+	}
+
+	print("\n=== Test 3: While with complex conditions ===")
+	var x = 0
+	var y = 0
+	while(x < 5, y < 10, x + y < 12){
+		print("x:", x, "y:", y, "sum:", x + y)
+		x = x + 1
+		y = y + 2
+	}
+
+	print("\n=== Test 4: Single condition (backward compatibility) ===")
+	var count = 0
+	while(count < 3){
+		print("count:", count)
+		count = count + 1
+	}
+
+	print("\nAll while loop tests completed!")
+
+	`
+	root57 := parser.NewParser(src57).Parse()
+	visitor57 := &PrintingVisitor{}
+	root57.Accept(visitor57)
+	fmt.Println(visitor57)
+
+	// fibonacci
+	src58 := `
+		var ans = 0;
+		const n = 10;
+
+		func fibb(n){
+			if(n < 2){
+				return n
+			}
+			return fibb(n-1) + fibb(n-2)
+		}
+
+		func main(){
+			ans = fibb(n)
+			print(ans)
+		}
+
+		main()
+	`
+	root58 := parser.NewParser(src58).Parse()
+	visitor58 := &PrintingVisitor{}
+	root58.Accept(visitor58)
+	fmt.Println(visitor58)
 }

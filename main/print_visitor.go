@@ -200,6 +200,36 @@ func (p *PrintingVisitor) VisitCallExpressionNode(node parser.CallExpressionNode
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitForLoopNode
+func (p *PrintingVisitor) VisitForLoopNode(node parser.ForLoopNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "For", node.Literal(), node.Literal(), node.Value.ToString()))
+	p.Indent += INDENT_SIZE
+	for _, init := range node.Initializers {
+		init.Accept(p)
+	}
+	if node.Condition != nil {
+		node.Condition.Accept(p)
+	}
+	for _, update := range node.Updates {
+		update.Accept(p)
+	}
+	node.Body.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
+// VisitWhileLoopNode visits the while loop node
+func (p *PrintingVisitor) VisitWhileLoopNode(node parser.WhileLoopNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "While", node.Literal(), node.Literal(), node.Value.ToString()))
+	p.Indent += INDENT_SIZE
+	for _, cond := range node.Conditions {
+		cond.Accept(p)
+	}
+	node.Body.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

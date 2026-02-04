@@ -171,6 +171,10 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalCallExpression(n)
 	case *parser.AssignmentExpressionNode:
 		return e.evalAssignmentExpression(n)
+	case *parser.ForLoopNode:
+		return e.evalForLoop(n)
+	case *parser.WhileLoopNode:
+		return e.evalWhileLoop(n)
 	default:
 		return &objects.Nil{}
 	}
@@ -517,4 +521,98 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 		return &objects.Boolean{Value: left.(*objects.Boolean).Value || right.(*objects.Boolean).Value}
 	}
 	return &objects.Nil{}
+}
+
+// evalForLoop evaluates a for loop node
+func (e *Evaluator) evalForLoop(n *parser.ForLoopNode) objects.GoMixObject {
+	// Evaluate initializers
+	for _, init := range n.Initializers {
+		result := e.Eval(init)
+		if IsError(result) {
+			return result
+		}
+	}
+
+	// Loop execution
+	var result objects.GoMixObject = &objects.Nil{}
+	for {
+		// Evaluate condition if present
+		if n.Condition != nil {
+			condition := e.Eval(n.Condition)
+			if IsError(condition) {
+				return condition
+			}
+
+			// Check if condition is false
+			if condition.GetType() != objects.BooleanType {
+				return CreateError("For loop condition must be (bool)")
+			}
+			if !condition.(*objects.Boolean).Value {
+				break
+			}
+		}
+
+		// Execute loop body
+		result = e.Eval(&n.Body)
+		if IsError(result) {
+			return result
+		}
+
+		// Stop if we hit a return statement
+		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+			return result
+		}
+
+		// Evaluate updates
+		for _, update := range n.Updates {
+			updateResult := e.Eval(update)
+			if IsError(updateResult) {
+				return updateResult
+			}
+		}
+	}
+
+	return result
+}
+
+// evalWhileLoop evaluates a while loop node
+func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopNode) objects.GoMixObject {
+	var result objects.GoMixObject = &objects.Nil{}
+
+	for {
+		// Evaluate all conditions (they should be AND-ed together)
+		allTrue := true
+		for _, cond := range n.Conditions {
+			condition := e.Eval(cond)
+			if IsError(condition) {
+				return condition
+			}
+
+			if condition.GetType() != objects.BooleanType {
+				return CreateError("While loop condition must be (bool)")
+			}
+
+			if !condition.(*objects.Boolean).Value {
+				allTrue = false
+				break
+			}
+		}
+
+		if !allTrue {
+			break
+		}
+
+		// Execute loop body
+		result = e.Eval(&n.Body)
+		if IsError(result) {
+			return result
+		}
+
+		// Stop if we hit a return statement
+		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+			return result
+		}
+	}
+
+	return result
 }
