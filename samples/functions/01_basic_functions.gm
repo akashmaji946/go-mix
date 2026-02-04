@@ -1,0 +1,23 @@
+// Basic Functions - Simple function definitions and calls
+println("Hello, World!")
+
+func greet(){
+    println("Hello, World!")
+}
+
+func addNumbers(){
+    var a = 5
+    var b = 10
+    var result = a + b
+    println("Adding", a, "+", b, "=", result)
+}
+
+func main(){
+    println("=== Basic Functions Demo ===")
+    greet()
+    addNumbers()
+    println("=== Demo Complete ===")
+}
+
+main()
+

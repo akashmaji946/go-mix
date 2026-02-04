@@ -1,0 +1,43 @@
+// Function Callbacks - Functions as values and callbacks
+
+func double(n){
+    return n * 2
+}
+
+func triple(n){
+    return n * 3
+}
+
+func square(n){
+    return n * n
+}
+
+func applyAndPrint(n, fn){
+    var result = fn(n)
+    print("Applied function to", n, "result:", result)
+}
+
+func main(){
+    print("=== Function Callbacks Demo ===")
+    var myFunc = double
+    print("myFunc(5) =", myFunc(5))
+    myFunc = triple
+    print("myFunc(5) =", myFunc(5))
+    myFunc = square
+    print("myFunc(5) =", myFunc(5))
+    print("")
+    print("Using applyAndPrint:")
+    applyAndPrint(4, double)
+    applyAndPrint(4, triple)
+    applyAndPrint(4, square)
+    print("")
+    print("Multiple assignments:")
+    var fn1 = func(){ return 42 }
+    var fn2 = func(){ return "Hello" }
+    print("fn1() =", fn1())
+    print("fn2() =", fn2())
+    print("=== Demo Complete ===")
+}
+
+main()
+

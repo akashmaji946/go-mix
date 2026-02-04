@@ -61,7 +61,7 @@ func print(args ...GoMixObject) GoMixObject {
 
 func println(args ...GoMixObject) GoMixObject {
 	print(args...)
-	println()
+	fmt.Println()
 	return &Nil{}
 }
 

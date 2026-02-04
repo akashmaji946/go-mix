@@ -604,7 +604,7 @@ func (node *CallExpressionNode) Expression() {
 // ForLoopNode: represents a for loop statement
 type ForLoopNode struct {
 	ForToken     lexer.Token
-	Initializers []ExpressionNode // Multiple initializers like i=0, j=0
+	Initializers []StatementNode  // Multiple initializers like i=0, j=0 or var i=0, j=0
 	Condition    ExpressionNode   // Loop condition like i <= 10 && j <= 100
 	Updates      []ExpressionNode // Multiple updates like i=i+1, j=j+1
 	Body         BlockStatementNode

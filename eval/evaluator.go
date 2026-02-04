@@ -231,9 +231,6 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 			args[i] = e.Eval(arg)
 		}
 		rv := e.InvokeBuiltin(funcName, args...)
-		if rv.GetType() != objects.ErrorType {
-			fmt.Println("")
-		}
 		return rv
 	}
 
@@ -525,10 +522,16 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 
 // evalForLoop evaluates a for loop node
 func (e *Evaluator) evalForLoop(n *parser.ForLoopNode) objects.GoMixObject {
-	// Evaluate initializers
+	// Create a new scope for the entire for loop (for initializers and loop variables)
+	loopScope := scope.NewScope(e.Scp)
+	oldScope := e.Scp
+	e.Scp = loopScope
+
+	// Evaluate initializers in the loop scope
 	for _, init := range n.Initializers {
 		result := e.Eval(init)
 		if IsError(result) {
+			e.Scp = oldScope
 			return result
 		}
 	}
@@ -540,11 +543,13 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopNode) objects.GoMixObject {
 		if n.Condition != nil {
 			condition := e.Eval(n.Condition)
 			if IsError(condition) {
+				e.Scp = oldScope
 				return condition
 			}
 
 			// Check if condition is false
 			if condition.GetType() != objects.BooleanType {
+				e.Scp = oldScope
 				return CreateError("For loop condition must be (bool)")
 			}
 			if !condition.(*objects.Boolean).Value {
@@ -552,31 +557,50 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopNode) objects.GoMixObject {
 			}
 		}
 
+		// Create a new scope for each iteration of the loop body
+		// This ensures variables declared in the body are scoped to that iteration
+		iterationScope := scope.NewScope(loopScope)
+		e.Scp = iterationScope
+
 		// Execute loop body
 		result = e.Eval(&n.Body)
+
+		// Restore to loop scope after body execution
+		e.Scp = loopScope
+
 		if IsError(result) {
+			e.Scp = oldScope
 			return result
 		}
 
 		// Stop if we hit a return statement
 		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+			e.Scp = oldScope
 			return result
 		}
 
-		// Evaluate updates
+		// Evaluate updates in the loop scope (not iteration scope)
 		for _, update := range n.Updates {
 			updateResult := e.Eval(update)
 			if IsError(updateResult) {
+				e.Scp = oldScope
 				return updateResult
 			}
 		}
 	}
 
+	// Restore the original scope
+	e.Scp = oldScope
 	return result
 }
 
 // evalWhileLoop evaluates a while loop node
 func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopNode) objects.GoMixObject {
+	// Create a new scope for the entire while loop
+	loopScope := scope.NewScope(e.Scp)
+	oldScope := e.Scp
+	e.Scp = loopScope
+
 	var result objects.GoMixObject = &objects.Nil{}
 
 	for {
@@ -585,10 +609,12 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopNode) objects.GoMixObject {
 		for _, cond := range n.Conditions {
 			condition := e.Eval(cond)
 			if IsError(condition) {
+				e.Scp = oldScope
 				return condition
 			}
 
 			if condition.GetType() != objects.BooleanType {
+				e.Scp = oldScope
 				return CreateError("While loop condition must be (bool)")
 			}
 
@@ -602,17 +628,30 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopNode) objects.GoMixObject {
 			break
 		}
 
+		// Create a new scope for each iteration of the loop body
+		// This ensures variables declared in the body are scoped to that iteration
+		iterationScope := scope.NewScope(loopScope)
+		e.Scp = iterationScope
+
 		// Execute loop body
 		result = e.Eval(&n.Body)
+
+		// Restore to loop scope after body execution
+		e.Scp = loopScope
+
 		if IsError(result) {
+			e.Scp = oldScope
 			return result
 		}
 
 		// Stop if we hit a return statement
 		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+			e.Scp = oldScope
 			return result
 		}
 	}
 
+	// Restore the original scope
+	e.Scp = oldScope
 	return result
 }

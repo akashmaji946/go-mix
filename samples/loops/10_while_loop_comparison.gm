@@ -1,0 +1,38 @@
+// ============================================
+// WHILE LOOP FIX - COMPARISON GUIDE
+// ============================================
+
+// BROKEN VERSION (causes infinite loop):
+// var x = 0; while(x <= 100) { var y = x * 10; print(x+y);};
+//
+// Problems:
+// 1. Missing increment: x is never incremented, so x <= 100 is always true
+// 2. Variable redeclaration: 'var y' inside loop causes error on second iteration
+//
+// This would print "0" forever (infinite loop)!
+
+// ============================================
+// FIXED VERSION:
+// ============================================
+
+print("=== Corrected While Loop ===")
+print("Calculating x + (x * 10) for x from 0 to 100\n")
+
+var x = 0
+var y = 0  // Declare y OUTSIDE the loop
+
+while(x <= 100) {
+    y = x * 10           // Assign (not declare) inside loop
+    print(x + y)         // Print the result
+    x = x + 1            // INCREMENT x to avoid infinite loop
+}
+
+print("\n=== Success! Loop completed 101 iterations (0 to 100) ===")
+
+// ============================================
+// KEY LESSONS:
+// ============================================
+// 1. Always increment/update loop variables to ensure termination
+// 2. Declare variables OUTSIDE the loop, assign INSIDE
+// 3. The pattern is: x + (x * 10) = x + 10x = 11x
+//    So output is: 0, 11, 22, 33, ..., 1100

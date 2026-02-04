@@ -1,0 +1,62 @@
+// Function Math - Math operations using functions
+
+func add(a, b){
+    return a + b
+}
+
+func subtract(a, b){
+    return a - b
+}
+
+func multiply(a, b){
+    return a * b
+}
+
+func divide(a, b){
+    if(b == 0){
+        println("Error: Division by zero!")
+        return 0
+    }
+    return a / b
+}
+
+func power(base, exp){
+    var result = 1
+    var i = 0
+    while(i < exp){
+        result = result * base
+        i = i + 1
+    }
+    return result
+}
+
+func absolute(n){
+    if(n < 0){
+        return -n
+    }
+    return n
+}
+
+func main(){
+    println("=== Function Math Demo ===")
+    println("add(10, 5) =", add(10, 5))
+    println("subtract(10, 5) =", subtract(10, 5))
+    println("multiply(10, 5) =", multiply(10, 5))
+    println("divide(10, 5) =", divide(10, 5))
+    println("divide(10, 3) =", divide(10, 3))
+    println("divide(10, 0) =", divide(10, 0))
+    println("power(2, 10) =", power(2, 10))
+    println("power(3, 4) =", power(3, 4))
+    println("absolute(-42) =", absolute(-42))
+    println("absolute(42) =", absolute(42))
+    println("")
+    println("Chained operations:")
+    var result = add(10, multiply(5, 2))
+    println("add(10, multiply(5, 2)) =", result)
+    result = power(add(2, 3), 2)
+    println("power(add(2, 3), 2) =", result)
+    println("=== Demo Complete ===")
+}
+
+main()
+

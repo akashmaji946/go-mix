@@ -37,8 +37,12 @@ func (s *Scope) LookUp(varName string) (objects.GoMixObject, bool) {
 }
 
 // Bind: Binds the object
+// Returns true if the variable already exists in the CURRENT scope (not parent scopes)
 func (s *Scope) Bind(varName string, obj objects.GoMixObject) (string, bool) {
-	_, has := s.LookUp(varName)
+	if s.Variables == nil {
+		s.Variables = make(map[string]objects.GoMixObject)
+	}
+	_, has := s.Variables[varName]
 	s.Variables[varName] = obj
 	return varName, has
 }

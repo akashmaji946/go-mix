@@ -1,0 +1,13 @@
+const n = 10;
+println("n =", n)
+
+func fibb(x){
+    println("fibb called with", x)
+    if(x < 2){
+        return x
+    }
+    return fibb(x-1) + fibb(x-2)
+}
+
+var result = fibb(n)
+println("result =", result)

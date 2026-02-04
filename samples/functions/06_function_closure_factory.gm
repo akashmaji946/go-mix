@@ -1,0 +1,49 @@
+// Function Closure Factory - Closure and function factory pattern
+
+func createMultiplier(factor){
+    func multiplier(n){
+        return n * factor
+    }
+    return multiplier
+}
+
+func createAdder(addend){
+    func adder(n){
+        return n + addend
+    }
+    return adder
+}
+
+func createCounter(start){
+    var current = start
+    func count(){
+        current = current + 1
+        return current
+    }
+    return count
+}
+
+func main(){
+    println("=== Function Closure Factory Demo ===")
+    var times2 = createMultiplier(2)
+    var times3 = createMultiplier(3)
+    println("times2(5) =", times2(5))
+    println("times2(10) =", times2(10))
+    println("times3(5) =", times3(5))
+    println("times3(10) =", times3(10))
+    var add5 = createAdder(5)
+    var add10 = createAdder(10)
+    println("add5(10) =", add5(10))
+    println("add10(10) =", add10(10))
+    var counter1 = createCounter(0)
+    var counter2 = createCounter(100)
+    println("counter1() =", counter1())
+    println("counter1() =", counter1())
+    println("counter2() =", counter2())
+    println("counter1() =", counter1())
+    println("counter2() =", counter2())
+    println("=== Demo Complete ===")
+}
+
+main()
+

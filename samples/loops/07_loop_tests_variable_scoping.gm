@@ -1,0 +1,138 @@
+// Comprehensive tests for variable scoping in loops
+
+// Test 1: Variable shadowing in nested loops
+print("=== Test 1: Variable Shadowing ===")
+var x = 100
+print("Outer x:", x)
+
+var i = 0
+for(i = 0; i < 2; i = i + 1) {
+    var x = i * 10
+    print("For loop x:", x, "(shadows outer x)")
+    
+    var j = 0
+    while(j < 2) {
+        var x = j
+        print("  While loop x:", x, "(shadows for loop x)")
+        j = j + 1
+    }
+    print("Back to for loop x:", x)
+}
+print("Back to outer x:", x)
+
+// Test 2: Variable lifetime across iterations
+print("\n=== Test 2: Variable Lifetime Across Iterations ===")
+var counter = 0
+for(counter = 0; counter < 3; counter = counter + 1) {
+    var iteration_var = counter * 2
+    print("Iteration", counter, "- iteration_var:", iteration_var)
+    // iteration_var is recreated each iteration
+}
+
+// Test 3: Accessing outer loop variables from inner loops
+print("\n=== Test 3: Accessing Outer Variables ===")
+var outer = 0
+for(outer = 0; outer < 3; outer = outer + 1) {
+    var outer_data = outer * 100
+    print("Outer:", outer, "data:", outer_data)
+    
+    var inner = 0
+    for(inner = 0; inner < 2; inner = inner + 1) {
+        var inner_data = inner * 10
+        var combined = outer_data + inner_data + outer + inner
+        print("  Inner:", inner, "combined with outer:", combined)
+    }
+}
+
+// Test 4: Multiple variables with same name at different scopes
+print("\n=== Test 4: Same Name Different Scopes ===")
+var value = 1
+print("Global value:", value)
+
+var a = 0
+for(a = 0; a < 2; a = a + 1) {
+    var value = 10 + a
+    print("For scope value:", value)
+    
+    var b = 0
+    while(b < 2) {
+        var value = 100 + b
+        print("  While scope value:", value)
+        
+        var c = 0
+        for(c = 0; c < 2; c = c + 1) {
+            var value = 1000 + c
+            print("    Inner for scope value:", value)
+        }
+        b = b + 1
+    }
+}
+print("Back to global value:", value)
+
+// Test 5: Variable declarations in loop body vs initialization
+print("\n=== Test 5: Declaration Locations ===")
+var init_var = 0
+for(init_var = 0; init_var < 3; init_var = init_var + 1) {
+    var body_var = init_var * 5
+    print("Init var:", init_var, "Body var:", body_var)
+}
+print("Init var after loop:", init_var)
+// body_var is not accessible here (out of scope)
+
+// Test 6: Complex scoping with multiple nested levels
+print("\n=== Test 6: Complex Multi-Level Scoping ===")
+var global_sum = 0
+var level = 0
+
+for(level = 1; level <= 2; level = level + 1) {
+    var level1_sum = 0
+    var level1_multiplier = level * 10
+    
+    var m = 0
+    for(m = 1; m <= 2; m = m + 1) {
+        var level2_sum = 0
+        var level2_value = m * level1_multiplier
+        
+        var n = 0
+        while(n < 2) {
+            var level3_value = n + level2_value + level1_multiplier
+            level2_sum = level2_sum + level3_value
+            level1_sum = level1_sum + level3_value
+            global_sum = global_sum + level3_value
+            print("L1:", level, "L2:", m, "L3:", n, "Value:", level3_value)
+            n = n + 1
+        }
+        print("  Level 2 sum:", level2_sum)
+    }
+    print("Level 1 sum:", level1_sum)
+}
+print("Global sum:", global_sum)
+
+// Test 7: Variable redeclaration in same scope (should work per iteration)
+print("\n=== Test 7: Redeclaration Per Iteration ===")
+var iter = 0
+for(iter = 0; iter < 3; iter = iter + 1) {
+    var temp = iter
+    print("First temp:", temp)
+    var temp2 = iter * 2
+    print("Second temp2 (redeclared):", temp2)
+}
+
+// Test 8: While loop variable scoping
+print("\n=== Test 8: While Loop Scoping ===")
+var while_outer = 0
+while(while_outer < 2) {
+    var outer_scoped = while_outer * 50
+    print("Outer scoped:", outer_scoped)
+    
+    var while_inner = 0
+    while(while_inner < 2) {
+        var inner_scoped = while_inner * 5
+        var both = outer_scoped + inner_scoped
+        print("  Both:", both)
+        while_inner = while_inner + 1
+    }
+    while_outer = while_outer + 1
+}
+
+print("\n=== All variable scoping tests completed! ===")

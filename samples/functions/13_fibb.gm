@@ -1,0 +1,19 @@
+var ans = 0;
+const n = 10;
+
+func fibb(n){
+    if(n < 2){
+        return n
+    }
+    return fibb(n-1) + fibb(n-2)
+}
+
+func main(){
+    ans = fibb(n)
+    println(ans)
+}
+
+main()
+
+
+

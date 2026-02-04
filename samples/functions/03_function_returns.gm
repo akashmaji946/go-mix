@@ -1,0 +1,41 @@
+// Function Returns - Functions that return values
+
+func getSquare(n){
+    return n * n
+}
+
+func getMax(a, b){
+    if(a > b){
+        return a
+    }
+    return b
+}
+
+func getAbsolute(n){
+    if(n < 0){
+        return -n
+    }
+    return n
+}
+
+func getMessage(){
+    return "This function returns a string message!"
+}
+
+func main(){
+    println("=== Function Returns Demo ===")
+    var sq = getSquare(5)
+    println("Square of 5:", sq)
+    var sq2 = getSquare(10)
+    println("Square of 10:", sq2)
+    var mx = getMax(15, 8)
+    println("Max of 15 and 8:", mx)
+    var abs = getAbsolute(-42)
+    println("Absolute of -42:", abs)
+    var msg = getMessage()
+    println("Message:", msg)
+    println("=== Demo Complete ===")
+}
+
+main()
+

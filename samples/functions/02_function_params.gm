@@ -1,0 +1,31 @@
+// Function Parameters - Functions with multiple parameters
+
+func add(a, b){
+    var sum = a + b
+    println("add(", a, ",", b, ") =", sum)
+    return sum
+}
+
+func multiply(x, y){
+    var product = x * y
+    println("multiply(", x, ",", y, ") =", product)
+    return product
+}
+
+func greetUser(name, age){
+    println("Hello", name, "! You are", age, "years old.")
+}
+
+func main(){
+    println("=== Function Parameters Demo ===")
+    add(5, 3)
+    add(10, 20)
+    multiply(4, 7)
+    multiply(6, 8)
+    greetUser("Alice", 25)
+    greetUser("Bob", 30)
+    println("=== Demo Complete ===")
+}
+
+main()
+

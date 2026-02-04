@@ -1,0 +1,208 @@
+// Edge case tests for loops with variable declarations
+
+// Test 1: Empty loop bodies
+print("=== Test 1: Empty Loop Bodies ===")
+var empty_i = 0
+for(empty_i = 0; empty_i < 3; empty_i = empty_i + 1) {
+    // Empty body - loop still executes
+}
+print("For loop with empty body completed, i:", empty_i)
+
+var empty_count = 0
+while(empty_count < 3) {
+    empty_count = empty_count + 1
+    // Minimal body
+}
+print("While loop completed, count:", empty_count)
+
+// Test 2: Single iteration loops
+print("\n=== Test 2: Single Iteration Loops ===")
+var single_i = 0
+for(single_i = 0; single_i < 1; single_i = single_i + 1) {
+    var single_var = 42
+    print("Single for iteration, var:", single_var)
+}
+
+var single_count = 0
+while(single_count < 1) {
+    var single_while_var = 99
+    print("Single while iteration, var:", single_while_var)
+    single_count = single_count + 1
+}
+
+// Test 3: Zero iteration loops
+print("\n=== Test 3: Zero Iteration Loops ===")
+var zero_i = 0
+for(zero_i = 5; zero_i < 5; zero_i = zero_i + 1) {
+    var never_created = 100
+    print("This should not print")
+}
+print("For loop with zero iterations completed")
+
+var zero_count = 10
+while(zero_count < 5) {
+    var also_never_created = 200
+    print("This should also not print")
+    zero_count = zero_count + 1
+}
+print("While loop with zero iterations completed")
+
+// Test 4: Large iteration count
+print("\n=== Test 4: Large Iteration Count ===")
+var large_sum = 0
+var large_i = 0
+for(large_i = 0; large_i < 100; large_i = large_i + 1) {
+    var iteration_value = large_i
+    large_sum = large_sum + iteration_value
+}
+print("Sum of 0 to 99:", large_sum)
+
+// Test 5: Nested loops with varying iteration counts
+print("\n=== Test 5: Varying Iteration Counts ===")
+var outer_var = 0
+for(outer_var = 0; outer_var < 3; outer_var = outer_var + 1) {
+    var iterations = outer_var + 1
+    print("Outer:", outer_var, "will do", iterations, "inner iterations")
+    
+    var inner_var = 0
+    while(inner_var < iterations) {
+        var inner_value = inner_var * 10
+        print("  Inner:", inner_var, "value:", inner_value)
+        inner_var = inner_var + 1
+    }
+}
+
+// Test 6: Loop with only variable declarations
+print("\n=== Test 6: Loops with Only Declarations ===")
+var decl_i = 0
+for(decl_i = 0; decl_i < 3; decl_i = decl_i + 1) {
+    var var1 = decl_i
+    var var2 = decl_i * 2
+    var var3 = decl_i * 3
+    // Variables declared but not used
+}
+print("Declaration-only loop completed")
+
+// Test 7: Extreme nesting with minimal iterations
+print("\n=== Test 7: Deep Nesting Minimal Iterations ===")
+var d1 = 0
+for(d1 = 0; d1 < 1; d1 = d1 + 1) {
+    var v1 = 1
+    var d2 = 0
+    for(d2 = 0; d2 < 1; d2 = d2 + 1) {
+        var v2 = 2
+        var d3 = 0
+        for(d3 = 0; d3 < 1; d3 = d3 + 1) {
+            var v3 = 3
+            var d4 = 0
+            for(d4 = 0; d4 < 1; d4 = d4 + 1) {
+                var v4 = 4
+                var sum = v1 + v2 + v3 + v4
+                print("Deep nested single iteration, sum:", sum)
+            }
+        }
+    }
+}
+
+// Test 8: Loop variable boundary conditions
+print("\n=== Test 8: Boundary Conditions ===")
+var boundary = 0
+for(boundary = 0; boundary <= 0; boundary = boundary + 1) {
+    var at_boundary = 1
+    print("At boundary 0, var:", at_boundary)
+}
+
+var neg_start = -3
+while(neg_start < 0) {
+    var neg_value = neg_start * neg_start
+    print("Negative start:", neg_start, "squared:", neg_value)
+    neg_start = neg_start + 1
+}
+
+// Test 9: Multiple variables declared in single iteration
+print("\n=== Test 9: Multiple Declarations Per Iteration ===")
+var multi_i = 0
+for(multi_i = 0; multi_i < 2; multi_i = multi_i + 1) {
+    var a = multi_i
+    var b = multi_i * 2
+    var c = multi_i * 3
+    var d = multi_i * 4
+    var e = multi_i * 5
+    var sum = a + b + c + d + e
+    print("Iteration", multi_i, "sum of 5 vars:", sum)
+}
+
+// Test 10: Alternating loop types with edge cases
+print("\n=== Test 10: Alternating Loop Types ===")
+var alt_outer = 0
+for(alt_outer = 0; alt_outer < 2; alt_outer = alt_outer + 1) {
+    var outer_data = alt_outer * 100
+    
+    var alt_inner = 0
+    while(alt_inner < 1) {
+        var inner_data = alt_inner * 10
+        
+        var alt_deep = 0
+        for(alt_deep = 0; alt_deep < 1; alt_deep = alt_deep + 1) {
+            var deep_data = alt_deep
+            var total = outer_data + inner_data + deep_data
+            print("Alternating edge case, total:", total)
+        }
+        alt_inner = alt_inner + 1
+    }
+}
+
+// Test 11: Loop with immediate exit condition
+print("\n=== Test 11: Immediate Exit Conditions ===")
+var imm_exit = 10
+while(imm_exit > 100) {
+    var never_runs = 1
+    print("Should never print")
+    imm_exit = imm_exit + 1
+}
+print("Immediate exit while completed")
+
+// Test 12: Very simple nested structure
+print("\n=== Test 12: Minimal Nested Structure ===")
+var min_outer = 0
+while(min_outer < 1) {
+    var outer_val = 1
+    var min_inner = 0
+    while(min_inner < 1) {
+        var inner_val = 2
+        var min_sum = outer_val + inner_val
+        print("Minimal nested sum:", min_sum)
+        min_inner = min_inner + 1
+    }
+    min_outer = min_outer + 1
+}
+
+// Test 13: Loop with complex initialization
+print("\n=== Test 13: Complex Initialization ===")
+var init_a = 0
+var init_b = 0
+var init_c = 0
+for(init_a = 1, init_b = 2, init_c = 3; init_a < 3; init_a = init_a + 1, init_b = init_b + 1, init_c = init_c + 1) {
+    var sum_init = init_a + init_b + init_c
+    print("Complex init sum:", sum_init)
+}
+
+// Test 14: Countdown to zero
+print("\n=== Test 14: Countdown to Zero ===")
+var countdown = 5
+while(countdown > 0) {
+    var remaining = countdown
+    print("Countdown:", remaining)
+    countdown = countdown - 1
+}
+print("Countdown reached zero")
+
+// Test 15: Loop with only increment, no body logic
+print("\n=== Test 15: Increment Only ===")
+var inc_only = 0
+for(inc_only = 0; inc_only < 5; inc_only = inc_only + 1) {
+    var dummy = inc_only
+}
+print("Increment only loop done, final value:", inc_only)
+
+print("\n=== All edge case tests completed! ===")

@@ -1,0 +1,36 @@
+// Function Scope - Variable scope demonstration
+
+var globalVar = "I am global"
+
+func testScope(){
+    var localVar = "I am local"
+    println("Inside function:")
+    println("  globalVar:", globalVar)
+    println("  localVar:", localVar)
+    var innerVar = "I am inner"
+    println("  innerVar:", innerVar)
+}
+
+func anotherScope(){
+    var localVar = "I am different local"
+    println("Inside another function:")
+    println("  globalVar:", globalVar)
+    println("  localVar:", localVar)
+}
+
+func main(){
+    println("=== Function Scope Demo ===")
+    println("Outside functions:")
+    println("  globalVar:", globalVar)
+    println("")
+    testScope()
+    println("")
+    anotherScope()
+    println("")
+    println("Back outside:")
+    println("  globalVar:", globalVar)
+    println("=== Demo Complete ===")
+}
+
+main()
+

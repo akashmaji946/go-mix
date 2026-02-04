@@ -1,0 +1,15 @@
+// Fixed while loop example
+// Original (broken): var x = 0; while(x <= 100) { var y = x * 10; print(x+y);};
+// Problem: Missing increment for x, causing infinite loop
+
+print("=== Fixed While Loop Example ===")
+print("Printing x + (x * 10) for x from 0 to 100\n")
+
+var x = 0
+while(x <= 100) {
+    var y = x * 10  // Now works! Each iteration gets its own scope
+    print(x + y)
+    x = x + 1  // This increment is CRITICAL to avoid infinite loop
+}
+
+print("\n=== Loop completed successfully! ===")

@@ -1,0 +1,54 @@
+// Comprehensive test for for and while loops with comments
+
+// Test 1: Basic for loop with single initializer and update
+print("=== Test 1: Basic for loop ===")
+var i = 0
+for(i = 0; i < 3; i = i + 1){
+    print("i:", i)
+}
+
+// Test 2: For loop with multiple initializers and updates
+print("\n=== Test 2: Multiple initializers/updates ===")
+var x = 0
+var y = 0
+for(x = 0, y = 10; x < 5 && y > 5; x = x + 1, y = y - 1){
+    print("x:", x, "y:", y)
+}
+
+// Test 3: For loop with complex condition
+print("\n=== Test 3: Complex condition ===")
+var a = 0
+var b = 0
+for(a = 0, b = 0; a < 10 && b < 20 && (a + b) < 25; a = a + 2, b = b + 3){
+    print("a:", a, "b:", b, "sum:", a + b)
+}
+
+// Test 4: While loop with single condition
+print("\n=== Test 4: Basic while loop ===")
+var counter = 0
+while(counter < 3){
+    print("counter:", counter)
+    counter = counter + 1
+}
+
+// Test 5: While loop with multiple conditions (AND logic)
+print("\n=== Test 5: Multiple conditions ===")
+var num = 0
+var limit = 5
+while(num < limit , num < 10 , num >= 0){
+    print("num:", num)
+    num = num + 1
+}
+
+// Test 6: Nested loops
+print("\n=== Test 6: Nested loops ===")
+var outer = 0
+var inner = 0
+for(outer = 0; outer < 3; outer = outer + 1){
+    print("Outer loop:", outer)
+    for(inner = 0; inner < 2; inner = inner + 1){
+        print("  Inner loop:", inner)
+    }
+}
+
+print("\nAll tests completed!")

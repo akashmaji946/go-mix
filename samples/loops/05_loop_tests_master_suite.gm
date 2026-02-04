@@ -1,0 +1,312 @@
+// Master test suite combining all loop testing aspects
+// This file tests for loops, while loops, nested loops, and variable declarations
+
+print("========================================")
+print("   MASTER LOOP TEST SUITE")
+print("========================================")
+
+// Section 1: Basic For Loop Tests
+print("\n--- SECTION 1: Basic For Loops ---")
+
+var basic_i = 0
+for(basic_i = 0; basic_i < 5; basic_i = basic_i + 1) {
+    var loop_var = basic_i * 10
+    print("For loop iteration", basic_i, "value:", loop_var)
+}
+
+// Section 2: Basic While Loop Tests
+print("\n--- SECTION 2: Basic While Loops ---")
+
+var basic_count = 0
+while(basic_count < 5) {
+    var while_var = basic_count * 20
+    print("While loop iteration", basic_count, "value:", while_var)
+    basic_count = basic_count + 1
+}
+
+// Section 3: For Loop with Multiple Initializers
+print("\n--- SECTION 3: Multiple Initializers ---")
+
+var x = 0
+var y = 0
+for(x = 0, y = 10; x < 5; x = x + 1, y = y - 1) {
+    var sum = x + y
+    var product = x * y
+    print("x:", x, "y:", y, "sum:", sum, "product:", product)
+}
+
+// Section 4: Nested For Loops
+print("\n--- SECTION 4: Nested For Loops ---")
+
+var outer_i = 0
+var inner_i = 0
+for(outer_i = 0; outer_i < 3; outer_i = outer_i + 1) {
+    var outer_val = outer_i * 100
+    print("Outer loop", outer_i, "value:", outer_val)
+    
+    for(inner_i = 0; inner_i < 3; inner_i = inner_i + 1) {
+        var inner_val = inner_i * 10
+        var combined = outer_val + inner_val
+        print("  Inner loop", inner_i, "combined:", combined)
+    }
+}
+
+// Section 5: Nested While Loops
+print("\n--- SECTION 5: Nested While Loops ---")
+
+var outer_w = 0
+while(outer_w < 3) {
+    var outer_data = outer_w * 50
+    print("Outer while", outer_w, "data:", outer_data)
+    
+    var inner_w = 0
+    while(inner_w < 2) {
+        var inner_data = inner_w * 5
+        var total = outer_data + inner_data
+        print("  Inner while", inner_w, "total:", total)
+        inner_w = inner_w + 1
+    }
+    outer_w = outer_w + 1
+}
+
+// Section 6: Mixed Nesting (For in While)
+print("\n--- SECTION 6: For Inside While ---")
+
+var while_counter = 0
+while(while_counter < 2) {
+    var while_value = while_counter * 30
+    print("While iteration", while_counter, "value:", while_value)
+    
+    var for_counter = 0
+    for(for_counter = 0; for_counter < 2; for_counter = for_counter + 1) {
+        var for_value = for_counter * 3
+        var mix_sum = while_value + for_value
+        print("  For iteration", for_counter, "sum:", mix_sum)
+    }
+    while_counter = while_counter + 1
+}
+
+// Section 7: Mixed Nesting (While in For)
+print("\n--- SECTION 7: While Inside For ---")
+
+var for_outer = 0
+for(for_outer = 0; for_outer < 2; for_outer = for_outer + 1) {
+    var for_data = for_outer * 40
+    print("For iteration", for_outer, "data:", for_data)
+    
+    var while_inner = 0
+    while(while_inner < 2) {
+        var while_data = while_inner * 4
+        var mix_product = for_data + while_data
+        print("  While iteration", while_inner, "product:", mix_product)
+        while_inner = while_inner + 1
+    }
+}
+
+// Section 8: Triple Nesting
+print("\n--- SECTION 8: Triple Nested Loops ---")
+
+var l1 = 0
+for(l1 = 0; l1 < 2; l1 = l1 + 1) {
+    var v1 = l1 * 1000
+    
+    var l2 = 0
+    while(l2 < 2) {
+        var v2 = l2 * 100
+        
+        var l3 = 0
+        for(l3 = 0; l3 < 2; l3 = l3 + 1) {
+            var v3 = l3 * 10
+            var triple_sum = v1 + v2 + v3
+            print("Triple nested:", l1, l2, l3, "sum:", triple_sum)
+        }
+        l2 = l2 + 1
+    }
+}
+
+// Section 9: Variable Shadowing
+print("\n--- SECTION 9: Variable Shadowing ---")
+
+var shadow_var = 999
+print("Global shadow_var:", shadow_var)
+
+var s1 = 0
+for(s1 = 0; s1 < 2; s1 = s1 + 1) {
+    var shadow_var = s1 * 100
+    print("For scope shadow_var:", shadow_var)
+    
+    var s2 = 0
+    while(s2 < 2) {
+        var shadow_var = s2 * 10
+        print("  While scope shadow_var:", shadow_var)
+        s2 = s2 + 1
+    }
+}
+print("Back to global shadow_var:", shadow_var)
+
+// Section 10: Accumulator Pattern
+print("\n--- SECTION 10: Accumulator Pattern ---")
+
+var total_sum = 0
+var acc_i = 0
+for(acc_i = 1; acc_i <= 10; acc_i = acc_i + 1) {
+    var current = acc_i
+    total_sum = total_sum + current
+    print("Adding", current, "total now:", total_sum)
+}
+print("Final sum:", total_sum)
+
+// Section 11: Factorial Pattern
+print("\n--- SECTION 11: Factorial Pattern ---")
+
+var factorial = 1
+var fact_n = 5
+var fact_i = 1
+while(fact_i <= fact_n) {
+    var current_factor = fact_i
+    factorial = factorial * current_factor
+    print("Factorial step", fact_i, "result:", factorial)
+    fact_i = fact_i + 1
+}
+print("Factorial of", fact_n, "is:", factorial)
+
+// Section 12: Matrix Pattern
+print("\n--- SECTION 12: Matrix Pattern ---")
+
+var matrix_rows = 3
+var matrix_cols = 3
+var row = 0
+for(row = 0; row < matrix_rows; row = row + 1) {
+    var col = 0
+    for(col = 0; col < matrix_cols; col = col + 1) {
+        var cell_value = row * matrix_cols + col
+        print("Matrix[", row, ",", col, "] =", cell_value)
+    }
+}
+
+// Section 13: Countdown Pattern
+print("\n--- SECTION 13: Countdown Pattern ---")
+
+var countdown = 5
+while(countdown >= 0) {
+    var remaining = countdown
+    print("Countdown:", remaining)
+    countdown = countdown - 1
+}
+print("Liftoff!")
+
+// Section 14: Complex Condition
+print("\n--- SECTION 14: Complex Conditions ---")
+
+var a = 0
+var b = 10
+for(a = 0, b = 10; a < 5 && b > 5 && (a + b) < 15; a = a + 1, b = b - 1) {
+    var sum = a + b
+    var diff = b - a
+    print("a:", a, "b:", b, "sum:", sum, "diff:", diff)
+}
+
+// Section 15: Variable Lifetime
+print("\n--- SECTION 15: Variable Lifetime ---")
+
+var lifetime_i = 0
+for(lifetime_i = 0; lifetime_i < 3; lifetime_i = lifetime_i + 1) {
+    var iteration_specific = lifetime_i * 7
+    print("Iteration", lifetime_i, "specific var:", iteration_specific)
+    // This variable is recreated each iteration
+}
+
+// Section 16: Empty and Minimal Loops
+print("\n--- SECTION 16: Edge Cases ---")
+
+var empty_i = 0
+for(empty_i = 0; empty_i < 3; empty_i = empty_i + 1) {
+    // Empty body
+}
+print("Empty loop completed, counter:", empty_i)
+
+var single_iter = 0
+while(single_iter < 1) {
+    var single_var = 42
+    print("Single iteration, var:", single_var)
+    single_iter = single_iter + 1
+}
+
+var zero_iter = 5
+while(zero_iter < 5) {
+    print("This should not print")
+    zero_iter = zero_iter + 1
+}
+print("Zero iteration loop completed")
+
+// Section 17: Performance Test
+print("\n--- SECTION 17: Performance Test ---")
+
+var perf_sum = 0
+var perf_i = 0
+for(perf_i = 0; perf_i < 100; perf_i = perf_i + 1) {
+    var value = perf_i
+    perf_sum = perf_sum + value
+}
+print("Sum of 0-99:", perf_sum)
+
+// Section 18: Nested Accumulation
+print("\n--- SECTION 18: Nested Accumulation ---")
+
+var grand_total = 0
+var nest_i = 0
+for(nest_i = 0; nest_i < 3; nest_i = nest_i + 1) {
+    var level1_sum = 0
+    var nest_j = 0
+    for(nest_j = 0; nest_j < 3; nest_j = nest_j + 1) {
+        var value = nest_i * 10 + nest_j
+        level1_sum = level1_sum + value
+        grand_total = grand_total + value
+    }
+    print("Level 1 sum for i =", nest_i, ":", level1_sum)
+}
+print("Grand total:", grand_total)
+
+// Section 19: Complex Variable Scoping
+print("\n--- SECTION 19: Complex Scoping ---")
+
+var global_var = 100
+var scope_i = 0
+for(scope_i = 0; scope_i < 2; scope_i = scope_i + 1) {
+    var level1_var = scope_i * 10
+    var scope_j = 0
+    while(scope_j < 2) {
+        var level2_var = scope_j
+        var all_vars = global_var + level1_var + level2_var
+        print("All vars sum:", all_vars)
+        scope_j = scope_j + 1
+    }
+}
+
+// Section 20: Final Complex Test
+print("\n--- SECTION 20: Final Complex Test ---")
+
+var final_result = 0
+var f1 = 0
+for(f1 = 1; f1 <= 3; f1 = f1 + 1) {
+    var f1_contrib = f1 * 100
+    
+    var f2 = 0
+    while(f2 < 2) {
+        var f2_contrib = f2 * 10
+        
+        var f3 = 0
+        for(f3 = 0; f3 < 2; f3 = f3 + 1) {
+            var f3_contrib = f3
+            var iteration_sum = f1_contrib + f2_contrib + f3_contrib
+            final_result = final_result + iteration_sum
+            print("Complex:", f1, f2, f3, "sum:", iteration_sum)
+        }
+        f2 = f2 + 1
+    }
+}
+print("Final complex result:", final_result)
+
+print("\n========================================")
+print("   ALL TESTS COMPLETED SUCCESSFULLY!")
+print("========================================")

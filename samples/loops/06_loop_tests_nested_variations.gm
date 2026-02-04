@@ -1,0 +1,76 @@
+// Comprehensive tests for nested loop variations with variable declarations
+
+// Test 1: While within while loops
+print("=== Test 1: While within While ===")
+var outer_count = 0
+while(outer_count < 3) {
+    print("Outer while:", outer_count)
+    var inner_count = 0
+    while(inner_count < 2) {
+        var product = outer_count * inner_count
+        print("  Inner while:", inner_count, "Product:", product)
+        inner_count = inner_count + 1
+    }
+    outer_count = outer_count + 1
+}
+
+// Test 2: For within while loops
+print("\n=== Test 2: For within While ===")
+var while_counter = 0
+while(while_counter < 3) {
+    print("While iteration:", while_counter)
+    var for_var = 0
+    for(for_var = 0; for_var < 2; for_var = for_var + 1) {
+        var sum = while_counter + for_var
+        print("  For iteration:", for_var, "Sum:", sum)
+    }
+    while_counter = while_counter + 1
+}
+
+// Test 3: While within for loops
+print("\n=== Test 3: While within For ===")
+var i = 0
+for(i = 0; i < 3; i = i + 1) {
+    print("For iteration:", i)
+    var while_var = 0
+    while(while_var < 2) {
+        var difference = i - while_var
+        print("  While iteration:", while_var, "Difference:", difference)
+        while_var = while_var + 1
+    }
+}
+
+// Test 4: Multiple variables declared at each level
+print("\n=== Test 4: Variables at Each Nesting Level ===")
+var level1_a = 0
+var level1_b = 10
+for(level1_a = 0; level1_a < 2; level1_a = level1_a + 1) {
+    var level2_x = level1_a * 5
+    var level2_y = level1_b - level1_a
+    print("Level 1:", level1_a, "Level2 vars:", level2_x, level2_y)
+    
+    var inner_idx = 0
+    while(inner_idx < 2) {
+        var level3_result = level2_x + level2_y + inner_idx
+        print("  Level 3 result:", level3_result)
+        inner_idx = inner_idx + 1
+    }
+}
+
+// Test 5: Nested loops with accumulator pattern
+print("\n=== Test 5: Accumulator in Nested Loops ===")
+var total_sum = 0
+var row = 0
+for(row = 0; row < 3; row = row + 1) {
+    var row_sum = 0
+    var col = 0
+    for(col = 0; col < 3; col = col + 1) {
+        var cell_value = row * 3 + col
+        row_sum = row_sum + cell_value
+        total_sum = total_sum + cell_value
+    }
+    print("Row", row, "sum:", row_sum)
+}
+print("Total sum:", total_sum)
+
+print("\n=== All nested variation tests completed! ===")

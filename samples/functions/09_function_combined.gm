@@ -1,0 +1,68 @@
+// Function Combined - Combined features (conditionals + loops + functions)
+
+func isPrime(n){
+    if(n <= 1){
+        return false
+    }
+    if(n == 2){
+        return true
+    }
+    var i = 2
+    while(i * i <= n){
+        if(n % i == 0){
+            return false
+        }
+        i = i + 1
+    }
+    return true
+}
+
+func printPrimesInRange(start, end){
+    var i = start
+    while(i <= end){
+        if(isPrime(i)){
+            println(i)
+        }
+        i = i + 1
+    }
+}
+
+func getPrimesArray(start, end){
+    var count = 0
+    var i = start
+    while(i <= end){
+        if(isPrime(i)){
+            count = count + 1
+        }
+        i = i + 1
+    }
+    var primes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    var idx = 0
+    i = start
+    while(i <= end){
+        if(isPrime(i)){
+            primes[idx] = i
+            idx = idx + 1
+        }
+        i = i + 1
+    }
+    return primes
+}
+
+func main(){
+    println("=== Function Combined Demo ===")
+    println("Primes between 1 and 20:")
+    printPrimesInRange(1, 20)
+    println("")
+    println("Is 17 prime?", isPrime(17))
+    println("Is 18 prime?", isPrime(18))
+    println("Is 2 prime?", isPrime(2))
+    println("Is 1 prime?", isPrime(1))
+    println("Is 0 prime?", isPrime(0))
+    println("")
+    println("Primes array (first 5):", getPrimesArray(1, 10))
+    println("=== Demo Complete ===")
+}
+
+main()
+

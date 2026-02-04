@@ -1018,27 +1018,103 @@ func (par *Parser) parseForLoop() StatementNode {
 		return nil
 	}
 
-	// Parse initializers (comma-separated assignment expressions)
-	initializers := make([]ExpressionNode, 0)
+	// Parse initializers (can be var/const declarations or assignment expressions)
+	initializers := make([]StatementNode, 0)
 
 	// Parse first initializer if present
 	if par.NextToken.Type != lexer.SEMICOLON_DELIM {
 		par.advance()
-		init := par.parseExpression()
-		if init == nil {
-			return nil
-		}
-		initializers = append(initializers, init)
 
-		// Parse additional initializers separated by commas
-		for par.NextToken.Type == lexer.COMMA_DELIM {
-			par.advance() // consume comma
-			par.advance() // move to next expression
+		// Check if this is a variable declaration (var or const)
+		if par.CurrToken.Type == lexer.VAR_KEY || par.CurrToken.Type == lexer.CONST_KEY {
+			// Parse variable declaration(s)
+			varToken := par.CurrToken
+
+			// Parse first variable declaration
+			if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+				return nil
+			}
+			identifier := par.CurrToken
+			typ := "var"
+			if varToken.Type == lexer.CONST_KEY {
+				typ = "const"
+				par.Consts[identifier.Literal] = true
+			}
+
+			if !par.expectAdvance(lexer.ASSIGN_OP) {
+				return nil
+			}
+			par.advance()
+			expr := par.parseExpression()
+			if expr == nil {
+				return nil
+			}
+
+			// Evaluate and store in environment
+			val := eval(par, expr)
+			par.Env[identifier.Literal] = val
+
+			declStmt := &DeclarativeStatementNode{
+				VarToken:   varToken,
+				Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ},
+				Expr:       expr,
+				Value:      val,
+			}
+			initializers = append(initializers, declStmt)
+
+			// Parse additional variable declarations separated by commas
+			for par.NextToken.Type == lexer.COMMA_DELIM {
+				par.advance() // consume comma
+
+				if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+					return nil
+				}
+				identifier := par.CurrToken
+				typ := "var"
+				if varToken.Type == lexer.CONST_KEY {
+					typ = "const"
+					par.Consts[identifier.Literal] = true
+				}
+
+				if !par.expectAdvance(lexer.ASSIGN_OP) {
+					return nil
+				}
+				par.advance()
+				expr := par.parseExpression()
+				if expr == nil {
+					return nil
+				}
+
+				// Evaluate and store in environment
+				val := eval(par, expr)
+				par.Env[identifier.Literal] = val
+
+				declStmt := &DeclarativeStatementNode{
+					VarToken:   varToken,
+					Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ},
+					Expr:       expr,
+					Value:      val,
+				}
+				initializers = append(initializers, declStmt)
+			}
+		} else {
+			// Parse regular expression initializer
 			init := par.parseExpression()
 			if init == nil {
 				return nil
 			}
 			initializers = append(initializers, init)
+
+			// Parse additional initializers separated by commas
+			for par.NextToken.Type == lexer.COMMA_DELIM {
+				par.advance() // consume comma
+				par.advance() // move to next expression
+				init := par.parseExpression()
+				if init == nil {
+					return nil
+				}
+				initializers = append(initializers, init)
+			}
 		}
 	}
 
