@@ -34,6 +34,22 @@ var Builtins = []*Builtin{
 		Name:     "tostring",
 		Callback: tostring,
 	},
+	{
+		Name:     "push",
+		Callback: push,
+	},
+	{
+		Name:     "pop",
+		Callback: pop,
+	},
+	{
+		Name:     "shift",
+		Callback: shift,
+	},
+	{
+		Name:     "unshift",
+		Callback: unshift,
+	},
 }
 
 func createError(format string, a ...interface{}) *Error {
@@ -121,4 +137,84 @@ func length(writer io.Writer, args ...GoMixObject) GoMixObject {
 	default:
 		return &Error{Message: fmt.Sprintf("argument to `length` not supported, got '%s'", args[0].GetType())}
 	}
+}
+
+// push adds an element to the end of an array and returns the modified array
+func push(writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
+	}
+	if args[0].GetType() != ArrayType {
+		return createError("ERROR: first argument to `push` must be an array, got '%s'", args[0].GetType())
+	}
+
+	arr := args[0].(*Array)
+	newElements := make([]GoMixObject, len(arr.Elements)+1)
+	copy(newElements, arr.Elements)
+	newElements[len(arr.Elements)] = args[1]
+
+	return &Array{Elements: newElements}
+}
+
+// pop removes and returns the last element from an array
+func pop(writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
+	}
+	if args[0].GetType() != ArrayType {
+		return createError("ERROR: argument to `pop` must be an array, got '%s'", args[0].GetType())
+	}
+
+	arr := args[0].(*Array)
+	if len(arr.Elements) == 0 {
+		return createError("ERROR: cannot pop from empty array")
+	}
+
+	// Get the last element
+	lastElement := arr.Elements[len(arr.Elements)-1]
+
+	// Modify the array by removing the last element
+	arr.Elements = arr.Elements[:len(arr.Elements)-1]
+
+	return lastElement
+}
+
+// shift removes and returns the first element from an array
+func shift(writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
+	}
+	if args[0].GetType() != ArrayType {
+		return createError("ERROR: argument to `shift` must be an array, got '%s'", args[0].GetType())
+	}
+
+	arr := args[0].(*Array)
+	if len(arr.Elements) == 0 {
+		return createError("ERROR: cannot shift from empty array")
+	}
+
+	// Get the first element
+	firstElement := arr.Elements[0]
+
+	// Modify the array by removing the first element
+	arr.Elements = arr.Elements[1:]
+
+	return firstElement
+}
+
+// unshift adds an element to the beginning of an array and returns the modified array
+func unshift(writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
+	}
+	if args[0].GetType() != ArrayType {
+		return createError("ERROR: first argument to `unshift` must be an array, got '%s'", args[0].GetType())
+	}
+
+	arr := args[0].(*Array)
+	newElements := make([]GoMixObject, len(arr.Elements)+1)
+	newElements[0] = args[1]
+	copy(newElements[1:], arr.Elements)
+
+	return &Array{Elements: newElements}
 }

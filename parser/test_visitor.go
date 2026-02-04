@@ -292,6 +292,23 @@ func (v *TestingVisitor) VisitWhileLoopStatementNode(node WhileLoopStatementNode
 	node.Body.Accept(v)
 }
 
+// TestingVisitor.VisitSliceExpressionNode()
+func (v *TestingVisitor) VisitSliceExpressionNode(node SliceExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*SliceExpressionNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	node.Left.Accept(v)
+	if node.Start != nil {
+		node.Start.Accept(v)
+	}
+	if node.End != nil {
+		node.End.Accept(v)
+	}
+}
+
 // TestingVisitor.String returns the string representation of the visitor
 func (v *TestingVisitor) String() string {
 	return ""

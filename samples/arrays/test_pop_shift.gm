@@ -1,0 +1,26 @@
+println("Testing pop() and shift() mutation")
+println("=====================================")
+
+var arr = [1, 2, 3, 4, 5]
+println("Original array:", arr)
+
+var last = pop(arr)
+println("After pop():")
+println("  Returned:", last)
+println("  Array now:", arr)
+
+var first = shift(arr)
+println("After shift():")
+println("  Returned:", first)
+println("  Array now:", arr)
+
+println("")
+println("Testing multiple pops:")
+var nums = [10, 20, 30]
+println("Start:", nums)
+pop(nums)
+println("After 1st pop:", nums)
+pop(nums)
+println("After 2nd pop:", nums)
+pop(nums)
+println("After 3rd pop:", nums)

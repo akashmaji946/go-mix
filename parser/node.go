@@ -38,6 +38,7 @@ type NodeVisitor interface {
 	// Data Structures
 	VisitArrayExpressionNode(node ArrayExpressionNode)
 	VisitIndexExpressionNode(node IndexExpressionNode)
+	VisitSliceExpressionNode(node SliceExpressionNode)
 	// VisitHashExpressionNode(node HashExpressionNode)
 }
 
@@ -742,5 +743,42 @@ func (node *IndexExpressionNode) Statement() {
 
 // IndexExpressionNode.Expression()
 func (node *IndexExpressionNode) Expression() {
+
+}
+
+// SliceExpressionNode represents array slicing like arr[1:3], arr[:3], arr[1:]
+type SliceExpressionNode struct {
+	Left  ExpressionNode      // The array or indexable expression
+	Start ExpressionNode      // The start index (can be nil for arr[:end])
+	End   ExpressionNode      // The end index (can be nil for arr[start:])
+	Value objects.GoMixObject // Evaluated value
+}
+
+// SliceExpressionNode.Literal()
+func (node *SliceExpressionNode) Literal() string {
+	result := node.Left.Literal() + "["
+	if node.Start != nil {
+		result += node.Start.Literal()
+	}
+	result += ":"
+	if node.End != nil {
+		result += node.End.Literal()
+	}
+	result += "]"
+	return result
+}
+
+// SliceExpressionNode.Accept()
+func (node *SliceExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitSliceExpressionNode(*node)
+}
+
+// SliceExpressionNode.Statement()
+func (node *SliceExpressionNode) Statement() {
+
+}
+
+// SliceExpressionNode.Expression()
+func (node *SliceExpressionNode) Expression() {
 
 }

@@ -1,0 +1,77 @@
+// Test Array Slicing and Methods
+
+println("=== Array Slicing Tests ===")
+
+// Basic array
+var arr = [1, 2, 3, 4, 5]
+println("Original array:", arr)
+
+// Test arr[1:3]
+var slice1 = arr[1:3]
+println("arr[1:3]:", slice1)
+
+// Test arr[:3]
+var slice2 = arr[:3]
+println("arr[:3]:", slice2)
+
+// Test arr[2:]
+var slice3 = arr[2:]
+println("arr[2:]:", slice3)
+
+// Test arr[:]
+var slice4 = arr[:]
+println("arr[:]:", slice4)
+
+// Test with negative indices
+var slice5 = arr[-2:]
+println("arr[-2:]:", slice5)
+
+var slice6 = arr[:-2]
+println("arr[:-2]:", slice6)
+
+println("")
+println("=== Array Methods Tests ===")
+
+// Test push
+var arr2 = [1, 2, 3]
+println("Original array:", arr2)
+var arr3 = push(arr2, 4)
+println("After push(arr2, 4):", arr3)
+println("Original unchanged:", arr2)
+
+// Test pop
+var arr4 = [10, 20, 30, 40]
+println("Array:", arr4)
+var popped = pop(arr4)
+println("pop(arr4):", popped)
+
+// Test shift
+var arr5 = [100, 200, 300]
+println("Array:", arr5)
+var shifted = shift(arr5)
+println("shift(arr5):", shifted)
+
+// Test unshift
+var arr6 = [2, 3, 4]
+println("Original array:", arr6)
+var arr7 = unshift(arr6, 1)
+println("After unshift(arr6, 1):", arr7)
+println("Original unchanged:", arr6)
+
+println("")
+println("=== Combined Tests ===")
+
+// Slice then push
+var arr8 = [1, 2, 3, 4, 5]
+var sliced = arr8[1:4]
+println("Sliced [1:4]:", sliced)
+var pushed = push(sliced, 99)
+println("After push:", pushed)
+
+// Empty array slice
+var empty = arr8[2:2]
+println("Empty slice arr8[2:2]:", empty)
+println("Length:", length(empty))
+
+println("")
+println("=== All tests completed! ===")

@@ -334,17 +334,81 @@ func (par *Parser) parseArrayExpressionNode() ExpressionNode {
 	return arrayNode
 }
 
-// parseIndexExpression parses array indexing like arr[0] or arr[-1]
+// parseIndexExpression parses array indexing like arr[0] or arr[-1] or slicing like arr[1:3]
 func (par *Parser) parseIndexExpression(left ExpressionNode) ExpressionNode {
-	indexNode := &IndexExpressionNode{
-		Left: left,
-	}
 	// current token is [
 	par.advance() // move past [
-	indexNode.Index = par.parseExpression()
-	if indexNode.Index == nil {
+
+	// Check for empty slice [:] or [:end]
+	if par.CurrToken.Type == lexer.COLON_DELIM {
+		// This is a slice with no start: arr[:end] or arr[:]
+		sliceNode := &SliceExpressionNode{
+			Left:  left,
+			Start: nil,
+		}
+		par.advance() // move past :
+
+		// Check if there's an end index
+		if par.CurrToken.Type != lexer.RIGHT_BRACKET {
+			sliceNode.End = par.parseExpression()
+			if sliceNode.End == nil {
+				return nil
+			}
+			// After parsing end expression, NextToken should be ]
+			if !par.expectAdvance(lexer.RIGHT_BRACKET) {
+				return nil
+			}
+		} else {
+			// CurrToken is already ], don't need to advance
+			// The calling code in parseInternal will handle advancing
+		}
+		return sliceNode
+	}
+
+	// Parse the first expression (could be index or start of slice)
+	firstExpr := par.parseExpression()
+	if firstExpr == nil {
 		return nil
 	}
+
+	// After parseExpression, check NextToken for colon (since parseExpression stops before operators it doesn't handle)
+	if par.NextToken.Type == lexer.COLON_DELIM {
+		// This is a slice: arr[start:end] or arr[start:]
+		sliceNode := &SliceExpressionNode{
+			Left:  left,
+			Start: firstExpr,
+		}
+		par.advance() // move to :
+		par.advance() // move past :
+
+		// Check if there's an end index (skip any semicolons)
+		for par.CurrToken.Type == lexer.SEMICOLON_DELIM {
+			par.advance()
+		}
+
+		if par.CurrToken.Type != lexer.RIGHT_BRACKET {
+			// Parse end expression
+			sliceNode.End = par.parseExpression()
+			if sliceNode.End == nil {
+				return nil
+			}
+			// After parseExpression, NextToken should be ]
+			if !par.expectAdvance(lexer.RIGHT_BRACKET) {
+				return nil
+			}
+		} else {
+			// CurrToken is already ], don't need to advance
+			// The calling code in parseInternal will handle advancing
+		}
+		return sliceNode
+	}
+
+	// This is a regular index expression
+	indexNode := &IndexExpressionNode{
+		Left:  left,
+		Index: firstExpr,
+	}
+
 	if !par.expectAdvance(lexer.RIGHT_BRACKET) {
 		return nil
 	}

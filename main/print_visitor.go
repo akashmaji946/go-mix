@@ -251,6 +251,21 @@ func (p *PrintingVisitor) VisitIndexExpressionNode(node parser.IndexExpressionNo
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitSliceExpressionNode
+func (p *PrintingVisitor) VisitSliceExpressionNode(node parser.SliceExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Slice", node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	node.Left.Accept(p)
+	if node.Start != nil {
+		node.Start.Accept(p)
+	}
+	if node.End != nil {
+		node.End.Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

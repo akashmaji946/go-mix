@@ -189,6 +189,8 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalArrayExpression(n)
 	case *parser.IndexExpressionNode:
 		return e.evalIndexExpression(n)
+	case *parser.SliceExpressionNode:
+		return e.evalSliceExpression(n)
 	default:
 		return &objects.Nil{}
 	}
@@ -678,6 +680,81 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 	}
 
 	return arr.Elements[idx]
+}
+
+// evalSliceExpression evaluates a slice expression like arr[1:3], arr[:3], arr[1:], arr[:]
+func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.GoMixObject {
+	left := e.Eval(n.Left)
+	if IsError(left) {
+		return left
+	}
+
+	// Check if left is an array
+	if left.GetType() != objects.ArrayType {
+		return e.CreateError("ERROR: slice operator not supported for type '%s'", left.GetType())
+	}
+
+	arr := left.(*objects.Array)
+	length := int64(len(arr.Elements))
+
+	// Determine start index
+	var start int64 = 0
+	if n.Start != nil {
+		startObj := e.Eval(n.Start)
+		if IsError(startObj) {
+			return startObj
+		}
+		if startObj.GetType() != objects.IntegerType {
+			return e.CreateError("ERROR: slice start index must be an integer, got '%s'", startObj.GetType())
+		}
+		start = startObj.(*objects.Integer).Value
+		// Handle negative start index
+		if start < 0 {
+			start = length + start
+		}
+		// Clamp to valid range
+		if start < 0 {
+			start = 0
+		}
+		if start > length {
+			start = length
+		}
+	}
+
+	// Determine end index
+	var end int64 = length
+	if n.End != nil {
+		endObj := e.Eval(n.End)
+		if IsError(endObj) {
+			return endObj
+		}
+		if endObj.GetType() != objects.IntegerType {
+			return e.CreateError("ERROR: slice end index must be an integer, got '%s'", endObj.GetType())
+		}
+		end = endObj.(*objects.Integer).Value
+		// Handle negative end index
+		if end < 0 {
+			end = length + end
+		}
+		// Clamp to valid range
+		if end < 0 {
+			end = 0
+		}
+		if end > length {
+			end = length
+		}
+	}
+
+	// Ensure start <= end
+	if start > end {
+		start = end
+	}
+
+	// Create the sliced array
+	slicedElements := make([]objects.GoMixObject, end-start)
+	copy(slicedElements, arr.Elements[start:end])
+
+	return &objects.Array{Elements: slicedElements}
 }
 
 // evalWhileLoop evaluates a while loop node
