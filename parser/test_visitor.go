@@ -251,6 +251,31 @@ func (v *TestingVisitor) VisitForLoopStatementNode(node ForLoopStatementNode) {
 	node.Body.Accept(v)
 }
 
+// TestingVisitor.VisitArrayExpressionNode()
+func (v *TestingVisitor) VisitArrayExpressionNode(node ArrayExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*ArrayExpressionNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	for _, elem := range node.Elements {
+		elem.Accept(v)
+	}
+}
+
+// TestingVisitor.VisitIndexExpressionNode()
+func (v *TestingVisitor) VisitIndexExpressionNode(node IndexExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*IndexExpressionNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	node.Left.Accept(v)
+	node.Index.Accept(v)
+}
+
 // TestingVisitor.VisitWhileLoopStatementNode visits the while loop node
 func (v *TestingVisitor) VisitWhileLoopStatementNode(node WhileLoopStatementNode) {
 	// assert on type

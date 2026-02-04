@@ -15,6 +15,7 @@ const (
 	ErrorType   GoMixType = "error"
 
 	FunctionType GoMixType = "func"
+	ArrayType    GoMixType = "array"
 )
 
 type GoMixObject interface {
@@ -163,4 +164,37 @@ func (r *ReturnValue) ToString() string {
 
 func (r *ReturnValue) ToObject() string {
 	return r.Value.ToObject()
+}
+
+// Array: array of GoMixObjects
+type Array struct {
+	Elements []GoMixObject
+}
+
+func (a *Array) GetType() GoMixType {
+	return ArrayType
+}
+
+func (a *Array) ToString() string {
+	result := "["
+	for i, elem := range a.Elements {
+		if i > 0 {
+			result += ", "
+		}
+		result += elem.ToString()
+	}
+	result += "]"
+	return result
+}
+
+func (a *Array) ToObject() string {
+	result := "<array(["
+	for i, elem := range a.Elements {
+		if i > 0 {
+			result += ", "
+		}
+		result += elem.ToObject()
+	}
+	result += "])>"
+	return result
 }

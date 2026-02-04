@@ -2,6 +2,8 @@ package eval
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -17,6 +19,7 @@ type Evaluator struct {
 	Par      *parser.Parser
 	Scp      *scope.Scope
 	Builtins map[string]*objects.Builtin
+	Writer   io.Writer
 }
 
 // Evaluator constructor
@@ -25,11 +28,17 @@ func NewEvaluator() *Evaluator {
 		Par:      nil,
 		Scp:      scope.NewScope(nil),
 		Builtins: make(map[string]*objects.Builtin),
+		Writer:   os.Stdout, // Default to stdout
 	}
 	for _, builtin := range objects.Builtins {
 		ev.Builtins[builtin.Name] = builtin
 	}
 	return ev
+}
+
+// SetWriter sets the output writer for the evaluator
+func (e *Evaluator) SetWriter(w io.Writer) {
+	e.Writer = w
 }
 
 func (e *Evaluator) IsBuiltin(name string) bool {
@@ -40,7 +49,7 @@ func (e *Evaluator) IsBuiltin(name string) bool {
 func (e *Evaluator) InvokeBuiltin(name string, args ...objects.GoMixObject) objects.GoMixObject {
 
 	if builtin, ok := e.Builtins[name]; ok {
-		return builtin.Callback(args...)
+		return builtin.Callback(e.Writer, args...)
 	}
 	return &objects.Nil{}
 }
@@ -176,6 +185,10 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalForLoop(n)
 	case *parser.WhileLoopStatementNode:
 		return e.evalWhileLoop(n)
+	case *parser.ArrayExpressionNode:
+		return e.evalArrayExpression(n)
+	case *parser.IndexExpressionNode:
+		return e.evalIndexExpression(n)
 	default:
 		return &objects.Nil{}
 	}
@@ -249,9 +262,6 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 			args[i] = e.Eval(arg)
 		}
 		rv := e.InvokeBuiltin(funcName, args...)
-		if !IsError(rv) {
-			fmt.Println()
-		}
 		return rv
 	}
 
@@ -616,6 +626,58 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObj
 	// Restore the original scope
 	e.Scp = oldScope
 	return result
+}
+
+// evalArrayExpression evaluates an array expression node
+func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) objects.GoMixObject {
+	elements := make([]objects.GoMixObject, len(n.Elements))
+	for i, elem := range n.Elements {
+		evaluated := e.Eval(elem)
+		if IsError(evaluated) {
+			return evaluated
+		}
+		elements[i] = evaluated
+	}
+	return &objects.Array{Elements: elements}
+}
+
+// evalIndexExpression evaluates an index expression like arr[0] or arr[-1]
+func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.GoMixObject {
+	left := e.Eval(n.Left)
+	if IsError(left) {
+		return left
+	}
+
+	index := e.Eval(n.Index)
+	if IsError(index) {
+		return index
+	}
+
+	// Check if left is an array
+	if left.GetType() != objects.ArrayType {
+		return e.CreateError("ERROR: index operator not supported for type '%s'", left.GetType())
+	}
+
+	// Check if index is an integer
+	if index.GetType() != objects.IntegerType {
+		return e.CreateError("ERROR: index must be an integer, got '%s'", index.GetType())
+	}
+
+	arr := left.(*objects.Array)
+	idx := index.(*objects.Integer).Value
+	length := int64(len(arr.Elements))
+
+	// Handle negative indices (Python-style)
+	if idx < 0 {
+		idx = length + idx
+	}
+
+	// Bounds checking
+	if idx < 0 || idx >= length {
+		return e.CreateError("ERROR: index out of bounds: index %d, length %d", idx, length)
+	}
+
+	return arr.Elements[idx]
 }
 
 // evalWhileLoop evaluates a while loop node

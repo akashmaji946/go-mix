@@ -52,6 +52,9 @@ const (
 
 	// Parentheses (highest precedence)
 	PAREN_PRIORITY = 150
+
+	// Index/Call operators (highest precedence for postfix)
+	INDEX_PRIORITY = 160
 )
 
 // get the precedence of the operator
@@ -61,6 +64,10 @@ func getPrecedence(token *lexer.Token) int {
 	// Parentheses - highest precedence
 	case lexer.LEFT_PAREN:
 		return PAREN_PRIORITY
+
+	// Index operator - highest precedence for postfix
+	case lexer.LEFT_BRACKET:
+		return INDEX_PRIORITY
 
 	// Unary/Prefix operators: ! ~
 	case lexer.NOT_OP, lexer.BIT_NOT_OP:
@@ -186,6 +193,9 @@ func (par *Parser) init() {
 	par.registerBinaryFuncs(par.parseAssignmentExpression, lexer.ASSIGN_OP, lexer.PLUS_ASSIGN, lexer.MINUS_ASSIGN, lexer.MUL_ASSIGN, lexer.DIV_ASSIGN, lexer.MOD_ASSIGN,
 		lexer.BIT_AND_ASSIGN, lexer.BIT_OR_ASSIGN, lexer.BIT_XOR_ASSIGN, lexer.BIT_LEFT_ASSIGN, lexer.BIT_RIGHT_ASSIGN)
 
+	par.registerUnaryFuncs(par.parseArrayExpressionNode, lexer.LEFT_BRACKET)
+	par.registerBinaryFuncs(par.parseIndexExpression, lexer.LEFT_BRACKET)
+
 	par.advance()
 	par.advance()
 }
@@ -222,7 +232,8 @@ func (par *Parser) expectAdvance(expected lexer.TokenType) bool {
 // expect the next token to be of the expected type
 func (par *Parser) expectNext(expected lexer.TokenType) bool {
 	if par.NextToken.Type != expected {
-		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected %s, got %s", par.NextToken.Line, par.NextToken.Column, expected, par.NextToken.Type)
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected %s, got %s",
+			par.NextToken.Line, par.NextToken.Column, expected, par.NextToken.Type)
 		par.addError(msg)
 		return false
 	}
@@ -285,6 +296,59 @@ func (par *Parser) Parse() *RootNode {
 	}
 
 	return root
+}
+
+// parseArrayExpressionNode
+func (par *Parser) parseArrayExpressionNode() ExpressionNode {
+	arrayNode := &ArrayExpressionNode{}
+	arrayElements := make([]ExpressionNode, 0)
+	arrayNode.Elements = arrayElements
+
+	// current token must be [
+	if par.CurrToken.Type != lexer.LEFT_BRACKET {
+		return nil
+	}
+	par.advance()
+	if par.CurrToken.Type == lexer.RIGHT_BRACKET {
+		return arrayNode
+	}
+	for par.CurrToken.Type != lexer.RIGHT_BRACKET {
+		expr := par.parseExpression()
+		arrayNode.Elements = append(arrayNode.Elements, expr)
+		// After parsing expression, check if next token is ] or ,
+		if par.NextToken.Type == lexer.RIGHT_BRACKET {
+			par.advance() // move to ]
+			break
+		}
+		if par.NextToken.Type == lexer.COMMA_DELIM {
+			par.advance() // move to ,
+			par.advance() // move past , to next element
+		} else {
+			// If next token is neither ] nor ,, report error and try to continue
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected , or ], got %s",
+				par.NextToken.Line, par.NextToken.Column, par.NextToken.Type)
+			par.addError(msg)
+			par.advance()
+		}
+	}
+	return arrayNode
+}
+
+// parseIndexExpression parses array indexing like arr[0] or arr[-1]
+func (par *Parser) parseIndexExpression(left ExpressionNode) ExpressionNode {
+	indexNode := &IndexExpressionNode{
+		Left: left,
+	}
+	// current token is [
+	par.advance() // move past [
+	indexNode.Index = par.parseExpression()
+	if indexNode.Index == nil {
+		return nil
+	}
+	if !par.expectAdvance(lexer.RIGHT_BRACKET) {
+		return nil
+	}
+	return indexNode
 }
 
 // parseFunctionAssignment
@@ -409,7 +473,8 @@ func (par *Parser) parseNumberLiteral() ExpressionNode {
 		if uErr == nil {
 			val = int64(uVal)
 		} else {
-			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: could not parse number literal: %s", token.Line, token.Column, token.Literal)
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: could not parse number literal: %s",
+				token.Line, token.Column, token.Literal)
 			par.addError(msg)
 			return nil
 		}
@@ -425,7 +490,8 @@ func (par *Parser) parseFloatLiteral() ExpressionNode {
 	token := par.CurrToken
 	val, err := strconv.ParseFloat(token.Literal, 64)
 	if err != nil {
-		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: could not parse float literal: %s", token.Line, token.Column, token.Literal)
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: could not parse float literal: %s",
+			token.Line, token.Column, token.Literal)
 		par.addError(msg)
 		return nil
 	}
@@ -1458,7 +1524,8 @@ func (par *Parser) parseStringLiteral() ExpressionNode {
 func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 	unary, has := par.UnaryFuncs[par.CurrToken.Type]
 	if !has {
-		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected token: %s", par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected token: %s",
+			par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
 		par.addError(msg)
 		return nil
 	}
@@ -1470,7 +1537,8 @@ func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 		binary, has := par.BinaryFuncs[par.NextToken.Type]
 		par.advance()
 		if !has {
-			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected operator: %s", par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected operator: %s",
+				par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
 			par.addError(msg)
 			return nil
 		}

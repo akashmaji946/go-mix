@@ -230,6 +230,27 @@ func (p *PrintingVisitor) VisitWhileLoopStatementNode(node parser.WhileLoopState
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitArrayExpressionNode
+func (p *PrintingVisitor) VisitArrayExpressionNode(node parser.ArrayExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Array", node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	for _, elem := range node.Elements {
+		elem.Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
+// VisitIndexExpressionNode
+func (p *PrintingVisitor) VisitIndexExpressionNode(node parser.IndexExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Index", node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	node.Left.Accept(p)
+	node.Index.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the string representation of the visitor
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

@@ -644,7 +644,7 @@ func TestMain(t *testing.T) {
 	root70.Accept(visitor70)
 	fmt.Println(visitor70)
 
-	src63 := `
+	src71 := `
 	// Complex loop patterns with variable declarations
 
 // Test 1: Matrix-like operations (2D array simulation)
@@ -833,9 +833,15 @@ print("Diagonal sum:", diag_sum)
 print("\n=== All complex pattern tests completed! ===")
 
 	`
-	root63 := parser.NewParser(src63).Parse()
-	visitor63 := &PrintingVisitor{}
-	root63.Accept(visitor63)
-	fmt.Println(visitor63)
+	root71 := parser.NewParser(src71).Parse()
+	visitor71 := &PrintingVisitor{}
+	root71.Accept(visitor71)
+	fmt.Println(visitor71)
+
+	src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
+	root72 := parser.NewParser(src72).Parse()
+	visitor72 := &PrintingVisitor{}
+	root72.Accept(visitor72)
+	fmt.Println(visitor72)
 
 }

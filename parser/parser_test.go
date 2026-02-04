@@ -2820,3 +2820,270 @@ func TestParser_Parse_CompoundAssignment_Chained(t *testing.T) {
 	// After: var a = 10 (a=10), a += 5 (a=15), a *= 2 (a=30), a -= 10 (a=20)
 	assert.Equal(t, assignStmt3.Value, &objects.Integer{Value: 20})
 }
+
+func TestParser_Parse_ParseArrayLiteral(t *testing.T) {
+	tests := []struct {
+		Expr     string
+		Expected []Node
+	}{
+		{
+			Expr: `
+		 	[]
+		 `,
+			Expected: []Node{
+				&ArrayExpressionNode{},
+			},
+		},
+		{
+			Expr: `
+		 	[1, 2, 3]
+		 `,
+			Expected: []Node{
+				&ArrayExpressionNode{},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			},
+		},
+		{
+			Expr: `
+			["comet"]
+		`,
+			Expected: []Node{
+				&ArrayExpressionNode{},
+				&StringLiteralExpressionNode{Value: &objects.String{Value: "comet"}},
+			},
+		},
+		{
+			Expr: `
+			[[1, 2, 3], [42, 43, 44], [1]]
+		`,
+			Expected: []Node{
+				&ArrayExpressionNode{},
+				&ArrayExpressionNode{},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+
+				&ArrayExpressionNode{},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 42}},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 43}},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 44}},
+
+				&ArrayExpressionNode{},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		par := NewParser(test.Expr)
+		rootNode := par.Parse()
+		assert.NotNil(t, rootNode)
+		assert.False(t, par.HasErrors())
+
+		testingVisitor := &TestingVisitor{
+			ExpectedNodes: test.Expected,
+			Ptr:           0,
+			T:             t,
+		}
+		rootNode.Accept(testingVisitor)
+	}
+}
+
+func TestParser_Parse_ArrayLiteral_WithBooleans(t *testing.T) {
+	src := `[true, false, true]`
+	par := NewParser(src)
+	rootNode := par.Parse()
+	assert.NotNil(t, rootNode)
+	assert.False(t, par.HasErrors())
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&ArrayExpressionNode{},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	rootNode.Accept(testingVisitor)
+}
+
+func TestParser_Parse_ArrayLiteral_MixedTypes(t *testing.T) {
+	src := `[1, "hello", true, 42]`
+	par := NewParser(src)
+	rootNode := par.Parse()
+	assert.NotNil(t, rootNode)
+	assert.False(t, par.HasErrors())
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&ArrayExpressionNode{},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&StringLiteralExpressionNode{Value: &objects.String{Value: "hello"}},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 42}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	rootNode.Accept(testingVisitor)
+}
+
+func TestParser_Parse_ArrayLiteral_WithIdentifiers(t *testing.T) {
+	src := `var x = 10; var arr = [x, 20, 30]`
+	par := NewParser(src)
+	rootNode := par.Parse()
+	assert.NotNil(t, rootNode)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 2, len(rootNode.Statements))
+
+	// Check second statement is a declarative statement with array
+	declStmt, ok := rootNode.Statements[1].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "arr", declStmt.Identifier.Name)
+
+	// Check the expression is an array
+	arrayExpr, ok := declStmt.Expr.(*ArrayExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(arrayExpr.Elements))
+}
+
+func TestParser_Parse_ArrayLiteral_WithExpressions(t *testing.T) {
+	src := `[1 + 2, 3 * 4, 10 - 5]`
+	par := NewParser(src)
+	rootNode := par.Parse()
+	assert.NotNil(t, rootNode)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 1, len(rootNode.Statements))
+
+	// Check the statement is an array expression
+	arrayExpr, ok := rootNode.Statements[0].(*ArrayExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(arrayExpr.Elements))
+
+	// Check each element is a binary expression
+	for _, elem := range arrayExpr.Elements {
+		_, ok := elem.(*BinaryExpressionNode)
+		assert.True(t, ok)
+	}
+}
+
+func TestParser_Parse_ArrayLiteral_WithFunction(t *testing.T) {
+	src := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
+	par := NewParser(src)
+	rootNode := par.Parse()
+	assert.NotNil(t, rootNode)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 3, len(rootNode.Statements))
+
+	// Check first statement: var a = [1, 2, func(){2+3;}]
+	declStmt1, ok := rootNode.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", declStmt1.Identifier.Name)
+
+	// Check the expression is an array
+	arrayExpr, ok := declStmt1.Expr.(*ArrayExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(arrayExpr.Elements))
+
+	// Check first element is integer 1
+	intElem1, ok := arrayExpr.Elements[0].(*IntegerLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, &objects.Integer{Value: 1}, intElem1.Value)
+
+	// Check second element is integer 2
+	intElem2, ok := arrayExpr.Elements[1].(*IntegerLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, &objects.Integer{Value: 2}, intElem2.Value)
+
+	// Check third element is a function
+	funcElem, ok := arrayExpr.Elements[2].(*FunctionStatementNode)
+	assert.True(t, ok)
+	assert.NotNil(t, funcElem.FuncBody)
+
+	// Check second statement: var b = a[2]
+	declStmt2, ok := rootNode.Statements[1].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "b", declStmt2.Identifier.Name)
+
+	// Check the expression is an index expression
+	indexExpr, ok := declStmt2.Expr.(*IndexExpressionNode)
+	assert.True(t, ok)
+	assert.NotNil(t, indexExpr.Left)
+	assert.NotNil(t, indexExpr.Index)
+
+	// Check third statement: b()
+	callExpr, ok := rootNode.Statements[2].(*CallExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "b", callExpr.FunctionIdentifier.Name)
+}
+
+func TestParser_Parse_ArrayLiteral_IndexAccess(t *testing.T) {
+	src := `var arr = [10, 20, 30]; arr[0]; arr[1]; arr[2]`
+	par := NewParser(src)
+	rootNode := par.Parse()
+	assert.NotNil(t, rootNode)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 4, len(rootNode.Statements))
+
+	// Check first statement is array declaration
+	declStmt, ok := rootNode.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "arr", declStmt.Identifier.Name)
+
+	// Check remaining statements are index expressions
+	for i := 1; i < 4; i++ {
+		indexExpr, ok := rootNode.Statements[i].(*IndexExpressionNode)
+		assert.True(t, ok)
+
+		// Check left is identifier "arr"
+		ident, ok := indexExpr.Left.(*IdentifierExpressionNode)
+		assert.True(t, ok)
+		assert.Equal(t, "arr", ident.Name)
+
+		// Check index is integer
+		indexInt, ok := indexExpr.Index.(*IntegerLiteralExpressionNode)
+		assert.True(t, ok)
+		assert.Equal(t, &objects.Integer{Value: int64(i - 1)}, indexInt.Value)
+	}
+}
+
+func TestParser_Parse_ArrayLiteral_NestedIndexAccess(t *testing.T) {
+	src := `var matrix = [[1, 2], [3, 4]]; matrix[0][1]`
+	par := NewParser(src)
+	rootNode := par.Parse()
+	assert.NotNil(t, rootNode)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 2, len(rootNode.Statements))
+
+	// Check first statement is array declaration
+	declStmt, ok := rootNode.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "matrix", declStmt.Identifier.Name)
+
+	// Check the expression is a nested array
+	arrayExpr, ok := declStmt.Expr.(*ArrayExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(arrayExpr.Elements))
+
+	// Check second statement is nested index expression
+	outerIndex, ok := rootNode.Statements[1].(*IndexExpressionNode)
+	assert.True(t, ok)
+
+	// The left side should be another index expression (matrix[0])
+	innerIndex, ok := outerIndex.Left.(*IndexExpressionNode)
+	assert.True(t, ok)
+
+	// Check inner index left is identifier "matrix"
+	ident, ok := innerIndex.Left.(*IdentifierExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "matrix", ident.Name)
+}

@@ -34,6 +34,11 @@ type NodeVisitor interface {
 	VisitCallExpressionNode(node CallExpressionNode)
 	VisitForLoopStatementNode(node ForLoopStatementNode)
 	VisitWhileLoopStatementNode(node WhileLoopStatementNode)
+
+	// Data Structures
+	VisitArrayExpressionNode(node ArrayExpressionNode)
+	VisitIndexExpressionNode(node IndexExpressionNode)
+	// VisitHashExpressionNode(node HashExpressionNode)
 }
 
 // Node: base interface for all nodes of the AST
@@ -675,5 +680,67 @@ func (node *WhileLoopStatementNode) Accept(visitor NodeVisitor) {
 
 // WhileLoopNode.Statement(): every while loop is a statement
 func (node *WhileLoopStatementNode) Statement() {
+
+}
+
+// ArrayExpressionNode
+type ArrayExpressionNode struct {
+	Name     IdentifierExpressionNode
+	Elements []ExpressionNode
+	Value    objects.GoMixObject
+}
+
+// ArrayExpressionNode.Literal()
+func (node *ArrayExpressionNode) Literal() string {
+	res := "["
+	for i, elem := range node.Elements {
+		if i > 0 {
+			res += ","
+		}
+		res += elem.Literal()
+	}
+	res += "]"
+	return res
+}
+
+// ArrayExpressionNode.Accept()
+func (node *ArrayExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitArrayExpressionNode(*node)
+}
+
+// ArrayExpressionNode.Statement()
+func (node *ArrayExpressionNode) Statement() {
+
+}
+
+// ArrayExpressionNode.Expression()
+func (node *ArrayExpressionNode) Expression() {
+
+}
+
+// IndexExpressionNode represents array indexing like arr[0] or arr[-1]
+type IndexExpressionNode struct {
+	Left  ExpressionNode      // The array or indexable expression
+	Index ExpressionNode      // The index expression
+	Value objects.GoMixObject // Evaluated value
+}
+
+// IndexExpressionNode.Literal()
+func (node *IndexExpressionNode) Literal() string {
+	return node.Left.Literal() + "[" + node.Index.Literal() + "]"
+}
+
+// IndexExpressionNode.Accept()
+func (node *IndexExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitIndexExpressionNode(*node)
+}
+
+// IndexExpressionNode.Statement()
+func (node *IndexExpressionNode) Statement() {
+
+}
+
+// IndexExpressionNode.Expression()
+func (node *IndexExpressionNode) Expression() {
 
 }

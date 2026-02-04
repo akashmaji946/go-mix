@@ -60,6 +60,7 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 	defer rl.Close()
 
 	evaluator := eval.NewEvaluator()
+	evaluator.SetWriter(writer)
 
 	for {
 		line, err := rl.Readline()
@@ -119,6 +120,7 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 		if result.GetType() == "error" {
 			redColor.Fprintf(writer, "%s\n", result.ToString())
 		} else {
+			// Don't print nil results (e.g., from print/println functions)
 			yellowColor.Fprintf(writer, "%s\n", result.ToString())
 		}
 	}
