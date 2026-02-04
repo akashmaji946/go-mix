@@ -8,6 +8,10 @@ type Scope struct {
 	Variables map[string]objects.GoMixObject
 	// The constants bound to this Scope instance
 	Consts map[string]bool
+	// The let (statically typed) variables bound to this Scope instance
+	LetVars map[string]bool
+	// The types of let variables
+	LetTypes map[string]objects.GoMixType
 	// The parent Scope if we are inside a function
 	// if this is nil, this is the global Scope instance.
 	Parent *Scope
@@ -18,6 +22,8 @@ func NewScope(parent *Scope) *Scope {
 	return &Scope{
 		Variables: make(map[string]objects.GoMixObject),
 		Consts:    make(map[string]bool),
+		LetVars:   make(map[string]bool),
+		LetTypes:  make(map[string]objects.GoMixType),
 		Parent:    parent,
 	}
 }
@@ -77,12 +83,42 @@ func (s *Scope) IsConstant(varName string) bool {
 	return false
 }
 
+// IsLetVariable: Checks if a variable is declared with let in this scope or any parent
+func (s *Scope) IsLetVariable(varName string) bool {
+	if s.LetVars == nil {
+		s.LetVars = make(map[string]bool)
+	}
+	if _, ok := s.LetVars[varName]; ok {
+		return true
+	}
+	if s.Parent != nil {
+		return s.Parent.IsLetVariable(varName)
+	}
+	return false
+}
+
+// GetLetType: Gets the type of a let variable in this scope or any parent
+func (s *Scope) GetLetType(varName string) (objects.GoMixType, bool) {
+	if s.LetTypes == nil {
+		s.LetTypes = make(map[string]objects.GoMixType)
+	}
+	if typ, ok := s.LetTypes[varName]; ok {
+		return typ, true
+	}
+	if s.Parent != nil {
+		return s.Parent.GetLetType(varName)
+	}
+	return "", false
+}
+
 // Copy: Creates a shallow copy of this scope
 // This is used for closures to capture the scope at function definition time
 func (s *Scope) Copy() *Scope {
 	newScope := &Scope{
 		Variables: make(map[string]objects.GoMixObject),
 		Consts:    make(map[string]bool),
+		LetVars:   make(map[string]bool),
+		LetTypes:  make(map[string]objects.GoMixType),
 		Parent:    s.Parent,
 	}
 	// Copy variables
@@ -92,6 +128,14 @@ func (s *Scope) Copy() *Scope {
 	// Copy constants
 	for k, v := range s.Consts {
 		newScope.Consts[k] = v
+	}
+	// Copy let variables
+	for k, v := range s.LetVars {
+		newScope.LetVars[k] = v
+	}
+	// Copy let types
+	for k, v := range s.LetTypes {
+		newScope.LetTypes[k] = v
 	}
 	return newScope
 }

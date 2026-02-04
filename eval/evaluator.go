@@ -2,6 +2,7 @@ package eval
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/akashmaji946/go-mix/function"
@@ -51,10 +52,10 @@ func IsError(obj objects.GoMixObject) bool {
 	return false
 }
 
-func CreateError(format string, a ...interface{}) *objects.Error {
+func (e *Evaluator) CreateError(format string, a ...interface{}) *objects.Error {
 	msg := fmt.Sprintf(format, a...)
-	msg = fmt.Sprintf("%s", msg)
-	return &objects.Error{Message: msg}
+	fullMsg := fmt.Sprintf("[%d:%d] %s", e.Par.Lex.Line, e.Par.Lex.Column, msg)
+	return &objects.Error{Message: fullMsg}
 }
 
 func UnwrapReturnValue(obj objects.GoMixObject) objects.GoMixObject {
@@ -70,8 +71,8 @@ func AssertError(t *testing.T, obj objects.GoMixObject, expected string) {
 		t.Errorf("not error. got=%T (%+v)", obj, obj)
 		return
 	}
-	if errObj.Message != expected {
-		t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
+	if !strings.Contains(errObj.Message, expected) {
+		t.Errorf("wrong error message. expected to contain=%q, got=%q", expected, errObj.Message)
 	}
 }
 
@@ -194,26 +195,43 @@ func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.Go
 	// redeclared?
 	name, has := e.Scp.Bind(n.FuncName.Name, function)
 	if has && name != "" {
-		return CreateError("function redeclaration found: (%s)", n.FuncName.Name)
+		return e.CreateError("ERROR: function redeclaration found: (%s)", n.FuncName.Name)
 	}
 	e.Scp.Bind(n.FuncName.Name, function)
 	return function
 }
 
 func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode) objects.GoMixObject {
-	val := e.Eval(n.Right)
-	if IsError(val) {
-		return val
+	// Evaluate the right-hand side
+	rightVal := e.Eval(n.Right)
+	if IsError(rightVal) {
+		return rightVal
 	}
+
 	// Check if the variable exists in the current scope or any parent scope
 	_, exists := e.Scp.LookUp(n.Left.Name)
 	if !exists {
-		return CreateError("identifier not found: (%s)", n.Left.Name)
+		return e.CreateError("ERROR: identifier not found: (%s)", n.Left.Name)
 	}
+
 	// Check if it's a constant using the new IsConstant method
 	if e.Scp.IsConstant(n.Left.Name) {
-		return CreateError("can't assign to constant (%s)", n.Left.Name)
+		return e.CreateError("ERROR: can't assign to constant (%s)", n.Left.Name)
 	}
+
+	val := rightVal
+
+	// Check if it's a let variable and if the type is compatible
+	if e.Scp.IsLetVariable(n.Left.Name) {
+		expectedType, ok := e.Scp.GetLetType(n.Left.Name)
+		if !ok {
+			return e.CreateError("ERROR: let variable type not found: (%s)", n.Left.Name)
+		}
+		if val.GetType() != expectedType {
+			return e.CreateError("ERROR: can't assign `%s` to variable (%s) of type `%s`", val.GetType(), n.Left.Name, expectedType)
+		}
+	}
+
 	// Use Assign to update the variable in the scope where it was defined
 	// This is essential for closures to work correctly
 	e.Scp.Assign(n.Left.Name, val)
@@ -231,16 +249,19 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 			args[i] = e.Eval(arg)
 		}
 		rv := e.InvokeBuiltin(funcName, args...)
+		if !IsError(rv) {
+			fmt.Println()
+		}
 		return rv
 	}
 
 	// lookup for function name
 	obj, ok := e.Scp.LookUp(funcName)
 	if !ok {
-		return CreateError("function not found: (%s)", funcName)
+		return e.CreateError("ERROR: function not found: (%s)", funcName)
 	}
 	if obj.GetType() != objects.FunctionType {
-		return CreateError("not a function: (%s)", funcName)
+		return e.CreateError("ERROR: not a function: (%s)", funcName)
 	}
 	functionObject := obj.(*function.Function)
 
@@ -248,7 +269,7 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 	expectedArgs := len(functionObject.Params)
 	actualArgs := len(n.Arguments)
 	if actualArgs != expectedArgs {
-		return CreateError("wrong number of arguments: expected %d, got %d", expectedArgs, actualArgs)
+		return e.CreateError("ERROR: wrong number of arguments: expected %d, got %d", expectedArgs, actualArgs)
 	}
 
 	// Create a new scope with the function's captured scope as parent
@@ -292,7 +313,7 @@ func (e *Evaluator) evalIdentifierExpression(n *parser.IdentifierExpressionNode)
 	// return &objects.Nil{}
 	val, ok := e.Scp.LookUp(n.Name)
 	if !ok {
-		return CreateError("identifier not found: (%s)", n.Name)
+		return e.CreateError("ERROR: identifier not found: (%s)", n.Name)
 	}
 	return val
 }
@@ -317,11 +338,14 @@ func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode)
 	// redeclared?
 	_, has := e.Scp.Bind(n.Identifier.Name, val)
 	if has {
-		return CreateError("identifier redeclaration found: (%s)", n.Identifier.Name)
+		return e.CreateError("ERROR: identifier redeclaration found: (%s)", n.Identifier.Name)
 	}
 
 	if n.VarToken.Type == lexer.CONST_KEY {
 		e.Scp.Consts[n.Identifier.Name] = true
+	} else if n.VarToken.Type == lexer.LET_KEY {
+		e.Scp.LetVars[n.Identifier.Name] = true
+		e.Scp.LetTypes[n.Identifier.Name] = val.GetType()
 	}
 	e.Scp.Bind(n.Identifier.Name, val)
 	return val
@@ -334,7 +358,7 @@ func (e *Evaluator) evalConditionalExpression(n *parser.IfExpressionNode) object
 	}
 
 	if condition.GetType() != objects.BooleanType {
-		return CreateError("Conditional expression must be (bool)")
+		return e.CreateError("ERROR: conditional expression must be (bool)")
 	}
 	if condition.(*objects.Boolean).Value {
 		return e.Eval(&n.ThenBlock)
@@ -369,7 +393,7 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 		return right
 	}
 
-	err := CreateError("operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
+	err := e.CreateError("ERROR: operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
 
 	if left.GetType() != objects.IntegerType && left.GetType() != objects.FloatType {
 		return err
@@ -449,7 +473,7 @@ func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.G
 		return right
 	}
 
-	err := CreateError("operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
+	err := e.CreateError("ERROR: operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
 
 	switch n.Operation.Type {
 	case lexer.NOT_OP:
@@ -550,7 +574,7 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopNode) objects.GoMixObject {
 			// Check if condition is false
 			if condition.GetType() != objects.BooleanType {
 				e.Scp = oldScope
-				return CreateError("For loop condition must be (bool)")
+				return e.CreateError("ERROR: for loop condition must be (bool)")
 			}
 			if !condition.(*objects.Boolean).Value {
 				break
@@ -615,7 +639,7 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopNode) objects.GoMixObject {
 
 			if condition.GetType() != objects.BooleanType {
 				e.Scp = oldScope
-				return CreateError("While loop condition must be (bool)")
+				return e.CreateError("ERROR: while loop condition must be (bool)")
 			}
 
 			if !condition.(*objects.Boolean).Value {

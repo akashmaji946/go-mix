@@ -15,6 +15,10 @@ type Lexer struct {
 	Position int
 	// length of source string
 	SrcLength int
+	// line number in source
+	Line int
+	// column number in source
+	Column int
 }
 
 // NewLexer(): constructor for Lexer
@@ -28,6 +32,8 @@ func NewLexer(src string) Lexer {
 		Current:   current,
 		Position:  0,
 		SrcLength: len(src),
+		Line:      1,
+		Column:    1,
 	}
 }
 
@@ -42,85 +48,131 @@ func (lex *Lexer) NextToken() Token {
 	case '=':
 		if lex.peek() == '=' {
 			lex.advance()
-			token = NewToken(EQ_OP, "==")
+			token = NewTokenWithMetadata(EQ_OP, "==", lex.Line, lex.Column)
 		} else {
-			token = NewToken(ASSIGN_OP, "=")
+			token = NewTokenWithMetadata(ASSIGN_OP, "=", lex.Line, lex.Column)
 		}
 	case '!':
 		if lex.peek() == '=' {
 			lex.advance()
-			token = NewToken(NE_OP, "!=")
+			token = NewTokenWithMetadata(NE_OP, "!=", lex.Line, lex.Column)
 		} else {
-			token = NewToken(NOT_OP, "!")
+			token = NewTokenWithMetadata(NOT_OP, "!", lex.Line, lex.Column)
 		}
 	case '<':
 		if lex.peek() == '=' {
 			lex.advance()
-			token = NewToken(LE_OP, "<=")
+			token = NewTokenWithMetadata(LE_OP, "<=", lex.Line, lex.Column)
 		} else if lex.peek() == '<' {
 			lex.advance()
-			token = NewToken(BIT_LEFT_OP, "<<")
+			if lex.peek() == '=' {
+				lex.advance()
+				token = NewTokenWithMetadata(BIT_LEFT_ASSIGN, "<<=", lex.Line, lex.Column)
+			} else {
+				token = NewTokenWithMetadata(BIT_LEFT_OP, "<<", lex.Line, lex.Column)
+			}
 		} else {
-			token = NewToken(LT_OP, "<")
+			token = NewTokenWithMetadata(LT_OP, "<", lex.Line, lex.Column)
 		}
 	case '>':
 		if lex.peek() == '=' {
 			lex.advance()
-			token = NewToken(GE_OP, ">=")
+			token = NewTokenWithMetadata(GE_OP, ">=", lex.Line, lex.Column)
 		} else if lex.peek() == '>' {
 			lex.advance()
-			token = NewToken(BIT_RIGHT_OP, ">>")
+			if lex.peek() == '=' {
+				lex.advance()
+				token = NewTokenWithMetadata(BIT_RIGHT_ASSIGN, ">>=", lex.Line, lex.Column)
+			} else {
+				token = NewTokenWithMetadata(BIT_RIGHT_OP, ">>", lex.Line, lex.Column)
+			}
 		} else {
-			token = NewToken(GT_OP, ">")
+			token = NewTokenWithMetadata(GT_OP, ">", lex.Line, lex.Column)
 		}
 	case '+':
-		token = NewToken(PLUS_OP, "+")
+		if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(PLUS_ASSIGN, "+=", lex.Line, lex.Column)
+		} else {
+			token = NewTokenWithMetadata(PLUS_OP, "+", lex.Line, lex.Column)
+		}
 	case '-':
-		token = NewToken(MINUS_OP, "-")
+		if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(MINUS_ASSIGN, "-=", lex.Line, lex.Column)
+		} else {
+			token = NewTokenWithMetadata(MINUS_OP, "-", lex.Line, lex.Column)
+		}
 	case '*':
-		token = NewToken(MUL_OP, "*")
+		if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(MUL_ASSIGN, "*=", lex.Line, lex.Column)
+		} else {
+			token = NewTokenWithMetadata(MUL_OP, "*", lex.Line, lex.Column)
+		}
 	case '/':
-		token = NewToken(DIV_OP, "/")
+		if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(DIV_ASSIGN, "/=", lex.Line, lex.Column)
+		} else {
+			token = NewTokenWithMetadata(DIV_OP, "/", lex.Line, lex.Column)
+		}
 	case '%':
-		token = NewToken(MOD_OP, "%")
+		if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(MOD_ASSIGN, "%=", lex.Line, lex.Column)
+		} else {
+			token = NewTokenWithMetadata(MOD_OP, "%", lex.Line, lex.Column)
+		}
 	case '^':
-		token = NewToken(BIT_XOR_OP, "^")
+		if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(BIT_XOR_ASSIGN, "^=", lex.Line, lex.Column)
+		} else {
+			token = NewTokenWithMetadata(BIT_XOR_OP, "^", lex.Line, lex.Column)
+		}
 	case '~':
-		token = NewToken(BIT_NOT_OP, "~")
+		token = NewTokenWithMetadata(BIT_NOT_OP, "~", lex.Line, lex.Column)
 	case '(':
-		token = NewToken(LEFT_PAREN, "(")
+		token = NewTokenWithMetadata(LEFT_PAREN, "(", lex.Line, lex.Column)
 	case ')':
-		token = NewToken(RIGHT_PAREN, ")")
+		token = NewTokenWithMetadata(RIGHT_PAREN, ")", lex.Line, lex.Column)
 	case '{':
-		token = NewToken(LEFT_BRACE, "{")
+		token = NewTokenWithMetadata(LEFT_BRACE, "{", lex.Line, lex.Column)
 	case '}':
-		token = NewToken(RIGHT_BRACE, "}")
+		token = NewTokenWithMetadata(RIGHT_BRACE, "}", lex.Line, lex.Column)
 	case '[':
-		token = NewToken(LEFT_BRACKET, "[")
+		token = NewTokenWithMetadata(LEFT_BRACKET, "[", lex.Line, lex.Column)
 	case ']':
-		token = NewToken(RIGHT_BRACKET, "]")
+		token = NewTokenWithMetadata(RIGHT_BRACKET, "]", lex.Line, lex.Column)
 	case ',':
-		token = NewToken(COMMA_DELIM, ",")
+		token = NewTokenWithMetadata(COMMA_DELIM, ",", lex.Line, lex.Column)
 	case ';':
-		token = NewToken(SEMICOLON_DELIM, ";")
+		token = NewTokenWithMetadata(SEMICOLON_DELIM, ";", lex.Line, lex.Column)
 	case ':':
-		token = NewToken(COLON_DELIM, ":")
+		token = NewTokenWithMetadata(COLON_DELIM, ":", lex.Line, lex.Column)
 	case '&':
 		if lex.peek() == '&' {
 			lex.advance()
-			token = NewToken(AND_OP, "&&")
+			token = NewTokenWithMetadata(AND_OP, "&&", lex.Line, lex.Column)
+		} else if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(BIT_AND_ASSIGN, "&=", lex.Line, lex.Column)
 		} else {
-			token = NewToken(BIT_AND_OP, "&")
+			token = NewTokenWithMetadata(BIT_AND_OP, "&", lex.Line, lex.Column)
 		}
 	case '|':
 		if lex.peek() == '|' {
 			lex.advance()
-			token = NewToken(OR_OP, "||")
+			token = NewTokenWithMetadata(OR_OP, "||", lex.Line, lex.Column)
+		} else if lex.peek() == '=' {
+			lex.advance()
+			token = NewTokenWithMetadata(BIT_OR_ASSIGN, "|=", lex.Line, lex.Column)
 		} else {
-			token = NewToken(BIT_OR_OP, "|")
+			token = NewTokenWithMetadata(BIT_OR_OP, "|", lex.Line, lex.Column)
 		}
 	case 0:
-		token = NewToken(EOF_TYPE, "EOF")
+		token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
 	// match string literals
 	case '"':
 		return readStringLiteral(lex)
@@ -130,7 +182,7 @@ func (lex *Lexer) NextToken() Token {
 		} else if isAlpha(lex.Current) || (lex.Current == '_') {
 			return readIdentifier(lex)
 		}
-		token = NewToken(EOF_TYPE, "EOF")
+		token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
 
 	}
 	lex.advance()
@@ -143,8 +195,8 @@ func (lex *Lexer) NextToken() Token {
 func readStringLiteral(lex *Lexer) Token {
 	if lex.Current != '"' {
 		// TODO: do better error handling
-		fmt.Errorf("[ERROR] Malformed string literal")
-		return NewToken(INVALID_TYPE, "")
+		fmt.Errorf("[%d:%d] LEXER ERROR: malformed string literal", lex.Line, lex.Column)
+		return NewTokenWithMetadata(INVALID_TYPE, "", lex.Line, lex.Column)
 	}
 	lex.advance() // consume opening quote
 
@@ -153,8 +205,8 @@ func readStringLiteral(lex *Lexer) Token {
 	for lex.Current != '"' {
 		// Check for unterminated string (EOF or actual newline in source)
 		if lex.Current == 0 {
-			fmt.Errorf("[ERROR] String literal not terminated - unexpected EOF")
-			return NewToken(INVALID_TYPE, "")
+			fmt.Errorf("[%d:%d] LEXER ERROR: string literal not terminated - unexpected EOF", lex.Line, lex.Column)
+			return NewTokenWithMetadata(INVALID_TYPE, "", lex.Line, lex.Column)
 		}
 
 		// Handle escape sequences
@@ -162,8 +214,8 @@ func readStringLiteral(lex *Lexer) Token {
 			lex.advance() // consume the backslash
 			escapedChar, valid := escapeChar(lex.Current)
 			if !valid {
-				fmt.Errorf("[ERROR] Invalid escape sequence: \\%c", lex.Current)
-				return NewToken(INVALID_TYPE, "")
+				fmt.Errorf("[%d:%d] LEXER ERROR: invalid escape sequence: \\%c", lex.Line, lex.Column, lex.Current)
+				return NewTokenWithMetadata(INVALID_TYPE, "", lex.Line, lex.Column)
 			}
 			builder.WriteByte(escapedChar)
 			lex.advance()
@@ -176,7 +228,7 @@ func readStringLiteral(lex *Lexer) Token {
 	}
 
 	lex.advance() // consume closing quote
-	return NewToken(STRING_LIT, builder.String())
+	return NewTokenWithMetadata(STRING_LIT, builder.String(), lex.Line, lex.Column)
 }
 
 // escapeChar(): converts an escape sequence character to its actual value
@@ -220,8 +272,8 @@ func readNumber(lex *Lexer) Token {
 		lex.advance()
 	} else {
 		// TODO: do better error handling
-		fmt.Errorf("[ERROR] Malformed number literal")
-		return NewToken(INVALID_TYPE, "")
+		fmt.Errorf("[%d:%d] LEXER ERROR: malformed number literal", lex.Line, lex.Column)
+		return NewTokenWithMetadata(INVALID_TYPE, "", lex.Line, lex.Column)
 	}
 
 	for isNumeric(lex.Current) || lex.Current == '.' {
@@ -239,7 +291,7 @@ func readNumber(lex *Lexer) Token {
 		tokenType = FLOAT_LIT
 	}
 
-	return NewToken(tokenType, lex.Src[position:lex.Position])
+	return NewTokenWithMetadata(tokenType, lex.Src[position:lex.Position], lex.Line, lex.Column)
 }
 
 // readIdentifier(): reads an identifier in the source code
@@ -250,8 +302,8 @@ func readIdentifier(lex *Lexer) Token {
 		lex.advance()
 	} else {
 		// TODO: do better error handling
-		fmt.Errorf("[ERROR] Malformed identifier")
-		return NewToken(INVALID_TYPE, "")
+		fmt.Errorf("[%d:%d] LEXER ERROR: malformed identifier", lex.Line, lex.Column)
+		return NewTokenWithMetadata(INVALID_TYPE, "", lex.Line, lex.Column)
 	}
 	for isAlphanumeric(lex.Current) || lex.Current == '_' {
 		lex.advance()
@@ -260,7 +312,7 @@ func readIdentifier(lex *Lexer) Token {
 	literal := lex.Src[position:lex.Position]
 
 	// lookup the token type of the identifier (maybe a keyword)
-	return NewToken(lookupIdent(literal), literal)
+	return NewTokenWithMetadata(lookupIdent(literal), literal, lex.Line, lex.Column)
 }
 
 // peek(): looks ahead to the next character
@@ -274,6 +326,8 @@ func (lex *Lexer) peek() byte {
 // advance(): get the very next character in sequence, null if end reached
 func (lex *Lexer) advance() {
 	lex.Position++
+	lex.Column++
+
 	if lex.Position >= lex.SrcLength {
 		lex.Current = 0              // null byte
 		lex.Position = lex.SrcLength // keep at end
@@ -287,6 +341,10 @@ func (lex *Lexer) advance() {
 func (lex *Lexer) ignoreWhitespacesAndComments() {
 	for {
 		if isWhitespace(lex.Current) {
+			if lex.Current == '\n' {
+				lex.Line++
+				lex.Column = 1
+			}
 			lex.advance()
 		} else if lex.Current == '/' && lex.peek() == '/' {
 			// Skip single-line comment

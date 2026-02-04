@@ -12,6 +12,8 @@ type TokenType string
 type Token struct {
 	Type    TokenType
 	Literal string
+	Line    int
+	Column  int
 }
 
 // NewToken(): constructor for Token
@@ -22,6 +24,16 @@ func NewToken(tokenType TokenType, literal string) Token {
 	}
 }
 
+// NewToken(): constructor for Token
+func NewTokenWithMetadata(tokenType TokenType, literal string, line int, column int) Token {
+	return Token{
+		Type:    tokenType,
+		Literal: literal,
+		Line:    line,
+		Column:  column,
+	}
+}
+
 // TokenTypes
 const (
 	// Special Types
@@ -29,11 +41,16 @@ const (
 	INVALID_TYPE TokenType = "INVALID"
 
 	// Arithmetic Operators
-	PLUS_OP  TokenType = "+"
-	MINUS_OP TokenType = "-"
-	MUL_OP   TokenType = "*"
-	DIV_OP   TokenType = "/"
-	MOD_OP   TokenType = "%"
+	PLUS_OP      TokenType = "+"
+	MINUS_OP     TokenType = "-"
+	MUL_OP       TokenType = "*"
+	DIV_OP       TokenType = "/"
+	MOD_OP       TokenType = "%"
+	PLUS_ASSIGN  TokenType = "+="
+	MINUS_ASSIGN TokenType = "-="
+	MUL_ASSIGN   TokenType = "*="
+	DIV_ASSIGN   TokenType = "/="
+	MOD_ASSIGN   TokenType = "%="
 
 	// Logical Operators
 	GT_OP     TokenType = ">"
@@ -50,18 +67,25 @@ const (
 	OR_OP  TokenType = "||"
 
 	// Bitwise Operators
-	BIT_AND_OP   TokenType = "&"
-	BIT_OR_OP    TokenType = "|"
-	BIT_XOR_OP   TokenType = "^"
-	BIT_NOT_OP   TokenType = "~"
-	BIT_LEFT_OP  TokenType = "<<"
-	BIT_RIGHT_OP TokenType = ">>"
+	BIT_NOT_OP TokenType = "~"
+
+	BIT_AND_OP       TokenType = "&"
+	BIT_OR_OP        TokenType = "|"
+	BIT_XOR_OP       TokenType = "^"
+	BIT_LEFT_OP      TokenType = "<<"
+	BIT_RIGHT_OP     TokenType = ">>"
+	BIT_AND_ASSIGN   TokenType = "&="
+	BIT_OR_ASSIGN    TokenType = "|="
+	BIT_XOR_ASSIGN   TokenType = "^="
+	BIT_LEFT_ASSIGN  TokenType = "<<="
+	BIT_RIGHT_ASSIGN TokenType = ">>="
 
 	// Keywords
 	FUNC_KEY     TokenType = "func"
 	NEW_KEY      TokenType = "new"
 	RETURN_KEY   TokenType = "return"
 	VAR_KEY      TokenType = "var"
+	LET_KEY      TokenType = "let"
 	CONST_KEY    TokenType = "const"
 	TRUE_KEY     TokenType = "true"
 	FALSE_KEY    TokenType = "false"
@@ -109,6 +133,7 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"new":      NEW_KEY,
 	"return":   RETURN_KEY,
 	"var":      VAR_KEY,
+	"let":      LET_KEY,
 	"const":    CONST_KEY,
 	"true":     TRUE_KEY,
 	"false":    FALSE_KEY,

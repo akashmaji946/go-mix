@@ -3,6 +3,7 @@ package eval
 import (
 	"fmt"
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/akashmaji946/go-mix/objects"
@@ -30,8 +31,10 @@ func TestEvaluator_Integers(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.input).Parse()
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.IntegerType {
 			t.Errorf("expected %s, got %s", objects.IntegerType, result.GetType())
@@ -64,8 +67,10 @@ func TestEvaluator_Floats(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.input).Parse()
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.FloatType {
 			t.Errorf("expected %s, got %s", objects.FloatType, result.GetType())
@@ -94,8 +99,10 @@ func TestEvaluator_Booleans(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.input).Parse()
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.BooleanType {
 			t.Errorf("expected %s, got %s", objects.BooleanType, result.GetType())
@@ -116,8 +123,10 @@ func TestEvaluator_Nil(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.input).Parse()
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.NilType {
 			t.Errorf("expected %s, got %s", objects.NilType, result.GetType())
@@ -144,8 +153,10 @@ func TestEvaluator_Strings(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.input).Parse()
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.StringType {
 			t.Errorf("expected %s, got %s", objects.StringType, result.GetType())
@@ -193,8 +204,10 @@ func TestEvaluator_ExpressionInteger(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.input).Parse()
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.IntegerType {
 			t.Errorf("expected %s, got %s", objects.IntegerType, result.GetType())
@@ -212,91 +225,91 @@ func TestEvaluator_ExpressionErrror(t *testing.T) {
 	}{
 		{
 			"1 + true",
-			"operator (+) not implemented for (int) and (bool)",
+			"ERROR: operator (+) not implemented for (int) and (bool)",
 		},
 		{
 			"1 - true",
-			"operator (-) not implemented for (int) and (bool)",
+			"ERROR: operator (-) not implemented for (int) and (bool)",
 		},
 		{
 			"1 * true",
-			"operator (*) not implemented for (int) and (bool)",
+			"ERROR: operator (*) not implemented for (int) and (bool)",
 		},
 		{
 			"1 / true",
-			"operator (/) not implemented for (int) and (bool)",
+			"ERROR: operator (/) not implemented for (int) and (bool)",
 		},
 		{
 			"1 % true",
-			"operator (%) not implemented for (int) and (bool)",
+			"ERROR: operator (%) not implemented for (int) and (bool)",
 		},
 		{
 			"1 & true",
-			"operator (&) not implemented for (int) and (bool)",
+			"ERROR: operator (&) not implemented for (int) and (bool)",
 		},
 		{
 			"1 | true",
-			"operator (|) not implemented for (int) and (bool)",
+			"ERROR: operator (|) not implemented for (int) and (bool)",
 		},
 		{
 			"1 ^ true",
-			"operator (^) not implemented for (int) and (bool)",
+			"ERROR: operator (^) not implemented for (int) and (bool)",
 		},
 		{
 			"~true",
-			"operator (~) not implemented for (bool)",
+			"ERROR: operator (~) not implemented for (bool)",
 		},
 		{
 			"1 << true",
-			"operator (<<) not implemented for (int) and (bool)",
+			"ERROR: operator (<<) not implemented for (int) and (bool)",
 		},
 		{
 			"1 >> true",
-			"operator (>>) not implemented for (int) and (bool)",
+			"ERROR: operator (>>) not implemented for (int) and (bool)",
 		},
 		{
 			"true + true",
-			"operator (+) not implemented for (bool) and (bool)",
+			"ERROR: operator (+) not implemented for (bool) and (bool)",
 		},
 		{
 			"true - true",
-			"operator (-) not implemented for (bool) and (bool)",
+			"ERROR: operator (-) not implemented for (bool) and (bool)",
 		},
 		{
 			"true * true",
-			"operator (*) not implemented for (bool) and (bool)",
+			"ERROR: operator (*) not implemented for (bool) and (bool)",
 		},
 		{
 			"true / true",
-			"operator (/) not implemented for (bool) and (bool)",
+			"ERROR: operator (/) not implemented for (bool) and (bool)",
 		},
 		{
 			"true % true",
-			"operator (%) not implemented for (bool) and (bool)",
+			"ERROR: operator (%) not implemented for (bool) and (bool)",
 		},
 		{
 			"true & true",
-			"operator (&) not implemented for (bool) and (bool)",
+			"ERROR: operator (&) not implemented for (bool) and (bool)",
 		},
 		{
 			"true | true",
-			"operator (|) not implemented for (bool) and (bool)",
+			"ERROR: operator (|) not implemented for (bool) and (bool)",
 		},
 		{
 			"true ^ true",
-			"operator (^) not implemented for (bool) and (bool)",
+			"ERROR: operator (^) not implemented for (bool) and (bool)",
 		},
 		{
 			"~true",
-			"operator (~) not implemented for (bool)",
+			"ERROR: operator (~) not implemented for (bool)",
 		},
 		{
 			"true << true",
-			"operator (<<) not implemented for (bool) and (bool)",
+			"ERROR: operator (<<) not implemented for (bool) and (bool)",
 		},
 		{
 			"true >> true",
-			"operator (>>) not implemented for (bool) and (bool)",
+			"ERROR: operator (>>) not implemented for (bool) and (bool)",
 		},
 
 		{
@@ -306,19 +319,21 @@ func TestEvaluator_ExpressionErrror(t *testing.T) {
 					false
 				}
 				`,
-			"operator (!) not implemented for (int)",
+			"ERROR: operator (!) not implemented for (int)",
 		},
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.ErrorType {
 			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
 		}
-		if result.(*objects.Error).Message != tt.ExpectedErrorMsg {
-			t.Errorf("expected %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
 		}
 
 	}
@@ -348,8 +363,10 @@ func TestEvaluator_Eval_Conditionals(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		AssertBoolean(t, result, tt.Expected)
 
@@ -361,22 +378,24 @@ func TestEvaluator_Eval_Conditionals(t *testing.T) {
 	}{
 		{
 			`if(1) { true }`,
-			"Conditional expression must be (bool)",
+			"ERROR: conditional expression must be (bool)",
 		},
 		{
 			`if(2 + 2 * 3) { true }`,
-			"Conditional expression must be (bool)",
+			"ERROR: conditional expression must be (bool)",
 		},
 	}
 	for _, tt := range errorTests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.ErrorType {
 			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
 		}
-		if result.(*objects.Error).Message != tt.ExpectedErrorMsg {
-			t.Errorf("expected %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
 		}
 
 	}
@@ -413,8 +432,10 @@ func TestEvaluator_Eval_ReturnStatement(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		AssertInteger(t, result, tt.Expected)
 
@@ -450,15 +471,17 @@ func TestEvaluator_Eval_Declarations(t *testing.T) {
 		{
 			`var a = 1 * 2 + 1;
              var c = 10;
-			 var d = a * c; 
+			 var d = a * c;
 			`,
 			30,
 		},
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		AssertInteger(t, result, tt.Expected)
 
@@ -472,27 +495,29 @@ func TestEvaluator_Eval_DeclarationError(t *testing.T) {
 	}{
 		{
 			`var a = b * 10;`,
-			"identifier not found: (b)",
+			"ERROR: identifier not found: (b)",
 		},
 		{
 			`var a = 1; var b = 2; var c = a + b + c;`,
-			"identifier not found: (c)",
+			"ERROR: identifier not found: (c)",
 		},
 		{
 			`var a = 1; var a = 2; var c = a;`,
-			"identifier redeclaration found: (a)",
+			"ERROR: identifier redeclaration found: (a)",
 		},
 	}
 
 	for _, tt := range errorTests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		if result.GetType() != objects.ErrorType {
 			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
 		}
-		if result.(*objects.Error).Message != tt.ExpectedErrorMsg {
-			t.Errorf("expected %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
 		}
 
 	}
@@ -520,8 +545,10 @@ func TestEvaluator_Eval_FunctionCall(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		AssertInteger(t, result, tt.Expected)
 	}
@@ -534,36 +561,327 @@ func TestEvaluator_Eval_FunctionCallArgumentCountError(t *testing.T) {
 	}{
 		{
 			`var g = func(a) { return a + 1; }; g()`,
-			"wrong number of arguments: expected 1, got 0",
+			"ERROR: wrong number of arguments: expected 1, got 0",
 		},
 		{
 			`var g = func(a) { return a + 1; }; g(1, 2)`,
-			"wrong number of arguments: expected 1, got 2",
+			"ERROR: wrong number of arguments: expected 1, got 2",
 		},
 		{
 			`var g = func(a) { return a + 1; }; g(1, 2, 3, 4)`,
-			"wrong number of arguments: expected 1, got 4",
+			"ERROR: wrong number of arguments: expected 1, got 4",
 		},
 		{
 			`var add = func(a, b) { return a + b; }; add(1)`,
-			"wrong number of arguments: expected 2, got 1",
+			"ERROR: wrong number of arguments: expected 2, got 1",
 		},
 		{
 			`var add = func(a, b) { return a + b; }; add(1, 2, 3)`,
-			"wrong number of arguments: expected 2, got 3",
+			"ERROR: wrong number of arguments: expected 2, got 3",
 		},
 		{
 			`var noArgs = func() { return 42; }; noArgs(1)`,
-			"wrong number of arguments: expected 0, got 1",
+			"ERROR: wrong number of arguments: expected 0, got 1",
 		},
 	}
 
 	for _, tt := range errorTests {
-		rootNode := parser.NewParser(tt.Src).Parse()
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
 		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 		AssertError(t, result, tt.ExpectedErrorMsg)
 	}
 }
 
-// function declarartion (legacy comment)
+func TestParser_LetKeyword(t *testing.T) {
+	tests := []struct {
+		Src      string
+		Expected int64
+	}{
+		{
+			`let a = 1; a`,
+			1,
+		},
+		{
+			`let a = 1 * 2 + 1;`,
+			3,
+		},
+		{
+			`let a = 1 * 2 + 1;
+				let c = 10;
+				let d = a * c;`,
+			30,
+		},
+	}
+	for _, tt := range tests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.Expected)
+	}
+
+}
+
+func TestEvaluator_Eval_ConstDeclarationError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`const a = 1; const a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+		{
+			`const a = 1; var a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+		{
+			`var a = 1; const a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.GetType() != objects.ErrorType {
+			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		}
+		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		}
+	}
+}
+
+func TestEvaluator_Eval_ConstReassignmentError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`const a = 1; a = 2;`,
+			"ERROR: can't assign to constant (a)",
+		},
+		{
+			`const a = "hello"; a = "world";`,
+			"ERROR: can't assign to constant (a)",
+		},
+		{
+			`const a = 1.5; a = 2.5;`,
+			"ERROR: can't assign to constant (a)",
+		},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.GetType() != objects.ErrorType {
+			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		}
+		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		}
+	}
+}
+
+func TestEvaluator_Eval_LetDeclarationError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`let a = 1; let a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+		{
+			`let a = 1; var a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+		{
+			`var a = 1; let a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+		{
+			`const a = 1; let a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+		{
+			`let a = 1; const a = 2;`,
+			"ERROR: identifier redeclaration found: (a)",
+		},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.GetType() != objects.ErrorType {
+			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		}
+		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		}
+	}
+}
+
+func TestEvaluator_Eval_LetReassignmentError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`let a = 1; a = "hello";`,
+			"ERROR: can't assign `string` to variable (a) of type `int`",
+		},
+		{
+			`let a = 1.5; a = 2;`,
+			"ERROR: can't assign `int` to variable (a) of type `float`",
+		},
+		{
+			`let a = true; a = 1;`,
+			"ERROR: can't assign `int` to variable (a) of type `bool`",
+		},
+		{
+			`let a = nil; a = 1;`,
+			"ERROR: can't assign `int` to variable (a) of type `nil`",
+		},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.GetType() != objects.ErrorType {
+			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		}
+		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		}
+	}
+}
+
+// Compound Assignment Tests
+func TestEvaluator_CompoundAssignment_Arithmetic(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		// += operator
+		{"var a = 10; a += 5; a", 15},
+		{"var a = 100; a += 50; a += 25; a", 175},
+		// -= operator
+		{"var a = 20; a -= 5; a", 15},
+		{"var a = 100; a -= 30; a -= 20; a", 50},
+		// *= operator
+		{"var a = 5; a *= 4; a", 20},
+		{"var a = 2; a *= 3; a *= 4; a", 24},
+		// /= operator
+		{"var a = 20; a /= 4; a", 5},
+		{"var a = 100; a /= 2; a /= 5; a", 10},
+		// %= operator
+		{"var a = 17; a %= 5; a", 2},
+		{"var a = 100; a %= 30; a %= 7; a", 3},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+func TestEvaluator_CompoundAssignment_Bitwise(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		// &= operator (bitwise AND)
+		{"var a = 12; a &= 10; a", 8}, // 1100 & 1010 = 1000
+		{"var a = 15; a &= 7; a", 7},  // 1111 & 0111 = 0111
+		// |= operator (bitwise OR)
+		{"var a = 12; a |= 3; a", 15}, // 1100 | 0011 = 1111
+		{"var a = 8; a |= 4; a", 12},  // 1000 | 0100 = 1100
+		// ^= operator (bitwise XOR)
+		{"var a = 12; a ^= 5; a", 9},  // 1100 ^ 0101 = 1001
+		{"var a = 15; a ^= 15; a", 0}, // 1111 ^ 1111 = 0000
+		// <<= operator (left shift)
+		{"var a = 4; a <<= 2; a", 16}, // 100 << 2 = 10000
+		{"var a = 1; a <<= 4; a", 16}, // 1 << 4 = 10000
+		// >>= operator (right shift)
+		{"var a = 16; a >>= 2; a", 4}, // 10000 >> 2 = 100
+		{"var a = 32; a >>= 3; a", 4}, // 100000 >> 3 = 100
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+func TestEvaluator_CompoundAssignment_InLoops(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		// += in for loop (i is declared in for loop initializer)
+		{`var sum = 0; var i = 0; for(i = 1; i <= 5; i += 1){ sum += i; } sum`, 15},
+		// *= in while loop
+		{`var product = 1; var i = 1; while(i <= 4){ product *= i; i += 1; } product`, 24},
+		// Combined compound assignments
+		{`var a = 100; var i = 0; for(i = 0; i < 5; i += 1){ a -= 10; } a`, 50},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+func TestEvaluator_CompoundAssignment_WithExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		// Compound assignment with complex expressions
+		{"var a = 10; a += 2 * 3; a", 16},
+		{"var a = 100; a -= 5 + 5; a", 90},
+		{"var a = 5; a *= 2 + 3; a", 25},
+		{"var a = 100; a /= 2 * 5; a", 10},
+		// Chained compound assignments
+		{"var a = 10; var b = 5; a += b; b += a; b", 20},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}

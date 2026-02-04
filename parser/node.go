@@ -286,6 +286,7 @@ type IdentifierExpressionNode struct {
 	Name  string
 	Value objects.GoMixObject
 	Type  string
+	IsLet bool
 }
 
 // IdentifierExpressionNode.Literal(): string represenation of the node

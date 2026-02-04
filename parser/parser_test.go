@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -2563,4 +2564,263 @@ func TestParser_Parse_WhileLoop_Literal(t *testing.T) {
 	// Check literal representation
 	expected := "while(i<5 && j>0 && k==10&&l!=20){}"
 	assert.Equal(t, expected, whileStmt.Literal())
+}
+
+// Compound Assignment Tests
+// Note: Compound assignments are transformed to regular assignments at parse time
+// e.g., a += 5 becomes a = a + 5
+// The Value field is Nil because evaluation is deferred to the evaluator
+
+func TestParser_Parse_CompoundAssignment_PlusEquals(t *testing.T) {
+	src := `var a = 10; a += 5`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, lexer.ASSIGN_OP, assignStmt.Operation.Type) // Transformed to regular assignment
+
+	// Right side should be a binary expression (a + 5)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.PLUS_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_MinusEquals(t *testing.T) {
+	src := `var a = 20; a -= 5`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a - 5)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.MINUS_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_MulEquals(t *testing.T) {
+	src := `var a = 5; a *= 4`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a * 4)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.MUL_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_DivEquals(t *testing.T) {
+	src := `var a = 20; a /= 4`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a / 4)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.DIV_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_ModEquals(t *testing.T) {
+	src := `var a = 17; a %= 5`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a % 5)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.MOD_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_BitwiseAnd(t *testing.T) {
+	src := `var a = 12; a &= 10`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a & 10)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.BIT_AND_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_BitwiseOr(t *testing.T) {
+	src := `var a = 12; a |= 3`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a | 3)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.BIT_OR_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_BitwiseXor(t *testing.T) {
+	src := `var a = 12; a ^= 5`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a ^ 5)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.BIT_XOR_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_LeftShift(t *testing.T) {
+	src := `var a = 4; a <<= 2`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a << 2)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.BIT_LEFT_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_RightShift(t *testing.T) {
+	src := `var a = 16; a >>= 2`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a >> 2)
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.BIT_RIGHT_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_InForLoop(t *testing.T) {
+	src := `for(i = 0; i < 5; i += 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check for loop statement
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 1, len(forStmt.Initializers))
+	assert.Equal(t, 1, len(forStmt.Updates))
+	assert.NotNil(t, forStmt.Condition)
+}
+
+func TestParser_Parse_CompoundAssignment_MultipleInForLoop(t *testing.T) {
+	src := `for(i = 0, j = 10; i < 5; i += 1, j -= 1){ }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check for loop statement
+	forStmt, ok := root.Statements[0].(*ForLoopNode)
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(forStmt.Initializers))
+	assert.Equal(t, 2, len(forStmt.Updates))
+}
+
+func TestParser_Parse_CompoundAssignment_WithComplexExpression(t *testing.T) {
+	src := `var a = 10; a += 2 * 3`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check assignment statement
+	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt.Left.Name)
+
+	// Right side should be a binary expression (a + (2 * 3))
+	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.PLUS_OP, binaryExpr.Operation.Type)
+}
+
+func TestParser_Parse_CompoundAssignment_Chained(t *testing.T) {
+	src := `var a = 10; a += 5; a *= 2; a -= 10`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 4, len(root.Statements))
+
+	// Check all assignments are transformed correctly
+	assignStmt1, ok := root.Statements[1].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt1.Left.Name)
+
+	assignStmt2, ok := root.Statements[2].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt2.Left.Name)
+
+	assignStmt3, ok := root.Statements[3].(*AssignmentExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "a", assignStmt3.Left.Name)
+
+	fmt.Println(assignStmt3.Value)
+	// Value should be the result of the compound assignment: a -= 10
+	// After: var a = 10 (a=10), a += 5 (a=15), a *= 2 (a=30), a -= 10 (a=20)
+	assert.Equal(t, assignStmt3.Value, &objects.Integer{Value: 20})
 }

@@ -39,14 +39,14 @@ func createError(format string, a ...interface{}) *Error {
 
 func tostring(args ...GoMixObject) GoMixObject {
 	if len(args) == 0 {
-		return createError("wrong number of arguments. got=%d, want=1", len(args))
+		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
 	return &String{Value: fmt.Sprintf("\"%s\"", args[0].ToString())}
 }
 
 func print(args ...GoMixObject) GoMixObject {
 	if len(args) == 0 {
-		return createError("wrong number of arguments. got=%d, want=1 or more", len(args))
+		return createError("ERROR: wrong number of arguments. got=%d, want=1 or more", len(args))
 	}
 	res := ""
 	for _, arg := range args {
@@ -67,10 +67,10 @@ func println(args ...GoMixObject) GoMixObject {
 
 func printf(args ...GoMixObject) GoMixObject {
 	if len(args) == 0 {
-		return createError("wrong number of arguments. got=%d, want=1 or more", len(args))
+		return createError("ERROR: wrong number of arguments. got=%d, want=1 or more", len(args))
 	}
 	if args[0].GetType() != StringType {
-		return createError("first argument to `printf` must be a string, got `%s`", args[0].GetType())
+		return createError("ERROR: first argument to `printf` must be a string, got `%s`", args[0].GetType())
 	}
 	format := args[0].ToString()
 	arguments := make([]interface{}, len(args)-1)

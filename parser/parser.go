@@ -52,7 +52,8 @@ func getPrecedence(token *lexer.Token) int {
 	case lexer.OR_OP:
 		return OR_PRIORITY
 
-	case lexer.ASSIGN_OP:
+	case lexer.ASSIGN_OP, lexer.PLUS_ASSIGN, lexer.MINUS_ASSIGN, lexer.MUL_ASSIGN, lexer.DIV_ASSIGN, lexer.MOD_ASSIGN,
+		lexer.BIT_AND_ASSIGN, lexer.BIT_OR_ASSIGN, lexer.BIT_XOR_ASSIGN, lexer.BIT_LEFT_ASSIGN, lexer.BIT_RIGHT_ASSIGN:
 		return ASSIGN_PRIORITY
 
 	default:
@@ -80,6 +81,10 @@ type Parser struct {
 	Env map[string]objects.GoMixObject
 	// Track which variables are const
 	Consts map[string]bool
+	// Track which variables are declared with let (statically typed)
+	LetVars map[string]bool
+	// Track the type of let variables
+	LetTypes map[string]objects.GoMixType
 	// Collect parsing errors instead of panicking
 	Errors []string
 }
@@ -98,6 +103,8 @@ func (par *Parser) init() {
 	par.BinaryFuncs = make(map[lexer.TokenType]binaryParseFunction)
 	par.Env = make(map[string]objects.GoMixObject)
 	par.Consts = make(map[string]bool)
+	par.LetVars = make(map[string]bool)
+	par.LetTypes = make(map[string]objects.GoMixType)
 	par.Errors = make([]string, 0)
 
 	// register the functions
@@ -121,7 +128,8 @@ func (par *Parser) init() {
 
 	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP)
 	par.registerUnaryFuncs(par.parseUnaryExpression, lexer.NOT_OP, lexer.MINUS_OP)
-	par.registerBinaryFuncs(par.parseAssignmentExpression, lexer.ASSIGN_OP)
+	par.registerBinaryFuncs(par.parseAssignmentExpression, lexer.ASSIGN_OP, lexer.PLUS_ASSIGN, lexer.MINUS_ASSIGN, lexer.MUL_ASSIGN, lexer.DIV_ASSIGN, lexer.MOD_ASSIGN,
+		lexer.BIT_AND_ASSIGN, lexer.BIT_OR_ASSIGN, lexer.BIT_XOR_ASSIGN, lexer.BIT_LEFT_ASSIGN, lexer.BIT_RIGHT_ASSIGN)
 
 	par.advance()
 	par.advance()
@@ -159,7 +167,7 @@ func (par *Parser) expectAdvance(expected lexer.TokenType) bool {
 // expect the next token to be of the expected type
 func (par *Parser) expectNext(expected lexer.TokenType) bool {
 	if par.NextToken.Type != expected {
-		msg := fmt.Sprintf("[LEXER ERROR] expected %s, got %s", expected, par.NextToken.Type)
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected %s, got %s", par.NextToken.Line, par.NextToken.Column, expected, par.NextToken.Type)
 		par.addError(msg)
 		return false
 	}
@@ -280,6 +288,8 @@ func (par *Parser) parseStatement() StatementNode {
 	// var a = 10;
 	case lexer.VAR_KEY:
 		return par.parseDeclarativeStatement()
+	case lexer.LET_KEY:
+		return par.parseDeclarativeStatement()
 	case lexer.CONST_KEY:
 		return par.parseDeclarativeStatement()
 	// var a = (true && true);
@@ -344,7 +354,7 @@ func (par *Parser) parseNumberLiteral() ExpressionNode {
 		if uErr == nil {
 			val = int64(uVal)
 		} else {
-			msg := fmt.Sprintf("[LEXER ERROR] could not parse number literal: %s", token.Literal)
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: could not parse number literal: %s", token.Line, token.Column, token.Literal)
 			par.addError(msg)
 			return nil
 		}
@@ -360,7 +370,7 @@ func (par *Parser) parseFloatLiteral() ExpressionNode {
 	token := par.CurrToken
 	val, err := strconv.ParseFloat(token.Literal, 64)
 	if err != nil {
-		msg := fmt.Sprintf("[LEXER ERROR] could not parse float literal: %s", token.Literal)
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: could not parse float literal: %s", token.Line, token.Column, token.Literal)
 		par.addError(msg)
 		return nil
 	}
@@ -572,6 +582,122 @@ func toFloat64(obj objects.GoMixObject) float64 {
 	return 0
 }
 
+// evaluateCompoundBinaryOp evaluates a binary operation for compound assignments
+// It takes the left and right operand values and the binary operator type
+// Returns the computed result as a GoMixObject
+func evaluateCompoundBinaryOp(lVal, rVal objects.GoMixObject, binaryOp lexer.TokenType) objects.GoMixObject {
+	if lVal.GetType() == objects.IntegerType && rVal.GetType() == objects.IntegerType {
+		l := lVal.(*objects.Integer).Value
+		r := rVal.(*objects.Integer).Value
+		switch binaryOp {
+		case lexer.PLUS_OP:
+			return &objects.Integer{Value: l + r}
+		case lexer.MINUS_OP:
+			return &objects.Integer{Value: l - r}
+		case lexer.MUL_OP:
+			return &objects.Integer{Value: l * r}
+		case lexer.DIV_OP:
+			if r != 0 {
+				return &objects.Integer{Value: l / r}
+			}
+		case lexer.MOD_OP:
+			if r != 0 {
+				return &objects.Integer{Value: l % r}
+			}
+		case lexer.BIT_AND_OP:
+			return &objects.Integer{Value: l & r}
+		case lexer.BIT_OR_OP:
+			return &objects.Integer{Value: l | r}
+		case lexer.BIT_XOR_OP:
+			return &objects.Integer{Value: l ^ r}
+		case lexer.BIT_LEFT_OP:
+			return &objects.Integer{Value: l << r}
+		case lexer.BIT_RIGHT_OP:
+			return &objects.Integer{Value: l >> r}
+		}
+	} else if (lVal.GetType() == objects.IntegerType || lVal.GetType() == objects.FloatType) &&
+		(rVal.GetType() == objects.IntegerType || rVal.GetType() == objects.FloatType) {
+		// Mixed arithmetic
+		l := toFloat64(lVal)
+		r := toFloat64(rVal)
+		switch binaryOp {
+		case lexer.PLUS_OP:
+			return &objects.Float{Value: l + r}
+		case lexer.MINUS_OP:
+			return &objects.Float{Value: l - r}
+		case lexer.MUL_OP:
+			return &objects.Float{Value: l * r}
+		case lexer.DIV_OP:
+			if r != 0 {
+				return &objects.Float{Value: l / r}
+			}
+		}
+	}
+	return &objects.Nil{}
+}
+
+// getCompoundBinaryOp returns the corresponding binary operator for a compound assignment operator
+// Returns the binary operator type and true if it's a compound assignment, otherwise returns empty and false
+func getCompoundBinaryOp(opType lexer.TokenType) (lexer.TokenType, bool) {
+	switch opType {
+	case lexer.PLUS_ASSIGN:
+		return lexer.PLUS_OP, true
+	case lexer.MINUS_ASSIGN:
+		return lexer.MINUS_OP, true
+	case lexer.MUL_ASSIGN:
+		return lexer.MUL_OP, true
+	case lexer.DIV_ASSIGN:
+		return lexer.DIV_OP, true
+	case lexer.MOD_ASSIGN:
+		return lexer.MOD_OP, true
+	case lexer.BIT_AND_ASSIGN:
+		return lexer.BIT_AND_OP, true
+	case lexer.BIT_OR_ASSIGN:
+		return lexer.BIT_OR_OP, true
+	case lexer.BIT_XOR_ASSIGN:
+		return lexer.BIT_XOR_OP, true
+	case lexer.BIT_LEFT_ASSIGN:
+		return lexer.BIT_LEFT_OP, true
+	case lexer.BIT_RIGHT_ASSIGN:
+		return lexer.BIT_RIGHT_OP, true
+	default:
+		return "", false
+	}
+}
+
+// parseCompoundAssignment handles compound assignment expressions (+=, -=, *=, etc.)
+// It transforms them into regular assignments with a binary expression on the right side
+// e.g., a += 5 becomes a = a + 5
+func (par *Parser) parseCompoundAssignment(left ExpressionNode, ident *IdentifierExpressionNode, op lexer.Token, right ExpressionNode, binaryOp lexer.TokenType) ExpressionNode {
+	// Evaluate the left operand (get current value from environment)
+	lVal := eval(par, left)
+	// Evaluate the right operand
+	rVal := eval(par, right)
+
+	// Compute the binary expression value
+	binaryVal := evaluateCompoundBinaryOp(lVal, rVal, binaryOp)
+
+	// Update the environment with the new value
+	par.Env[ident.Name] = binaryVal
+
+	// Create a binary expression: left op right (e.g., a + 1)
+	binaryExpr := &BinaryExpressionNode{
+		Left:      left,
+		Operation: lexer.Token{Type: binaryOp, Literal: string(binaryOp), Line: op.Line, Column: op.Column},
+		Right:     right,
+		Value:     binaryVal,
+	}
+
+	// Create assignment: left = binaryExpr (e.g., a = a + 1)
+	assignOp := lexer.Token{Type: lexer.ASSIGN_OP, Literal: "=", Line: op.Line, Column: op.Column}
+	return &AssignmentExpressionNode{
+		Operation: assignOp,
+		Left:      *ident,
+		Right:     binaryExpr,
+		Value:     binaryVal,
+	}
+}
+
 func (par *Parser) parseUnaryExpression() ExpressionNode {
 	op := par.CurrToken
 	par.advance()
@@ -624,10 +750,14 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 	}
 	identifier := par.CurrToken
 	typ := "var"
+	isLet := false
 	if varToken.Type == lexer.CONST_KEY {
-		// fmt.Println("Setting")
 		typ = "const"
 		par.Consts[identifier.Literal] = true
+	} else if varToken.Type == lexer.LET_KEY {
+		typ = "let"
+		isLet = true
+		par.LetVars[identifier.Literal] = true
 	}
 	if !par.expectAdvance(lexer.ASSIGN_OP) {
 		return nil
@@ -641,12 +771,17 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 	// evaluating the expression
 	val := eval(par, expr)
 
+	// save the type for let variables
+	if varToken.Type == lexer.LET_KEY {
+		par.LetTypes[identifier.Literal] = val.GetType()
+	}
+
 	// save the value in the environment
 	par.Env[identifier.Literal] = val
 
 	return &DeclarativeStatementNode{
 		VarToken:   varToken,
-		Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ},
+		Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
 		Expr:       expr,
 		Value:      val,
 	}
@@ -668,16 +803,23 @@ func (par *Parser) parseIdentifierExpression() ExpressionNode {
 		val = &objects.Nil{}
 	}
 
-	// Determine if this is a const or var
+	// Determine if this is a const or let or var
 	ident := &IdentifierExpressionNode{
 		Name:  varToken.Literal,
 		Value: val,
 		Type:  "var", // default type
+		IsLet: false,
 	}
 
 	// Check if this identifier is a const
 	if par.Consts[varToken.Literal] {
 		ident.Type = "const"
+	}
+
+	// Check if this identifier is a let
+	if par.LetVars[varToken.Literal] {
+		ident.Type = "let"
+		ident.IsLet = true
 	}
 
 	return ident
@@ -880,27 +1022,29 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 		return nil
 	}
 
-	val := eval(par, right)
-
-	// if left is const
-	if ident, ok := left.(*IdentifierExpressionNode); ok {
-		if ident.Type == "const" {
-			msg := "[LEXER ERROR] Cannot assign to a const variable"
-			par.addError(msg)
-			return nil
-		}
-		par.Env[ident.Name] = val
-		return &AssignmentExpressionNode{
-			Operation: op,
-			Left:      *ident,
-			Right:     right,
-			Value:     val,
-		}
+	// if left is const - evaluator will handle this error
+	// just continue parsing without adding to parser errors
+	ident, ok := left.(*IdentifierExpressionNode)
+	if !ok {
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: invalid assignment target", par.CurrToken.Line, par.CurrToken.Column)
+		par.addError(msg)
+		return nil
 	}
 
-	msg := "[LEXER ERROR] Invalid assignment target"
-	par.addError(msg)
-	return nil
+	// Check if this is a compound assignment (+=, -=, *=, etc.)
+	if binaryOp, isCompound := getCompoundBinaryOp(op.Type); isCompound {
+		return par.parseCompoundAssignment(left, ident, op, right, binaryOp)
+	}
+
+	// Regular assignment - evaluate and store
+	val := eval(par, right)
+	par.Env[ident.Name] = val
+	return &AssignmentExpressionNode{
+		Operation: op,
+		Left:      *ident,
+		Right:     right,
+		Value:     val,
+	}
 }
 
 // parse an if statement
@@ -1025,8 +1169,8 @@ func (par *Parser) parseForLoop() StatementNode {
 	if par.NextToken.Type != lexer.SEMICOLON_DELIM {
 		par.advance()
 
-		// Check if this is a variable declaration (var or const)
-		if par.CurrToken.Type == lexer.VAR_KEY || par.CurrToken.Type == lexer.CONST_KEY {
+		// Check if this is a variable declaration (var, let, or const)
+		if par.CurrToken.Type == lexer.VAR_KEY || par.CurrToken.Type == lexer.LET_KEY || par.CurrToken.Type == lexer.CONST_KEY {
 			// Parse variable declaration(s)
 			varToken := par.CurrToken
 
@@ -1036,9 +1180,14 @@ func (par *Parser) parseForLoop() StatementNode {
 			}
 			identifier := par.CurrToken
 			typ := "var"
+			isLet := false
 			if varToken.Type == lexer.CONST_KEY {
 				typ = "const"
 				par.Consts[identifier.Literal] = true
+			} else if varToken.Type == lexer.LET_KEY {
+				typ = "let"
+				isLet = true
+				par.LetVars[identifier.Literal] = true
 			}
 
 			if !par.expectAdvance(lexer.ASSIGN_OP) {
@@ -1054,9 +1203,14 @@ func (par *Parser) parseForLoop() StatementNode {
 			val := eval(par, expr)
 			par.Env[identifier.Literal] = val
 
+			// Save the type for let variables
+			if varToken.Type == lexer.LET_KEY {
+				par.LetTypes[identifier.Literal] = val.GetType()
+			}
+
 			declStmt := &DeclarativeStatementNode{
 				VarToken:   varToken,
-				Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ},
+				Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
 				Expr:       expr,
 				Value:      val,
 			}
@@ -1071,9 +1225,14 @@ func (par *Parser) parseForLoop() StatementNode {
 				}
 				identifier := par.CurrToken
 				typ := "var"
+				isLet := false
 				if varToken.Type == lexer.CONST_KEY {
 					typ = "const"
 					par.Consts[identifier.Literal] = true
+				} else if varToken.Type == lexer.LET_KEY {
+					typ = "let"
+					isLet = true
+					par.LetVars[identifier.Literal] = true
 				}
 
 				if !par.expectAdvance(lexer.ASSIGN_OP) {
@@ -1089,9 +1248,14 @@ func (par *Parser) parseForLoop() StatementNode {
 				val := eval(par, expr)
 				par.Env[identifier.Literal] = val
 
+				// Save the type for let variables
+				if varToken.Type == lexer.LET_KEY {
+					par.LetTypes[identifier.Literal] = val.GetType()
+				}
+
 				declStmt := &DeclarativeStatementNode{
 					VarToken:   varToken,
-					Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ},
+					Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
 					Expr:       expr,
 					Value:      val,
 				}
@@ -1239,7 +1403,7 @@ func (par *Parser) parseStringLiteral() ExpressionNode {
 func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 	unary, has := par.UnaryFuncs[par.CurrToken.Type]
 	if !has {
-		msg := fmt.Sprintf("[LEXER ERROR] unexpected token: %s", par.CurrToken.Literal)
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected token: %s", par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
 		par.addError(msg)
 		return nil
 	}
@@ -1251,7 +1415,7 @@ func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 		binary, has := par.BinaryFuncs[par.NextToken.Type]
 		par.advance()
 		if !has {
-			msg := fmt.Sprintf("[LEXER ERROR] unexpected operator: %s", par.CurrToken.Literal)
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected operator: %s", par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
 			par.addError(msg)
 			return nil
 		}
