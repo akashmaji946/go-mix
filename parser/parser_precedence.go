@@ -1,5 +1,5 @@
 /*
-File    : go-mix/parser/parser.go
+File    : go-mix/parser/parser_precedence.go
 Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */

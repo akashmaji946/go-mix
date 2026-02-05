@@ -10,41 +10,49 @@ import (
 	"github.com/akashmaji946/go-mix/objects"
 )
 
-// NodeVisitor: visitor pattern
-// used to traverse the AST
+// NodeVisitor: implements the Visitor design pattern for traversing the Abstract Syntax Tree (AST)
+// Each Visit method processes a specific node type, enabling operations like evaluation, printing, or transformation
 type NodeVisitor interface {
+	// Base node visitors for generic expression and statement handling
 	VisitExpressionNode(node ExpressionNode)
 	VisitStatementNode(node StatementNode)
-	VisitRootNode(node RootNode)
+	VisitRootNode(node RootNode) // Entry point for visiting the entire program
 
-	VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode)
-	VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode)
-	VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode)
-	VisitStringLiteralExpressionNode(node StringLiteralExpressionNode)
-	VisitNilLiteralExpressionNode(node NilLiteralExpressionNode)
+	// Literal value visitors - handle primitive data types
+	VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode) // Integer literals: 42, -15, 0
+	VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode) // Boolean literals: true, false
+	VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode)     // Float literals: 3.14, -2.5
+	VisitStringLiteralExpressionNode(node StringLiteralExpressionNode)   // String literals: "hello", 'world'
+	VisitNilLiteralExpressionNode(node NilLiteralExpressionNode)         // Nil/null literal
 
-	VisitBinaryExpressionNode(node BinaryExpressionNode)
-	VisitUnaryExpressionNode(node UnaryExpressionNode)
-	VisitBooleanExpressionNode(node BooleanExpressionNode)
+	// Expression visitors - handle operations and computations
+	VisitBinaryExpressionNode(node BinaryExpressionNode)               // Binary operations: +, -, *, /, %
+	VisitUnaryExpressionNode(node UnaryExpressionNode)                 // Unary operations: -, !, +
+	VisitBooleanExpressionNode(node BooleanExpressionNode)             // Boolean operations: &&, ||, ==, !=, <, >
+	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode) // Parenthesized expressions: (expr)
 
-	VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode)
-	VisitDeclarativeStatementNode(node DeclarativeStatementNode)
-	VisitIdentifierExpressionNode(node IdentifierExpressionNode)
-	VisitReturnStatementNode(node ReturnStatementNode)
-	VisitBlockStatementNode(node BlockStatementNode)
-	VisitAssignmentExpressionNode(node AssignmentExpressionNode)
-	VisitIfExpressionNode(node IfExpressionNode)
+	// Statement and identifier visitors
+	VisitDeclarativeStatementNode(node DeclarativeStatementNode) // Variable declarations: var x = 10, let y = 5
+	VisitIdentifierExpressionNode(node IdentifierExpressionNode) // Variable/function identifiers: x, myVar
+	VisitReturnStatementNode(node ReturnStatementNode)           // Return statements: return expr
+	VisitBlockStatementNode(node BlockStatementNode)             // Code blocks: { stmt1; stmt2; }
+	VisitAssignmentExpressionNode(node AssignmentExpressionNode) // Assignments: x = 10
 
-	VisitFunctionStatementNode(node FunctionStatementNode)
-	VisitCallExpressionNode(node CallExpressionNode)
-	VisitForLoopStatementNode(node ForLoopStatementNode)
-	VisitWhileLoopStatementNode(node WhileLoopStatementNode)
+	// Conditional control flow visitors
+	VisitIfExpressionNode(node IfExpressionNode) // If-else conditionals: if (cond) { ... } else { ... }
 
-	// Data Structures
-	VisitArrayExpressionNode(node ArrayExpressionNode)
-	VisitIndexExpressionNode(node IndexExpressionNode)
-	VisitSliceExpressionNode(node SliceExpressionNode)
-	// VisitHashExpressionNode(node HashExpressionNode)
+	// Function-related visitors
+	VisitFunctionStatementNode(node FunctionStatementNode) // Function definitions: func name(params) { body }
+	VisitCallExpressionNode(node CallExpressionNode)       // Function calls: funcName(arg1, arg2)
+
+	// Loop control flow visitors
+	VisitForLoopStatementNode(node ForLoopStatementNode)     // For loops: for(init; cond; update) { ... }
+	VisitWhileLoopStatementNode(node WhileLoopStatementNode) // While loops: while(cond) { ... }
+
+	// Data structure visitors - handle collections
+	VisitArrayExpressionNode(node ArrayExpressionNode) // Array literals: [1, 2, 3]
+	VisitIndexExpressionNode(node IndexExpressionNode) // Array indexing: arr[0], arr[-1]
+	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
 }
 
 // Node: base interface for all nodes of the AST
@@ -97,10 +105,11 @@ func (root *RootNode) Accept(visitor NodeVisitor) {
 }
 
 // There can be many types of ExpressionNodes
-// IntegerLiteralExpressionNode: represents a number literal
+// IntegerLiteralExpressionNode: represents an integer number literal
+// Example: 42, 0, -15
 type IntegerLiteralExpressionNode struct {
-	Token lexer.Token
-	Value objects.GoMixObject
+	Token lexer.Token         // The integer token with its literal value
+	Value objects.GoMixObject // The integer object value
 }
 
 // NumberLiteralExpressionNode.Literal(): string represenation of the node
@@ -123,10 +132,11 @@ func (node *IntegerLiteralExpressionNode) Expression() {
 
 }
 
-// FloatLiteralExpressionNode: represents a float literal
+// FloatLiteralExpressionNode: represents a floating-point number literal
+// Example: 3.14, 0.5, -2.718
 type FloatLiteralExpressionNode struct {
-	Token lexer.Token
-	Value objects.GoMixObject
+	Token lexer.Token         // The float token with its literal value
+	Value objects.GoMixObject // The float object value
 }
 
 // FloatLiteralExpressionNode.Literal(): string represenation of the node
@@ -149,10 +159,11 @@ func (node *FloatLiteralExpressionNode) Expression() {
 
 }
 
-// BooleanLiteralExpressionNode: represents a boolean literal
+// BooleanLiteralExpressionNode: represents a boolean literal value
+// Example: true or false
 type BooleanLiteralExpressionNode struct {
-	Token lexer.Token
-	Value objects.GoMixObject
+	Token lexer.Token         // The boolean token (true/false)
+	Value objects.GoMixObject // The boolean object value
 }
 
 // BooleanLiteralExpressionNode.Literal(): string represenation of the node
@@ -175,12 +186,13 @@ func (node *BooleanLiteralExpressionNode) Expression() {
 
 }
 
-// BinaryExpressionNode: represents an expression with an operator
+// BinaryExpressionNode: represents a binary operation expression with two operands
+// Example: 2 + 3, x * y, a - b
 type BinaryExpressionNode struct {
-	Operation lexer.Token
-	Left      ExpressionNode
-	Right     ExpressionNode
-	Value     objects.GoMixObject
+	Operation lexer.Token         // The binary operator token (+, -, *, /, %, etc.)
+	Left      ExpressionNode      // Left operand expression
+	Right     ExpressionNode      // Right operand expression
+	Value     objects.GoMixObject // Evaluated result of the operation
 }
 
 // BinaryExpressionNode.Literal(): string represenation of the node
@@ -203,11 +215,12 @@ func (node *BinaryExpressionNode) Expression() {
 
 }
 
-// UnaryExpressionNode: represents an expression with an operator
+// UnaryExpressionNode: represents a unary operation expression with one operand
+// Example: -x, !flag, +5
 type UnaryExpressionNode struct {
-	Operation lexer.Token
-	Right     ExpressionNode
-	Value     objects.GoMixObject
+	Operation lexer.Token         // The unary operator token (-, !, +)
+	Right     ExpressionNode      // The operand expression
+	Value     objects.GoMixObject // Evaluated result of the operation
 }
 
 // UnaryExpressionNode.Literal(): string represenation of the node
@@ -230,18 +243,20 @@ func (node *UnaryExpressionNode) Expression() {
 
 }
 
-// BooleanExpressionNode: represents an expression with a boolean operator
+// BooleanExpressionNode: represents an expression with a boolean operator (&&, ||, ==, !=, <, >, <=, >=)
+// Used for logical and comparison operations between two expressions
 type BooleanExpressionNode struct {
-	Operation lexer.Token
-	Left      ExpressionNode
-	Right     ExpressionNode
-	Value     objects.GoMixObject
+	Operation lexer.Token         // The boolean operator token
+	Left      ExpressionNode      // Left operand expression
+	Right     ExpressionNode      // Right operand expression
+	Value     objects.GoMixObject // Evaluated boolean result
 }
 
-// ParenthesizedExpressionNode: represents an expression in parentheses
+// ParenthesizedExpressionNode: represents an expression wrapped in parentheses for precedence control
+// Example: (2 + 3) * 4
 type ParenthesizedExpressionNode struct {
-	Expr  ExpressionNode
-	Value objects.GoMixObject
+	Expr  ExpressionNode      // The inner expression
+	Value objects.GoMixObject // Evaluated value of the expression
 }
 
 // ParenthesizedExpressionNode.Literal(): string represenation of the node
@@ -264,12 +279,13 @@ func (node *ParenthesizedExpressionNode) Expression() {
 
 }
 
-// DeclarativeStatementNode: represents a declarative statement
+// DeclarativeStatementNode: represents a variable declaration statement
+// Example: var x = 10 or let name = "John"
 type DeclarativeStatementNode struct {
-	VarToken   lexer.Token
-	Identifier IdentifierExpressionNode
-	Expr       ExpressionNode
-	Value      objects.GoMixObject
+	VarToken   lexer.Token              // The declaration keyword token (var/let)
+	Identifier IdentifierExpressionNode // The variable identifier being declared
+	Expr       ExpressionNode           // The initialization expression
+	Value      objects.GoMixObject      // The assigned value
 }
 
 // DeclarativeStatementNode.Literal(): string represenation of the node
@@ -292,12 +308,13 @@ func (node *DeclarativeStatementNode) Statement() {
 // func (node *DeclarativeStatementNode) Expression() {
 // }
 
-// IdentifierExpressionNode: represents an identifier expression
+// IdentifierExpressionNode: represents a variable or function identifier
+// Example: x, myVar, functionName
 type IdentifierExpressionNode struct {
-	Name  string
-	Value objects.GoMixObject
-	Type  string
-	IsLet bool
+	Name  string              // The identifier name
+	Value objects.GoMixObject // The value associated with this identifier
+	Type  string              // The type of the identifier (if applicable)
+	IsLet bool                // Whether this was declared with 'let' (immutable)
 }
 
 // IdentifierExpressionNode.Literal(): string represenation of the node
@@ -320,11 +337,12 @@ func (node *IdentifierExpressionNode) Expression() {
 
 }
 
-// ReturnStatementNode():
+// ReturnStatementNode: represents a return statement in a function
+// Example: return x + 5 or return "result"
 type ReturnStatementNode struct {
-	ReturnToken lexer.Token
-	Expr        ExpressionNode
-	Value       objects.GoMixObject
+	ReturnToken lexer.Token         // The 'return' keyword token
+	Expr        ExpressionNode      // The expression to return
+	Value       objects.GoMixObject // The evaluated return value
 }
 
 // ReturnStatementNode.Literal(): string represenation of the node
@@ -347,10 +365,11 @@ func (node *ReturnStatementNode) Expression() {
 
 }
 
-// BlockStatementNode: represents a block of statements
+// BlockStatementNode: represents a block of statements enclosed in braces
+// Example: { stmt1; stmt2; stmt3; }
 type BlockStatementNode struct {
-	Statements []StatementNode
-	Value      objects.GoMixObject
+	Statements []StatementNode     // List of statements in the block
+	Value      objects.GoMixObject // Value of the last expression in the block
 }
 
 // BlockStatementNode.Literal(): string represenation of the node
@@ -399,12 +418,13 @@ func (node *BooleanExpressionNode) Expression() {
 
 }
 
-// AssignmentExpressionNode: represents an assignment expression
+// AssignmentExpressionNode: represents a variable assignment expression
+// Example: x = 10, count = count + 1
 type AssignmentExpressionNode struct {
-	Operation lexer.Token
-	Left      IdentifierExpressionNode
-	Right     ExpressionNode
-	Value     objects.GoMixObject
+	Operation lexer.Token              // The assignment operator token (=)
+	Left      IdentifierExpressionNode // The identifier being assigned to
+	Right     ExpressionNode           // The expression being assigned
+	Value     objects.GoMixObject      // The assigned value
 }
 
 // AssignmentExpressionNode.Literal(): string represenation of the node
@@ -427,13 +447,14 @@ func (node *AssignmentExpressionNode) Expression() {
 
 }
 
-// IfExpressionNode: represents an if expression
+// IfExpressionNode: represents an if-else conditional expression
+// Example: if (x > 0) { ... } else { ... }
 type IfExpressionNode struct {
-	IfToken        lexer.Token
-	Condition      ExpressionNode
-	ConditionValue objects.GoMixObject
-	ThenBlock      BlockStatementNode
-	ElseBlock      BlockStatementNode
+	IfToken        lexer.Token         // The 'if' keyword token
+	Condition      ExpressionNode      // The condition expression to evaluate
+	ConditionValue objects.GoMixObject // Evaluated condition result
+	ThenBlock      BlockStatementNode  // Block to execute if condition is true
+	ElseBlock      BlockStatementNode  // Block to execute if condition is false (optional)
 }
 
 // IfExpressionNode.Literal(): string represenation of the node
@@ -465,12 +486,14 @@ func (node *IfExpressionNode) Expression() {
 
 }
 
-// empty block statement node
+// EMPTY_BLOCK: a reusable empty block statement node
+// Used as a default value for optional blocks (e.g., else blocks without statements)
 var EMPTY_BLOCK = &BlockStatementNode{
 	Statements: []StatementNode{},
 }
 
-// new if statement node
+// NewIfStatement: creates a new if statement node with default empty values
+// Returns an initialized IfExpressionNode ready for parsing
 func NewIfStatement() *IfExpressionNode {
 	return &IfExpressionNode{
 		Condition:      &BinaryExpressionNode{},
@@ -481,10 +504,11 @@ func NewIfStatement() *IfExpressionNode {
 	}
 }
 
-// string literal node
+// StringLiteralExpressionNode: represents a string literal in the source code
+// Example: "hello world" or 'test string'
 type StringLiteralExpressionNode struct {
-	Token lexer.Token
-	Value objects.GoMixObject
+	Token lexer.Token         // The string token with its literal value
+	Value objects.GoMixObject // The string object value
 }
 
 // StringLiteral.Literal(): string represenation of the node
@@ -507,10 +531,11 @@ func (node *StringLiteralExpressionNode) Expression() {
 
 }
 
-// null literal node
+// NilLiteralExpressionNode: represents a nil/null literal value
+// Used to represent the absence of a value or uninitialized state
 type NilLiteralExpressionNode struct {
-	Token lexer.Token
-	Value objects.GoMixObject
+	Token lexer.Token         // The nil token
+	Value objects.GoMixObject // The nil object value
 }
 
 // NullLiteral.Literal(): string represenation of the node
@@ -533,13 +558,14 @@ func (node *NilLiteralExpressionNode) Expression() {
 
 }
 
-// FunctionStatementNode: represents a function statement
+// FunctionStatementNode: represents a function definition statement
+// Example: func add(x, y) { return x + y; }
 type FunctionStatementNode struct {
-	FuncToken  lexer.Token
-	FuncName   IdentifierExpressionNode
-	FuncParams []*IdentifierExpressionNode
-	FuncBody   BlockStatementNode
-	Value      objects.GoMixObject
+	FuncToken  lexer.Token                 // The 'func' keyword token
+	FuncName   IdentifierExpressionNode    // The function name identifier
+	FuncParams []*IdentifierExpressionNode // List of parameter identifiers
+	FuncBody   BlockStatementNode          // The function body block
+	Value      objects.GoMixObject         // The function object value
 }
 
 // FunctionStatementNode.Literal(): string represenation of the node
@@ -570,7 +596,8 @@ func (node *FunctionStatementNode) Expression() {
 
 }
 
-// FunctionStatementNode constructor
+// NewFunctionStatementNode: creates a new function statement node with default empty values
+// Returns an initialized FunctionStatementNode ready for parsing function definitions
 func NewFunctionStatementNode() *FunctionStatementNode {
 	return &FunctionStatementNode{
 		FuncToken:  lexer.Token{Type: lexer.FUNC_KEY, Literal: "func"},
@@ -580,11 +607,12 @@ func NewFunctionStatementNode() *FunctionStatementNode {
 	}
 }
 
-// CallExpressionNode represnts a function call
+// CallExpressionNode: represents a function call expression
+// Example: myFunc(arg1, arg2) or print("hello")
 type CallExpressionNode struct {
-	FunctionIdentifier IdentifierExpressionNode
-	Arguments          []ExpressionNode
-	Value              objects.GoMixObject
+	FunctionIdentifier IdentifierExpressionNode // The function name being called
+	Arguments          []ExpressionNode         // List of argument expressions
+	Value              objects.GoMixObject      // Return value from the function
 }
 
 // CallExpressionNode.Literal(): string represenation of the node
@@ -614,13 +642,14 @@ func (node *CallExpressionNode) Expression() {
 
 }
 
-// ForLoopStatementNode: represents a for loop statement
+// ForLoopStatementNode: represents a for loop statement with C-style syntax
+// Example: for(var i=0; i<10; i=i+1) { ... }
 type ForLoopStatementNode struct {
-	ForToken     lexer.Token
-	Initializers []StatementNode  // Multiple initializers like i=0, j=0 or var i=0, j=0
-	Condition    ExpressionNode   // Loop condition like i <= 10 && j <= 100
-	Updates      []ExpressionNode // Multiple updates like i=i+1, j=j+1
-	Body         BlockStatementNode
+	ForToken     lexer.Token        // The 'for' keyword token
+	Initializers []StatementNode    // Multiple initializers like i=0, j=0 or var i=0, j=0
+	Condition    ExpressionNode     // Loop condition like i <= 10 && j <= 100
+	Updates      []ExpressionNode   // Multiple updates like i=i+1, j=j+1
+	Body         BlockStatementNode // The loop body containing statements
 	Value        objects.GoMixObject
 }
 
@@ -660,11 +689,12 @@ func (node *ForLoopStatementNode) Statement() {
 
 }
 
-// WhileLoopStatementNode: represents a while loop statement
+// WhileLoopStatementNode: represents a while loop statement with condition-based iteration
+// Example: while(x > 0 && y < 100) { ... }
 type WhileLoopStatementNode struct {
-	WhileToken lexer.Token
-	Conditions []ExpressionNode
-	Body       BlockStatementNode
+	WhileToken lexer.Token        // The 'while' keyword token
+	Conditions []ExpressionNode   // Multiple conditions combined with logical operators
+	Body       BlockStatementNode // The loop body containing statements
 	Value      objects.GoMixObject
 }
 
@@ -690,11 +720,12 @@ func (node *WhileLoopStatementNode) Statement() {
 
 }
 
-// ArrayExpressionNode
+// ArrayExpressionNode: represents an array literal expression
+// Example: [1, 2, 3] or ["a", "b", "c"]
 type ArrayExpressionNode struct {
-	Name     IdentifierExpressionNode
-	Elements []ExpressionNode
-	Value    objects.GoMixObject
+	Name     IdentifierExpressionNode // Optional array identifier
+	Elements []ExpressionNode         // List of element expressions
+	Value    objects.GoMixObject      // The array object value
 }
 
 // ArrayExpressionNode.Literal()
@@ -725,11 +756,12 @@ func (node *ArrayExpressionNode) Expression() {
 
 }
 
-// IndexExpressionNode represents array indexing like arr[0] or arr[-1]
+// IndexExpressionNode: represents array indexing operation
+// Example: arr[0], myArray[i], list[-1] (negative indexing supported)
 type IndexExpressionNode struct {
 	Left  ExpressionNode      // The array or indexable expression
-	Index ExpressionNode      // The index expression
-	Value objects.GoMixObject // Evaluated value
+	Index ExpressionNode      // The index expression (can be negative)
+	Value objects.GoMixObject // The element value at the index
 }
 
 // IndexExpressionNode.Literal()
@@ -752,12 +784,13 @@ func (node *IndexExpressionNode) Expression() {
 
 }
 
-// SliceExpressionNode represents array slicing like arr[1:3], arr[:3], arr[1:]
+// SliceExpressionNode: represents array slicing operation
+// Example: arr[1:3], arr[:5], arr[2:] (Python-style slicing)
 type SliceExpressionNode struct {
 	Left  ExpressionNode      // The array or indexable expression
 	Start ExpressionNode      // The start index (can be nil for arr[:end])
 	End   ExpressionNode      // The end index (can be nil for arr[start:])
-	Value objects.GoMixObject // Evaluated value
+	Value objects.GoMixObject // The sliced array value
 }
 
 // SliceExpressionNode.Literal()
