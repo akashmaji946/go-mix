@@ -1,0 +1,77 @@
+// Test file for the typeof() builtin function
+// This demonstrates typeof() with all GoMix object types
+
+println("=== Testing typeof() builtin function ===")
+println("")
+
+// Test with integer
+let x = 42
+println("typeof(42) =", typeof(x))
+
+// Test with float
+let y = 3.14
+println("typeof(3.14) =", typeof(y))
+
+// Test with string
+let s = "hello"
+println("typeof(\"hello\") =", typeof(s))
+
+// Test with boolean
+let b = true
+println("typeof(true) =", typeof(b))
+
+// Test with nil
+let n = nil
+println("typeof(nil) =", typeof(n))
+
+// Test with array
+let arr = [1, 2, 3, 4, 5]
+println("typeof([1, 2, 3, 4, 5]) =", typeof(arr))
+
+// Test with range
+let r = range(1, 10)
+println("typeof(range(1, 10)) =", typeof(r))
+
+// Test with function
+func add(a, b) {
+    return a + b
+}
+println("typeof(add) =", typeof(add))
+
+println("")
+println("=== Testing typeof() with direct values ===")
+println("")
+
+// Direct value tests
+println("typeof(100) =", typeof(100))
+println("typeof(2.718) =", typeof(2.718))
+println("typeof(\"world\") =", typeof("world"))
+println("typeof(false) =", typeof(false))
+println("typeof([]) =", typeof([]))
+println("typeof(1...5) =", typeof(1...5))
+
+println("")
+println("=== Testing typeof() in conditionals ===")
+println("")
+
+// Using typeof in conditionals
+let value = 42
+let valueType = typeof(value)
+if (valueType == "int") {
+    println("value is an integer")
+}
+
+let text = "GoMix"
+let textType = typeof(text)
+if (textType == "string") {
+    println("text is a string")
+}
+
+let numbers = [1, 2, 3]
+let numbersType = typeof(numbers)
+if (numbersType == "array") {
+    println("numbers is an array")
+}
+
+println("")
+println("=== All typeof() tests completed! ===")

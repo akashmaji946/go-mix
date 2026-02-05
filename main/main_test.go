@@ -814,4 +814,122 @@ func TestMain_Main(t *testing.T) {
 	root80.Accept(visitor80)
 	fmt.Println(visitor80)
 
+	// Test 81: Map creation and access
+	src81 := `var m = map{"name": "John", "age": 25}; m["name"]`
+	root81 := parser.NewParser(src81).Parse()
+	visitor81 := &PrintingVisitor{}
+	root81.Accept(visitor81)
+	fmt.Println(visitor81)
+
+	// Test 82: Map with keys_map builtin
+	src82 := `var person = map{"name": "Alice", "age": 30, "city": "NYC"}; keys_map(person)`
+	root82 := parser.NewParser(src82).Parse()
+	visitor82 := &PrintingVisitor{}
+	root82.Accept(visitor82)
+	fmt.Println(visitor82)
+
+	// Test 83: Map with insert_map and remove_map
+	src83 := `
+	var config = map{"debug": false, "port": 8080};
+	insert_map(config, "host", "localhost");
+	remove_map(config, "debug");
+	config
+	`
+	root83 := parser.NewParser(src83).Parse()
+	visitor83 := &PrintingVisitor{}
+	root83.Accept(visitor83)
+	fmt.Println(visitor83)
+
+	// Test 84: Map with contain_map
+	src84 := `
+	var settings = map{"theme": "dark", "lang": "en"};
+	var has_theme = contain_map(settings, "theme");
+	var has_font = contain_map(settings, "font");
+	has_theme
+	`
+	root84 := parser.NewParser(src84).Parse()
+	visitor84 := &PrintingVisitor{}
+	root84.Accept(visitor84)
+	fmt.Println(visitor84)
+
+	// Test 85: Map with enumerate_map (NEW)
+	src85 := `
+	var data = map{"x": 10, "y": 20, "z": 30};
+	var pairs = enumerate_map(data);
+	pairs
+	`
+	root85 := parser.NewParser(src85).Parse()
+	visitor85 := &PrintingVisitor{}
+	root85.Accept(visitor85)
+	fmt.Println(visitor85)
+
+	// Test 86: Set creation and operations
+	src86 := `var s = set{1, 2, 3, 4, 5}; s`
+	root86 := parser.NewParser(src86).Parse()
+	visitor86 := &PrintingVisitor{}
+	root86.Accept(visitor86)
+	fmt.Println(visitor86)
+
+	// Test 87: Set with insert_set and remove_set
+	src87 := `
+	var numbers = set{10, 20, 30};
+	insert_set(numbers, 40);
+	remove_set(numbers, 20);
+	numbers
+	`
+	root87 := parser.NewParser(src87).Parse()
+	visitor87 := &PrintingVisitor{}
+	root87.Accept(visitor87)
+	fmt.Println(visitor87)
+
+	// Test 88: Set with contains_set
+	src88 := `
+	var tags = set{"golang", "programming", "tutorial"};
+	var has_golang = contains_set(tags, "golang");
+	var has_python = contains_set(tags, "python");
+	has_golang
+	`
+	root88 := parser.NewParser(src88).Parse()
+	visitor88 := &PrintingVisitor{}
+	root88.Accept(visitor88)
+	fmt.Println(visitor88)
+
+	// Test 89: Set with values_set (NEW)
+	src89 := `
+	var unique_ids = set{101, 102, 103, 104};
+	var id_array = values_set(unique_ids);
+	id_array
+	`
+	root89 := parser.NewParser(src89).Parse()
+	visitor89 := &PrintingVisitor{}
+	root89.Accept(visitor89)
+	fmt.Println(visitor89)
+
+	// Test 90: Complex map and set operations
+	src90 := `
+	// Build a map from set values
+	var source_set = set{"a", "b", "c"};
+	var set_vals = values_set(source_set);
+	var result_map = map{};
+	insert_map(result_map, set_vals[0], 1);
+	insert_map(result_map, set_vals[1], 2);
+	insert_map(result_map, set_vals[2], 3);
+	
+	// Enumerate the map
+	var map_pairs = enumerate_map(result_map);
+	
+	// Build a set from map keys
+	var map_keys = keys_map(result_map);
+	var result_set = set{};
+	insert_set(result_set, map_keys[0]);
+	insert_set(result_set, map_keys[1]);
+	insert_set(result_set, map_keys[2]);
+	
+	result_set
+	`
+	root90 := parser.NewParser(src90).Parse()
+	visitor90 := &PrintingVisitor{}
+	root90.Accept(visitor90)
+	fmt.Println(visitor90)
+
 }

@@ -1,0 +1,91 @@
+// GoMix Maps - Complete Feature Demonstration
+
+println("╔════════════════════════════════════════╗")
+println("║   GoMix Maps - Feature Demonstration   ║")
+println("╚════════════════════════════════════════╝")
+
+println("\n1. Creating Maps")
+println("─────────────────")
+let empty = map{}
+let numbers = map{1: "one", 2: "two", 3: "three"}
+let person = map{"name": "Alice", "age": 30, "city": "Boston"}
+
+println("Empty map:", empty)
+println("Numbers:", numbers)
+println("Person:", person)
+println("Type of person:", typeof(person))
+
+println("\n2. Accessing Values")
+println("───────────────────")
+println("person[\"name\"]:", person["name"])
+println("person[\"age\"]:", person["age"])
+println("numbers[2]:", numbers[2])
+println("person[\"country\"] (non-existent):", person["country"])
+
+println("\n3. Map Helper Functions")
+println("───────────────────────")
+println("keys_map(person):", keys_map(person))
+println("contain_map(person, \"name\"):", contain_map(person, "name"))
+println("contain_map(person, \"country\"):", contain_map(person, "country"))
+
+println("\n4. Mutability - insert_map()")
+println("────────────────────────")
+insert_map(person, "country", "USA")
+insert_map(person, "age", 31)
+println("After insertions:", person)
+
+println("\n5. Mutability - remove_map()")
+println("────────────────────────")
+let removed = remove_map(person, "city")
+println("Removed value:", removed)
+println("After removal:", person)
+
+println("\n6. Nested Maps")
+println("──────────────")
+let company = map{
+    "name": "TechCorp",
+    "employees": map{
+        "engineering": 50,
+        "sales": 30,
+        "hr": 10
+    },
+    "locations": ["NYC", "SF", "Boston"]
+}
+println("Company:", company)
+println("Engineering team size:", company["employees"]["engineering"])
+
+println("\n7. Iteration with foreach")
+println("─────────────────────────")
+let scores = map{"Alice": 95, "Bob": 87, "Charlie": 92}
+println("Scores:", scores)
+println("Individual scores:")
+foreach name in keys_map(scores) {
+    println("  ", name, "scored", scores[name])
+}
+
+println("\n8. Practical Example: Shopping Cart")
+println("───────────────────────────────────")
+let cart = map{}
+
+func addItem(cart, item, qty) {
+    if (contain_map(cart, item)) {
+        insert_map(cart, item, cart[item] + qty)
+    } else {
+        insert_map(cart, item, qty)
+    }
+}
+
+addItem(cart, "apple", 3)
+addItem(cart, "banana", 2)
+addItem(cart, "apple", 2)
+println("Cart:", cart)
+
+let total = 0
+foreach item in keys_map(cart) {
+    total = total + cart[item]
+}
+println("Total items:", total)
+
+println("\n╔════════════════════════════════════════╗")
+println("║     All Map Features Demonstrated!     ║")
+println("╚════════════════════════════════════════╝")

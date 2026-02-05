@@ -1,0 +1,156 @@
+// Comprehensive Edge Case Testing for Map Functions
+
+println("╔════════════════════════════════════════╗");
+println("║   Map Functions - Edge Case Testing   ║");
+println("╚════════════════════════════════════════╝");
+println("");
+
+// ============================================
+// ENUMERATE_MAP EDGE CASES
+// ============================================
+
+println("1. Testing enumerate_map with empty map:");
+var emptyMap = map{};
+var emptyPairs = enumerate_map(emptyMap);
+println("   Empty map:", emptyMap);
+println("   enumerate_map result:", emptyPairs);
+println("   Length:", length(emptyPairs));
+println("");
+
+println("2. Testing enumerate_map with single entry:");
+var singleMap = map{"key": "value"};
+var singlePairs = enumerate_map(singleMap);
+println("   Single entry map:", singleMap);
+println("   enumerate_map result:", singlePairs);
+println("");
+
+println("3. Testing enumerate_map with multiple entries:");
+var multiMap = map{"a": 1, "b": 2, "c": 3};
+var multiPairs = enumerate_map(multiMap);
+println("   Multi-entry map:", multiMap);
+println("   enumerate_map result:", multiPairs);
+println("");
+
+println("4. Testing enumerate_map with nested values:");
+var nestedMap = map{"user": map{"name": "John", "age": 30}, "active": true};
+var nestedPairs = enumerate_map(nestedMap);
+println("   Nested map:", nestedMap);
+println("   enumerate_map result:", nestedPairs);
+println("");
+
+// ============================================
+// KEYS_MAP EDGE CASES
+// ============================================
+
+println("5. Testing keys_map with empty map:");
+var emptyKeys = keys_map(emptyMap);
+println("   Empty map keys:", emptyKeys);
+println("   Length:", length(emptyKeys));
+println("");
+
+println("6. Testing keys_map with numeric string keys:");
+var numStrMap = map{"1": "one", "2": "two", "10": "ten"};
+println("   Numeric string keys:", numStrMap);
+var numStrKeys = keys_map(numStrMap);
+println("   keys_map result:", numStrKeys);
+println("");
+
+// ============================================
+// CONTAIN_MAP EDGE CASES
+// ============================================
+
+println("7. Testing contain_map with empty map:");
+var containsInEmpty = contain_map(emptyMap, "anything");
+println("   contain_map(emptyMap, 'anything'):", containsInEmpty);
+println("");
+
+println("8. Testing contain_map with special characters:");
+var specialMap = map{"key-with-dash": 1, "key_with_underscore": 2};
+println("   Map with special chars:", specialMap);
+println("   contain_map(specialMap, 'key-with-dash'):", contain_map(specialMap, "key-with-dash"));
+println("");
+
+// ============================================
+// REMOVE_MAP EDGE CASES
+// ============================================
+
+println("9. Testing remove_map on empty map:");
+var removedFromEmpty = remove_map(emptyMap, "key");
+println("   remove_map(emptyMap, 'key'):", removedFromEmpty);
+println("");
+
+println("10. Testing remove_map on non-existent key:");
+var testMap = map{"a": 1, "b": 2};
+var removedNonExistent = remove_map(testMap, "c");
+println("   Original map:", map{"a": 1, "b": 2});
+println("   remove_map(testMap, 'c'):", removedNonExistent);
+println("   Map after removal:", testMap);
+println("");
+
+// ============================================
+// INSERT_MAP EDGE CASES
+// ============================================
+
+println("11. Testing insert_map overwriting existing key:");
+var overwriteMap = map{"x": 10};
+println("   Original:", overwriteMap);
+insert_map(overwriteMap, "x", 20);
+println("   After insert_map(overwriteMap, 'x', 20):", overwriteMap);
+println("");
+
+println("12. Testing insert_map with various value types:");
+var mixedMap = map{};
+insert_map(mixedMap, "int", 42);
+insert_map(mixedMap, "float", 3.14);
+insert_map(mixedMap, "bool", true);
+insert_map(mixedMap, "string", "hello");
+insert_map(mixedMap, "array", [1, 2, 3]);
+println("   Map with mixed types:", mixedMap);
+println("");
+
+// ============================================
+// COMBINED OPERATIONS
+// ============================================
+
+println("13. Building map from enumerate_map results:");
+var sourceMap = map{"first": 1, "second": 2, "third": 3};
+var pairs = enumerate_map(sourceMap);
+println("   Source map:", sourceMap);
+println("   Pairs:", pairs);
+println("   Accessing pairs:");
+println("     Pair 0:", pairs[0], "-> Key:", pairs[0][0], "Value:", pairs[0][1]);
+println("     Pair 1:", pairs[1], "-> Key:", pairs[1][0], "Value:", pairs[1][1]);
+println("     Pair 2:", pairs[2], "-> Key:", pairs[2][0], "Value:", pairs[2][1]);
+println("");
+
+println("14. Iterating enumerate_map with foreach:");
+var iterMap = map{"apple": 5, "banana": 3, "orange": 7};
+var iterPairs = enumerate_map(iterMap);
+println("   Inventory:", iterMap);
+println("   Stock report:");
+foreach pair in iterPairs {
+    println("     Item:", pair[0], "- Quantity:", pair[1]);
+}
+println("");
+
+println("15. Large map operations:");
+var largeMap = map{};
+insert_map(largeMap, "k1", 1);
+insert_map(largeMap, "k2", 2);
+insert_map(largeMap, "k3", 3);
+insert_map(largeMap, "k4", 4);
+insert_map(largeMap, "k5", 5);
+insert_map(largeMap, "k6", 6);
+insert_map(largeMap, "k7", 7);
+insert_map(largeMap, "k8", 8);
+insert_map(largeMap, "k9", 9);
+insert_map(largeMap, "k10", 10);
+var largeKeys = keys_map(largeMap);
+var largePairs = enumerate_map(largeMap);
+println("   Large map size:", length(largeKeys));
+println("   Number of pairs:", length(largePairs));
+println("");
+
+println("╔════════════════════════════════════════╗");
+println("║   All Map Edge Cases Passed! ✓         ║");
+println("╚════════════════════════════════════════╝");

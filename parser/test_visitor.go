@@ -337,6 +337,35 @@ func (v *TestingVisitor) VisitForeachLoopStatementNode(node ForeachLoopStatement
 	node.Body.Accept(v)
 }
 
+// VisitMapExpressionNode visits a map literal node and recursively visits all keys and values
+func (v *TestingVisitor) VisitMapExpressionNode(node MapExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*MapExpressionNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	// Visit all key-value pairs
+	for i := range node.Keys {
+		node.Keys[i].Accept(v)
+		node.Values[i].Accept(v)
+	}
+}
+
+// VisitSetExpressionNode visits a set literal node and recursively visits all elements
+func (v *TestingVisitor) VisitSetExpressionNode(node SetExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*SetExpressionNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	// Visit all elements
+	for _, elem := range node.Elements {
+		elem.Accept(v)
+	}
+}
+
 // String returns the string representation of the visitor (empty string)
 func (v *TestingVisitor) String() string {
 	return ""

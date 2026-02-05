@@ -35,7 +35,7 @@ var AUTHOR = "akashmaji(@iisc.ac.in)"
 var LICENCE = "MIT"
 
 // PROMPT is the command prompt displayed in REPL mode
-var PROMPT = "gm >>> "
+var PROMPT = "Go-Mix >>> "
 
 // BANNER is the ASCII art logo displayed when starting the REPL
 // It shows "Go-Mix" in stylized ASCII characters

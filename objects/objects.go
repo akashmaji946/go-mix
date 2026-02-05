@@ -40,6 +40,10 @@ const (
 	ArrayType GoMixType = "array"
 	// RangeType represents range objects (inclusive ranges)
 	RangeType GoMixType = "range"
+	// MapType represents map/dictionary objects
+	MapType GoMixType = "map"
+	// SetType represents set objects (unique values)
+	SetType GoMixType = "set"
 )
 
 // GoMixObject is the core interface that all GoMix objects must implement.
@@ -298,4 +302,94 @@ func (r *Range) ToString() string {
 // ToObject returns a detailed representation of the range as "<range(start,end)>"
 func (r *Range) ToObject() string {
 	return fmt.Sprintf("<range(%d,%d)>", r.Start, r.End)
+}
+
+// Map represents a key-value map in GoMix.
+// It uses a Go map internally with string keys (converted from int/string GoMix objects)
+// and GoMixObject values. Maps are mutable and can be modified after creation.
+type Map struct {
+	Pairs map[string]GoMixObject // Internal Go map storing key-value pairs
+	Keys  []string               // Ordered list of keys for iteration
+}
+
+// GetType returns the type of the Map object
+func (m *Map) GetType() GoMixType {
+	return MapType
+}
+
+// ToString returns a string representation of the map as "map{key1: value1, key2: value2, ...}"
+func (m *Map) ToString() string {
+	if len(m.Keys) == 0 {
+		return "map{}"
+	}
+	result := "map{"
+	for i, key := range m.Keys {
+		if i > 0 {
+			result += ", "
+		}
+		result += key + ": " + m.Pairs[key].ToString()
+	}
+	result += "}"
+	return result
+}
+
+// ToObject returns a detailed representation of the map
+func (m *Map) ToObject() string {
+	if len(m.Keys) == 0 {
+		return "<map{}>"
+	}
+	result := "<map{"
+	for i, key := range m.Keys {
+		if i > 0 {
+			result += ", "
+		}
+		result += key + ": " + m.Pairs[key].ToObject()
+	}
+	result += "}>"
+	return result
+}
+
+// Set represents a collection of unique values in GoMix.
+// It uses a Go map internally with string keys (converted from GoMix objects)
+// to ensure uniqueness. Sets are mutable and can be modified after creation.
+type Set struct {
+	Elements map[string]bool // Internal Go map for O(1) membership testing
+	Values   []string        // Ordered list of values for iteration
+}
+
+// GetType returns the type of the Set object
+func (s *Set) GetType() GoMixType {
+	return SetType
+}
+
+// ToString returns a string representation of the set as "set{elem1, elem2, ...}"
+func (s *Set) ToString() string {
+	if len(s.Values) == 0 {
+		return "set{}"
+	}
+	result := "set{"
+	for i, val := range s.Values {
+		if i > 0 {
+			result += ", "
+		}
+		result += val
+	}
+	result += "}"
+	return result
+}
+
+// ToObject returns a detailed representation of the set
+func (s *Set) ToObject() string {
+	if len(s.Values) == 0 {
+		return "<set{}>"
+	}
+	result := "<set{"
+	for i, val := range s.Values {
+		if i > 0 {
+			result += ", "
+		}
+		result += val
+	}
+	result += "}>"
+	return result
 }

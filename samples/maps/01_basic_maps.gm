@@ -1,0 +1,35 @@
+// Test 1: Basic Map Creation and Access
+println("=== Test 1: Basic Map Creation ===")
+
+// Create an empty map
+let emptyMap = map{}
+println("Empty map:", emptyMap)
+println("Type:", typeof(emptyMap))
+
+// Create a map with integer keys
+let intMap = map{10: 20, 30: 40, 50: 60}
+println("Integer key map:", intMap)
+
+// Create a map with string keys
+let strMap = map{"name": "John", "age": 25, "city": "NYC"}
+println("String key map:", strMap)
+
+// Access map values
+println("\n=== Test 2: Map Access ===")
+println("intMap[10]:", intMap[10])
+println("intMap[30]:", intMap[30])
+println("strMap[\"name\"]:", strMap["name"])
+println("strMap[\"age\"]:", strMap["age"])
+
+// Access non-existent key (should return nil)
+println("strMap[\"country\"]:", strMap["country"])
+
+// Mixed type values
+println("\n=== Test 3: Mixed Type Values ===")
+let mixedMap = map{1: "one", 2: "two", 3: 3.14, 4: true}
+println("Mixed map:", mixedMap)
+println("mixedMap[1]:", mixedMap[1])
+println("mixedMap[3]:", mixedMap[3])
+println("mixedMap[4]:", mixedMap[4])
+
+println("\n=== All basic map tests passed! ===")

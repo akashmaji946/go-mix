@@ -1,0 +1,76 @@
+// Test Map Mutability - Maps are mutable in GoMix
+
+println("=== Test 1: Direct Mutation via insert_map() ===")
+let config = map{"debug": false, "port": 8080}
+println("Initial config:", config)
+
+insert_map(config, "debug", true)
+println("After enabling debug:", config)
+
+insert_map(config, "host", "localhost")
+println("After adding host:", config)
+
+println("\n=== Test 2: Mutation in Functions ===")
+func updateMap(m, key, value) {
+    insert_map(m, key, value)
+    return m
+}
+
+let settings = map{"theme": "dark", "lang": "en"}
+println("Initial settings:", settings)
+
+updateMap(settings, "theme", "light")
+println("After updateMap:", settings)
+
+println("\n=== Test 3: Multiple References ===")
+let original = map{"count": 0}
+let reference = original
+
+println("Original:", original)
+println("Reference:", reference)
+
+insert_map(reference, "count", 10)
+println("After insert via reference:")
+println("Original:", original)
+println("Reference:", reference)
+
+println("\n=== Test 4: Building a Map Incrementally ===")
+let scores = map{}
+println("Empty scores:", scores)
+
+insert_map(scores, "Alice", 95)
+insert_map(scores, "Bob", 87)
+insert_map(scores, "Charlie", 92)
+println("After adding scores:", scores)
+
+// Update a score
+insert_map(scores, "Bob", 90)
+println("After updating Bob's score:", scores)
+
+// Remove a score
+remove_map(scores, "Charlie")
+println("After removing Charlie:", scores)
+
+println("\n=== Test 5: Map as Counter ===")
+let wordCount = map{}
+
+func countWord(counts, word) {
+    if (contain_map(counts, word)) {
+        let current = counts[word]
+        insert_map(counts, word, current + 1)
+    } else {
+        insert_map(counts, word, 1)
+    }
+}
+
+countWord(wordCount, "hello")
+countWord(wordCount, "world")
+countWord(wordCount, "hello")
+countWord(wordCount, "hello")
+countWord(wordCount, "world")
+
+println("Word counts:", wordCount)
+println("'hello' appears:", wordCount["hello"], "times")
+println("'world' appears:", wordCount["world"], "times")
+
+println("\n=== All mutability tests passed! ===")

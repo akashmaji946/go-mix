@@ -1,0 +1,197 @@
+// Comprehensive Edge Case Testing for Set Functions
+
+println("╔════════════════════════════════════════╗");
+println("║   Set Functions - Edge Case Testing   ║");
+println("╚════════════════════════════════════════╝");
+println("");
+
+// ============================================
+// VALUES_SET EDGE CASES
+// ============================================
+
+println("1. Testing values_set with empty set:");
+var emptySet = set{};
+var emptyValues = values_set(emptySet);
+println("   Empty set:", emptySet);
+println("   values_set result:", emptyValues);
+println("   Length:", length(emptyValues));
+println("");
+
+println("2. Testing values_set with single element:");
+var singleSet = set{42};
+var singleValues = values_set(singleSet);
+println("   Single element set:", singleSet);
+println("   values_set result:", singleValues);
+println("");
+
+println("3. Testing values_set with multiple elements:");
+var multiSet = set{1, 2, 3, 4, 5};
+var multiValues = values_set(multiSet);
+println("   Multi-element set:", multiSet);
+println("   values_set result:", multiValues);
+println("");
+
+println("4. Testing values_set preserves insertion order:");
+var orderedSet = set{};
+insert_set(orderedSet, "first");
+insert_set(orderedSet, "second");
+insert_set(orderedSet, "third");
+var orderedValues = values_set(orderedSet);
+println("   Set:", orderedSet);
+println("   values_set result:", orderedValues);
+println("   First value:", orderedValues[0]);
+println("   Second value:", orderedValues[1]);
+println("   Third value:", orderedValues[2]);
+println("");
+
+// ============================================
+// CONTAINS_SET EDGE CASES
+// ============================================
+
+println("5. Testing contains_set on empty set:");
+var containsInEmptySet = contains_set(emptySet, "anything");
+println("   contains_set(emptySet, 'anything'):", containsInEmptySet);
+println("");
+
+println("6. Testing contains_set with numeric values:");
+var numSet = set{1, 2, 3, 10, 100};
+println("   Numeric set:", numSet);
+println("   contains_set(numSet, 10):", contains_set(numSet, 10));
+println("   contains_set(numSet, 50):", contains_set(numSet, 50));
+println("");
+
+// ============================================
+// REMOVE_SET EDGE CASES
+// ============================================
+
+println("7. Testing remove_set on empty set:");
+var removedFromEmptySet = remove_set(emptySet, "value");
+println("   remove_set(emptySet, 'value'):", removedFromEmptySet);
+println("");
+
+println("8. Testing remove_set on non-existent value:");
+var testSet = set{1, 2, 3};
+var removedNonExistent = remove_set(testSet, 5);
+println("   Original set:", set{1, 2, 3});
+println("   remove_set(testSet, 5):", removedNonExistent);
+println("   Set after removal:", testSet);
+println("");
+
+println("9. Testing remove_set returns correct boolean:");
+var boolSet = set{"a", "b", "c"};
+println("   Set:", boolSet);
+var removed1 = remove_set(boolSet, "b");
+println("   remove_set(boolSet, 'b'):", removed1, "(should be true)");
+var removed2 = remove_set(boolSet, "b");
+println("   remove_set(boolSet, 'b') again:", removed2, "(should be false)");
+println("   Set after removals:", boolSet);
+println("");
+
+// ============================================
+// INSERT_SET EDGE CASES
+// ============================================
+
+println("10. Testing insert_set with duplicate values:");
+var dupSet = set{1, 2, 3};
+println("   Initial set:", dupSet);
+insert_set(dupSet, 2);
+println("   After insert_set(dupSet, 2):", dupSet);
+insert_set(dupSet, 2);
+println("   After another insert_set(dupSet, 2):", dupSet);
+var dupValues = values_set(dupSet);
+println("   values_set result:", dupValues);
+println("   Length:", length(dupValues), "(should still be 3)");
+println("");
+
+println("11. Testing insert_set with various types:");
+var mixedSet = set{};
+insert_set(mixedSet, 1);
+insert_set(mixedSet, "two");
+insert_set(mixedSet, 3);
+insert_set(mixedSet, "four");
+println("   Mixed type set:", mixedSet);
+var mixedValues = values_set(mixedSet);
+println("   values_set result:", mixedValues);
+println("");
+
+// ============================================
+// COMBINED OPERATIONS
+// ============================================
+
+println("12. Building set from values_set results:");
+var sourceSet = set{"x", "y", "z"};
+var setVals = values_set(sourceSet);
+println("   Source set:", sourceSet);
+println("   Set values:", setVals);
+var newSet = set{};
+insert_set(newSet, setVals[0]);
+insert_set(newSet, setVals[1]);
+insert_set(newSet, setVals[2]);
+println("   Rebuilt set:", newSet);
+println("");
+
+println("13. Iterating values_set with foreach:");
+var fruitSet = set{"apple", "banana", "cherry", "date"};
+var fruitValues = values_set(fruitSet);
+println("   Fruit set:", fruitSet);
+println("   Iterating values:");
+foreach fruit in fruitValues {
+    println("     -", fruit);
+}
+println("");
+
+println("14. Set operations with values_set:");
+var numbersSet = set{1, 2, 3, 4, 5};
+println("   Original set:", numbersSet);
+var vals = values_set(numbersSet);
+println("   Values array:", vals);
+println("   Array length:", length(vals));
+println("   First value:", vals[0]);
+println("   Last value:", vals[length(vals) - 1]);
+println("");
+
+println("15. Large set operations:");
+var largeSet = set{};
+insert_set(largeSet, 1);
+insert_set(largeSet, 2);
+insert_set(largeSet, 3);
+insert_set(largeSet, 4);
+insert_set(largeSet, 5);
+insert_set(largeSet, 6);
+insert_set(largeSet, 7);
+insert_set(largeSet, 8);
+insert_set(largeSet, 9);
+insert_set(largeSet, 10);
+var largeValues = values_set(largeSet);
+println("   Large set size:", length(largeValues));
+println("   Contains 5:", contains_set(largeSet, 5));
+println("   Contains 15:", contains_set(largeSet, 15));
+println("");
+
+println("16. Set uniqueness test:");
+var uniqueTest = set{1, 1, 2, 2, 3, 3, 4, 4, 5, 5};
+println("   Set with duplicates:", uniqueTest);
+var uniqueVals = values_set(uniqueTest);
+println("   Unique values:", uniqueVals);
+println("   Count:", length(uniqueVals), "(should be 5)");
+println("");
+
+println("17. Empty and refill set:");
+var dynamicSet = set{1, 2, 3};
+println("   Initial set:", dynamicSet);
+remove_set(dynamicSet, 1);
+remove_set(dynamicSet, 2);
+remove_set(dynamicSet, 3);
+println("   After removing all:", dynamicSet);
+var emptyVals = values_set(dynamicSet);
+println("   values_set of empty:", emptyVals, "length:", length(emptyVals));
+insert_set(dynamicSet, 10);
+insert_set(dynamicSet, 20);
+println("   After refilling:", dynamicSet);
+var refilledVals = values_set(dynamicSet);
+println("   New values:", refilledVals);
+println("");
+
+println("╔════════════════════════════════════════╗");
+println("║   All Set Edge Cases Passed! ✓         ║");
+println("╚════════════════════════════════════════╝");

@@ -84,6 +84,10 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalWhileLoop(n)
 	case *parser.ArrayExpressionNode:
 		return e.evalArrayExpression(n)
+	case *parser.MapExpressionNode:
+		return e.evalMapExpression(n)
+	case *parser.SetExpressionNode:
+		return e.evalSetExpression(n)
 	case *parser.IndexExpressionNode:
 		return e.evalIndexExpression(n)
 	case *parser.SliceExpressionNode:
@@ -909,39 +913,156 @@ func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) objects.G
 	return &objects.Array{Elements: elements}
 }
 
-// evalIndexExpression evaluates array element access using bracket notation.
+// evalMapExpression evaluates map literal expressions to create map objects.
 //
-// This method implements array indexing with the following features:
-// 1. Evaluates the array expression and index expression
-// 2. Validates that the left operand is an array
-// 3. Validates that the index is an integer
-// 4. Supports negative indices (Python-style):
-//   - Negative indices count from the end: -1 is last element, -2 is second-to-last, etc.
+// This method processes map literals (e.g., map{10: 20, "key": "value"}) by:
+// 1. Evaluating each key expression in order
+// 2. Evaluating each corresponding value expression
+// 3. Converting keys to strings for storage (Go maps require hashable keys)
+// 4. Creating a Map object with the key-value pairs
 //
-// 5. Performs bounds checking to prevent out-of-range access
-//
-// Index calculation:
-// - Positive index: Used directly (0-based)
-// - Negative index: Converted to positive by adding array length
-// - After conversion, must be in range [0, length)
+// Maps in GoMix:
+// - Keys are converted to strings using ToString() for consistent hashing
+// - Values can be of any type
+// - Duplicate keys: Later values overwrite earlier ones
+// - Empty maps are supported: map{}
 //
 // Parameters:
-//   - n: An IndexExpressionNode containing the array and index expressions
+//   - n: A MapExpressionNode containing parallel slices of key and value expressions
 //
 // Returns:
-//   - objects.GoMixObject: The element at the specified index, or an Error if:
-//   - Left operand is not an array
-//   - Index is not an integer
-//   - Index is out of bounds (after negative index conversion)
+//   - objects.GoMixObject: A Map object containing the evaluated key-value pairs,
+//     or an Error if any key or value evaluation failed
+//
+// Example:
+//
+//	map{10: 20, 30: 40}                    // Integer keys
+//	map{"name": "John", "age": 25}         // String keys
+//	map{1: "one", 2: "two", 3: "three"}    // Mixed content
+//	map{x: y, a+b: c*d}                    // Computed keys and values
+func (e *Evaluator) evalMapExpression(n *parser.MapExpressionNode) objects.GoMixObject {
+	pairs := make(map[string]objects.GoMixObject)
+	keys := make([]string, 0, len(n.Keys))
+
+	for i := range n.Keys {
+		// Evaluate key
+		keyObj := e.Eval(n.Keys[i])
+		if IsError(keyObj) {
+			return keyObj
+		}
+
+		// Evaluate value
+		valueObj := e.Eval(n.Values[i])
+		if IsError(valueObj) {
+			return valueObj
+		}
+
+		// Convert key to string for map storage
+		keyStr := keyObj.ToString()
+
+		// Check if key already exists
+		if _, exists := pairs[keyStr]; !exists {
+			keys = append(keys, keyStr)
+		}
+
+		// Store the key-value pair
+		pairs[keyStr] = valueObj
+	}
+
+	return &objects.Map{
+		Pairs: pairs,
+		Keys:  keys,
+	}
+}
+
+// evalSetExpression evaluates set literal expressions to create set objects.
+//
+// This method processes set literals by:
+// 1. Evaluating each element expression
+// 2. Converting elements to strings for uniqueness checking
+// 3. Automatically removing duplicates
+// 4. Creating a Set object with unique values
+//
+// Sets in GoMix:
+// - Elements are converted to strings using ToString() for uniqueness
+// - Duplicates are automatically removed
+// - Order of first occurrence is preserved
+// - Empty sets are supported: set{}
+//
+// Parameters:
+//   - n: A SetExpressionNode containing a slice of element expressions
+//
+// Returns:
+//   - objects.GoMixObject: A Set object containing unique evaluated elements,
+//     or an Error if any element evaluation failed
+//
+// Example:
+//
+//	set{1, 2, 3}                    // Integer elements
+//	set{"apple", "banana"}          // String elements
+//	set{1, 2, 2, 3}                 // Duplicates removed -> set{1, 2, 3}
+//	set{x, y, x+y}                  // Computed elements
+func (e *Evaluator) evalSetExpression(n *parser.SetExpressionNode) objects.GoMixObject {
+	elements := make(map[string]bool)
+	values := make([]string, 0)
+
+	for _, elemExpr := range n.Elements {
+		// Evaluate element
+		elemObj := e.Eval(elemExpr)
+		if IsError(elemObj) {
+			return elemObj
+		}
+
+		// Convert element to string for uniqueness
+		elemStr := elemObj.ToString()
+
+		// Add only if not already present (ensures uniqueness)
+		if !elements[elemStr] {
+			elements[elemStr] = true
+			values = append(values, elemStr)
+		}
+	}
+
+	return &objects.Set{
+		Elements: elements,
+		Values:   values,
+	}
+}
+
+// evalIndexExpression evaluates array and map element access using bracket notation.
+//
+// This method implements indexing for both arrays and maps:
+//
+// Array indexing:
+// 1. Validates that the index is an integer
+// 2. Supports negative indices (Python-style):
+//   - Negative indices count from the end: -1 is last element, -2 is second-to-last, etc.
+//
+// 3. Performs bounds checking to prevent out-of-range access
+//
+// Map indexing:
+// 1. Converts the index to a string key using ToString()
+// 2. Looks up the value in the map
+// 3. Returns nil if the key doesn't exist
+//
+// Parameters:
+//   - n: An IndexExpressionNode containing the array/map and index expressions
+//
+// Returns:
+//   - objects.GoMixObject: The element at the specified index/key, or an Error if:
+//   - Left operand is not an array or map
+//   - Array index is not an integer
+//   - Array index is out of bounds
 //
 // Example:
 //
 //	var arr = [10, 20, 30];
 //	arr[0]    // Returns 10 (first element)
-//	arr[2]    // Returns 30 (third element)
 //	arr[-1]   // Returns 30 (last element)
-//	arr[-2]   // Returns 20 (second-to-last element)
-//	arr[5]    // Error: index out of bounds
+//
+//	var m = map{"name": "John", "age": 25};
+//	m["name"]  // Returns "John"
+//	m["city"]  // Returns nil (key doesn't exist)
 func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.GoMixObject {
 	left := e.Eval(n.Left)
 	if IsError(left) {
@@ -953,14 +1074,26 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 		return index
 	}
 
-	// Check if left is an array
+	// Handle map indexing
+	if left.GetType() == objects.MapType {
+		mapObj := left.(*objects.Map)
+		keyStr := index.ToString()
+
+		if value, exists := mapObj.Pairs[keyStr]; exists {
+			return value
+		}
+		// Return nil if key doesn't exist
+		return &objects.Nil{}
+	}
+
+	// Handle array indexing
 	if left.GetType() != objects.ArrayType {
 		return e.CreateError("ERROR: index operator not supported for type '%s'", left.GetType())
 	}
 
-	// Check if index is an integer
+	// Check if index is an integer for arrays
 	if index.GetType() != objects.IntegerType {
-		return e.CreateError("ERROR: index must be an integer, got '%s'", index.GetType())
+		return e.CreateError("ERROR: array index must be an integer, got '%s'", index.GetType())
 	}
 
 	arr := left.(*objects.Array)

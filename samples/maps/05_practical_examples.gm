@@ -1,0 +1,171 @@
+// Practical Map Examples - Real-world use cases
+
+println("=== Example 1: Phone Book ===")
+let phoneBook = map{
+    "Alice": "555-1234",
+    "Bob": "555-5678",
+    "Charlie": "555-9012"
+}
+
+func lookupPhone(book, name) {
+    if (contain_map(book, name)) {
+        return book[name]
+    } else {
+        return "Not found"
+    }
+}
+
+println("Phone book:", phoneBook)
+println("Alice's number:", lookupPhone(phoneBook, "Alice"))
+println("David's number:", lookupPhone(phoneBook, "David"))
+
+// Add new contact
+insert_map(phoneBook, "David", "555-3456")
+println("After adding David:", phoneBook)
+println("David's number:", lookupPhone(phoneBook, "David"))
+
+println("\n=== Example 2: Shopping Cart ===")
+let cart = map{}
+
+func addToCart(cart, item, quantity) {
+    if (contain_map(cart, item)) {
+        let current = cart[item]
+        insert_map(cart, item, current + quantity)
+    } else {
+        insert_map(cart, item, quantity)
+    }
+}
+
+func removeFromCart(cart, item) {
+    if (contain_map(cart, item)) {
+        remove_map(cart, item)
+        return true
+    } else {
+        return false
+    }
+}
+
+func getCartTotal(cart) {
+    let items = keys_map(cart)
+    let total = 0
+    foreach item in items {
+        total = total + cart[item]
+    }
+    return total
+}
+
+addToCart(cart, "apple", 3)
+addToCart(cart, "banana", 2)
+addToCart(cart, "apple", 2)
+println("Cart:", cart)
+println("Total items:", getCartTotal(cart))
+
+removeFromCart(cart, "banana")
+println("After removing banana:", cart)
+println("Total items:", getCartTotal(cart))
+
+println("\n=== Example 3: Grade Calculator ===")
+let grades = map{
+    "Math": 95,
+    "Science": 87,
+    "English": 92,
+    "History": 88
+}
+
+func calculateAverage(gradeMap) {
+    let subjects = keys_map(gradeMap)
+    let total = 0
+    let count = length(subjects)
+    
+    foreach subject in subjects {
+        total = total + gradeMap[subject]
+    }
+    
+    return total / count
+}
+
+func getLetterGrade(score) {
+    if (score >= 90) {
+        return "A"
+    } else {
+        if (score >= 80) {
+            return "B"
+        } else {
+            if (score >= 70) {
+                return "C"
+            } else {
+                return "F"
+            }
+        }
+    }
+}
+
+println("Grades:", grades)
+let avg = calculateAverage(grades)
+println("Average:", avg)
+println("Letter grade:", getLetterGrade(avg))
+
+println("\n=== Example 4: Cache System ===")
+let cache = map{}
+let cacheHits = 0
+let cacheMisses = 0
+
+func getCached(cache, key, computeFunc) {
+    if (contain_map(cache, key)) {
+        println("Cache HIT for key:", key)
+        return cache[key]
+    } else {
+        println("Cache MISS for key:", key)
+        let value = computeFunc
+        insert_map(cache, key, value)
+        return value
+    }
+}
+
+// Simulate expensive computation
+func expensiveCompute(n) {
+    return n * n
+}
+
+println("Cache:", cache)
+let result1 = getCached(cache, "5", expensiveCompute(5))
+println("Result:", result1)
+
+let result2 = getCached(cache, "5", expensiveCompute(5))
+println("Result:", result2)
+
+let result3 = getCached(cache, "10", expensiveCompute(10))
+println("Result:", result3)
+
+println("Final cache:", cache)
+
+println("\n=== Example 5: Configuration Manager ===")
+let config = map{
+    "app_name": "MyApp",
+    "version": "1.0.0",
+    "port": 8080,
+    "debug": false
+}
+
+func getConfig(cfg, key, defaultValue) {
+    if (contain_map(cfg, key)) {
+        return cfg[key]
+    } else {
+        return defaultValue
+    }
+}
+
+func setConfig(cfg, key, value) {
+    insert_map(cfg, key, value)
+    println("Config updated:", key, "=", value)
+}
+
+println("Initial config:", config)
+println("App name:", getConfig(config, "app_name", "Unknown"))
+println("Timeout:", getConfig(config, "timeout", 30))
+
+setConfig(config, "debug", true)
+setConfig(config, "timeout", 60)
+println("Updated config:", config)
+
+println("\n=== All practical examples completed! ===")

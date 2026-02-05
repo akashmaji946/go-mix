@@ -1,0 +1,88 @@
+// Advanced Set Operations Test
+// Demonstrates more complex set usage patterns
+
+println("=== Set Operations with Different Types ===")
+
+// Mixed type sets (all converted to strings internally)
+var mixed = set{1, "two", 3, "four", 5}
+println("Mixed types:", mixed)
+
+// Set with computed values
+var x = 10
+var y = 20
+var computed = set{x, y, x + y, x * y}
+println("Computed values:", computed)
+
+println("")
+println("=== Building Sets Dynamically ===")
+
+var dynamic = set{}
+println("Starting with empty set:", dynamic)
+
+insert_set(dynamic, 1)
+insert_set(dynamic, 2)
+insert_set(dynamic, 3)
+println("After inserting 1, 2, 3:", dynamic)
+
+insert_set(dynamic, 2)  // Try to add duplicate
+println("After trying to insert 2 again:", dynamic)
+
+println("")
+println("=== Set Membership Testing ===")
+
+var fruits = set{"apple", "banana", "cherry", "date"}
+println("Fruits set:", fruits)
+
+var items = ["apple", "grape", "banana", "kiwi", "cherry"]
+println("Testing items:", items)
+
+for (var i = 0; i < length(items); i = i + 1) {
+    var item = items[i]
+    if (contains_set(fruits, item)) {
+        println("  ✓", item, "is in the set")
+    } else {
+        println("  ✗", item, "is NOT in the set")
+    }
+}
+
+println("")
+println("=== Set Modification Pattern ===")
+
+var numbers = set{1, 2, 3, 4, 5}
+println("Original:", numbers)
+
+// Remove even numbers
+remove_set(numbers, 2)
+remove_set(numbers, 4)
+println("After removing evens:", numbers)
+
+// Add new numbers
+insert_set(numbers, 6)
+insert_set(numbers, 7)
+insert_set(numbers, 8)
+println("After adding 6, 7, 8:", numbers)
+
+println("")
+println("=== Practical Example: Unique Visitor Tracking ===")
+
+var visitors = set{}
+println("Visitor tracking system initialized")
+
+// Simulate visitors
+var visitor_ids = [101, 102, 101, 103, 102, 104, 101]
+println("Visitor IDs:", visitor_ids)
+
+for (var i = 0; i < length(visitor_ids); i = i + 1) {
+    var id = visitor_ids[i]
+    if (contains_set(visitors, id)) {
+        println("  Returning visitor:", id)
+    } else {
+        insert_set(visitors, id)
+        println("  New visitor:", id)
+    }
+}
+
+println("Unique visitors:", visitors)
+
+println("")
+println("=== All advanced tests completed! ===")

@@ -1122,3 +1122,321 @@ func TestEvaluator_ForeachError(t *testing.T) {
 		AssertError(t, result, tt.ExpectedErrorMsg)
 	}
 }
+
+// TestEvaluator_MapKeys verifies keys_map() builtin function
+func TestEvaluator_MapKeys(t *testing.T) {
+	tests := []struct {
+		input        string
+		expectedLen  int
+		expectedKeys []string
+	}{
+		{`var m = map{"a": 1, "b": 2, "c": 3}; keys_map(m)`, 3, []string{"a", "b", "c"}},
+		{`var m = map{"x": 10}; keys_map(m)`, 1, []string{"x"}},
+		{`var m = map{}; keys_map(m)`, 0, []string{}},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.ArrayType {
+			t.Errorf("expected array, got %s", result.GetType())
+			continue
+		}
+
+		arr := result.(*objects.Array)
+		if len(arr.Elements) != tt.expectedLen {
+			t.Errorf("expected %d keys, got %d", tt.expectedLen, len(arr.Elements))
+		}
+	}
+}
+
+// TestEvaluator_MapInsert verifies insert_map() builtin function
+func TestEvaluator_MapInsert(t *testing.T) {
+	src := `var m = map{"a": 1}; insert_map(m, "b", 2); m`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != objects.MapType {
+		t.Errorf("expected map, got %s", result.GetType())
+	}
+
+	mapObj := result.(*objects.Map)
+	if len(mapObj.Keys) != 2 {
+		t.Errorf("expected 2 keys, got %d", len(mapObj.Keys))
+	}
+}
+
+// TestEvaluator_MapRemove verifies remove_map() builtin function
+func TestEvaluator_MapRemove(t *testing.T) {
+	src := `var m = map{"a": 1, "b": 2}; remove_map(m, "a"); m`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != objects.MapType {
+		t.Errorf("expected map, got %s", result.GetType())
+	}
+
+	mapObj := result.(*objects.Map)
+	if len(mapObj.Keys) != 1 {
+		t.Errorf("expected 1 key, got %d", len(mapObj.Keys))
+	}
+}
+
+// TestEvaluator_MapContain verifies contain_map() builtin function
+func TestEvaluator_MapContain(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`var m = map{"a": 1, "b": 2}; contain_map(m, "a")`, true},
+		{`var m = map{"a": 1, "b": 2}; contain_map(m, "c")`, false},
+		{`var m = map{}; contain_map(m, "x")`, false},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertBoolean(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_EnumerateMap verifies enumerate_map() builtin function
+func TestEvaluator_EnumerateMap(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectedLen int
+	}{
+		{`var m = map{"a": 1, "b": 2, "c": 3}; enumerate_map(m)`, 3},
+		{`var m = map{"x": 10}; enumerate_map(m)`, 1},
+		{`var m = map{}; enumerate_map(m)`, 0},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.ArrayType {
+			t.Errorf("expected array, got %s", result.GetType())
+			continue
+		}
+
+		arr := result.(*objects.Array)
+		if len(arr.Elements) != tt.expectedLen {
+			t.Errorf("expected %d pairs, got %d", tt.expectedLen, len(arr.Elements))
+		}
+
+		// Verify each element is an array of 2 elements
+		for i, elem := range arr.Elements {
+			if elem.GetType() != objects.ArrayType {
+				t.Errorf("pair %d: expected array, got %s", i, elem.GetType())
+				continue
+			}
+			pair := elem.(*objects.Array)
+			if len(pair.Elements) != 2 {
+				t.Errorf("pair %d: expected 2 elements, got %d", i, len(pair.Elements))
+			}
+		}
+	}
+}
+
+// TestEvaluator_SetInsert verifies insert_set() builtin function
+func TestEvaluator_SetInsert(t *testing.T) {
+	src := `var s = set{1, 2}; insert_set(s, 3); s`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != objects.SetType {
+		t.Errorf("expected set, got %s", result.GetType())
+	}
+
+	setObj := result.(*objects.Set)
+	if len(setObj.Values) != 3 {
+		t.Errorf("expected 3 values, got %d", len(setObj.Values))
+	}
+}
+
+// TestEvaluator_SetRemove verifies remove_set() builtin function
+func TestEvaluator_SetRemove(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`var s = set{1, 2, 3}; remove_set(s, 2)`, true},
+		{`var s = set{1, 2, 3}; remove_set(s, 5)`, false},
+		{`var s = set{}; remove_set(s, 1)`, false},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertBoolean(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_SetContains verifies contains_set() builtin function
+func TestEvaluator_SetContains(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`var s = set{1, 2, 3}; contains_set(s, 2)`, true},
+		{`var s = set{1, 2, 3}; contains_set(s, 5)`, false},
+		{`var s = set{}; contains_set(s, 1)`, false},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertBoolean(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_SetValues verifies values_set() builtin function
+func TestEvaluator_SetValues(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectedLen int
+	}{
+		{`var s = set{1, 2, 3, 4, 5}; values_set(s)`, 5},
+		{`var s = set{42}; values_set(s)`, 1},
+		{`var s = set{}; values_set(s)`, 0},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.ArrayType {
+			t.Errorf("expected array, got %s", result.GetType())
+			continue
+		}
+
+		arr := result.(*objects.Array)
+		if len(arr.Elements) != tt.expectedLen {
+			t.Errorf("expected %d values, got %d", tt.expectedLen, len(arr.Elements))
+		}
+	}
+}
+
+// TestEvaluator_LengthMapSet verifies length() function works with maps and sets
+func TestEvaluator_LengthMapSet(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		// Map length tests
+		{`var m = map{"a": 1, "b": 2, "c": 3}; length(m)`, 3},
+		{`var m = map{}; length(m)`, 0},
+		{`var m = map{"x": 10}; length(m)`, 1},
+
+		// Set length tests
+		{`var s = set{1, 2, 3, 4, 5}; length(s)`, 5},
+		{`var s = set{}; length(s)`, 0},
+		{`var s = set{"a"}; length(s)`, 1},
+
+		// Existing types still work
+		{`length("hello")`, 5},
+		{`length([1, 2, 3])`, 3},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_SizeFunction verifies size() function as an alias for length()
+func TestEvaluator_SizeFunction(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		// size() is an alias for length()
+		{`var m = map{"a": 1, "b": 2}; size(m)`, 2},
+		{`var s = set{1, 2, 3}; size(s)`, 3},
+		{`size("test")`, 4},
+		{`size([1, 2, 3, 4])`, 4},
+		{`var m = map{}; size(m)`, 0},
+		{`var s = set{}; size(s)`, 0},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_MapSetErrors verifies error handling for map and set functions
+func TestEvaluator_MapSetErrors(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		// Map function errors
+		{`keys_map(123)`, "ERROR: argument to `keys_map` must be a map"},
+		{`insert_map(123, "key", "value")`, "ERROR: first argument to `insert_map` must be a map"},
+		{`remove_map("not a map", "key")`, "ERROR: first argument to `remove_map` must be a map"},
+		{`contain_map(true, "key")`, "ERROR: first argument to `contain_map` must be a map"},
+		{`enumerate_map([1, 2, 3])`, "ERROR: argument to `enumerate_map` must be a map"},
+		// Set function errors
+		{`insert_set(123, 5)`, "ERROR: first argument to `insert_set` must be a set"},
+		{`remove_set("not a set", 5)`, "ERROR: first argument to `remove_set` must be a set"},
+		{`contains_set(true, 5)`, "ERROR: first argument to `contains_set` must be a set"},
+		{`values_set([1, 2, 3])`, "ERROR: argument to `values_set` must be a set"},
+		// Wrong number of arguments
+		{`keys_map()`, "ERROR: wrong number of arguments"},
+		{`insert_map(map{}, "key")`, "ERROR: wrong number of arguments"},
+		{`remove_map(map{})`, "ERROR: wrong number of arguments"},
+		{`contain_map(map{})`, "ERROR: wrong number of arguments"},
+		{`enumerate_map()`, "ERROR: wrong number of arguments"},
+		{`insert_set(set{})`, "ERROR: wrong number of arguments"},
+		{`remove_set(set{})`, "ERROR: wrong number of arguments"},
+		{`contains_set(set{})`, "ERROR: wrong number of arguments"},
+		{`values_set()`, "ERROR: wrong number of arguments"},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertError(t, result, tt.ExpectedErrorMsg)
+	}
+}

@@ -1,0 +1,41 @@
+// Simple demonstration of typeof() builtin function
+
+println("=== typeof() Builtin Function Demo ===")
+println("")
+
+// Basic types
+println("Integer:  typeof(42) =", typeof(42))
+println("Float:    typeof(3.14) =", typeof(3.14))
+println("String:   typeof(\"hello\") =", typeof("hello"))
+println("Boolean:  typeof(true) =", typeof(true))
+println("Nil:      typeof(nil) =", typeof(nil))
+
+println("")
+
+// Composite types
+println("Array:    typeof([1, 2, 3]) =", typeof([1, 2, 3]))
+println("Range:    typeof(1...5) =", typeof(1...5))
+
+println("")
+
+// Function type
+func greet(name) {
+    return "Hello, " + name
+}
+println("Function: typeof(greet) =", typeof(greet))
+
+println("")
+
+// Practical usage - type checking
+let value = 100
+let valueType = typeof(value)
+
+println("Checking type of value:", value)
+println("Type is:", valueType)
+
+if (valueType == "int") {
+    println("✓ Confirmed: value is an integer")
+}
+
+println("")
+println("=== Demo completed! ===")

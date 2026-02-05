@@ -1765,6 +1765,155 @@ func (par *Parser) parseRangeExpression(left ExpressionNode) ExpressionNode {
 	}
 }
 
+// parseMapLiteral parses map literal expressions.
+// Map literals use the syntax: map{key1: value1, key2: value2, ...}
+//
+// Syntax:
+//
+//	map{key: value, key: value, ...}
+//	map{}  (empty map)
+//
+// Returns:
+//
+//	A MapExpressionNode containing all parsed key-value pairs
+//
+// Examples:
+//
+//	map{10: 20, 30: 40}
+//	map{"name": "John", "age": 25}
+//	map{1: "one", 2: "two", 3: "three"}
+func (par *Parser) parseMapLiteral() ExpressionNode {
+	mapNode := &MapExpressionNode{
+		Keys:   make([]ExpressionNode, 0),
+		Values: make([]ExpressionNode, 0),
+	}
+
+	// Current token is MAP_KEY
+	// Expect opening brace
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
+
+	// Check for empty map
+	if par.NextToken.Type == lexer.RIGHT_BRACE {
+		par.advance() // Move to }
+		return mapNode
+	}
+
+	// Parse key-value pairs
+	par.advance() // Move to first key
+	for {
+		// Parse key expression
+		key := par.parseExpression()
+		if key == nil {
+			return nil
+		}
+
+		// Expect colon
+		if !par.expectAdvance(lexer.COLON_DELIM) {
+			return nil
+		}
+
+		// Parse value expression
+		par.advance() // Move past colon
+		value := par.parseExpression()
+		if value == nil {
+			return nil
+		}
+
+		// Add key-value pair
+		mapNode.Keys = append(mapNode.Keys, key)
+		mapNode.Values = append(mapNode.Values, value)
+
+		// Check what comes next
+		if par.NextToken.Type == lexer.RIGHT_BRACE {
+			par.advance() // Move to }
+			break
+		}
+
+		if par.NextToken.Type == lexer.COMMA_DELIM {
+			par.advance() // Move to ,
+			par.advance() // Move past , to next key
+		} else {
+			// Error: expected , or }
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected , or }, got %s",
+				par.NextToken.Line, par.NextToken.Column, par.NextToken.Type)
+			par.addError(msg)
+			return nil
+		}
+	}
+
+	return mapNode
+}
+
+// parseSetLiteral parses set literal expressions.
+// Set literals use the syntax: set{value1, value2, value3, ...}
+// Sets automatically remove duplicates and maintain unique values.
+//
+// Syntax:
+//
+//	set{value, value, value, ...}
+//	set{}  (empty set)
+//
+// Returns:
+//
+//	A SetExpressionNode containing all parsed element expressions
+//
+// Examples:
+//
+//	set{1, 2, 3, 4, 5}
+//	set{"apple", "banana", "cherry"}
+//	set{1, 2, 2, 3}  // Duplicates will be removed during evaluation
+func (par *Parser) parseSetLiteral() ExpressionNode {
+	setNode := &SetExpressionNode{
+		Elements: make([]ExpressionNode, 0),
+	}
+
+	// Current token is SET_KEY
+	// Expect opening brace
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
+
+	// Check for empty set
+	if par.NextToken.Type == lexer.RIGHT_BRACE {
+		par.advance() // Move to }
+		return setNode
+	}
+
+	// Parse elements
+	par.advance() // Move to first element
+	for {
+		// Parse element expression
+		elem := par.parseExpression()
+		if elem == nil {
+			return nil
+		}
+
+		// Add element
+		setNode.Elements = append(setNode.Elements, elem)
+
+		// Check what comes next
+		if par.NextToken.Type == lexer.RIGHT_BRACE {
+			par.advance() // Move to }
+			break
+		}
+
+		if par.NextToken.Type == lexer.COMMA_DELIM {
+			par.advance() // Move to ,
+			par.advance() // Move past , to next element
+		} else {
+			// Error: expected , or }
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected , or }, got %s",
+				par.NextToken.Line, par.NextToken.Column, par.NextToken.Type)
+			par.addError(msg)
+			return nil
+		}
+	}
+
+	return setNode
+}
+
 // parseForeachLoop parses foreach loop statements.
 // Foreach loops iterate over ranges or arrays.
 //

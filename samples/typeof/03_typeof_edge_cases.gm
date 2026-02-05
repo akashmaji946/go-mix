@@ -1,0 +1,47 @@
+// Edge case tests for typeof() builtin function
+
+println("=== Testing typeof() edge cases ===")
+println("")
+
+// Test with nested arrays
+let nested = [[1, 2], [3, 4]]
+println("typeof([[1, 2], [3, 4]]) =", typeof(nested))
+
+// Test with empty array
+let empty = []
+println("typeof([]) =", typeof(empty))
+
+// Test with function expressions
+func outer() {
+    func inner() {
+        return 42
+    }
+    return inner
+}
+let fn = outer()
+println("typeof(closure) =", typeof(fn))
+
+// Test with range expressions
+let r1 = 1...10
+let r2 = range(5, 15)
+println("typeof(1...10) =", typeof(r1))
+println("typeof(range(5, 15)) =", typeof(r2))
+
+// Test error handling - wrong number of arguments
+println("")
+println("=== Testing error handling ===")
+println("")
+
+// This should produce an error - no arguments
+println("typeof() with no args:")
+let err1 = typeof()
+println(err1)
+
+// This should produce an error - too many arguments
+println("")
+println("typeof() with too many args:")
+let err2 = typeof(1, 2, 3)
+println(err2)
+
+println("")
+println("=== Edge case tests completed! ===")

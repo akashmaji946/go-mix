@@ -51,6 +51,8 @@ type NodeVisitor interface {
 
 	// Data structure visitors - handle collections
 	VisitArrayExpressionNode(node ArrayExpressionNode) // Array literals: [1, 2, 3]
+	VisitMapExpressionNode(node MapExpressionNode)     // Map literals: map{key: value}
+	VisitSetExpressionNode(node SetExpressionNode)     // Set literals: set{1, 2, 3}
 	VisitIndexExpressionNode(node IndexExpressionNode) // Array indexing: arr[0], arr[-1]
 	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
 
@@ -876,5 +878,76 @@ func (node *ForeachLoopStatementNode) Accept(visitor NodeVisitor) {
 
 // ForeachLoopStatementNode.Statement()
 func (node *ForeachLoopStatementNode) Statement() {
+
+}
+
+// MapExpressionNode: represents a map literal expression
+// Example: map{10: 20, 20: 30} or map{"name": "John", "age": 25}
+type MapExpressionNode struct {
+	Keys   []ExpressionNode    // List of key expressions
+	Values []ExpressionNode    // List of value expressions (parallel to Keys)
+	Value  objects.GoMixObject // The map object value
+}
+
+// MapExpressionNode.Literal()
+func (node *MapExpressionNode) Literal() string {
+	res := "map{"
+	for i := range node.Keys {
+		if i > 0 {
+			res += ", "
+		}
+		res += node.Keys[i].Literal() + ": " + node.Values[i].Literal()
+	}
+	res += "}"
+	return res
+}
+
+// MapExpressionNode.Accept()
+func (node *MapExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitMapExpressionNode(*node)
+}
+
+// MapExpressionNode.Statement()
+func (node *MapExpressionNode) Statement() {
+
+}
+
+// MapExpressionNode.Expression()
+func (node *MapExpressionNode) Expression() {
+
+}
+
+// SetExpressionNode: represents a set literal expression
+// Example: set{1, 2, 3} or set{"a", "b", "c"}
+type SetExpressionNode struct {
+	Elements []ExpressionNode    // List of element expressions (duplicates will be removed)
+	Value    objects.GoMixObject // The set object value
+}
+
+// SetExpressionNode.Literal()
+func (node *SetExpressionNode) Literal() string {
+	res := "set{"
+	for i, elem := range node.Elements {
+		if i > 0 {
+			res += ", "
+		}
+		res += elem.Literal()
+	}
+	res += "}"
+	return res
+}
+
+// SetExpressionNode.Accept()
+func (node *SetExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitSetExpressionNode(*node)
+}
+
+// SetExpressionNode.Statement()
+func (node *SetExpressionNode) Statement() {
+
+}
+
+// SetExpressionNode.Expression()
+func (node *SetExpressionNode) Expression() {
 
 }

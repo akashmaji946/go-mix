@@ -167,6 +167,12 @@ func (par *Parser) init() {
 	// Array literals: [1, 2, 3]
 	par.registerUnaryFuncs(par.parseArrayExpressionNode, lexer.LEFT_BRACKET)
 
+	// Map literals: map{key: value}
+	par.registerUnaryFuncs(par.parseMapLiteral, lexer.MAP_KEY)
+
+	// Set literals: set{1, 2, 3}
+	par.registerUnaryFuncs(par.parseSetLiteral, lexer.SET_KEY)
+
 	// Array indexing and slicing: arr[0], arr[1:3]
 	par.registerBinaryFuncs(par.parseIndexExpression, lexer.LEFT_BRACKET)
 

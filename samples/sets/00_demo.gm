@@ -1,0 +1,108 @@
+// GoMix Sets - Complete Demo
+// Demonstrates all set features in GoMix
+
+println("========================================")
+println("     GoMix Sets - Complete Demo        ")
+println("========================================")
+println("")
+
+// ============================================
+// 1. BASIC SET CREATION
+// ============================================
+println("1. BASIC SET CREATION")
+println("   -----------------------------------")
+
+var numbers = set{1, 2, 3, 4, 5}
+println("   numbers = set{1, 2, 3, 4, 5}")
+println("   Result:", numbers)
+println("   Type:", typeof(numbers))
+println("")
+
+// ============================================
+// 2. AUTOMATIC DUPLICATE REMOVAL
+// ============================================
+println("2. AUTOMATIC DUPLICATE REMOVAL")
+println("   -----------------------------------")
+
+var duplicates = set{1, 2, 2, 3, 3, 3, 4, 4, 4, 4}
+println("   Input: set{1, 2, 2, 3, 3, 3, 4, 4, 4, 4}")
+println("   Output:", duplicates)
+println("   ✓ Duplicates automatically removed!")
+println("")
+
+// ============================================
+// 3. SET OPERATIONS
+// ============================================
+println("3. SET OPERATIONS")
+println("   -----------------------------------")
+
+var mySet = set{10, 20, 30}
+println("   Initial set:", mySet)
+
+// Insert
+insert_set(mySet, 40)
+println("   After insert_set(mySet, 40):", mySet)
+
+// Contains
+var has30 = contains_set(mySet, 30)
+var has99 = contains_set(mySet, 99)
+println("   contains_set(mySet, 30):", has30)
+println("   contains_set(mySet, 99):", has99)
+
+// Remove
+remove_set(mySet, 20)
+println("   After remove_set(mySet, 20):", mySet)
+println("")
+
+// ============================================
+// 4. PRACTICAL EXAMPLE: TAG SYSTEM
+// ============================================
+println("4. PRACTICAL EXAMPLE: Tag System")
+println("   -----------------------------------")
+
+var tags = set{}
+println("   Creating tag system...")
+
+// Add tags
+insert_set(tags, "golang")
+insert_set(tags, "programming")
+insert_set(tags, "tutorial")
+insert_set(tags, "golang")  // Duplicate
+println("   Tags:", tags)
+
+// Check tags
+if (contains_set(tags, "golang")) {
+    println("   ✓ Has 'golang' tag")
+}
+
+if (!contains_set(tags, "python")) {
+    println("   ✗ No 'python' tag")
+}
+println("")
+
+// ============================================
+// 5. EMPTY SETS
+// ============================================
+println("5. EMPTY SETS")
+println("   -----------------------------------")
+
+var empty = set{}
+println("   Empty set:", empty)
+insert_set(empty, "first")
+println("   After adding 'first':", empty)
+println("")
+
+// ============================================
+// 6. MIXED TYPES
+// ============================================
+println("6. MIXED TYPES (All stored as strings)")
+println("   -----------------------------------")
+
+var mixed = set{1, "two", 3, "four"}
+println("   Mixed set:", mixed)
+println("   Note: All values converted to strings internally")
+println("")
+
+println("========================================")
+println("         Demo Complete!                 ")
+println("========================================")

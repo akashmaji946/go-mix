@@ -1,0 +1,98 @@
+// Advanced Map Usage - Nested maps, computed keys, etc.
+
+println("=== Test 1: Nested Maps ===")
+let user = map{
+    "name": "John Doe",
+    "age": 30,
+    "address": map{
+        "street": "123 Main St",
+        "city": "Boston",
+        "zip": 12345
+    }
+}
+println("User:", user)
+println("User name:", user["name"])
+println("User address:", user["address"])
+
+// Access nested map
+let addr = user["address"]
+println("City:", addr["city"])
+println("Zip:", addr["zip"])
+
+println("\n=== Test 2: Maps with Array Values ===")
+let student = map{
+    "name": "Alice",
+    "grades": [95, 87, 92, 88],
+    "subjects": ["Math", "Science", "English", "History"]
+}
+println("Student:", student)
+println("Grades:", student["grades"])
+println("First grade:", student["grades"][0])
+println("Subjects:", student["subjects"])
+
+println("\n=== Test 3: Computed Keys ===")
+let prefix = "user"
+let id = 123
+let key = prefix
+
+let data = map{}
+insert_map(data, key, "John")
+println("Data with computed key:", data)
+println("Value:", data[key])
+
+println("\n=== Test 4: Map as Configuration ===")
+let appConfig = map{
+    "version": "1.0.0",
+    "debug": true,
+    "maxConnections": 100,
+    "timeout": 30,
+    "features": map{
+        "auth": true,
+        "logging": true,
+        "cache": false
+    }
+}
+
+println("App Config:", appConfig)
+println("Version:", appConfig["version"])
+println("Debug mode:", appConfig["debug"])
+
+let features = appConfig["features"]
+println("Features:", features)
+println("Auth enabled:", features["auth"])
+println("Cache enabled:", features["cache"])
+
+println("\n=== Test 5: Building Complex Data Structures ===")
+let inventory = map{}
+
+// Add products
+insert_map(inventory, "laptop", map{"price": 999, "stock": 5})
+insert_map(inventory, "mouse", map{"price": 25, "stock": 50})
+insert_map(inventory, "keyboard", map{"price": 75, "stock": 30})
+
+println("Inventory:", inventory)
+
+// Access product details
+let laptop = inventory["laptop"]
+println("Laptop price:", laptop["price"])
+println("Laptop stock:", laptop["stock"])
+
+// Update stock
+let mouse = inventory["mouse"]
+insert_map(mouse, "stock", 45)
+println("Updated mouse stock:", inventory["mouse"])
+
+println("\n=== Test 6: Map Iteration via Keys ===")
+let prices = map{"apple": 1.5, "banana": 0.8, "orange": 1.2}
+println("Prices:", prices)
+
+let priceKeys = keys_map(prices)
+println("Items:", priceKeys)
+
+println("Price list:")
+foreach item in priceKeys {
+    let price = prices[item]
+    println("  ", item, ":", price)
+}
+
+println("\n=== All advanced map tests passed! ===")

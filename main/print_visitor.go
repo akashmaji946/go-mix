@@ -319,6 +319,31 @@ func (p *PrintingVisitor) VisitForeachLoopStatementNode(node parser.ForeachLoopS
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitMapExpressionNode visits a map literal node and prints all key-value pairs
+func (p *PrintingVisitor) VisitMapExpressionNode(node parser.MapExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Map",
+		node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	for i := range node.Keys {
+		node.Keys[i].Accept(p)
+		node.Values[i].Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
+// VisitSetExpressionNode visits a set literal node and prints all elements
+func (p *PrintingVisitor) VisitSetExpressionNode(node parser.SetExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Set",
+		node.Literal(), node.Literal(), node.Value))
+	p.Indent += INDENT_SIZE
+	for _, elem := range node.Elements {
+		elem.Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the accumulated formatted output as a string
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

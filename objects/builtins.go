@@ -59,6 +59,14 @@ var commonMethods = []*Builtin{
 		Name:     "range", // Creates an inclusive range from start to end
 		Callback: rangeFunc,
 	},
+	{
+		Name:     "typeof", // Returns the type of a GoMix object as a string
+		Callback: typeofFunc,
+	},
+	{
+		Name:     "size", // Alias for length - returns the size of strings, arrays, maps, or sets
+		Callback: length,
+	},
 }
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
@@ -174,9 +182,10 @@ func printf(writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Nil{}
 }
 
-// length returns the length of a string or array as an Integer object.
-// It takes one argument: the string or array to measure.
-// For strings, returns the number of characters; for arrays, returns the number of elements.
+// length returns the length of a string, array, map, or set as an Integer object.
+// It takes one argument: the string, array, map, or set to measure.
+// For strings, returns the number of characters; for arrays, returns the number of elements;
+// for maps, returns the number of key-value pairs; for sets, returns the number of unique values.
 // Returns an error for unsupported types.
 func length(writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly one argument is provided
@@ -191,6 +200,12 @@ func length(writer io.Writer, args ...GoMixObject) GoMixObject {
 	case ArrayType:
 		// Return the number of elements in the array
 		return &Integer{Value: int64(len(args[0].(*Array).Elements))}
+	case MapType:
+		// Return the number of key-value pairs in the map
+		return &Integer{Value: int64(len(args[0].(*Map).Keys))}
+	case SetType:
+		// Return the number of unique values in the set
+		return &Integer{Value: int64(len(args[0].(*Set).Values))}
 	default:
 		// Return an error for unsupported types
 		return &Error{Message: fmt.Sprintf("argument to `length` not supported, got '%s'", args[0].GetType())}
@@ -229,4 +244,29 @@ func rangeFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 		Start: start,
 		End:   end,
 	}
+}
+
+// typeofFunc returns the type of a GoMix object as a string.
+// It takes one argument: the object whose type should be determined.
+// Returns a String object containing the type name (e.g., "int", "string", "array", "func", etc.).
+// This is useful for runtime type checking and debugging.
+//
+// Examples:
+//
+//	typeof(42)           -> "int"
+//	typeof(3.14)         -> "float"
+//	typeof("hello")      -> "string"
+//	typeof(true)         -> "bool"
+//	typeof(nil)          -> "nil"
+//	typeof([1, 2, 3])    -> "array"
+//	typeof(range(1, 5))  -> "range"
+//	typeof(myFunc)       -> "func"
+func typeofFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+	// Check if exactly one argument is provided
+	if len(args) != 1 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
+	}
+
+	// Get the type of the argument and return it as a string
+	return &String{Value: string(args[0].GetType())}
 }

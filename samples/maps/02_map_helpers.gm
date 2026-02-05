@@ -1,0 +1,61 @@
+// Test Map Helper Functions: keys, insert, remove, contain
+
+println("=== Test 1: keys_map() function ===")
+let m1 = map{"name": "Alice", "age": 30, "city": "Boston"}
+println("Map:", m1)
+let mapKeys = keys_map(m1)
+println("Keys:", mapKeys)
+println("Number of keys:", length(mapKeys))
+
+println("\n=== Test 2: insert_map() function ===")
+let m2 = map{"x": 10, "y": 20}
+println("Initial map:", m2)
+
+insert_map(m2, "z", 30)
+println("After insert_map(m2, \"z\", 30):", m2)
+
+insert_map(m2, "x", 100)
+println("After insert_map(m2, \"x\", 100):", m2)
+
+insert_map(m2, "w", "hello")
+println("After insert_map(m2, \"w\", \"hello\"):", m2)
+
+println("\n=== Test 3: contain_map() function ===")
+let m3 = map{"apple": 5, "banana": 3, "orange": 7}
+println("Map:", m3)
+println("contain_map(m3, \"apple\"):", contain_map(m3, "apple"))
+println("contain_map(m3, \"banana\"):", contain_map(m3, "banana"))
+println("contain_map(m3, \"grape\"):", contain_map(m3, "grape"))
+
+println("\n=== Test 4: remove_map() function ===")
+let m4 = map{"a": 1, "b": 2, "c": 3, "d": 4}
+println("Initial map:", m4)
+
+let removed1 = remove_map(m4, "b")
+println("Removed value:", removed1)
+println("After remove_map(m4, \"b\"):", m4)
+
+let removed2 = remove_map(m4, "d")
+println("Removed value:", removed2)
+println("After remove_map(m4, \"d\"):", m4)
+
+let removed3 = remove_map(m4, "z")
+println("Removed non-existent key:", removed3)
+println("Map unchanged:", m4)
+
+println("\n=== Test 5: Combined operations ===")
+let m5 = map{}
+println("Start with empty map:", m5)
+
+insert_map(m5, "first", 1)
+insert_map(m5, "second", 2)
+insert_map(m5, "third", 3)
+println("After insertions:", m5)
+println("Keys:", keys_map(m5))
+
+println("Contains 'second':", contain_map(m5, "second"))
+remove_map(m5, "second")
+println("After removing 'second':", m5)
+println("Contains 'second':", contain_map(m5, "second"))
+
+println("\n=== All map helper tests passed! ===")

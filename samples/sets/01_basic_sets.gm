@@ -1,0 +1,59 @@
+// Basic Set Operations Test
+// This file demonstrates basic set creation and operations
+
+println("=== Basic Set Creation ===")
+
+// Create a simple set
+var s1 = set{1, 2, 3, 4, 5}
+println("s1 =", s1)
+println("typeof(s1) =", typeof(s1))
+
+// Create a set with strings
+var s2 = set{"apple", "banana", "cherry"}
+println("s2 =", s2)
+
+// Create an empty set
+var s3 = set{}
+println("s3 (empty) =", s3)
+
+println("")
+println("=== Set with Duplicates (Auto-removed) ===")
+
+// Duplicates are automatically removed
+var s4 = set{1, 2, 2, 3, 3, 3, 4}
+println("s4 = set{1, 2, 2, 3, 3, 3, 4}")
+println("Result:", s4)
+println("Note: Duplicates automatically removed!")
+
+println("")
+println("=== Set Helper Functions ===")
+
+// Insert into set
+var s5 = set{10, 20, 30}
+println("s5 =", s5)
+insert_set(s5, 40)
+println("After insert_set(s5, 40):", s5)
+insert_set(s5, 20)  // Duplicate, won't be added
+println("After insert_set(s5, 20):", s5, "(20 already exists)")
+
+println("")
+println("=== Contains Check ===")
+
+var s6 = set{1, 2, 3, 4, 5}
+println("s6 =", s6)
+println("contains_set(s6, 3) =", contains_set(s6, 3))
+println("contains_set(s6, 10) =", contains_set(s6, 10))
+
+println("")
+println("=== Remove from Set ===")
+
+var s7 = set{100, 200, 300, 400}
+println("s7 =", s7)
+var removed = remove_set(s7, 200)
+println("remove_set(s7, 200) returned:", removed)
+println("s7 after removal:", s7)
+removed = remove_set(s7, 999)
+println("remove_set(s7, 999) returned:", removed, "(999 didn't exist)")
+
+println("")
+println("=== All tests completed! ===")
