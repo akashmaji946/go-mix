@@ -1,0 +1,76 @@
+// List Mutation Operations Test
+// This file demonstrates in-place list modifications
+
+println("=== Push Operations ===");
+
+var l = list(2, 3, 4);
+println("Initial list:", l);
+
+// Push back
+pushback_list(l, 5);
+println("After pushback_list(l, 5):", l);
+
+pushback_list(l, 6);
+println("After pushback_list(l, 6):", l);
+
+// Push front
+pushfront_list(l, 1);
+println("After pushfront_list(l, 1):", l);
+
+pushfront_list(l, 0);
+println("After pushfront_list(l, 0):", l);
+
+println("\n=== Pop Operations ===");
+
+var nums = list(10, 20, 30, 40, 50);
+println("Initial list:", nums);
+
+// Pop back
+var last = popback_list(nums);
+println("Popped from back:", last);
+println("List after popback:", nums);
+
+last = popback_list(nums);
+println("Popped from back:", last);
+println("List after popback:", nums);
+
+// Pop front
+var first = popfront_list(nums);
+println("Popped from front:", first);
+println("List after popfront:", nums);
+
+first = popfront_list(nums);
+println("Popped from front:", first);
+println("List after popfront:", nums);
+
+println("\n=== Mixed Operations ===");
+
+var data = list(100);
+println("Start with:", data);
+
+pushback_list(data, 200);
+pushback_list(data, 300);
+println("After pushback 200, 300:", data);
+
+pushfront_list(data, 50);
+pushfront_list(data, 25);
+println("After pushfront 50, 25:", data);
+
+popback_list(data);
+println("After popback:", data);
+
+popfront_list(data);
+println("After popfront:", data);
+
+println("\n=== List Mutability Demo ===");
+
+var original = list(1, 2, 3);
+println("Original:", original);
+
+pushback_list(original, 4);
+println("After modification:", original);
+
+// Lists are mutable - changes persist
+println("Size:", size_list(original));
+
+println("\n=== Test Complete ===");

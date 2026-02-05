@@ -1,0 +1,114 @@
+// Tuple Edge Cases Test
+// This file tests boundary conditions and edge cases for tuples
+
+println("=== Empty Tuple Operations ===");
+
+var empty = tuple();
+println("Empty tuple:", empty);
+println("Size:", size_tuple(empty));
+println("Type:", typeof(empty));
+
+// Slicing empty tuple
+var emptySlice = empty[:];
+println("Empty slice:", emptySlice);
+println("Type of slice:", typeof(emptySlice));
+
+println("\n=== Single Element Tuple ===");
+
+var single = tuple(42);
+println("Single element:", single);
+println("Size:", size_tuple(single));
+println("peekfront:", peekfront_tuple(single));
+println("peekback:", peekback_tuple(single));
+println("Index [0]:", single[0]);
+println("Index [-1]:", single[-1]);
+
+println("\n=== Large Tuple ===");
+
+// Create large tuple using a list first, then convert concept
+var builder = list();
+foreach i in 1...50 {
+    pushback_list(builder, i);
+}
+println("Built list size:", size_list(builder));
+println("First few elements:", builder[0], builder[1], builder[2]);
+println("Last few elements:", builder[-3], builder[-2], builder[-1]);
+
+println("\n=== Negative Index Edge Cases ===");
+
+var nums = tuple(10, 20, 30, 40, 50);
+println("Tuple:", nums);
+println("nums[-1]:", nums[-1]);
+println("nums[-2]:", nums[-2]);
+println("nums[-3]:", nums[-3]);
+println("nums[-4]:", nums[-4]);
+println("nums[-5]:", nums[-5]);
+
+println("\n=== Slice Edge Cases ===");
+
+println("nums[:]:", nums[:]);
+println("nums[0:0]:", nums[0:0]);
+println("nums[2:2]:", nums[2:2]);
+println("nums[-2:]:", nums[-2:]);
+println("nums[:-2]:", nums[:-2]);
+println("nums[-4:-1]:", nums[-4:-1]);
+
+println("\n=== Heterogeneous Tuple ===");
+
+var mixed = tuple(
+    1,
+    "two",
+    3.0,
+    true,
+    nil,
+    tuple(1, 2),
+    list(3, 4)
+);
+
+println("Mixed tuple:", mixed);
+println("Size:", size_tuple(mixed));
+println("Element 0 (int):", mixed[0]);
+println("Element 1 (string):", mixed[1]);
+println("Element 2 (float):", mixed[2]);
+println("Element 3 (bool):", mixed[3]);
+println("Element 4 (nil):", mixed[4]);
+println("Element 5 (tuple):", mixed[5]);
+println("Element 6 (list):", mixed[6]);
+
+println("\n=== Tuple with All Same Values ===");
+
+var same = tuple(5, 5, 5, 5, 5);
+println("Same values:", same);
+println("Size:", size_tuple(same));
+println("All equal to 5:", same[0] == 5, same[1] == 5, same[2] == 5);
+
+println("\n=== Deeply Nested Tuples ===");
+
+var nested = tuple(
+    tuple(
+        tuple(1, 2),
+        tuple(3, 4)
+    ),
+    tuple(
+        tuple(5, 6),
+        tuple(7, 8)
+    )
+);
+
+println("Nested tuple:", nested);
+println("nested[0]:", nested[0]);
+println("nested[0][0]:", nested[0][0]);
+println("nested[0][0][0]:", nested[0][0][0]);
+println("nested[1][1][1]:", nested[1][1][1]);
+
+println("\n=== Tuple Slicing Returns Array ===");
+
+var original = tuple(1, 2, 3, 4, 5);
+var sliced = original[1:4];
+
+println("Original type:", typeof(original));
+println("Sliced type:", typeof(sliced));
+println("Original:", original);
+println("Sliced:", sliced);
+
+println("\n=== Test Complete ===");

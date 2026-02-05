@@ -1,0 +1,108 @@
+// Practical List Usage Examples
+// This file demonstrates real-world list usage patterns
+
+println("=== Stack Implementation ===");
+
+var stack = list();
+
+// Push operations
+pushback_list(stack, "first");
+pushback_list(stack, "second");
+pushback_list(stack, "third");
+println("Stack after pushes:", stack);
+
+// Pop operations (LIFO)
+println("Pop:", popback_list(stack));
+println("Pop:", popback_list(stack));
+println("Stack after pops:", stack);
+
+println("\n=== Queue Implementation ===");
+
+var queue = list();
+
+// Enqueue operations
+pushback_list(queue, "task1");
+pushback_list(queue, "task2");
+pushback_list(queue, "task3");
+println("Queue after enqueues:", queue);
+
+// Dequeue operations (FIFO)
+println("Dequeue:", popfront_list(queue));
+println("Dequeue:", popfront_list(queue));
+println("Queue after dequeues:", queue);
+
+println("\n=== Dynamic Array Building ===");
+
+var fibonacci = list(0, 1);
+foreach i in 2...10 {
+    var a = fibonacci[i - 2];
+    var b = fibonacci[i - 1];
+    pushback_list(fibonacci, a + b);
+}
+println("Fibonacci sequence:", fibonacci);
+
+println("\n=== List as Buffer ===");
+
+var buffer = list();
+var capacity = 5;
+
+foreach i in 1...10 {
+    pushback_list(buffer, i);
+    if (size_list(buffer) > capacity) {
+        popfront_list(buffer);
+    }
+    println("Buffer at step", i, ":", buffer);
+}
+
+println("\n=== List Filtering ===");
+
+var numbers = list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+var evens = list();
+
+foreach num in numbers {
+    if (num % 2 == 0) {
+        pushback_list(evens, num);
+    }
+}
+println("Original:", numbers);
+println("Evens only:", evens);
+
+println("\n=== List Transformation ===");
+
+var values = list(1, 2, 3, 4, 5);
+var squared = list();
+
+foreach val in values {
+    pushback_list(squared, val * val);
+}
+println("Original:", values);
+println("Squared:", squared);
+
+println("\n=== List Reversal ===");
+
+var original = list("a", "b", "c", "d", "e");
+var reversed = list();
+
+foreach item in original {
+    pushfront_list(reversed, item);
+}
+println("Original:", original);
+println("Reversed:", reversed);
+
+println("\n=== List Concatenation ===");
+
+var list1 = list(1, 2, 3);
+var list2 = list(4, 5, 6);
+var combined = list();
+
+foreach item in list1 {
+    pushback_list(combined, item);
+}
+foreach item in list2 {
+    pushback_list(combined, item);
+}
+println("List 1:", list1);
+println("List 2:", list2);
+println("Combined:", combined);
+
+println("\n=== Test Complete ===");

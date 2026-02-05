@@ -44,6 +44,10 @@ const (
 	MapType GoMixType = "map"
 	// SetType represents set objects (unique values)
 	SetType GoMixType = "set"
+	// ListType represents mutable list objects (heterogeneous)
+	ListType GoMixType = "list"
+	// TupleType represents immutable tuple objects (heterogeneous)
+	TupleType GoMixType = "tuple"
 )
 
 // GoMixObject is the core interface that all GoMix objects must implement.
@@ -391,5 +395,85 @@ func (s *Set) ToObject() string {
 		result += val
 	}
 	result += "}>"
+	return result
+}
+
+// List represents a mutable, heterogeneous list in GoMix.
+// Lists can contain elements of different types and support in-place modifications.
+// They are created using the list() builtin function and support indexing and slicing.
+type List struct {
+	Elements []GoMixObject // The slice of GoMix objects in the list (mutable)
+}
+
+// GetType returns the type of the List object
+func (l *List) GetType() GoMixType {
+	return ListType
+}
+
+// ToString returns a string representation of the list as "list(elem1, elem2, ...)"
+// Each element is converted to its string representation using ToString()
+func (l *List) ToString() string {
+	result := "list("
+	for i, elem := range l.Elements {
+		if i > 0 {
+			result += ", "
+		}
+		result += elem.ToString()
+	}
+	result += ")"
+	return result
+}
+
+// ToObject returns a detailed representation of the list as "<list(elem1, elem2, ...)>"
+// Each element is converted to its object representation using ToObject()
+func (l *List) ToObject() string {
+	result := "<list("
+	for i, elem := range l.Elements {
+		if i > 0 {
+			result += ", "
+		}
+		result += elem.ToObject()
+	}
+	result += ")>"
+	return result
+}
+
+// Tuple represents an immutable, heterogeneous tuple in GoMix.
+// Tuples can contain elements of different types but cannot be modified after creation.
+// They are created using the tuple() builtin function and support indexing and slicing.
+type Tuple struct {
+	Elements []GoMixObject // The slice of GoMix objects in the tuple (immutable)
+}
+
+// GetType returns the type of the Tuple object
+func (t *Tuple) GetType() GoMixType {
+	return TupleType
+}
+
+// ToString returns a string representation of the tuple as "tuple(elem1, elem2, ...)"
+// Each element is converted to its string representation using ToString()
+func (t *Tuple) ToString() string {
+	result := "tuple("
+	for i, elem := range t.Elements {
+		if i > 0 {
+			result += ", "
+		}
+		result += elem.ToString()
+	}
+	result += ")"
+	return result
+}
+
+// ToObject returns a detailed representation of the tuple as "<tuple(elem1, elem2, ...)>"
+// Each element is converted to its object representation using ToObject()
+func (t *Tuple) ToObject() string {
+	result := "<tuple("
+	for i, elem := range t.Elements {
+		if i > 0 {
+			result += ", "
+		}
+		result += elem.ToObject()
+	}
+	result += ")>"
 	return result
 }

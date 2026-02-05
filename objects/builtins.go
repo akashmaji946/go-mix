@@ -182,10 +182,11 @@ func printf(writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Nil{}
 }
 
-// length returns the length of a string, array, map, or set as an Integer object.
-// It takes one argument: the string, array, map, or set to measure.
+// length returns the length of a string, array, map, set, list, or tuple as an Integer object.
+// It takes one argument: the string, array, map, set, list, or tuple to measure.
 // For strings, returns the number of characters; for arrays, returns the number of elements;
-// for maps, returns the number of key-value pairs; for sets, returns the number of unique values.
+// for maps, returns the number of key-value pairs; for sets, returns the number of unique values;
+// for lists and tuples, returns the number of elements.
 // Returns an error for unsupported types.
 func length(writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly one argument is provided
@@ -206,6 +207,12 @@ func length(writer io.Writer, args ...GoMixObject) GoMixObject {
 	case SetType:
 		// Return the number of unique values in the set
 		return &Integer{Value: int64(len(args[0].(*Set).Values))}
+	case ListType:
+		// Return the number of elements in the list
+		return &Integer{Value: int64(len(args[0].(*List).Elements))}
+	case TupleType:
+		// Return the number of elements in the tuple
+		return &Integer{Value: int64(len(args[0].(*Tuple).Elements))}
 	default:
 		// Return an error for unsupported types
 		return &Error{Message: fmt.Sprintf("argument to `length` not supported, got '%s'", args[0].GetType())}

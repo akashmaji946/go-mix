@@ -175,9 +175,69 @@ func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) objects.
 			}
 		}
 
+	case objects.ListType:
+		// Iterate over a list
+		listObj := iterable.(*objects.List)
+
+		for _, elem := range listObj.Elements {
+			// Create a new scope for each iteration
+			iterationScope := scope.NewScope(loopScope)
+			e.Scp = iterationScope
+
+			// Bind the iterator variable to the current element
+			e.Scp.Bind(n.Iterator.Name, elem)
+
+			// Execute loop body
+			result = e.Eval(&n.Body)
+
+			// Restore to loop scope after body execution
+			e.Scp = loopScope
+
+			if IsError(result) {
+				e.Scp = oldScope
+				return result
+			}
+
+			// Stop if we hit a return statement
+			if _, isReturn := result.(*objects.ReturnValue); isReturn {
+				e.Scp = oldScope
+				return result
+			}
+		}
+
+	case objects.TupleType:
+		// Iterate over a tuple
+		tupleObj := iterable.(*objects.Tuple)
+
+		for _, elem := range tupleObj.Elements {
+			// Create a new scope for each iteration
+			iterationScope := scope.NewScope(loopScope)
+			e.Scp = iterationScope
+
+			// Bind the iterator variable to the current element
+			e.Scp.Bind(n.Iterator.Name, elem)
+
+			// Execute loop body
+			result = e.Eval(&n.Body)
+
+			// Restore to loop scope after body execution
+			e.Scp = loopScope
+
+			if IsError(result) {
+				e.Scp = oldScope
+				return result
+			}
+
+			// Stop if we hit a return statement
+			if _, isReturn := result.(*objects.ReturnValue); isReturn {
+				e.Scp = oldScope
+				return result
+			}
+		}
+
 	default:
 		e.Scp = oldScope
-		return e.CreateError("ERROR: foreach requires a `range` or `array`, got '%s'", iterable.GetType())
+		return e.CreateError("ERROR: foreach requires an `iterable`, got `%s`", iterable.GetType())
 	}
 
 	// Restore the original scope

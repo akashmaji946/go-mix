@@ -1,0 +1,212 @@
+// ============================================
+// List New Builtin Methods Demo
+// ============================================
+// This file demonstrates the new builtin methods:
+// - insert_list(list, index, value)
+// - remove_list(list, index)
+// - contains_list(list, value)
+// ============================================
+
+println("=== List New Builtin Methods Demo ===\n")
+
+// ============================================
+// 1. insert_list() - Insert at specific index
+// ============================================
+println("1. insert_list() - Insert at specific index")
+println("-------------------------------------------")
+
+var numbers = list(1, 2, 4, 5)
+println("Original list:", numbers)
+
+// Insert at middle
+insert_list(numbers, 2, 3)
+println("After insert_list(numbers, 2, 3):", numbers)
+
+// Insert at beginning
+var fruits = list("banana", "cherry")
+println("\nOriginal list:", fruits)
+insert_list(fruits, 0, "apple")
+println("After insert_list(fruits, 0, 'apple'):", fruits)
+
+// Insert at end
+var colors = list("red", "green")
+println("\nOriginal list:", colors)
+insert_list(colors, 2, "blue")
+println("After insert_list(colors, 2, 'blue'):", colors)
+
+// ============================================
+// 2. insert_list() - Negative indexing
+// ============================================
+println("\n2. insert_list() - Negative indexing")
+println("-------------------------------------")
+
+var items = list(1, 2, 3)
+println("Original list:", items)
+insert_list(items, -1, 99)
+println("After insert_list(items, -1, 99):", items)
+println("Note: -1 inserts after the last element")
+
+var letters = list("a", "b", "c")
+println("\nOriginal list:", letters)
+insert_list(letters, -2, "x")
+println("After insert_list(letters, -2, 'x'):", letters)
+
+// ============================================
+// 3. remove_list() - Remove at specific index
+// ============================================
+println("\n3. remove_list() - Remove at specific index")
+println("--------------------------------------------")
+
+var data = list(10, 20, 30, 40, 50)
+println("Original list:", data)
+var removed = remove_list(data, 2)
+println("Removed element:", removed)
+println("After remove_list(data, 2):", data)
+
+// Remove first element
+var queue = list("first", "second", "third")
+println("\nOriginal list:", queue)
+var first = remove_list(queue, 0)
+println("Removed first element:", first)
+println("After remove_list(queue, 0):", queue)
+
+// ============================================
+// 4. remove_list() - Negative indexing
+// ============================================
+println("\n4. remove_list() - Negative indexing")
+println("-------------------------------------")
+
+var stack = list(1, 2, 3, 4, 5)
+println("Original list:", stack)
+var last = remove_list(stack, -1)
+println("Removed last element:", last)
+println("After remove_list(stack, -1):", stack)
+
+var values = list(100, 200, 300, 400)
+println("\nOriginal list:", values)
+var secondLast = remove_list(values, -2)
+println("Removed second-to-last element:", secondLast)
+println("After remove_list(values, -2):", values)
+
+// ============================================
+// 5. contains_list() - Check if value exists
+// ============================================
+println("\n5. contains_list() - Check if value exists")
+println("-------------------------------------------")
+
+var myList = list(10, 20, 30, 40, 50)
+println("List:", myList)
+println("contains_list(myList, 30):", contains_list(myList, 30))
+println("contains_list(myList, 100):", contains_list(myList, 100))
+
+// Type-sensitive checking
+var mixed = list(1, "2", 3, "4")
+println("\nMixed list:", mixed)
+println("contains_list(mixed, 2):", contains_list(mixed, 2))
+println("contains_list(mixed, '2'):", contains_list(mixed, "2"))
+println("Note: Type matters! Integer 2 != String '2'")
+
+// ============================================
+// 6. Practical Example: Building a sorted list
+// ============================================
+println("\n6. Practical Example: Building a sorted list")
+println("---------------------------------------------")
+
+var sorted = list()
+println("Starting with empty list:", sorted)
+
+// Insert elements in sorted order
+insert_list(sorted, 0, 5)
+println("After inserting 5:", sorted)
+
+insert_list(sorted, 0, 3)
+println("After inserting 3 at start:", sorted)
+
+insert_list(sorted, 2, 7)
+println("After inserting 7 at end:", sorted)
+
+insert_list(sorted, 1, 4)
+println("After inserting 4 in middle:", sorted)
+
+println("Final sorted list:", sorted)
+
+// ============================================
+// 7. Practical Example: List cleanup
+// ============================================
+println("\n7. Practical Example: List cleanup")
+println("-----------------------------------")
+
+var dirtyList = list(1, 2, 0, 3, 0, 4, 0, 5)
+println("Original list with zeros:", dirtyList)
+
+// Remove all zeros (working backwards to avoid index issues)
+var i = size_list(dirtyList) - 1
+while (i >= 0) {
+    if (dirtyList[i] == 0) {
+        remove_list(dirtyList, i)
+    }
+    i -= 1
+}
+
+println("After removing all zeros:", dirtyList)
+
+// ============================================
+// 8. Practical Example: Search and replace
+// ============================================
+println("\n8. Practical Example: Search and replace")
+println("-----------------------------------------")
+
+var words = list("hello", "world", "foo", "bar")
+println("Original list:", words)
+
+var searchTerm = "foo"
+if (contains_list(words, searchTerm)) {
+    println("Found 'foo' in list")
+    
+    // Find index and replace
+    var idx1 = 0
+    foreach word in words {
+        if (word == searchTerm) {
+            remove_list(words, idx1)
+            insert_list(words, idx1, "baz")
+        }
+        idx1 += 1
+    }
+    
+    println("After replacing 'foo' with 'baz':", words)
+} else {
+    println("'foo' not found in list")
+}
+
+// ============================================
+// 9. Combining with existing methods
+// ============================================
+println("\n9. Combining with existing methods")
+println("-----------------------------------")
+
+var combo = list(1, 2, 3)
+println("Starting list:", combo)
+
+pushback_list(combo, 4)
+println("After pushback_list(combo, 4):", combo)
+
+insert_list(combo, 2, 99)
+println("After insert_list(combo, 2, 99):", combo)
+
+var popped = popback_list(combo)
+println("Popped element:", popped)
+println("After popback_list(combo):", combo)
+
+if (contains_list(combo, 99)) {
+    println("List contains 99")
+    var idx2 = 0
+    foreach val in combo {
+        if (val == 99) {
+            remove_list(combo, idx2)
+            println("Removed 99 from list:", combo)
+        }
+        idx2 += 1
+    }
+}
+
+println("\n=== End of Demo ===")

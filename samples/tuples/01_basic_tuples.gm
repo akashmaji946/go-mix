@@ -1,0 +1,79 @@
+// Basic Tuple Operations Test
+// This file demonstrates basic tuple creation and operations
+
+println("=== Basic Tuple Creation ===");
+
+// Create empty tuple
+var empty = tuple();
+println("Empty tuple:", empty);
+println("Size of empty tuple:", size_tuple(empty));
+
+// Create tuple with elements
+var coords = tuple(10, 20, 30);
+println("Coordinates tuple:", coords);
+println("Size:", size_tuple(coords));
+
+// Create heterogeneous tuple
+var person = tuple("Alice", 25, true, 5.8);
+println("Person tuple:", person);
+println("Type of tuple:", typeof(person));
+
+println("\n=== Basic Indexing ===");
+
+// Positive indexing
+println("coords[0]:", coords[0]);
+println("coords[1]:", coords[1]);
+println("coords[2]:", coords[2]);
+
+// Negative indexing
+println("coords[-1]:", coords[-1]);
+println("coords[-2]:", coords[-2]);
+println("coords[-3]:", coords[-3]);
+
+// Heterogeneous tuple indexing
+println("person[0] (name):", person[0]);
+println("person[1] (age):", person[1]);
+println("person[2] (active):", person[2]);
+println("person[3] (height):", person[3]);
+
+println("\n=== Basic Slicing (returns array) ===");
+
+var numbers = tuple(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+println("Numbers tuple:", numbers);
+
+// Slicing
+var slice1 = numbers[2:5];
+println("numbers[2:5]:", slice1);
+println("Type of slice:", typeof(slice1));
+
+var slice2 = numbers[:4];
+println("numbers[:4]:", slice2);
+
+var slice3 = numbers[5:];
+println("numbers[5:]:", slice3);
+
+var slice4 = numbers[2:-2];
+println("numbers[2:-2]:", slice4);
+
+println("\n=== Peek Operations ===");
+
+// Peek operations (non-destructive)
+println("peekfront_tuple(coords):", peekfront_tuple(coords));
+println("peekback_tuple(coords):", peekback_tuple(coords));
+println("Tuple after peek:", coords);
+
+println("\n=== Tuple Immutability ===");
+
+var data = tuple(100, 200, 300);
+println("Original tuple:", data);
+println("Tuples cannot be modified in-place");
+println("No push/pop operations available for tuples");
+
+println("\n=== Using length() with Tuples ===");
+
+println("length(empty):", length(empty));
+println("length(coords):", length(coords));
+println("length(person):", length(person));
+println("length(numbers):", length(numbers));
+
+println("\n=== Test Complete ===");

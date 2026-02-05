@@ -1,0 +1,62 @@
+// Basic List Operations Test
+// This file demonstrates basic list creation and operations
+
+println("=== Basic List Creation ===");
+
+// Create empty list
+var empty = list();
+println("Empty list:", empty);
+println("Size of empty list:", size_list(empty));
+
+// Create list with elements
+var nums = list(1, 2, 3, 4, 5);
+println("Numbers list:", nums);
+println("Size:", size_list(nums));
+
+// Create heterogeneous list
+var mixed = list(1, "hello", true, 3.14);
+println("Mixed list:", mixed);
+println("Type of mixed list:", typeof(mixed));
+
+println("\n=== Basic Indexing ===");
+
+// Positive indexing
+println("nums[0]:", nums[0]);
+println("nums[2]:", nums[2]);
+println("nums[4]:", nums[4]);
+
+// Negative indexing
+println("nums[-1]:", nums[-1]);
+println("nums[-2]:", nums[-2]);
+println("nums[-5]:", nums[-5]);
+
+// Mixed list indexing
+println("mixed[0]:", mixed[0]);
+println("mixed[1]:", mixed[1]);
+println("mixed[2]:", mixed[2]);
+println("mixed[3]:", mixed[3]);
+
+println("\n=== Basic Slicing (returns array) ===");
+
+// Slicing
+var slice1 = nums[1:3];
+println("nums[1:3]:", slice1);
+println("Type of slice:", typeof(slice1));
+
+var slice2 = nums[:3];
+println("nums[:3]:", slice2);
+
+var slice3 = nums[2:];
+println("nums[2:]:", slice3);
+
+var slice4 = nums[1:-1];
+println("nums[1:-1]:", slice4);
+
+println("\n=== Peek Operations ===");
+
+// Peek operations (non-destructive)
+println("peekfront_list(nums):", peekfront_list(nums));
+println("peekback_list(nums):", peekback_list(nums));
+println("List after peek:", nums);
+
+println("\n=== Test Complete ===");

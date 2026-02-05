@@ -1029,11 +1029,11 @@ func (e *Evaluator) evalSetExpression(n *parser.SetExpressionNode) objects.GoMix
 	}
 }
 
-// evalIndexExpression evaluates array and map element access using bracket notation.
+// evalIndexExpression evaluates array, map, list, and tuple element access using bracket notation.
 //
-// This method implements indexing for both arrays and maps:
+// This method implements indexing for arrays, maps, lists, and tuples:
 //
-// Array indexing:
+// Array/List/Tuple indexing:
 // 1. Validates that the index is an integer
 // 2. Supports negative indices (Python-style):
 //   - Negative indices count from the end: -1 is last element, -2 is second-to-last, etc.
@@ -1046,19 +1046,26 @@ func (e *Evaluator) evalSetExpression(n *parser.SetExpressionNode) objects.GoMix
 // 3. Returns nil if the key doesn't exist
 //
 // Parameters:
-//   - n: An IndexExpressionNode containing the array/map and index expressions
+//   - n: An IndexExpressionNode containing the array/map/list/tuple and index expressions
 //
 // Returns:
 //   - objects.GoMixObject: The element at the specified index/key, or an Error if:
-//   - Left operand is not an array or map
-//   - Array index is not an integer
-//   - Array index is out of bounds
+//   - Left operand is not an array, map, list, or tuple
+//   - Index is not an integer (for arrays/lists/tuples)
+//   - Index is out of bounds
 //
 // Example:
 //
 //	var arr = [10, 20, 30];
 //	arr[0]    // Returns 10 (first element)
 //	arr[-1]   // Returns 30 (last element)
+//
+//	var l = list(1, 2, 3);
+//	l[0]      // Returns 1
+//	l[-1]     // Returns 3
+//
+//	var t = tuple("a", "b", "c");
+//	t[1]      // Returns "b"
 //
 //	var m = map{"name": "John", "age": 25};
 //	m["name"]  // Returns "John"
@@ -1086,19 +1093,36 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 		return &objects.Nil{}
 	}
 
-	// Handle array indexing
-	if left.GetType() != objects.ArrayType {
-		return e.CreateError("ERROR: index operator not supported for type '%s'", left.GetType())
+	// Handle array, list, and tuple indexing
+	leftType := left.GetType()
+	if leftType != objects.ArrayType && leftType != objects.ListType && leftType != objects.TupleType {
+		return e.CreateError("ERROR: index operator not supported for type '%s'", leftType)
 	}
 
-	// Check if index is an integer for arrays
+	// Check if index is an integer
 	if index.GetType() != objects.IntegerType {
-		return e.CreateError("ERROR: array index must be an integer, got '%s'", index.GetType())
+		return e.CreateError("ERROR: index must be an integer, got '%s'", index.GetType())
 	}
 
-	arr := left.(*objects.Array)
 	idx := index.(*objects.Integer).Value
-	length := int64(len(arr.Elements))
+	var length int64
+	var elements []objects.GoMixObject
+
+	// Get elements based on type
+	switch leftType {
+	case objects.ArrayType:
+		arr := left.(*objects.Array)
+		elements = arr.Elements
+		length = int64(len(arr.Elements))
+	case objects.ListType:
+		list := left.(*objects.List)
+		elements = list.Elements
+		length = int64(len(list.Elements))
+	case objects.TupleType:
+		tuple := left.(*objects.Tuple)
+		elements = tuple.Elements
+		length = int64(len(tuple.Elements))
+	}
 
 	// Handle negative indices (Python-style)
 	if idx < 0 {
@@ -1110,57 +1134,78 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 		return e.CreateError("ERROR: index out of bounds: index %d, length %d", idx, length)
 	}
 
-	return arr.Elements[idx]
+	return elements[idx]
 }
 
-// evalSliceExpression evaluates array slicing operations to extract sub-arrays.
+// evalSliceExpression evaluates array, list, and tuple slicing operations to extract sub-sequences.
 //
-// This method implements Python-style array slicing with the syntax arr[start:end]:
-// 1. Evaluates the array expression
+// This method implements Python-style slicing with the syntax arr[start:end]:
+// 1. Evaluates the array/list/tuple expression
 // 2. Determines the start index (defaults to 0 if omitted)
-// 3. Determines the end index (defaults to array length if omitted)
+// 3. Determines the end index (defaults to length if omitted)
 // 4. Handles negative indices for both start and end
 // 5. Clamps indices to valid range [0, length]
 // 6. Creates a new array containing elements from start (inclusive) to end (exclusive)
 //
 // Index handling:
-// - Omitted start: Defaults to 0 (beginning of array)
-// - Omitted end: Defaults to array length (end of array)
+// - Omitted start: Defaults to 0 (beginning)
+// - Omitted end: Defaults to length (end)
 // - Negative indices: Count from end (-1 is last element position)
 // - Out-of-range indices: Clamped to valid range (no error)
 // - If start > end after processing: Returns empty array
 //
-// The result is a new array with copied elements, not a view of the original.
+// Note: Slicing always returns an array, even for lists and tuples (as per requirements).
 //
 // Parameters:
-//   - n: A SliceExpressionNode containing the array, optional start, and optional end expressions
+//   - n: A SliceExpressionNode containing the array/list/tuple, optional start, and optional end expressions
 //
 // Returns:
 //   - objects.GoMixObject: A new Array containing the sliced elements, or an Error if:
-//   - Left operand is not an array
+//   - Left operand is not an array, list, or tuple
 //   - Start or end index is not an integer
 //
 // Example:
 //
 //	var arr = [10, 20, 30, 40, 50];
 //	arr[1:3]    // Returns [20, 30]
-//	arr[:2]     // Returns [10, 20] (start defaults to 0)
-//	arr[2:]     // Returns [30, 40, 50] (end defaults to length)
-//	arr[-2:]    // Returns [40, 50] (last two elements)
-//	arr[1:-1]   // Returns [20, 30, 40] (excludes first and last)
+//	arr[:2]     // Returns [10, 20]
+//	arr[2:]     // Returns [30, 40, 50]
+//
+//	var l = list(1, 2, 3, 4, 5);
+//	l[1:3]      // Returns [2, 3] (array, not list)
+//
+//	var t = tuple("a", "b", "c", "d");
+//	t[1:-1]     // Returns ["b", "c"] (array, not tuple)
 func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.GoMixObject {
 	left := e.Eval(n.Left)
 	if IsError(left) {
 		return left
 	}
 
-	// Check if left is an array
-	if left.GetType() != objects.ArrayType {
-		return e.CreateError("ERROR: slice operator not supported for type '%s'", left.GetType())
+	// Check if left is an array, list, or tuple
+	leftType := left.GetType()
+	if leftType != objects.ArrayType && leftType != objects.ListType && leftType != objects.TupleType {
+		return e.CreateError("ERROR: slice operator not supported for type '%s'", leftType)
 	}
 
-	arr := left.(*objects.Array)
-	length := int64(len(arr.Elements))
+	var elements []objects.GoMixObject
+	var length int64
+
+	// Get elements based on type
+	switch leftType {
+	case objects.ArrayType:
+		arr := left.(*objects.Array)
+		elements = arr.Elements
+		length = int64(len(arr.Elements))
+	case objects.ListType:
+		list := left.(*objects.List)
+		elements = list.Elements
+		length = int64(len(list.Elements))
+	case objects.TupleType:
+		tuple := left.(*objects.Tuple)
+		elements = tuple.Elements
+		length = int64(len(tuple.Elements))
+	}
 
 	// Determine start index
 	var start int64 = 0
@@ -1215,9 +1260,9 @@ func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.G
 		start = end
 	}
 
-	// Create the sliced array
+	// Create the sliced array (always returns array, even for lists/tuples)
 	slicedElements := make([]objects.GoMixObject, end-start)
-	copy(slicedElements, arr.Elements[start:end])
+	copy(slicedElements, elements[start:end])
 
 	return &objects.Array{Elements: slicedElements}
 }

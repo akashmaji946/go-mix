@@ -1101,15 +1101,15 @@ func TestEvaluator_ForeachError(t *testing.T) {
 	}{
 		{
 			`foreach i in 123 { }`,
-			"ERROR: foreach requires a `range` or `array`, got 'int'",
+			"ERROR: foreach requires an `iterable`, got `int`",
 		},
 		{
 			`foreach i in "hello" { }`,
-			"ERROR: foreach requires a `range` or `array`, got 'string'",
+			"ERROR: foreach requires an `iterable`, got `string`",
 		},
 		{
 			`foreach i in true { }`,
-			"ERROR: foreach requires a `range` or `array`, got 'bool'",
+			"ERROR: foreach requires an `iterable`, got `bool`",
 		},
 	}
 
@@ -1439,4 +1439,581 @@ func TestEvaluator_MapSetErrors(t *testing.T) {
 		result := evaluator.Eval(rootNode)
 		AssertError(t, result, tt.ExpectedErrorMsg)
 	}
+}
+
+// TestEvaluator_ListInsert verifies insert_list function with various indices
+func TestEvaluator_ListInsert(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`var l = list(1, 2, 4); insert_list(l, 2, 3); l`, "list(1, 2, 3, 4)"},
+		{`var l = list(2, 3, 4); insert_list(l, 0, 1); l`, "list(1, 2, 3, 4)"},
+		{`var l = list(1, 2, 3); insert_list(l, 3, 4); l`, "list(1, 2, 3, 4)"},
+		{`var l = list(1, 2, 3); insert_list(l, -1, 4); l`, "list(1, 2, 3, 4)"},
+		{`var l = list(); insert_list(l, 0, 1); l`, "list(1)"},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.ToString() != tt.expected {
+			t.Errorf("expected %s, got %s", tt.expected, result.ToString())
+		}
+	}
+}
+
+// TestEvaluator_ListRemove verifies remove_list function with various indices
+func TestEvaluator_ListRemove(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var l = list(1, 2, 3, 4); remove_list(l, 2)`, 3},
+		{`var l = list(1, 2, 3, 4); remove_list(l, 0)`, 1},
+		{`var l = list(1, 2, 3, 4); remove_list(l, -1)`, 4},
+		{`var l = list(1, 2, 3, 4); remove_list(l, -2)`, 3},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ListContains verifies contains_list function
+func TestEvaluator_ListContains(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`var l = list(1, 2, 3, 4); contains_list(l, 3)`, true},
+		{`var l = list(1, 2, 3, 4); contains_list(l, 5)`, false},
+		{`var l = list("a", "b", "c"); contains_list(l, "b")`, true},
+		{`var l = list("a", "b", "c"); contains_list(l, "d")`, false},
+		{`var l = list(1, 2, 3); contains_list(l, "2")`, false},
+		{`var l = list(); contains_list(l, 1)`, false},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertBoolean(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_TupleContains verifies contains_tuple function
+func TestEvaluator_TupleContains(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`var t = tuple(1, 2, 3, 4); contains_tuple(t, 3)`, true},
+		{`var t = tuple(1, 2, 3, 4); contains_tuple(t, 5)`, false},
+		{`var t = tuple("a", "b", "c"); contains_tuple(t, "b")`, true},
+		{`var t = tuple("a", "b", "c"); contains_tuple(t, "d")`, false},
+		{`var t = tuple(1, 2, 3); contains_tuple(t, "2")`, false},
+		{`var t = tuple(); contains_tuple(t, 1)`, false},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertBoolean(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ListInsertErrors verifies error handling for insert_list
+func TestEvaluator_ListInsertErrors(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{`insert_list(123, 0, 1)`, "ERROR: first argument to `insert_list` must be a list"},
+		{`insert_list(list(), "0", 1)`, "ERROR: second argument to `insert_list` must be an integer"},
+		{`insert_list(list(), 10, 1)`, "ERROR: list index out of bounds"},
+		{`insert_list(list(), -10, 1)`, "ERROR: list index out of bounds"},
+		{`insert_list(list())`, "ERROR: wrong number of arguments"},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertError(t, result, tt.ExpectedErrorMsg)
+	}
+}
+
+// TestEvaluator_ListRemoveErrors verifies error handling for remove_list
+func TestEvaluator_ListRemoveErrors(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{`remove_list(123, 0)`, "ERROR: first argument to `remove_list` must be a list"},
+		{`remove_list(list(), "0")`, "ERROR: second argument to `remove_list` must be an integer"},
+		{`remove_list(list(), 0)`, "ERROR: cannot remove from empty list"},
+		{`remove_list(list(1, 2), 10)`, "ERROR: list index out of bounds"},
+		{`remove_list(list(1, 2), -10)`, "ERROR: list index out of bounds"},
+		{`remove_list(list())`, "ERROR: wrong number of arguments"},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertError(t, result, tt.ExpectedErrorMsg)
+	}
+}
+
+// TestEvaluator_ListTupleContainsErrors verifies error handling for contains functions
+func TestEvaluator_ListTupleContainsErrors(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{`contains_list(123, 1)`, "ERROR: first argument to `contains_list` must be a list"},
+		{`contains_list(list())`, "ERROR: wrong number of arguments"},
+		{`contains_tuple(123, 1)`, "ERROR: first argument to `contains_tuple` must be a tuple"},
+		{`contains_tuple(tuple())`, "ERROR: wrong number of arguments"},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertError(t, result, tt.ExpectedErrorMsg)
+	}
+}
+
+// TestEvaluator_ListCreation verifies list() constructor function
+func TestEvaluator_ListCreation(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectedLen int
+	}{
+		{`list()`, 0},
+		{`list(1, 2, 3)`, 3},
+		{`list(1, "hello", true, 3.14)`, 4},
+		{`list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)`, 10},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.ListType {
+			t.Errorf("expected list, got %s", result.GetType())
+			continue
+		}
+
+		listObj := result.(*objects.List)
+		if len(listObj.Elements) != tt.expectedLen {
+			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(listObj.Elements))
+		}
+	}
+}
+
+// TestEvaluator_TupleCreation verifies tuple() constructor function
+func TestEvaluator_TupleCreation(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectedLen int
+	}{
+		{`tuple()`, 0},
+		{`tuple(1, 2, 3)`, 3},
+		{`tuple("Alice", 25, true, 5.8)`, 4},
+		{`tuple(1, 2, 3, 4, 5)`, 5},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.TupleType {
+			t.Errorf("expected tuple, got %s", result.GetType())
+			continue
+		}
+
+		tupleObj := result.(*objects.Tuple)
+		if len(tupleObj.Elements) != tt.expectedLen {
+			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(tupleObj.Elements))
+		}
+	}
+}
+
+// TestEvaluator_ListIndexing verifies list indexing operations
+func TestEvaluator_ListIndexing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var l = list(10, 20, 30, 40, 50); l[0]`, 10},
+		{`var l = list(10, 20, 30, 40, 50); l[2]`, 30},
+		{`var l = list(10, 20, 30, 40, 50); l[4]`, 50},
+		{`var l = list(10, 20, 30, 40, 50); l[-1]`, 50},
+		{`var l = list(10, 20, 30, 40, 50); l[-2]`, 40},
+		{`var l = list(10, 20, 30, 40, 50); l[-5]`, 10},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_TupleIndexing verifies tuple indexing operations
+func TestEvaluator_TupleIndexing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var t = tuple(10, 20, 30); t[0]`, 10},
+		{`var t = tuple(10, 20, 30); t[1]`, 20},
+		{`var t = tuple(10, 20, 30); t[2]`, 30},
+		{`var t = tuple(10, 20, 30); t[-1]`, 30},
+		{`var t = tuple(10, 20, 30); t[-2]`, 20},
+		{`var t = tuple(10, 20, 30); t[-3]`, 10},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ListSlicing verifies list slicing operations
+func TestEvaluator_ListSlicing(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectedLen int
+	}{
+		{`var l = list(0, 10, 20, 30, 40, 50); l[1:4]`, 3},
+		{`var l = list(0, 10, 20, 30, 40, 50); l[:3]`, 3},
+		{`var l = list(0, 10, 20, 30, 40, 50); l[3:]`, 3},
+		{`var l = list(0, 10, 20, 30, 40, 50); l[:]`, 6},
+		{`var l = list(0, 10, 20, 30, 40, 50); l[1:-1]`, 4},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.ArrayType {
+			t.Errorf("expected array from slice, got %s", result.GetType())
+			continue
+		}
+
+		arr := result.(*objects.Array)
+		if len(arr.Elements) != tt.expectedLen {
+			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(arr.Elements))
+		}
+	}
+}
+
+// TestEvaluator_TupleSlicing verifies tuple slicing operations
+func TestEvaluator_TupleSlicing(t *testing.T) {
+	tests := []struct {
+		input       string
+		expectedLen int
+	}{
+		{`var t = tuple(1, 2, 3, 4, 5); t[1:3]`, 2},
+		{`var t = tuple(1, 2, 3, 4, 5); t[:2]`, 2},
+		{`var t = tuple(1, 2, 3, 4, 5); t[2:]`, 3},
+		{`var t = tuple(1, 2, 3, 4, 5); t[:]`, 5},
+		{`var t = tuple(1, 2, 3, 4, 5); t[1:-1]`, 3},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.ArrayType {
+			t.Errorf("expected array from slice, got %s", result.GetType())
+			continue
+		}
+
+		arr := result.(*objects.Array)
+		if len(arr.Elements) != tt.expectedLen {
+			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(arr.Elements))
+		}
+	}
+}
+
+// TestEvaluator_ListPushPop verifies list push and pop operations
+func TestEvaluator_ListPushPop(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var l = list(1, 2, 3); pushback_list(l, 4); l[3]`, 4},
+		{`var l = list(1, 2, 3); pushfront_list(l, 0); l[0]`, 0},
+		{`var l = list(1, 2, 3); popback_list(l)`, 3},
+		{`var l = list(1, 2, 3); popfront_list(l)`, 1},
+		{`var l = list(1, 2, 3); pushback_list(l, 4); size_list(l)`, 4},
+		{`var l = list(1, 2, 3); popback_list(l); size_list(l)`, 2},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ListPeek verifies list peek operations
+func TestEvaluator_ListPeek(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var l = list(10, 20, 30); peekfront_list(l)`, 10},
+		{`var l = list(10, 20, 30); peekback_list(l)`, 30},
+		{`var l = list(5); peekfront_list(l)`, 5},
+		{`var l = list(5); peekback_list(l)`, 5},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_TuplePeek verifies tuple peek operations
+func TestEvaluator_TuplePeek(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var t = tuple(10, 20, 30); peekfront_tuple(t)`, 10},
+		{`var t = tuple(10, 20, 30); peekback_tuple(t)`, 30},
+		{`var t = tuple(42); peekfront_tuple(t)`, 42},
+		{`var t = tuple(42); peekback_tuple(t)`, 42},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ListSize verifies list size operations
+func TestEvaluator_ListSize(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`size_list(list())`, 0},
+		{`size_list(list(1, 2, 3))`, 3},
+		{`size_list(list(1, 2, 3, 4, 5))`, 5},
+		{`var l = list(1, 2); pushback_list(l, 3); size_list(l)`, 3},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_TupleSize verifies tuple size operations
+func TestEvaluator_TupleSize(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`size_tuple(tuple())`, 0},
+		{`size_tuple(tuple(1, 2, 3))`, 3},
+		{`size_tuple(tuple("a", "b", "c", "d"))`, 4},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ListLength verifies length() function with lists
+func TestEvaluator_ListLength(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`length(list())`, 0},
+		{`length(list(1, 2, 3))`, 3},
+		{`length(list(1, 2, 3, 4, 5))`, 5},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_TupleLength verifies length() function with tuples
+func TestEvaluator_TupleLength(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`length(tuple())`, 0},
+		{`length(tuple(1, 2, 3))`, 3},
+		{`length(tuple("a", "b"))`, 2},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ForeachList verifies foreach loops with lists
+func TestEvaluator_ForeachList(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var sum = 0; foreach i in list(1, 2, 3) { sum += i; } sum`, 6},
+		{`var sum = 0; foreach i in list(10, 20, 30) { sum += i; } sum`, 60},
+		{`var count = 0; foreach i in list(1, 2, 3, 4, 5) { count += 1; } count`, 5},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ForeachTuple verifies foreach loops with tuples
+func TestEvaluator_ForeachTuple(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var sum = 0; foreach i in tuple(1, 2, 3) { sum += i; } sum`, 6},
+		{`var sum = 0; foreach i in tuple(5, 10, 15) { sum += i; } sum`, 30},
+		{`var count = 0; foreach i in tuple(1, 2, 3) { count += 1; } count`, 3},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ListNested verifies nested list operations
+func TestEvaluator_ListNested(t *testing.T) {
+	src := `var matrix = list(list(1, 2), list(3, 4)); matrix[0][1]`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 2)
+}
+
+// TestEvaluator_TupleNested verifies nested tuple operations
+func TestEvaluator_TupleNested(t *testing.T) {
+	src := `var nested = tuple(tuple(1, 2), tuple(3, 4)); nested[1][0]`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 3)
+}
+
+// TestEvaluator_ListMixed verifies lists with mixed types
+func TestEvaluator_ListMixed(t *testing.T) {
+	src := `var l = list(1, "hello", true); length(l)`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 3)
+}
+
+// TestEvaluator_TupleMixed verifies tuples with mixed types
+func TestEvaluator_TupleMixed2(t *testing.T) {
+	src := `var t = tuple("Alice", 25, true); length(t)`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 3)
 }

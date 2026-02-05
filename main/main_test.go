@@ -932,4 +932,191 @@ func TestMain_Main(t *testing.T) {
 	root90.Accept(visitor90)
 	fmt.Println(visitor90)
 
+	// Test 91: List creation and basic operations
+	src91 := `var l = list(1, 2, 3, 4, 5); l`
+	root91 := parser.NewParser(src91).Parse()
+	visitor91 := &PrintingVisitor{}
+	root91.Accept(visitor91)
+	fmt.Println(visitor91)
+
+	// Test 92: List with push and pop operations
+	src92 := `
+	var nums = list(10, 20, 30);
+	pushback_list(nums, 40);
+	pushfront_list(nums, 5);
+	var last = popback_list(nums);
+	var first = popfront_list(nums);
+	nums
+	`
+	root92 := parser.NewParser(src92).Parse()
+	visitor92 := &PrintingVisitor{}
+	root92.Accept(visitor92)
+	fmt.Println(visitor92)
+
+	// Test 93: List indexing and slicing
+	src93 := `
+	var data = list(0, 10, 20, 30, 40, 50);
+	var elem = data[2];
+	var slice = data[1:4];
+	slice
+	`
+	root93 := parser.NewParser(src93).Parse()
+	visitor93 := &PrintingVisitor{}
+	root93.Accept(visitor93)
+	fmt.Println(visitor93)
+
+	// Test 94: List with foreach loop
+	src94 := `
+	var sum = 0;
+	foreach num in list(1, 2, 3, 4, 5) {
+		sum = sum + num;
+	}
+	sum
+	`
+	root94 := parser.NewParser(src94).Parse()
+	visitor94 := &PrintingVisitor{}
+	root94.Accept(visitor94)
+	fmt.Println(visitor94)
+
+	// Test 95: Nested lists
+	src95 := `
+	var matrix = list(list(1, 2, 3), list(4, 5, 6), list(7, 8, 9));
+	var row = matrix[1];
+	var elem = matrix[0][2];
+	elem
+	`
+	root95 := parser.NewParser(src95).Parse()
+	visitor95 := &PrintingVisitor{}
+	root95.Accept(visitor95)
+	fmt.Println(visitor95)
+
+	// Test 96: Tuple creation and basic operations
+	src96 := `var t = tuple(10, 20, 30); t`
+	root96 := parser.NewParser(src96).Parse()
+	visitor96 := &PrintingVisitor{}
+	root96.Accept(visitor96)
+	fmt.Println(visitor96)
+
+	// Test 97: Tuple indexing and slicing
+	src97 := `
+	var coords = tuple(100, 200, 300, 400);
+	var x = coords[0];
+	var slice = coords[1:3];
+	slice
+	`
+	root97 := parser.NewParser(src97).Parse()
+	visitor97 := &PrintingVisitor{}
+	root97.Accept(visitor97)
+	fmt.Println(visitor97)
+
+	// Test 98: Tuple with foreach loop
+	src98 := `
+	var product = 1;
+	foreach val in tuple(2, 3, 4) {
+		product = product * val;
+	}
+	product
+	`
+	root98 := parser.NewParser(src98).Parse()
+	visitor98 := &PrintingVisitor{}
+	root98.Accept(visitor98)
+	fmt.Println(visitor98)
+
+	// Test 99: Tuple immutability and peek operations
+	src99 := `
+	var person = tuple("Alice", 25, true);
+	var name = peekfront_tuple(person);
+	var active = peekback_tuple(person);
+	var size = size_tuple(person);
+	size
+	`
+	root99 := parser.NewParser(src99).Parse()
+	visitor99 := &PrintingVisitor{}
+	root99.Accept(visitor99)
+	fmt.Println(visitor99)
+
+	// Test 100: Mixed list and tuple operations
+	src100 := `
+	// Create a list of tuples
+	var points = list(tuple(0, 0), tuple(10, 20), tuple(30, 40));
+	var second_point = points[1];
+	var y_coord = second_point[1];
+	
+	// Create a tuple of lists
+	var data = tuple(list(1, 2, 3), list(4, 5, 6));
+	var first_list = data[0];
+	pushback_list(first_list, 99);
+	
+	first_list
+	`
+	root100 := parser.NewParser(src100).Parse()
+	visitor100 := &PrintingVisitor{}
+	root100.Accept(visitor100)
+	fmt.Println(visitor100)
+
+	// Test 101: List with length and size functions
+	src101 := `
+	var items = list("a", "b", "c", "d", "e");
+	var len1 = length(items);
+	var len2 = size_list(items);
+	len1
+	`
+	root101 := parser.NewParser(src101).Parse()
+	visitor101 := &PrintingVisitor{}
+	root101.Accept(visitor101)
+	fmt.Println(visitor101)
+
+	// Test 102: Tuple with length function
+	src102 := `
+	var rgb = tuple(255, 128, 64);
+	var len = length(rgb);
+	len
+	`
+	root102 := parser.NewParser(src102).Parse()
+	visitor102 := &PrintingVisitor{}
+	root102.Accept(visitor102)
+	fmt.Println(visitor102)
+
+	// Test 103: List index assignment
+	src103 := `
+	var arr = list(1, 2, 3, 4, 5);
+	arr[0] = 100;
+	arr[2] = 300;
+	arr[-1] = 999;
+	arr
+	`
+	root103 := parser.NewParser(src103).Parse()
+	visitor103 := &PrintingVisitor{}
+	root103.Accept(visitor103)
+	fmt.Println(visitor103)
+
+	// Test 104: Complex list manipulation
+	src104 := `
+	var stack = list();
+	pushback_list(stack, 10);
+	pushback_list(stack, 20);
+	pushback_list(stack, 30);
+	var top = peekback_list(stack);
+	var popped = popback_list(stack);
+	var new_size = size_list(stack);
+	new_size
+	`
+	root104 := parser.NewParser(src104).Parse()
+	visitor104 := &PrintingVisitor{}
+	root104.Accept(visitor104)
+	fmt.Println(visitor104)
+
+	// Test 105: Tuple as function return value simulation
+	src105 := `
+	var result = tuple(42, "success", true);
+	var code = result[0];
+	var message = result[1];
+	var status = result[2];
+	status
+	`
+	root105 := parser.NewParser(src105).Parse()
+	visitor105 := &PrintingVisitor{}
+	root105.Accept(visitor105)
+	fmt.Println(visitor105)
+
 }

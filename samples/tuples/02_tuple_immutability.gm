@@ -1,0 +1,74 @@
+// Tuple Immutability Test
+// This file demonstrates that tuples are immutable
+
+println("=== Tuple Immutability Demonstration ===");
+
+var t = tuple(1, 2, 3, 4, 5);
+println("Original tuple:", t);
+println("Type:", typeof(t));
+
+println("\n=== Read Operations (Allowed) ===");
+
+// Reading is allowed
+println("t[0]:", t[0]);
+println("t[-1]:", t[-1]);
+println("peekfront_tuple(t):", peekfront_tuple(t));
+println("peekback_tuple(t):", peekback_tuple(t));
+println("size_tuple(t):", size_tuple(t));
+
+// Slicing is allowed (returns array)
+var slice = t[1:4];
+println("t[1:4]:", slice);
+println("Type of slice:", typeof(slice));
+
+println("\n=== Tuple vs List Comparison ===");
+
+var tup = tuple(10, 20, 30);
+var lst = list(10, 20, 30);
+
+println("Tuple:", tup);
+println("List:", lst);
+
+println("\nTuple operations:");
+println("  peekfront_tuple(tup):", peekfront_tuple(tup));
+println("  peekback_tuple(tup):", peekback_tuple(tup));
+println("  size_tuple(tup):", size_tuple(tup));
+
+println("\nList operations:");
+println("  peekfront_list(lst):", peekfront_list(lst));
+println("  peekback_list(lst):", peekback_list(lst));
+println("  size_list(lst):", size_list(lst));
+
+println("\nList can be modified:");
+pushback_list(lst, 40);
+println("  After pushback_list(lst, 40):", lst);
+
+println("\nTuple remains unchanged:");
+println("  Tuple:", tup);
+println("  (No modification methods available)");
+
+println("\n=== Tuple as Function Return ===");
+
+func getCoordinates() {
+    return tuple(100, 200, 300);
+}
+
+var coords = getCoordinates();
+println("Coordinates from function:", coords);
+println("X:", coords[0]);
+println("Y:", coords[1]);
+println("Z:", coords[2]);
+
+println("\n=== Tuple for Multiple Values ===");
+
+func getPersonInfo() {
+    return tuple("Bob", 30, "Engineer");
+}
+
+var info = getPersonInfo();
+println("Person info:", info);
+println("Name:", info[0]);
+println("Age:", info[1]);
+println("Job:", info[2]);
+
+println("\n=== Test Complete ===");

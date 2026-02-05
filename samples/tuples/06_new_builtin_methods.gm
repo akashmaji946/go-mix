@@ -1,0 +1,219 @@
+// ============================================
+// Tuple New Builtin Methods Demo
+// ============================================
+// This file demonstrates the new builtin method:
+// - contains_tuple(tuple, value)
+// ============================================
+
+println("=== Tuple New Builtin Methods Demo ===\n")
+
+// ============================================
+// 1. contains_tuple() - Basic usage
+// ============================================
+println("1. contains_tuple() - Basic usage")
+println("----------------------------------")
+
+var numbers = tuple(1, 2, 3, 4, 5)
+println("Tuple:", numbers)
+println("contains_tuple(numbers, 3):", contains_tuple(numbers, 3))
+println("contains_tuple(numbers, 10):", contains_tuple(numbers, 10))
+
+// ============================================
+// 2. contains_tuple() - String values
+// ============================================
+println("\n2. contains_tuple() - String values")
+println("------------------------------------")
+
+var fruits = tuple("apple", "banana", "cherry")
+println("Tuple:", fruits)
+println("contains_tuple(fruits, 'banana'):", contains_tuple(fruits, "banana"))
+println("contains_tuple(fruits, 'orange'):", contains_tuple(fruits, "orange"))
+
+// ============================================
+// 3. contains_tuple() - Type sensitivity
+// ============================================
+println("\n3. contains_tuple() - Type sensitivity")
+println("--------------------------------------")
+
+var mixed = tuple(1, "2", 3, "4", 5)
+println("Mixed tuple:", mixed)
+println("contains_tuple(mixed, 2):", contains_tuple(mixed, 2))
+println("contains_tuple(mixed, '2'):", contains_tuple(mixed, "2"))
+println("Note: Type matters! Integer 2 != String '2'")
+
+// ============================================
+// 4. contains_tuple() - Boolean values
+// ============================================
+println("\n4. contains_tuple() - Boolean values")
+println("-------------------------------------")
+
+var flags = tuple(true, false, true, true)
+println("Tuple:", flags)
+println("contains_tuple(flags, true):", contains_tuple(flags, true))
+println("contains_tuple(flags, false):", contains_tuple(flags, false))
+
+// ============================================
+// 5. contains_tuple() - Empty tuple
+// ============================================
+println("\n5. contains_tuple() - Empty tuple")
+println("----------------------------------")
+
+var empty = tuple()
+println("Empty tuple:", empty)
+println("contains_tuple(empty, 1):", contains_tuple(empty, 1))
+println("Note: Empty tuple contains nothing")
+
+// ============================================
+// 6. Practical Example: Validation
+// ============================================
+println("\n6. Practical Example: Validation")
+println("---------------------------------")
+
+var validColors = tuple("red", "green", "blue", "yellow")
+println("Valid colors:", validColors)
+
+var userColor = "green"
+if (contains_tuple(validColors, userColor)) {
+    println("✓ 'green' is a valid color")
+} else {
+    println("✗ 'green' is not a valid color")
+}
+
+var invalidColor = "purple"
+if (contains_tuple(validColors, invalidColor)) {
+    println("✓ 'purple' is a valid color")
+} else {
+    println("✗ 'purple' is not a valid color")
+}
+
+// ============================================
+// 7. Practical Example: Configuration check
+// ============================================
+println("\n7. Practical Example: Configuration check")
+println("------------------------------------------")
+
+var allowedModes = tuple("read", "write", "execute")
+println("Allowed modes:", allowedModes)
+
+var requestedMode = "write"
+if (contains_tuple(allowedModes, requestedMode)) {
+    println("Access granted for mode: write")
+} else {
+    println("Access denied for mode: write")
+}
+
+// ============================================
+// 8. Practical Example: Enum-like behavior
+// ============================================
+println("\n8. Practical Example: Enum-like behavior")
+println("-----------------------------------------")
+
+var STATUS_CODES = tuple(200, 201, 400, 401, 403, 404, 500)
+println("Valid HTTP status codes:", STATUS_CODES)
+
+var responseCode = 404
+if (contains_tuple(STATUS_CODES, responseCode)) {
+    println("Status code 404 is valid")
+} else {
+    println("Status code 404 is invalid")
+}
+
+var unknownCode = 999
+if (contains_tuple(STATUS_CODES, unknownCode)) {
+    println("Status code 999 is valid")
+} else {
+    println("Status code 999 is invalid")
+}
+
+// ============================================
+// 9. Practical Example: Menu selection
+// ============================================
+println("\n9. Practical Example: Menu selection")
+println("-------------------------------------")
+
+var menuOptions = tuple("start", "stop", "pause", "resume", "quit")
+println("Available menu options:", menuOptions)
+
+var userChoice = "pause"
+if (contains_tuple(menuOptions, userChoice)) {
+    println("Executing command: pause")
+} else {
+    println("Invalid command: pause")
+    println("Please choose from:", menuOptions)
+}
+
+// ============================================
+// 10. Combining with other tuple methods
+// ============================================
+println("\n10. Combining with other tuple methods")
+println("---------------------------------------")
+
+var data = tuple(10, 20, 30, 40, 50)
+println("Data tuple:", data)
+println("Size:", size_tuple(data))
+println("First element:", peekfront_tuple(data))
+println("Last element:", peekback_tuple(data))
+
+var searchValue = 30
+if (contains_tuple(data, searchValue)) {
+    println("Value 30 found in tuple")
+    
+    // Find index manually (tuples don't have remove/insert)
+    var index = 0
+    foreach val in data {
+        if (val == searchValue) {
+            println("Found at index: 2")
+        }
+        index += 1
+    }
+}
+
+// ============================================
+// 11. Practical Example: Whitelist checking
+// ============================================
+println("\n11. Practical Example: Whitelist checking")
+println("------------------------------------------")
+
+var allowedUsers = tuple("admin", "user1", "user2", "guest")
+println("Allowed users:", allowedUsers)
+
+var currentUser = "user1"
+if (contains_tuple(allowedUsers, currentUser)) {
+    println("Welcome, user1!")
+} else {
+    println("Access denied for user: user1")
+}
+
+// ============================================
+// 12. Practical Example: Constant lookup
+// ============================================
+println("\n12. Practical Example: Constant lookup")
+println("---------------------------------------")
+
+var DAYS_OF_WEEK = tuple("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+println("Days of week:", DAYS_OF_WEEK)
+
+var today = "Friday"
+if (contains_tuple(DAYS_OF_WEEK, today)) {
+    println("Friday is a valid day of the week")
+    
+    if (today == "Saturday" || today == "Sunday") {
+        println("It's the weekend!")
+    } else {
+        println("It's a weekday")
+    }
+}
+
+// ============================================
+// 13. Performance note
+// ============================================
+println("\n13. Performance note")
+println("--------------------")
+println("Note: contains_tuple() performs a linear search")
+println("For large tuples, consider using a set or map for O(1) lookup")
+
+var largeTuple = tuple(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+println("Large tuple size:", size_tuple(largeTuple))
+println("Searching for 7:", contains_tuple(largeTuple, 7))
+
+println("\n=== End of Demo ===")

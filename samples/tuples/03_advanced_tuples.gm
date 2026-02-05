@@ -1,0 +1,97 @@
+// Advanced Tuple Operations Test
+// This file demonstrates advanced tuple usage patterns
+
+println("=== Nested Tuples ===");
+
+var point2d = tuple(10, 20);
+var point3d = tuple(10, 20, 30);
+var points = tuple(point2d, point3d);
+
+println("2D Point:", point2d);
+println("3D Point:", point3d);
+println("Points tuple:", points);
+println("points[0]:", points[0]);
+println("points[1]:", points[1]);
+println("points[0][0]:", points[0][0]);
+println("points[1][2]:", points[1][2]);
+
+println("\n=== Tuple with Different Types ===");
+
+var mixed = tuple(
+    42,
+    "hello",
+    3.14,
+    true,
+    nil,
+    tuple(1, 2, 3),
+    list(4, 5, 6)
+);
+
+println("Mixed tuple:", mixed);
+println("Integer:", mixed[0]);
+println("String:", mixed[1]);
+println("Float:", mixed[2]);
+println("Boolean:", mixed[3]);
+println("Nil:", mixed[4]);
+println("Nested tuple:", mixed[5]);
+println("Nested list:", mixed[6]);
+
+println("\n=== Tuple Iteration with Foreach ===");
+
+var colors = tuple("red", "green", "blue", "yellow");
+println("Colors:", colors);
+
+foreach color in colors {
+    println("  Color:", color);
+}
+
+println("\n=== Tuple Slicing Patterns ===");
+
+var data = tuple(0, 10, 20, 30, 40, 50, 60, 70, 80, 90);
+println("Original tuple:", data);
+
+println("First half: data[:5] =", data[:5]);
+println("Second half: data[5:] =", data[5:]);
+println("Middle: data[3:7] =", data[3:7]);
+println("Every other (simulated): data[0], data[2], data[4]...");
+
+println("\n=== Tuple as Record ===");
+
+var employee = tuple("E001", "John Doe", "Engineering", 75000);
+println("Employee record:", employee);
+println("ID:", employee[0]);
+println("Name:", employee[1]);
+println("Department:", employee[2]);
+println("Salary:", employee[3]);
+
+println("\n=== Tuple Unpacking Pattern ===");
+
+var rgb = tuple(255, 128, 64);
+var r = rgb[0];
+var g = rgb[1];
+var b = rgb[2];
+println("RGB:", rgb);
+println("Red:", r, "Green:", g, "Blue:", b);
+
+println("\n=== Tuple Iteration ===");
+
+var numbers = tuple(100, 200, 300, 400, 500);
+println("Numbers tuple:", numbers);
+
+foreach num in numbers {
+    println("  Number:", num);
+}
+
+println("\n=== Tuple Comparison ===");
+
+var t1 = tuple(1, 2, 3);
+var t2 = tuple(1, 2, 3);
+var t3 = tuple(3, 2, 1);
+
+println("t1:", t1);
+println("t2:", t2);
+println("t3:", t3);
+println("t1 == t2:", t1 == t2);
+println("t1 == t3:", t1 == t3);
+
+println("\n=== Test Complete ===");

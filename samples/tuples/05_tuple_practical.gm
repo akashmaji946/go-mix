@@ -1,0 +1,138 @@
+// Practical Tuple Usage Examples
+// This file demonstrates real-world tuple usage patterns
+
+println("=== Tuple as Return Value ===");
+
+func divmod(a, b) {
+    var quotient = a / b;
+    var remainder = a % b;
+    return tuple(quotient, remainder);
+}
+
+var result = divmod(17, 5);
+println("divmod(17, 5):", result);
+println("Quotient:", result[0]);
+println("Remainder:", result[1]);
+
+println("\n=== Tuple for Configuration ===");
+
+var config = tuple(
+    "localhost",
+    8080,
+    true,
+    "/api/v1"
+);
+
+println("Server config:", config);
+println("Host:", config[0]);
+println("Port:", config[1]);
+println("SSL:", config[2]);
+println("Base path:", config[3]);
+
+println("\n=== Tuple for Coordinates ===");
+
+func distance2D(p1, p2) {
+    var dx = p2[0] - p1[0];
+    var dy = p2[1] - p1[1];
+    var dist = dx * dx + dy * dy;
+    return dist;
+}
+
+var point1 = tuple(0, 0);
+var point2 = tuple(3, 4);
+println("Point 1:", point1);
+println("Point 2:", point2);
+println("Distance squared:", distance2D(point1, point2));
+
+println("\n=== Tuple for RGB Colors ===");
+
+var red = tuple(255, 0, 0);
+var green = tuple(0, 255, 0);
+var blue = tuple(0, 0, 255);
+var purple = tuple(128, 0, 128);
+
+println("Red:", red);
+println("Green:", green);
+println("Blue:", blue);
+println("Purple:", purple);
+
+func printColor(color) {
+    println("  R:", color[0], "G:", color[1], "B:", color[2]);
+}
+
+println("Color values:");
+printColor(red);
+printColor(green);
+printColor(blue);
+printColor(purple);
+
+println("\n=== Tuple for Date/Time ===");
+
+var datetime = tuple(2024, 1, 15, 14, 30, 0);
+println("DateTime:", datetime);
+println("Year:", datetime[0]);
+println("Month:", datetime[1]);
+println("Day:", datetime[2]);
+println("Hour:", datetime[3]);
+println("Minute:", datetime[4]);
+println("Second:", datetime[5]);
+
+println("\n=== Tuple for Key-Value Pairs ===");
+
+var pair1 = tuple("name", "Alice");
+var pair2 = tuple("age", 30);
+var pair3 = tuple("city", "NYC");
+
+println("Pair 1:", pair1, "->", pair1[0], ":", pair1[1]);
+println("Pair 2:", pair2, "->", pair2[0], ":", pair2[1]);
+println("Pair 3:", pair3, "->", pair3[0], ":", pair3[1]);
+
+println("\n=== Tuple for Min/Max ===");
+
+func minmax(a, b, c) {
+    var min = a;
+    var max = a;
+    
+    if (b < min) {
+        min = b;
+    }
+    if (b > max) {
+        max = b;
+    }
+    if (c < min) {
+        min = c;
+    }
+    if (c > max) {
+        max = c;
+    }
+    
+    return tuple(min, max);
+}
+
+var bounds = minmax(5, 12, 3);
+println("minmax(5, 12, 3):", bounds);
+println("Min:", bounds[0]);
+println("Max:", bounds[1]);
+
+println("\n=== Tuple for Status Codes ===");
+
+var success = tuple(200, "OK");
+var notFound = tuple(404, "Not Found");
+var serverError = tuple(500, "Internal Server Error");
+
+println("Success:", success[0], "-", success[1]);
+println("Not Found:", notFound[0], "-", notFound[1]);
+println("Server Error:", serverError[0], "-", serverError[1]);
+
+println("\n=== Tuple Iteration ===");
+
+var weekdays = tuple("Mon", "Tue", "Wed", "Thu", "Fri");
+println("Weekdays:", weekdays);
+
+var count = 1;
+foreach day in weekdays {
+    println("Day", count, ":", day);
+    count = count + 1;
+}
+
+println("\n=== Test Complete ===");

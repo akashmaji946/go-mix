@@ -1,0 +1,86 @@
+// List Edge Cases Test
+// This file tests boundary conditions and edge cases
+
+println("=== Empty List Operations ===");
+
+var empty = list();
+println("Empty list:", empty);
+println("Size:", size_list(empty));
+println("Type:", typeof(empty));
+
+// Slicing empty list
+var emptySlice = empty[:];
+println("Empty slice:", emptySlice);
+
+println("\n=== Single Element List ===");
+
+var single = list(42);
+println("Single element:", single);
+println("Size:", size_list(single));
+println("peekfront:", peekfront_list(single));
+println("peekback:", peekback_list(single));
+println("Index [0]:", single[0]);
+println("Index [-1]:", single[-1]);
+
+var popped = popback_list(single);
+println("Popped:", popped);
+println("After pop:", single);
+println("Size after pop:", size_list(single));
+
+println("\n=== Large List ===");
+
+var large = list();
+foreach i in 1...100 {
+    pushback_list(large, i);
+}
+println("Large list size:", size_list(large));
+println("First element:", peekfront_list(large));
+println("Last element:", peekback_list(large));
+println("Element at index 50:", large[50]);
+
+println("\n=== Negative Index Edge Cases ===");
+
+var nums = list(10, 20, 30, 40, 50);
+println("List:", nums);
+println("nums[-1]:", nums[-1]);
+println("nums[-2]:", nums[-2]);
+println("nums[-3]:", nums[-3]);
+println("nums[-4]:", nums[-4]);
+println("nums[-5]:", nums[-5]);
+
+println("\n=== Slice Edge Cases ===");
+
+println("nums[:]:", nums[:]);
+println("nums[0:0]:", nums[0:0]);
+println("nums[2:2]:", nums[2:2]);
+println("nums[-2:]:", nums[-2:]);
+println("nums[:-2]:", nums[:-2]);
+println("nums[-4:-1]:", nums[-4:-1]);
+
+println("\n=== Heterogeneous List ===");
+
+var mixed = list(1, "two", 3.0, true, nil, list(1, 2), func() { return 42; });
+println("Mixed list:", mixed);
+println("Size:", size_list(mixed));
+println("Element 0 (int):", mixed[0]);
+println("Element 1 (string):", mixed[1]);
+println("Element 2 (float):", mixed[2]);
+println("Element 3 (bool):", mixed[3]);
+println("Element 4 (nil):", mixed[4]);
+println("Element 5 (list):", mixed[5]);
+println("Element 6 (func):", mixed[6]);
+
+println("\n=== Multiple Pops ===");
+
+var stack = list(1, 2, 3, 4, 5);
+println("Initial stack:", stack);
+
+while (size_list(stack) > 0) {
+    var val = popback_list(stack);
+    println("Popped:", val, "Remaining:", stack);
+}
+
+println("Final stack:", stack);
+println("Final size:", size_list(stack));
+
+println("\n=== Test Complete ===");

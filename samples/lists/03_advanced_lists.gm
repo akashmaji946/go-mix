@@ -1,0 +1,59 @@
+// Advanced List Operations Test
+// This file demonstrates advanced list usage patterns
+
+println("=== Nested Lists ===");
+
+var matrix = list(
+    list(1, 2, 3),
+    list(4, 5, 6),
+    list(7, 8, 9)
+);
+
+println("Matrix:", matrix);
+println("matrix[0]:", matrix[0]);
+println("matrix[1]:", matrix[1]);
+println("matrix[2]:", matrix[2]);
+println("matrix[0][0]:", matrix[0][0]);
+println("matrix[1][1]:", matrix[1][1]);
+println("matrix[2][2]:", matrix[2][2]);
+
+println("\n=== List Iteration with Foreach ===");
+
+var items = list("apple", "banana", "cherry", "date");
+println("Items:", items);
+
+foreach item in items {
+    println("  Item:", item);
+}
+
+println("\n=== List with Range ===");
+
+var rangeList = list();
+foreach i in 1...5 {
+    pushback_list(rangeList, i * 10);
+}
+println("Range-based list:", rangeList);
+
+println("\n=== Complex Slicing ===");
+
+var data = list(0, 10, 20, 30, 40, 50, 60, 70, 80, 90);
+println("Original:", data);
+
+println("data[2:5]:", data[2:5]);
+println("data[:4]:", data[:4]);
+println("data[6:]:", data[6:]);
+println("data[-3:]:", data[-3:]);
+println("data[:-3]:", data[:-3]);
+println("data[2:-2]:", data[2:-2]);
+
+println("\n=== List Building Pattern ===");
+
+var builder = list();
+foreach i in 1...10 {
+    if (i % 2 == 0) {
+        pushback_list(builder, i);
+    }
+}
+println("Even numbers 1-10:", builder);
+
+println("\n=== Test Complete ===");
