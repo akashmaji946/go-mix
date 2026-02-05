@@ -1,3 +1,8 @@
+/*
+File    : go-mix/lexer/lexer_test.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
 package lexer
 
 import (
@@ -221,6 +226,21 @@ func TestNewLexer_ConsumeTokens(t *testing.T) {
 			Input: `"hello there \t \n hii"`,
 			ExpectedTokens: []Token{
 				NewToken(STRING_LIT, "hello there \t \n hii"),
+			},
+		},
+		{
+			Input: `let const var for while if else true false nil`,
+			ExpectedTokens: []Token{
+				NewToken(LET_KEY, "let"),
+				NewToken(CONST_KEY, "const"),
+				NewToken(VAR_KEY, "var"),
+				NewToken(FOR_KEY, "for"),
+				NewToken(WHILE_KEY, "while"),
+				NewToken(IF_KEY, "if"),
+				NewToken(ELSE_KEY, "else"),
+				NewToken(TRUE_KEY, "true"),
+				NewToken(FALSE_KEY, "false"),
+				NewToken(NIL_LIT, "nil"),
 			},
 		},
 	}

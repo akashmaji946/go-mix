@@ -1,3 +1,8 @@
+/*
+File    : go-mix/eval/evaluator_test.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
 package eval
 
 import (

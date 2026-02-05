@@ -1,3 +1,8 @@
+/*
+File    : go-mix/parser/test_visitor.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
 package parser
 
 import (
@@ -8,30 +13,28 @@ import (
 
 // TestingVisitor is a visitor that asserts the expected nodes
 // The expected nodes are given in the in-order (like) traversal order
-// The change in order of flat nodes (in expected nodes list) in the test
-// should be failing comparison (in actual nodes list)
 type TestingVisitor struct {
-	ExpectedNodes []Node
-	Ptr           int
-	T             *testing.T
+	ExpectedNodes []Node     // List of expected nodes in traversal order
+	Ptr           int        // Current position pointer in the expected nodes list
+	T             *testing.T // Testing instance for assertions
 }
 
-// TestingVisitor.VisitRootNode visits the root node
+// VisitRootNode visits the root node and recursively visits all statements
 func (v *TestingVisitor) VisitRootNode(node RootNode) {
 	for _, stmt := range node.Statements {
 		stmt.Accept(v)
 	}
 }
 
-// TestingVisitor.VisitExpressionNode visits the expression node
+// VisitExpressionNode visits a generic expression node (no-op implementation)
 func (v *TestingVisitor) VisitExpressionNode(node ExpressionNode) {
 }
 
-// TestingVisitor.VisitStatementNode visits the statement node
+// VisitStatementNode visits a generic statement node (no-op implementation)
 func (v *TestingVisitor) VisitStatementNode(node StatementNode) {
 }
 
-// TestingVisitor.VisitIntegerLiteralExpressionNode visits the number literal expression node
+// VisitIntegerLiteralExpressionNode visits an integer literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -41,7 +44,7 @@ func (v *TestingVisitor) VisitIntegerLiteralExpressionNode(node IntegerLiteralEx
 	v.Ptr++
 }
 
-// TestingVisitor.VisitBooleanLiteralExpressionNode visits the boolean literal expression node
+// VisitBooleanLiteralExpressionNode visits a boolean literal node and asserts its value and token type match expected
 func (v *TestingVisitor) VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -52,7 +55,7 @@ func (v *TestingVisitor) VisitBooleanLiteralExpressionNode(node BooleanLiteralEx
 	v.Ptr++
 }
 
-// TestingVisitor.VisitBinaryExpressionNode visits the binary expression node
+// VisitBinaryExpressionNode visits a binary expression node and asserts the operator matches expected
 func (v *TestingVisitor) VisitBinaryExpressionNode(node BinaryExpressionNode) {
 	node.Left.Accept(v)
 	// assert on type
@@ -65,7 +68,7 @@ func (v *TestingVisitor) VisitBinaryExpressionNode(node BinaryExpressionNode) {
 	node.Right.Accept(v)
 }
 
-// TestingVisitor.VisitUnaryExpressionNode visits the unary expression node
+// VisitUnaryExpressionNode visits a unary expression node and asserts the operator matches expected
 func (v *TestingVisitor) VisitUnaryExpressionNode(node UnaryExpressionNode) {
 	node.Right.Accept(v)
 	// assert on type
@@ -77,7 +80,7 @@ func (v *TestingVisitor) VisitUnaryExpressionNode(node UnaryExpressionNode) {
 	v.Ptr++
 }
 
-// TestingVisitor.VisitParenthesizedExpressionNode visits the parenthesized expression node
+// VisitParenthesizedExpressionNode visits a parenthesized expression node and asserts its type
 func (v *TestingVisitor) VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode) {
 	node.Expr.Accept(v)
 	// assert on type
@@ -87,7 +90,7 @@ func (v *TestingVisitor) VisitParenthesizedExpressionNode(node ParenthesizedExpr
 	v.Ptr++
 }
 
-// TestingVisitor.VisitDeclarativeStatementNode visits the declarative statement node
+// VisitDeclarativeStatementNode visits a variable declaration node and asserts the keyword and identifier match expected
 func (v *TestingVisitor) VisitDeclarativeStatementNode(node DeclarativeStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -100,7 +103,7 @@ func (v *TestingVisitor) VisitDeclarativeStatementNode(node DeclarativeStatement
 	node.Expr.Accept(v)
 }
 
-// TestingVisitor.VisitIdentifierExpressionNode visits the identifier expression node
+// VisitIdentifierExpressionNode visits an identifier node and asserts its name matches expected
 func (v *TestingVisitor) VisitIdentifierExpressionNode(node IdentifierExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -110,7 +113,7 @@ func (v *TestingVisitor) VisitIdentifierExpressionNode(node IdentifierExpression
 	v.Ptr++
 }
 
-// TestingVisitor.VisitReturnStatementNode visits the return statement node
+// VisitReturnStatementNode visits a return statement node and asserts its type
 func (v *TestingVisitor) VisitReturnStatementNode(node ReturnStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -119,7 +122,7 @@ func (v *TestingVisitor) VisitReturnStatementNode(node ReturnStatementNode) {
 	v.Ptr++
 }
 
-// TestingVisitor.VisitBooleanExpressionNode visits the boolean expression node
+// VisitBooleanExpressionNode visits a boolean comparison/logical expression node and asserts its type
 func (v *TestingVisitor) VisitBooleanExpressionNode(node BooleanExpressionNode) {
 	node.Left.Accept(v)
 	// assert on type
@@ -130,7 +133,7 @@ func (v *TestingVisitor) VisitBooleanExpressionNode(node BooleanExpressionNode) 
 	node.Right.Accept(v)
 }
 
-// TestingVisitor.VisitBlockStatementNode visits the block statement node
+// VisitBlockStatementNode visits a block statement node and recursively visits all statements within
 func (v *TestingVisitor) VisitBlockStatementNode(node BlockStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -143,7 +146,7 @@ func (v *TestingVisitor) VisitBlockStatementNode(node BlockStatementNode) {
 	}
 }
 
-// TestingVisitor.VisitAssignmentExpressionNode visits the assignment expression node
+// VisitAssignmentExpressionNode visits an assignment expression node and asserts the operator and operands match expected
 func (v *TestingVisitor) VisitAssignmentExpressionNode(node AssignmentExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -155,7 +158,7 @@ func (v *TestingVisitor) VisitAssignmentExpressionNode(node AssignmentExpression
 	v.Ptr++
 }
 
-// TestingVisitor.VisitIfExpressionNode visits the if expression node
+// VisitIfExpressionNode visits an if-else expression node and asserts the if token matches expected
 func (v *TestingVisitor) VisitIfExpressionNode(node IfExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -168,7 +171,7 @@ func (v *TestingVisitor) VisitIfExpressionNode(node IfExpressionNode) {
 	// (&node.ElseBlock).Accept(v)
 }
 
-// TestingVisitor.VisitStringLiteral visits the string literal node
+// VisitStringLiteralExpressionNode visits a string literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitStringLiteralExpressionNode(node StringLiteralExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -178,7 +181,7 @@ func (v *TestingVisitor) VisitStringLiteralExpressionNode(node StringLiteralExpr
 	v.Ptr++
 }
 
-// TestingVisitor.VisitFloatLiteralExpressionNode visits the float literal node
+// VisitFloatLiteralExpressionNode visits a float literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -188,7 +191,7 @@ func (v *TestingVisitor) VisitFloatLiteralExpressionNode(node FloatLiteralExpres
 	v.Ptr++
 }
 
-// TestingVisitor.VisitNilLiteralExpressionNode visits the nil literal node
+// VisitNilLiteralExpressionNode visits a nil literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitNilLiteralExpressionNode(node NilLiteralExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -198,7 +201,7 @@ func (v *TestingVisitor) VisitNilLiteralExpressionNode(node NilLiteralExpression
 	v.Ptr++
 }
 
-// TestingVisitor.VisitFunctionStatementNode visits the function statement node
+// VisitFunctionStatementNode visits a function declaration node and asserts the function name matches expected
 func (v *TestingVisitor) VisitFunctionStatementNode(node FunctionStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -213,7 +216,7 @@ func (v *TestingVisitor) VisitFunctionStatementNode(node FunctionStatementNode) 
 	node.FuncBody.Accept(v)
 }
 
-// TestingVisitor.VisitCallExpressionNode visits the call expression node
+// VisitCallExpressionNode visits a function call expression node and asserts the function identifier matches expected
 func (v *TestingVisitor) VisitCallExpressionNode(node CallExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -227,7 +230,7 @@ func (v *TestingVisitor) VisitCallExpressionNode(node CallExpressionNode) {
 	}
 }
 
-// TestingVisitor.VisitForLoopStatementNode visits the for loop node
+// VisitForLoopStatementNode visits a for loop node and recursively visits initializers, condition, updates, and body
 func (v *TestingVisitor) VisitForLoopStatementNode(node ForLoopStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -251,7 +254,7 @@ func (v *TestingVisitor) VisitForLoopStatementNode(node ForLoopStatementNode) {
 	node.Body.Accept(v)
 }
 
-// TestingVisitor.VisitArrayExpressionNode()
+// VisitArrayExpressionNode visits an array literal node and recursively visits all elements
 func (v *TestingVisitor) VisitArrayExpressionNode(node ArrayExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -264,7 +267,7 @@ func (v *TestingVisitor) VisitArrayExpressionNode(node ArrayExpressionNode) {
 	}
 }
 
-// TestingVisitor.VisitIndexExpressionNode()
+// VisitIndexExpressionNode visits an array index expression node and visits the array and index
 func (v *TestingVisitor) VisitIndexExpressionNode(node IndexExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -276,7 +279,7 @@ func (v *TestingVisitor) VisitIndexExpressionNode(node IndexExpressionNode) {
 	node.Index.Accept(v)
 }
 
-// TestingVisitor.VisitWhileLoopStatementNode visits the while loop node
+// VisitWhileLoopStatementNode visits a while loop node and recursively visits conditions and body
 func (v *TestingVisitor) VisitWhileLoopStatementNode(node WhileLoopStatementNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -292,7 +295,7 @@ func (v *TestingVisitor) VisitWhileLoopStatementNode(node WhileLoopStatementNode
 	node.Body.Accept(v)
 }
 
-// TestingVisitor.VisitSliceExpressionNode()
+// VisitSliceExpressionNode visits an array slice expression node and visits the array, start, and end indices
 func (v *TestingVisitor) VisitSliceExpressionNode(node SliceExpressionNode) {
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
@@ -309,7 +312,7 @@ func (v *TestingVisitor) VisitSliceExpressionNode(node SliceExpressionNode) {
 	}
 }
 
-// TestingVisitor.String returns the string representation of the visitor
+// String returns the string representation of the visitor (empty string)
 func (v *TestingVisitor) String() string {
 	return ""
 }

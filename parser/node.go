@@ -1,3 +1,8 @@
+/*
+File    : go-mix/parser/node.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
 package parser
 
 import (
@@ -528,6 +533,7 @@ func (node *NilLiteralExpressionNode) Expression() {
 
 }
 
+// FunctionStatementNode: represents a function statement
 type FunctionStatementNode struct {
 	FuncToken  lexer.Token
 	FuncName   IdentifierExpressionNode

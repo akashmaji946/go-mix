@@ -1,3 +1,8 @@
+/*
+File    : go-mix/main/main_test.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
 package main
 
 import (
@@ -838,10 +843,36 @@ print("\n=== All complex pattern tests completed! ===")
 	root71.Accept(visitor71)
 	fmt.Println(visitor71)
 
+	// arrays and access
 	src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
 	root72 := parser.NewParser(src72).Parse()
 	visitor72 := &PrintingVisitor{}
 	root72.Accept(visitor72)
 	fmt.Println(visitor72)
+
+	src73 := `a()[b()+1]`
+	root73 := parser.NewParser(src73).Parse()
+	visitor73 := &PrintingVisitor{}
+	root73.Accept(visitor73)
+	fmt.Println(visitor73)
+
+	src74 := `var arr = [1, 2, true, 2.5, func () { }];  var foo = arr[-1]; foo();`
+	root74 := parser.NewParser(src74).Parse()
+	visitor74 := &PrintingVisitor{}
+	root74.Accept(visitor74)
+	fmt.Println(visitor74)
+
+	src75 := `var x = 1; 
+	var y = 1 + x; 
+	var arr = [x + y, x, y * 2.0, 1, 2, true, 2.5, func () {  while(true){} }];  
+	var foo = arr[-1]; 
+	foo(); 
+	arr = push(arr, 4); 
+	pop(arr); 
+	length(arr);`
+	root75 := parser.NewParser(src75).Parse()
+	visitor75 := &PrintingVisitor{}
+	root75.Accept(visitor75)
+	fmt.Println(visitor75)
 
 }

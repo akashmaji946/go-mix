@@ -1,28 +1,48 @@
+/*
+File    : go-mix/eval/evaluator.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
 package eval
 
 import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
-	"testing"
 
 	"github.com/akashmaji946/go-mix/function"
-	"github.com/akashmaji946/go-mix/lexer"
 	"github.com/akashmaji946/go-mix/objects"
 	"github.com/akashmaji946/go-mix/parser"
 	"github.com/akashmaji946/go-mix/scope"
 )
 
-// Evaluates expressions in a repl
+// Evaluator holds the state for evaluating GoMix AST nodes,
+// including parser, scope, builtins, and output writer.
+// It serves as the main execution engine for the GoMix interpreter,
+// managing the evaluation context and providing access to built-in functions.
 type Evaluator struct {
-	Par      *parser.Parser
-	Scp      *scope.Scope
-	Builtins map[string]*objects.Builtin
-	Writer   io.Writer
+	Par      *parser.Parser              // Parser instance for error reporting with line/column information
+	Scp      *scope.Scope                // Current scope for variable bindings and lexical scoping
+	Builtins map[string]*objects.Builtin // Map of builtin functions (e.g., print, len, push, pop)
+	Writer   io.Writer                   // Output writer for builtin functions (default: os.Stdout)
 }
 
-// Evaluator constructor
+// NewEvaluator creates and initializes a new Evaluator instance with default configuration.
+//
+// This constructor performs the following initialization:
+// - Creates a new root scope with no parent (global scope)
+// - Initializes an empty builtin functions map
+// - Sets the output writer to os.Stdout for default console output
+// - Registers all available builtin functions from the objects package
+//
+// Returns:
+//   - *Evaluator: A fully initialized evaluator ready to execute GoMix code
+//
+// Example usage:
+//
+//	ev := NewEvaluator()
+//	ev.SetParser(parser)
+//	result := ev.Eval(astNode)
 func NewEvaluator() *Evaluator {
 	ev := &Evaluator{
 		Par:      nil,
@@ -36,171 +56,64 @@ func NewEvaluator() *Evaluator {
 	return ev
 }
 
-// SetWriter sets the output writer for the evaluator
+// SetWriter configures the output destination for the evaluator's builtin functions.
+//
+// This method allows redirecting output from builtin functions (like print, println)
+// to any io.Writer implementation. This is particularly useful for:
+// - Testing: capturing output to verify program behavior
+// - Logging: redirecting output to log files
+// - Custom output handling: sending output to network streams, buffers, etc.
+//
+// Parameters:
+//   - w: An io.Writer implementation that will receive output from builtin functions
+//
+// Example usage:
+//
+//	var buf bytes.Buffer
+//	ev.SetWriter(&buf)  // Redirect output to buffer for testing
 func (e *Evaluator) SetWriter(w io.Writer) {
 	e.Writer = w
 }
 
-func (e *Evaluator) IsBuiltin(name string) bool {
-	_, ok := e.Builtins[name]
-	return ok
-}
-
-func (e *Evaluator) InvokeBuiltin(name string, args ...objects.GoMixObject) objects.GoMixObject {
-
-	if builtin, ok := e.Builtins[name]; ok {
-		return builtin.Callback(e.Writer, args...)
-	}
-	return &objects.Nil{}
-}
-
-func IsError(obj objects.GoMixObject) bool {
-	if obj != nil {
-		return obj.GetType() == objects.ErrorType
-	}
-	return false
-}
-
-func (e *Evaluator) CreateError(format string, a ...interface{}) *objects.Error {
-	msg := fmt.Sprintf(format, a...)
-	fullMsg := fmt.Sprintf("[%d:%d] %s", e.Par.Lex.Line, e.Par.Lex.Column, msg)
-	return &objects.Error{Message: fullMsg}
-}
-
-func UnwrapReturnValue(obj objects.GoMixObject) objects.GoMixObject {
-	if retVal, isReturn := obj.(*objects.ReturnValue); isReturn {
-		return retVal.Value
-	}
-	return obj
-}
-
-func AssertError(t *testing.T, obj objects.GoMixObject, expected string) {
-	errObj, ok := obj.(*objects.Error)
-	if !ok {
-		t.Errorf("not error. got=%T (%+v)", obj, obj)
-		return
-	}
-	if !strings.Contains(errObj.Message, expected) {
-		t.Errorf("wrong error message. expected to contain=%q, got=%q", expected, errObj.Message)
-	}
-}
-
-func AssertInteger(t *testing.T, obj objects.GoMixObject, expected int64) {
-	result, ok := obj.(*objects.Integer)
-	if !ok {
-		t.Errorf("object is not Integer. got=%T (%+v)", obj, obj)
-		return
-	}
-	if result.Value != expected {
-		t.Errorf("object has wrong value. got=%d, want=%d", result.Value, expected)
-	}
-}
-
-func AssertBoolean(t *testing.T, obj objects.GoMixObject, expected bool) {
-	result, ok := obj.(*objects.Boolean)
-	if !ok {
-		t.Errorf("object is not Boolean. got=%T (%+v)", obj, obj)
-		return
-	}
-	if result.Value != expected {
-		t.Errorf("object has wrong value. got=%t, want=%t", result.Value, expected)
-	}
-
-}
-
-func AssertFloat(t *testing.T, obj objects.GoMixObject, expected float64) {
-	result, ok := obj.(*objects.Float)
-	if !ok {
-		t.Errorf("object is not Float. got=%T (%+v)", obj, obj)
-		return
-	}
-	if result.Value != expected {
-		t.Errorf("object has wrong value. got=%f, want=%f", result.Value, expected)
-	}
-
-}
-
-func AssertNil(t *testing.T, obj objects.GoMixObject) {
-	if obj != nil {
-		t.Errorf("object is not nil. got=%T (%+v)", obj, obj)
-		return
-	}
-}
-
-func AssertString(t *testing.T, obj objects.GoMixObject, expected string) {
-	result, ok := obj.(*objects.String)
-	if !ok {
-		t.Errorf("object is not String. got=%T (%+v)", obj, obj)
-		return
-	}
-	if result.Value != expected {
-		t.Errorf("object has wrong value. got=%q, want=%q", result.Value, expected)
-	}
-}
-
-// Evaluates the given node into a GoMixObject
-// If the node is a statement a Nil object is returned
-// Errors are GoMixObject instances as well,
-// and they are designed to block the evaluation process.
-func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
-	switch n := n.(type) {
-	case *parser.RootNode:
-		result := e.evalStatements(n.Statements)
-		return UnwrapReturnValue(result)
-	case *parser.BooleanLiteralExpressionNode:
-		return n.Value
-	case *parser.IntegerLiteralExpressionNode:
-		return n.Value
-	case *parser.StringLiteralExpressionNode:
-		return n.Value
-	case *parser.FloatLiteralExpressionNode:
-		return n.Value
-	case *parser.NilLiteralExpressionNode:
-		return &objects.Nil{}
-	case *parser.BinaryExpressionNode:
-		return e.evalBinaryExpression(n)
-	case *parser.UnaryExpressionNode:
-		return e.evalUnaryExpression(n)
-	case *parser.BooleanExpressionNode:
-		return e.evalBooleanExpression(n)
-	case *parser.ParenthesizedExpressionNode:
-		return e.Eval(n.Expr)
-	case *parser.IfExpressionNode:
-		return e.evalConditionalExpression(n)
-	case *parser.DeclarativeStatementNode:
-		return e.evalDeclarativeStatement(n)
-	case *parser.ReturnStatementNode:
-		return e.evalReturnStatement(n)
-	case *parser.BlockStatementNode:
-		return e.evalBlockStatement(n)
-	case *parser.IdentifierExpressionNode:
-		return e.evalIdentifierExpression(n)
-	case *parser.FunctionStatementNode:
-		return e.registerFunction(n)
-	case *parser.CallExpressionNode:
-		return e.evalCallExpression(n)
-	case *parser.AssignmentExpressionNode:
-		return e.evalAssignmentExpression(n)
-	case *parser.ForLoopStatementNode:
-		return e.evalForLoop(n)
-	case *parser.WhileLoopStatementNode:
-		return e.evalWhileLoop(n)
-	case *parser.ArrayExpressionNode:
-		return e.evalArrayExpression(n)
-	case *parser.IndexExpressionNode:
-		return e.evalIndexExpression(n)
-	case *parser.SliceExpressionNode:
-		return e.evalSliceExpression(n)
-	default:
-		return &objects.Nil{}
-	}
-}
-
+// SetParser assigns a parser instance to the evaluator for enhanced error reporting.
+//
+// The parser reference is used by CreateError() to include source code position
+// information (line and column numbers) in error messages, making debugging easier.
+// This should be called before evaluating any code to ensure accurate error locations.
+//
+// Parameters:
+//   - p: A pointer to the Parser instance that parsed the AST being evaluated
+//
+// Example usage:
+//
+//	parser := parser.NewParser(lexer)
+//	ev.SetParser(parser)
+//	result := ev.Eval(parser.Parse())
 func (e *Evaluator) SetParser(p *parser.Parser) {
 	e.Par = p
 }
 
-func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.GoMixObject {
+// RegisterFunction creates and registers a user-defined function in the current scope.
+//
+// This method processes function declarations by:
+// 1. Creating a Function object with the function's name, parameters, body, and captured scope
+// 2. Checking for redeclaration conflicts in the current scope
+// 3. Binding the function to its name in the current scope for later invocation
+//
+// The function captures the current scope (closure), allowing it to access variables
+// from its defining scope even when called from different contexts.
+//
+// Parameters:
+//   - n: A FunctionStatementNode containing the function's AST representation
+//
+// Returns:
+//   - objects.GoMixObject: The created Function object on success, or an Error object
+//     if the function name is already declared in the current scope
+//
+// Example:
+//
+//	func add(a, b) { return a + b; }  // Creates and registers 'add' function
+func (e *Evaluator) RegisterFunction(n *parser.FunctionStatementNode) objects.GoMixObject {
 	function := &function.Function{
 		Name:   n.FuncName.Name,
 		Params: n.FuncParams,
@@ -216,605 +129,79 @@ func (e *Evaluator) registerFunction(n *parser.FunctionStatementNode) objects.Go
 	return function
 }
 
-func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode) objects.GoMixObject {
-	// Evaluate the right-hand side
-	rightVal := e.Eval(n.Right)
-	if IsError(rightVal) {
-		return rightVal
-	}
-
-	// Check if the variable exists in the current scope or any parent scope
-	_, exists := e.Scp.LookUp(n.Left.Name)
-	if !exists {
-		return e.CreateError("ERROR: identifier not found: (%s)", n.Left.Name)
-	}
-
-	// Check if it's a constant using the new IsConstant method
-	if e.Scp.IsConstant(n.Left.Name) {
-		return e.CreateError("ERROR: can't assign to constant (%s)", n.Left.Name)
-	}
-
-	val := rightVal
-
-	// Check if it's a let variable and if the type is compatible
-	if e.Scp.IsLetVariable(n.Left.Name) {
-		expectedType, ok := e.Scp.GetLetType(n.Left.Name)
-		if !ok {
-			return e.CreateError("ERROR: let variable type not found: (%s)", n.Left.Name)
-		}
-		if val.GetType() != expectedType {
-			return e.CreateError("ERROR: can't assign `%s` to variable (%s) of type `%s`", val.GetType(), n.Left.Name, expectedType)
-		}
-	}
-
-	// Use Assign to update the variable in the scope where it was defined
-	// This is essential for closures to work correctly
-	e.Scp.Assign(n.Left.Name, val)
-
-	return val
+// IsBuiltin checks if a given identifier name corresponds to a registered builtin function.
+//
+// This method is used during function call evaluation to determine whether to
+// invoke a builtin function or look up a user-defined function in the scope chain.
+// Builtin functions are registered during evaluator initialization and include
+// functions like print, println, len, push, pop, shift, etc.
+//
+// Parameters:
+//   - name: The identifier name to check (e.g., "print", "len", "push")
+//
+// Returns:
+//   - bool: true if the name matches a registered builtin function, false otherwise
+//
+// Example usage:
+//
+//	if e.IsBuiltin("print") {
+//	    // Handle builtin function call
+//	}
+func (e *Evaluator) IsBuiltin(name string) bool {
+	_, ok := e.Builtins[name]
+	return ok
 }
 
-func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoMixObject {
+// InvokeBuiltin executes a builtin function by name with the provided arguments.
+//
+// This method looks up the builtin function in the Builtins map and invokes its
+// callback function with the evaluator's writer and the provided arguments.
+// Builtin functions handle their own argument validation and type checking.
+//
+// Parameters:
+//   - name: The name of the builtin function to invoke (e.g., "print", "len")
+//   - args: Variable number of GoMixObject arguments to pass to the builtin function
+//
+// Returns:
+//   - objects.GoMixObject: The result returned by the builtin function's callback,
+//     or a Nil object if the builtin function is not found in the registry
+//
+// Example usage:
+//
+//	result := e.InvokeBuiltin("len", arrayObject)  // Returns Integer with array length
+//	e.InvokeBuiltin("print", stringObject)         // Prints to writer, returns Nil
+func (e *Evaluator) InvokeBuiltin(name string, args ...objects.GoMixObject) objects.GoMixObject {
 
-	// look for builtin name
-	funcName := n.FunctionIdentifier.Name
-	if ok := e.IsBuiltin(funcName); ok {
-		args := make([]objects.GoMixObject, len(n.Arguments))
-		for i, arg := range n.Arguments {
-			args[i] = e.Eval(arg)
-		}
-		rv := e.InvokeBuiltin(funcName, args...)
-		return rv
-	}
-
-	// lookup for function name
-	obj, ok := e.Scp.LookUp(funcName)
-	if !ok {
-		return e.CreateError("ERROR: function not found: (%s)", funcName)
-	}
-	if obj.GetType() != objects.FunctionType {
-		return e.CreateError("ERROR: not a function: (%s)", funcName)
-	}
-	functionObject := obj.(*function.Function)
-
-	// Validate argument count
-	expectedArgs := len(functionObject.Params)
-	actualArgs := len(n.Arguments)
-	if actualArgs != expectedArgs {
-		return e.CreateError("ERROR: wrong number of arguments: expected %d, got %d", expectedArgs, actualArgs)
-	}
-
-	// Create a new scope with the function's captured scope as parent
-	var parentScope *scope.Scope
-	if functionObject.Scp != nil {
-		parentScope = functionObject.Scp
-	} else {
-		parentScope = e.Scp
-	}
-	callSiteScope := scope.NewScope(parentScope)
-
-	for i, param := range functionObject.Params {
-		callSiteScope.Bind(param.Name, e.Eval(n.Arguments[i]))
-	}
-	oldScope := e.Scp
-	e.Scp = callSiteScope
-	result := e.Eval(functionObject.Body)
-	e.Scp = oldScope
-
-	// Unwrap return value if present
-	if retVal, isReturn := result.(*objects.ReturnValue); isReturn {
-		returnVal := retVal.Value
-		// If returning a function, update its captured scope to the current scope
-		// This is essential for closures to work correctly
-		// Only copy if the call site scope has variables not in the function's existing scope
-		if fn, isFunc := returnVal.(*function.Function); isFunc {
-			if len(callSiteScope.Variables) > len(fn.Scp.Variables) {
-				fn.Scp = callSiteScope.Copy()
-			}
-		}
-		return returnVal
-	}
-	return result
-
-}
-
-func (e *Evaluator) evalIdentifierExpression(n *parser.IdentifierExpressionNode) objects.GoMixObject {
-	// if val, ok := e.parser.Env[n.Name]; ok {
-	// 	return val
-	// }
-	// return &objects.Nil{}
-	val, ok := e.Scp.LookUp(n.Name)
-	if !ok {
-		return e.CreateError("ERROR: identifier not found: (%s)", n.Name)
-	}
-	return val
-}
-
-func (e *Evaluator) evalBlockStatement(n *parser.BlockStatementNode) objects.GoMixObject {
-	return e.evalStatements(n.Statements)
-}
-
-func (e *Evaluator) evalReturnStatement(n *parser.ReturnStatementNode) objects.GoMixObject {
-	val := e.Eval(n.Expr)
-	if IsError(val) {
-		return val
-	}
-	return &objects.ReturnValue{Value: val}
-}
-
-func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode) objects.GoMixObject {
-	val := e.Eval(n.Expr)
-	if IsError(val) {
-		return val
-	}
-	// redeclared?
-	_, has := e.Scp.Bind(n.Identifier.Name, val)
-	if has {
-		return e.CreateError("ERROR: identifier redeclaration found: (%s)", n.Identifier.Name)
-	}
-
-	if n.VarToken.Type == lexer.CONST_KEY {
-		e.Scp.Consts[n.Identifier.Name] = true
-	} else if n.VarToken.Type == lexer.LET_KEY {
-		e.Scp.LetVars[n.Identifier.Name] = true
-		e.Scp.LetTypes[n.Identifier.Name] = val.GetType()
-	}
-	e.Scp.Bind(n.Identifier.Name, val)
-	return val
-}
-
-func (e *Evaluator) evalConditionalExpression(n *parser.IfExpressionNode) objects.GoMixObject {
-	condition := e.Eval(n.Condition)
-	if IsError(condition) {
-		return condition
-	}
-
-	if condition.GetType() != objects.BooleanType {
-		return e.CreateError("ERROR: conditional expression must be (bool)")
-	}
-	if condition.(*objects.Boolean).Value {
-		return e.Eval(&n.ThenBlock)
-	}
-	return e.Eval(&n.ElseBlock)
-}
-
-func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixObject {
-	var result objects.GoMixObject = &objects.Nil{}
-	for _, stmt := range stmts {
-		result = e.Eval(stmt)
-
-		if IsError(result) {
-			return result
-		}
-		// Stop evaluation if we hit a return statement
-		if _, isReturn := result.(*objects.ReturnValue); isReturn {
-			return result
-		}
-	}
-	return result
-}
-
-func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects.GoMixObject {
-	left := e.Eval(n.Left)
-	right := e.Eval(n.Right)
-
-	if IsError(left) {
-		return left
-	}
-	if IsError(right) {
-		return right
-	}
-
-	err := e.CreateError("ERROR: operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
-
-	if left.GetType() != objects.IntegerType && left.GetType() != objects.FloatType {
-		return err
-	}
-	if right.GetType() != objects.IntegerType && right.GetType() != objects.FloatType {
-		return err
-	}
-
-	leftType := left.GetType()
-	rightType := right.GetType()
-
-	switch n.Operation.Type {
-	case lexer.PLUS_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value + right.(*objects.Integer).Value}
-		}
-		return &objects.Float{Value: toFloat64(left) + toFloat64(right)}
-	case lexer.MINUS_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value - right.(*objects.Integer).Value}
-		}
-		return &objects.Float{Value: toFloat64(left) - toFloat64(right)}
-	case lexer.MUL_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value * right.(*objects.Integer).Value}
-		}
-		return &objects.Float{Value: toFloat64(left) * toFloat64(right)}
-	case lexer.DIV_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value / right.(*objects.Integer).Value}
-		}
-		return &objects.Float{Value: toFloat64(left) / toFloat64(right)}
-	case lexer.MOD_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value % right.(*objects.Integer).Value}
-		}
-		return err
-	case lexer.BIT_AND_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value & right.(*objects.Integer).Value}
-		}
-		return err
-	case lexer.BIT_OR_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value | right.(*objects.Integer).Value}
-		}
-		return err
-	case lexer.BIT_XOR_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value ^ right.(*objects.Integer).Value}
-		}
-		return err
-	case lexer.BIT_LEFT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value << right.(*objects.Integer).Value}
-		}
-		return err
-	case lexer.BIT_RIGHT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value >> right.(*objects.Integer).Value}
-		}
-		return err
+	if builtin, ok := e.Builtins[name]; ok {
+		return builtin.Callback(e.Writer, args...)
 	}
 	return &objects.Nil{}
 }
 
-func toFloat64(obj objects.GoMixObject) float64 {
-	if obj.GetType() == objects.IntegerType {
-		return float64(obj.(*objects.Integer).Value)
-	}
-	return obj.(*objects.Float).Value
-}
-
-func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.GoMixObject {
-	right := e.Eval(n.Right)
-	if IsError(right) {
-		return right
-	}
-
-	err := e.CreateError("ERROR: operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
-
-	switch n.Operation.Type {
-	case lexer.NOT_OP:
-		if right.GetType() != objects.BooleanType {
-			return err
-		}
-		return &objects.Boolean{Value: !right.(*objects.Boolean).Value}
-	case lexer.BIT_NOT_OP:
-		if right.GetType() == objects.IntegerType {
-			return &objects.Integer{Value: ^right.(*objects.Integer).Value}
-		}
-		return err
-	case lexer.MINUS_OP:
-		if right.GetType() == objects.IntegerType {
-			return &objects.Integer{Value: -right.(*objects.Integer).Value}
-		} else if right.GetType() == objects.FloatType {
-			return &objects.Float{Value: -right.(*objects.Float).Value}
-		}
-		return err
-	case lexer.PLUS_OP:
-		if right.GetType() == objects.IntegerType {
-			return right
-		} else if right.GetType() == objects.FloatType {
-			return right
-		}
-		return err
-	}
-	return &objects.Nil{}
-}
-
-func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objects.GoMixObject {
-	left := e.Eval(n.Left)
-	right := e.Eval(n.Right)
-
-	leftType := left.GetType()
-	rightType := right.GetType()
-
-	switch n.Operation.Type {
-	case lexer.EQ_OP:
-		return &objects.Boolean{Value: left.ToString() == right.ToString()}
-	case lexer.NE_OP:
-		return &objects.Boolean{Value: left.ToString() != right.ToString()}
-	case lexer.GT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value > right.(*objects.Integer).Value}
-		}
-		return &objects.Boolean{Value: toFloat64(left) > toFloat64(right)}
-	case lexer.LT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value < right.(*objects.Integer).Value}
-		}
-		return &objects.Boolean{Value: toFloat64(left) < toFloat64(right)}
-	case lexer.GE_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value >= right.(*objects.Integer).Value}
-		}
-		return &objects.Boolean{Value: toFloat64(left) >= toFloat64(right)}
-	case lexer.LE_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value <= right.(*objects.Integer).Value}
-		}
-		return &objects.Boolean{Value: toFloat64(left) <= toFloat64(right)}
-	case lexer.AND_OP:
-		return &objects.Boolean{Value: left.(*objects.Boolean).Value && right.(*objects.Boolean).Value}
-	case lexer.OR_OP:
-		return &objects.Boolean{Value: left.(*objects.Boolean).Value || right.(*objects.Boolean).Value}
-	}
-	return &objects.Nil{}
-}
-
-// evalForLoop evaluates a for loop node
-func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObject {
-	// Create a new scope for the entire for loop (for initializers and loop variables)
-	loopScope := scope.NewScope(e.Scp)
-	oldScope := e.Scp
-	e.Scp = loopScope
-
-	// Evaluate initializers in the loop scope
-	for _, init := range n.Initializers {
-		result := e.Eval(init)
-		if IsError(result) {
-			e.Scp = oldScope
-			return result
-		}
-	}
-
-	// Loop execution
-	var result objects.GoMixObject = &objects.Nil{}
-	for {
-		// Evaluate condition if present
-		if n.Condition != nil {
-			condition := e.Eval(n.Condition)
-			if IsError(condition) {
-				e.Scp = oldScope
-				return condition
-			}
-
-			// Check if condition is false
-			if condition.GetType() != objects.BooleanType {
-				e.Scp = oldScope
-				return e.CreateError("ERROR: for loop condition must be (bool)")
-			}
-			if !condition.(*objects.Boolean).Value {
-				break
-			}
-		}
-
-		// Create a new scope for each iteration of the loop body
-		// This ensures variables declared in the body are scoped to that iteration
-		iterationScope := scope.NewScope(loopScope)
-		e.Scp = iterationScope
-
-		// Execute loop body
-		result = e.Eval(&n.Body)
-
-		// Restore to loop scope after body execution
-		e.Scp = loopScope
-
-		if IsError(result) {
-			e.Scp = oldScope
-			return result
-		}
-
-		// Stop if we hit a return statement
-		if _, isReturn := result.(*objects.ReturnValue); isReturn {
-			e.Scp = oldScope
-			return result
-		}
-
-		// Evaluate updates in the loop scope (not iteration scope)
-		for _, update := range n.Updates {
-			updateResult := e.Eval(update)
-			if IsError(updateResult) {
-				e.Scp = oldScope
-				return updateResult
-			}
-		}
-	}
-
-	// Restore the original scope
-	e.Scp = oldScope
-	return result
-}
-
-// evalArrayExpression evaluates an array expression node
-func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) objects.GoMixObject {
-	elements := make([]objects.GoMixObject, len(n.Elements))
-	for i, elem := range n.Elements {
-		evaluated := e.Eval(elem)
-		if IsError(evaluated) {
-			return evaluated
-		}
-		elements[i] = evaluated
-	}
-	return &objects.Array{Elements: elements}
-}
-
-// evalIndexExpression evaluates an index expression like arr[0] or arr[-1]
-func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.GoMixObject {
-	left := e.Eval(n.Left)
-	if IsError(left) {
-		return left
-	}
-
-	index := e.Eval(n.Index)
-	if IsError(index) {
-		return index
-	}
-
-	// Check if left is an array
-	if left.GetType() != objects.ArrayType {
-		return e.CreateError("ERROR: index operator not supported for type '%s'", left.GetType())
-	}
-
-	// Check if index is an integer
-	if index.GetType() != objects.IntegerType {
-		return e.CreateError("ERROR: index must be an integer, got '%s'", index.GetType())
-	}
-
-	arr := left.(*objects.Array)
-	idx := index.(*objects.Integer).Value
-	length := int64(len(arr.Elements))
-
-	// Handle negative indices (Python-style)
-	if idx < 0 {
-		idx = length + idx
-	}
-
-	// Bounds checking
-	if idx < 0 || idx >= length {
-		return e.CreateError("ERROR: index out of bounds: index %d, length %d", idx, length)
-	}
-
-	return arr.Elements[idx]
-}
-
-// evalSliceExpression evaluates a slice expression like arr[1:3], arr[:3], arr[1:], arr[:]
-func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.GoMixObject {
-	left := e.Eval(n.Left)
-	if IsError(left) {
-		return left
-	}
-
-	// Check if left is an array
-	if left.GetType() != objects.ArrayType {
-		return e.CreateError("ERROR: slice operator not supported for type '%s'", left.GetType())
-	}
-
-	arr := left.(*objects.Array)
-	length := int64(len(arr.Elements))
-
-	// Determine start index
-	var start int64 = 0
-	if n.Start != nil {
-		startObj := e.Eval(n.Start)
-		if IsError(startObj) {
-			return startObj
-		}
-		if startObj.GetType() != objects.IntegerType {
-			return e.CreateError("ERROR: slice start index must be an integer, got '%s'", startObj.GetType())
-		}
-		start = startObj.(*objects.Integer).Value
-		// Handle negative start index
-		if start < 0 {
-			start = length + start
-		}
-		// Clamp to valid range
-		if start < 0 {
-			start = 0
-		}
-		if start > length {
-			start = length
-		}
-	}
-
-	// Determine end index
-	var end int64 = length
-	if n.End != nil {
-		endObj := e.Eval(n.End)
-		if IsError(endObj) {
-			return endObj
-		}
-		if endObj.GetType() != objects.IntegerType {
-			return e.CreateError("ERROR: slice end index must be an integer, got '%s'", endObj.GetType())
-		}
-		end = endObj.(*objects.Integer).Value
-		// Handle negative end index
-		if end < 0 {
-			end = length + end
-		}
-		// Clamp to valid range
-		if end < 0 {
-			end = 0
-		}
-		if end > length {
-			end = length
-		}
-	}
-
-	// Ensure start <= end
-	if start > end {
-		start = end
-	}
-
-	// Create the sliced array
-	slicedElements := make([]objects.GoMixObject, end-start)
-	copy(slicedElements, arr.Elements[start:end])
-
-	return &objects.Array{Elements: slicedElements}
-}
-
-// evalWhileLoop evaluates a while loop node
-func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMixObject {
-	// Create a new scope for the entire while loop
-	loopScope := scope.NewScope(e.Scp)
-	oldScope := e.Scp
-	e.Scp = loopScope
-
-	var result objects.GoMixObject = &objects.Nil{}
-
-	for {
-		// Evaluate all conditions (they should be AND-ed together)
-		allTrue := true
-		for _, cond := range n.Conditions {
-			condition := e.Eval(cond)
-			if IsError(condition) {
-				e.Scp = oldScope
-				return condition
-			}
-
-			if condition.GetType() != objects.BooleanType {
-				e.Scp = oldScope
-				return e.CreateError("ERROR: while loop condition must be (bool)")
-			}
-
-			if !condition.(*objects.Boolean).Value {
-				allTrue = false
-				break
-			}
-		}
-
-		if !allTrue {
-			break
-		}
-
-		// Create a new scope for each iteration of the loop body
-		// This ensures variables declared in the body are scoped to that iteration
-		iterationScope := scope.NewScope(loopScope)
-		e.Scp = iterationScope
-
-		// Execute loop body
-		result = e.Eval(&n.Body)
-
-		// Restore to loop scope after body execution
-		e.Scp = loopScope
-
-		if IsError(result) {
-			e.Scp = oldScope
-			return result
-		}
-
-		// Stop if we hit a return statement
-		if _, isReturn := result.(*objects.ReturnValue); isReturn {
-			e.Scp = oldScope
-			return result
-		}
-	}
-
-	// Restore the original scope
-	e.Scp = oldScope
-	return result
+// CreateError creates a new Error object with a formatted message including source position.
+//
+// This method constructs detailed error messages that include:
+// - Line number: The line in the source code where the error occurred
+// - Column number: The column position in that line
+// - Error message: A formatted description of the error
+//
+// The parser must be set via SetParser() before calling this method to ensure
+// accurate position information. The format string and arguments follow the
+// same conventions as fmt.Sprintf().
+//
+// Parameters:
+//   - format: A format string following fmt.Sprintf conventions
+//   - a: Variable arguments to be formatted into the error message
+//
+// Returns:
+//   - *objects.Error: An Error object with the formatted message including position info
+//
+// Example usage:
+//
+//	return e.CreateError("ERROR: identifier not found: (%s)", varName)
+//	// Output: "[10:5] ERROR: identifier not found: (myVar)"
+func (e *Evaluator) CreateError(format string, a ...interface{}) *objects.Error {
+	msg := fmt.Sprintf(format, a...)
+	fullMsg := fmt.Sprintf("[%d:%d] %s", e.Par.Lex.Line, e.Par.Lex.Column, msg)
+	return &objects.Error{Message: fullMsg}
 }

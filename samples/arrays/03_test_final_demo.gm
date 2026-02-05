@@ -1,0 +1,82 @@
+// Final Demo: Array Slicing and Methods in GoMix
+
+println("╔════════════════════════════════════════╗")
+println("║  GoMix Array Features Demonstration   ║")
+println("╚════════════════════════════════════════╝")
+println("")
+
+// ============================================
+// ARRAY SLICING
+// ============================================
+println("📊 ARRAY SLICING")
+println("─────────────────────────────────────────")
+
+var numbers = [10, 20, 30, 40, 50, 60, 70]
+println("Original array:", numbers)
+println("")
+
+println("• arr[2:5]   →", numbers[2:5])
+println("• arr[:4]    →", numbers[:4])
+println("• arr[3:]    →", numbers[3:])
+println("• arr[:]     →", numbers[:])
+println("• arr[-3:]   →", numbers[-3:])
+println("• arr[:-2]   →", numbers[:-2])
+println("")
+
+// ============================================
+// ARRAY METHODS
+// ============================================
+println("🔧 ARRAY METHODS")
+println("─────────────────────────────────────────")
+
+var fruits = ["apple", "banana", "cherry"]
+println("Original:", fruits)
+println("")
+
+println("push(fruits, \"date\"):")
+var fruits2 = push(fruits, "date")
+println("  Result:", fruits2)
+println("  Original:", fruits)
+println("")
+
+var stack = [1, 2, 3, 4, 5]
+println("pop([1,2,3,4,5]):")
+var last = pop(stack)
+println("  Popped:", last)
+println("  Remaining:", stack)
+println("")
+
+var queue = [100, 200, 300]
+println("shift([100,200,300]):")
+var first = shift(queue)
+println("  Shifted:", first)
+println("  Remaining:", queue)
+println("")
+
+var list = [2, 3, 4]
+println("unshift([2,3,4], 1):")
+var list2 = unshift(list, 1)
+println("  Result:", list2)
+println("  Original:", list)
+println("")
+
+// ============================================
+// COMBINED OPERATIONS
+// ============================================
+println("🎯 COMBINED OPERATIONS")
+println("─────────────────────────────────────────")
+
+var data = [5, 10, 15, 20, 25, 30]
+println("Start with:", data)
+
+var middle = data[1:5]
+println("Slice [1:5]:", middle)
+
+var extended = push(middle, 99)
+println("Push 99:", extended)
+
+var withPrefix = unshift(extended, 1)
+println("Unshift 1:", withPrefix)
+
+println("")
+println("✅ All features working perfectly!")

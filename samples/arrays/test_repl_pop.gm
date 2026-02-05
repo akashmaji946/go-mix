@@ -1,8 +1,0 @@
-var a = [1, 2, 3]
-println("Initial:", a)
-var x = pop(a)
-println("Popped:", x)
-println("Array after pop:", a)
-var y = shift(a)
-println("Shifted:", y)
-println("Array after shift:", a)
