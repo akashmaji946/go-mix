@@ -14,7 +14,8 @@ import (
 	"github.com/akashmaji946/go-mix/objects"
 )
 
-func TestParser_Parse_OneNumberExpression(t *testing.T) {
+// TestParser_OneNum verifies parsing of a single integer literal
+func TestParser_OneNum(t *testing.T) {
 
 	src := `12`
 	par := NewParser(src)
@@ -37,7 +38,8 @@ func TestParser_Parse_OneNumberExpression(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_AddExpression(t *testing.T) {
+// TestParser_Add verifies parsing of addition expressions
+func TestParser_Add(t *testing.T) {
 
 	src := `12 + 13`
 	par := NewParser(src)
@@ -70,7 +72,8 @@ func TestParser_Parse_AddExpression(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_SubExpression(t *testing.T) {
+// TestParser_Sub verifies parsing of subtraction with operator precedence
+func TestParser_Sub(t *testing.T) {
 
 	src := `28 - 13 * 2`
 	par := NewParser(src)
@@ -105,7 +108,8 @@ func TestParser_Parse_SubExpression(t *testing.T) {
 	assert.Equal(t, &objects.Integer{Value: 2}, exp.Value)
 }
 
-func TestParser_Parse_MulExpression(t *testing.T) {
+// TestParser_Mul verifies parsing of multiplication expressions
+func TestParser_Mul(t *testing.T) {
 
 	src := `12 * 13`
 	par := NewParser(src)
@@ -132,7 +136,8 @@ func TestParser_Parse_MulExpression(t *testing.T) {
 	assert.Equal(t, &objects.Integer{Value: 156}, exp.Value)
 }
 
-func TestParser_Parse_DivExpression(t *testing.T) {
+// TestParser_Div verifies parsing of division expressions
+func TestParser_Div(t *testing.T) {
 
 	src := `26 / 13`
 	par := NewParser(src)
@@ -159,7 +164,8 @@ func TestParser_Parse_DivExpression(t *testing.T) {
 	assert.Equal(t, &objects.Integer{Value: 2}, exp.Value)
 }
 
-func TestParser_Parse_FullyExpandedExpression(t *testing.T) {
+// TestParser_FullExpr verifies parsing of complex expressions with multiple operators
+func TestParser_FullExpr(t *testing.T) {
 	src := `26 + 13 * 2 - 12 / 2 - 6 + 6 - 4 * 2 + 100 - 9`
 	par := NewParser(src)
 	root := par.Parse()
@@ -266,7 +272,8 @@ func TestParser_Parse_FullyExpandedExpression(t *testing.T) {
 	assert.Equal(t, &objects.Integer{Value: 129}, exp1.Value)
 }
 
-func TestParser_Parse_UnaryExpression1(t *testing.T) {
+// TestParser_Unary1 verifies parsing of boolean negation unary operator
+func TestParser_Unary1(t *testing.T) {
 	src := `!true`
 	par := NewParser(src)
 	root := par.Parse()
@@ -280,7 +287,8 @@ func TestParser_Parse_UnaryExpression1(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
 }
 
-func TestParser_Parse_UnaryExpression2(t *testing.T) {
+// TestParser_Unary2 verifies parsing of numeric negation unary operator
+func TestParser_Unary2(t *testing.T) {
 	src := `-12`
 	par := NewParser(src)
 	root := par.Parse()
@@ -294,7 +302,8 @@ func TestParser_Parse_UnaryExpression2(t *testing.T) {
 	assert.Equal(t, &objects.Integer{Value: -12}, exp.Value)
 }
 
-func TestParser_Parse_BooleanExpression1(t *testing.T) {
+// TestParser_Bool1 verifies parsing of true boolean literal
+func TestParser_Bool1(t *testing.T) {
 	src := `true`
 	par := NewParser(src)
 	root := par.Parse()
@@ -307,7 +316,8 @@ func TestParser_Parse_BooleanExpression1(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: true}, exp.Value)
 }
 
-func TestParser_Parse_BooleanExpression2(t *testing.T) {
+// TestParser_Bool2 verifies parsing of false boolean literal
+func TestParser_Bool2(t *testing.T) {
 	src := `false`
 	par := NewParser(src)
 	root := par.Parse()
@@ -320,7 +330,8 @@ func TestParser_Parse_BooleanExpression2(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
 }
 
-func TestParser_Parse_BooleanExpressionSimple(t *testing.T) {
+// TestParser_BoolSimple verifies parsing of simple boolean AND expression
+func TestParser_BoolSimple(t *testing.T) {
 	src := `false && true`
 	par := NewParser(src)
 	root := par.Parse()
@@ -334,7 +345,8 @@ func TestParser_Parse_BooleanExpressionSimple(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
 }
 
-func TestParser_Parse_BooleanExpressionComplex(t *testing.T) {
+// TestParser_BoolComplex verifies parsing of complex boolean expressions with AND/OR
+func TestParser_BoolComplex(t *testing.T) {
 	src := `false && true || false`
 	par := NewParser(src)
 	root := par.Parse()
@@ -362,7 +374,8 @@ func TestParser_Parse_BooleanExpressionComplex(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
 }
 
-func TestParser_Parse_BooleanExpressionComplex2(t *testing.T) {
+// TestParser_BoolComplex2 verifies parsing of boolean expressions with parentheses
+func TestParser_BoolComplex2(t *testing.T) {
 	src := `false && true || (false || true)`
 	par := NewParser(src)
 	root := par.Parse()
@@ -393,7 +406,8 @@ func TestParser_Parse_BooleanExpressionComplex2(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: true}, exp.Value)
 }
 
-func TestParser_Parse_ArithmeticExpression(t *testing.T) {
+// TestParser_Arith verifies parsing of arithmetic expressions with precedence
+func TestParser_Arith(t *testing.T) {
 	src := `1+2*3-4`
 	par := NewParser(src)
 	root := par.Parse()
@@ -430,7 +444,8 @@ func TestParser_Parse_ArithmeticExpression(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_ArithmeticExpression_Complex1(t *testing.T) {
+// TestParser_ArithComplex1 verifies parsing of complex arithmetic with division
+func TestParser_ArithComplex1(t *testing.T) {
 	src := `1+2*3-4/2`
 	par := NewParser(src)
 	root := par.Parse()
@@ -459,7 +474,8 @@ func TestParser_Parse_ArithmeticExpression_Complex1(t *testing.T) {
 	assert.Equal(t, &objects.Integer{Value: 5}, exp.Value)
 }
 
-func TestParser_Parse_ArithmeticExpression_Complex2(t *testing.T) {
+// TestParser_ArithComplex2 verifies parsing of left-associative subtraction
+func TestParser_ArithComplex2(t *testing.T) {
 	src := `20-5-5`
 	par := NewParser(src)
 	root := par.Parse()
@@ -483,7 +499,8 @@ func TestParser_Parse_ArithmeticExpression_Complex2(t *testing.T) {
 	assert.Equal(t, &objects.Integer{Value: 10}, exp.Value)
 }
 
-func TestParser_Parse_ParenthesizedExpression(t *testing.T) {
+// TestParser_Paren verifies parsing of parenthesized expressions
+func TestParser_Paren(t *testing.T) {
 	src := `(10)`
 	par := NewParser(src)
 	root := par.Parse()
@@ -506,7 +523,8 @@ func TestParser_Parse_ParenthesizedExpression(t *testing.T) {
 
 }
 
-func TestParser_Parse_ParenthesizedExpression_Complex(t *testing.T) {
+// TestParser_ParenComplex verifies parsing of parentheses affecting precedence
+func TestParser_ParenComplex(t *testing.T) {
 	src := `(10-5)+5*1`
 	par := NewParser(src)
 	root := par.Parse()
@@ -536,7 +554,8 @@ func TestParser_Parse_ParenthesizedExpression_Complex(t *testing.T) {
 
 }
 
-func TestParser_Parse_ParenthesizedExpressionComplex(t *testing.T) {
+// TestParser_ParenNested verifies parsing of nested parenthesized expressions
+func TestParser_ParenNested(t *testing.T) {
 	src := `((10 - 5)+5)*1`
 	par := NewParser(src)
 	root := par.Parse()
@@ -567,7 +586,8 @@ func TestParser_Parse_ParenthesizedExpressionComplex(t *testing.T) {
 
 }
 
-func TestParser_ParseDeclarativeStatement(t *testing.T) {
+// TestParser_DeclStmt verifies parsing of simple variable declarations
+func TestParser_DeclStmt(t *testing.T) {
 	src := `var a = 1`
 	par := NewParser(src)
 	root := par.Parse()
@@ -595,7 +615,8 @@ func TestParser_ParseDeclarativeStatement(t *testing.T) {
 
 }
 
-func TestParser_ParseDeclarativeStatement_Complex(t *testing.T) {
+// TestParser_DeclComplex verifies parsing of declarations with expressions
+func TestParser_DeclComplex(t *testing.T) {
 	src := `var a = 1 + 2 * 3`
 	par := NewParser(src)
 	root := par.Parse()
@@ -627,7 +648,8 @@ func TestParser_ParseDeclarativeStatement_Complex(t *testing.T) {
 
 }
 
-func TestParser_ParseDeclarativeStatement_Complex2(t *testing.T) {
+// TestParser_DeclComplex2 verifies parsing of declarations with parenthesized expressions
+func TestParser_DeclComplex2(t *testing.T) {
 	src := `var a = (1 + 2) * 3`
 	par := NewParser(src)
 	root := par.Parse()
@@ -660,7 +682,8 @@ func TestParser_ParseDeclarativeStatement_Complex2(t *testing.T) {
 
 }
 
-func TestParser_ParseDeclarativeStatement_Identifier(t *testing.T) {
+// TestParser_DeclIdent verifies parsing of declarations using identifiers
+func TestParser_DeclIdent(t *testing.T) {
 	src := `var a=1
 	var b = a + 10`
 	par := NewParser(src)
@@ -705,7 +728,8 @@ func TestParser_ParseDeclarativeStatement_Identifier(t *testing.T) {
 	assert.Equal(t, "var a = 1;var b = a+10;", root.Literal())
 }
 
-func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpression(t *testing.T) {
+// TestParser_DeclIdentParen verifies parsing of declarations with identifiers and parentheses
+func TestParser_DeclIdentParen(t *testing.T) {
 	src := `var a=11
 	var b = (a + 10 * 2)`
 	par := NewParser(src)
@@ -752,7 +776,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 	assert.Equal(t, "var a = 11;var b = (a+10*2);", root.Literal())
 }
 
-func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressionAndComma(t *testing.T) {
+// TestParser_DeclMulti verifies parsing of multiple declarations with semicolons
+func TestParser_DeclMulti(t *testing.T) {
 	src := `var a=11;var b = (a + 10 * 2);var c = (b + 10 * 3)`
 	par := NewParser(src)
 	root := par.Parse()
@@ -814,7 +839,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ParenthesizedExpressio
 	assert.Equal(t, "var a = 11;var b = (a+10*2);var c = (b+10*3);", root.Literal())
 }
 
-func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement(t *testing.T) {
+// TestParser_DeclReturn verifies parsing of declarations followed by return
+func TestParser_DeclReturn(t *testing.T) {
 	src := `var a = 1;return a`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -853,7 +879,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement(t *tes
 	assert.Equal(t, "var a = 1;return a;", root.Literal())
 }
 
-func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_ParenthesizedExpression(t *testing.T) {
+// TestParser_DeclReturnParen verifies parsing of return with parenthesized expressions
+func TestParser_DeclReturnParen(t *testing.T) {
 	src := `var a = 1;return (a + 10 * 2)`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -892,7 +919,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_P
 	assert.Equal(t, "var a = 1;return (a+10*2);", root.Literal())
 }
 
-func TestParser_Parse_BooleanExpression(t *testing.T) {
+// TestParser_BoolExpr verifies parsing of boolean AND expressions
+func TestParser_BoolExpr(t *testing.T) {
 	src := `true && false`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -921,7 +949,8 @@ func TestParser_Parse_BooleanExpression(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: false}, root.Value)
 }
 
-func TestParser_Parse_ParenthesizedBooleanExpression(t *testing.T) {
+// TestParser_BoolParenExpr verifies parsing of parenthesized boolean expressions
+func TestParser_BoolParenExpr(t *testing.T) {
 	src := `(false || true && false)`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -954,7 +983,8 @@ func TestParser_Parse_ParenthesizedBooleanExpression(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: false}, root.Value)
 }
 
-func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_ParenthesizedBooleanExpression(t *testing.T) {
+// TestParser_DeclBoolReturn verifies parsing of boolean declarations and returns
+func TestParser_DeclBoolReturn(t *testing.T) {
 	src := `var a = true; var b = a && false; return b || true;`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1009,7 +1039,8 @@ func TestParser_ParseDeclarativeStatement_Identifier_With_ReturnStatement_With_P
 
 }
 
-func TestParser_Parse_RelationalOperator(t *testing.T) {
+// TestParser_RelOp verifies parsing of relational comparison operators
+func TestParser_RelOp(t *testing.T) {
 	src := `1 < 2`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1037,7 +1068,8 @@ func TestParser_Parse_RelationalOperator(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
 }
 
-func TestParser_Parse_RelationalOperatorSimple(t *testing.T) {
+// TestParser_RelOpSimple verifies parsing of relational operators with boolean expressions
+func TestParser_RelOpSimple(t *testing.T) {
 	src := `false || 1 < 2`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1067,7 +1099,8 @@ func TestParser_Parse_RelationalOperatorSimple(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
 }
 
-func TestParser_Parse_RelationalOperatorComplex(t *testing.T) {
+// TestParser_RelOpComplex verifies parsing of complex relational and boolean combinations
+func TestParser_RelOpComplex(t *testing.T) {
 	src := `false || 10 <= 20 && true`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1099,7 +1132,8 @@ func TestParser_Parse_RelationalOperatorComplex(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
 }
 
-func TestParser_Parse_RelationalOperatorWithParenthesizedExpression(t *testing.T) {
+// TestParser_RelOpParen verifies parsing of relational operators with parentheses
+func TestParser_RelOpParen(t *testing.T) {
 	src := `false || (10 <= 20 && true)`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1134,7 +1168,8 @@ func TestParser_Parse_RelationalOperatorWithParenthesizedExpression(t *testing.T
 	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
 }
 
-func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndVariable(t *testing.T) {
+// TestParser_RelOpVar verifies parsing of relational operators with variables
+func TestParser_RelOpVar(t *testing.T) {
 	src := `var a = false; return a || (10 <= 20 && true);`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1188,7 +1223,8 @@ func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndVariable(t
 
 }
 
-func TestParser_Parse_BitwiseOperator(t *testing.T) {
+// TestParser_BitOp verifies parsing of bitwise operators with precedence
+func TestParser_BitOp(t *testing.T) {
 	// In C-based languages, == has higher precedence than &
 	// So `3 & 7 == 3` is parsed as `3 & (7 == 3)` = `3 & false` = `3 & 0` = 0
 	// To get `(3 & 7) == 3`, you need explicit parentheses
@@ -1224,7 +1260,8 @@ func TestParser_Parse_BitwiseOperator(t *testing.T) {
 	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
 }
 
-func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndBitwiseOperator(t *testing.T) {
+// TestParser_RelBitComplex verifies parsing of complex relational and bitwise combinations
+func TestParser_RelBitComplex(t *testing.T) {
 	src := `return ((3&7)!=3&&true||false&&true)||true;`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1276,7 +1313,8 @@ func TestParser_Parse_RelationalOperatorWithParenthesizedExpressionAndBitwiseOpe
 	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
 }
 
-func TestParser_Parse_BitwiseOperatorWithParenthesizedExpression(t *testing.T) {
+// TestParser_BitOpParen verifies parsing of bitwise operators with parentheses and variables
+func TestParser_BitOpParen(t *testing.T) {
 	src := `var a = (3&7); return (a==3) && true;`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1353,7 +1391,8 @@ func TestParser_Parse_BitwiseOperatorWithParenthesizedExpression(t *testing.T) {
 
 }
 
-func TestParser_Parse_RelationalOperatorAndReturn(t *testing.T) {
+// TestParser_RelReturn verifies parsing of relational operators in return statements
+func TestParser_RelReturn(t *testing.T) {
 	src := `var a = 7; var b = 1; var c = 2; var d = 1; return ((a-b)>(c+d));`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1443,7 +1482,8 @@ func TestParser_Parse_RelationalOperatorAndReturn(t *testing.T) {
 
 }
 
-func TestParser_Parse_BlockStatementSimple(t *testing.T) {
+// TestParser_BlockSimple verifies parsing of simple block statements
+func TestParser_BlockSimple(t *testing.T) {
 	src := `{10 * 2 + 100;}`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1462,7 +1502,8 @@ func TestParser_Parse_BlockStatementSimple(t *testing.T) {
 	root.Accept(testingVisitor)
 }
 
-func TestParser_Parse_BlockStatement(t *testing.T) {
+// TestParser_Block verifies parsing of block statements with multiple declarations
+func TestParser_Block(t *testing.T) {
 	src := `{
 	var a = 10;
 	var b = a + 10;
@@ -1522,7 +1563,8 @@ func TestParser_Parse_BlockStatement(t *testing.T) {
 
 }
 
-func TestParser_Parse_BlockStatementWithReturnStatement(t *testing.T) {
+// TestParser_BlockReturn verifies parsing of block statements with return
+func TestParser_BlockReturn(t *testing.T) {
 	src := `{
 	var a = 10;
 	var b = a + 10;
@@ -1575,8 +1617,8 @@ func TestParser_Parse_BlockStatementWithReturnStatement(t *testing.T) {
 
 }
 
-// if statement
-func TestParser_Parse_IfStatement(t *testing.T) {
+// TestParser_If verifies parsing of simple if statements
+func TestParser_If(t *testing.T) {
 	src := `if (1) { }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1602,7 +1644,8 @@ func TestParser_Parse_IfStatement(t *testing.T) {
 	assert.Equal(t, `if (1) {};`, root.Literal())
 }
 
-func TestParser_Parse_IfElseStatement(t *testing.T) {
+// TestParser_IfElse verifies parsing of if-else statements
+func TestParser_IfElse(t *testing.T) {
 	src := `if (1) { 1 } else { 2 }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1631,7 +1674,8 @@ func TestParser_Parse_IfElseStatement(t *testing.T) {
 	assert.Equal(t, `if (1) {1;} else {2;};`, root.Literal())
 }
 
-func TestParser_Parse_ElseIfStatement(t *testing.T) {
+// TestParser_ElseIf verifies parsing of else-if chains
+func TestParser_ElseIf(t *testing.T) {
 	src := `if (1) { 1 } else if (2) { 2 } else { 3 }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1685,7 +1729,8 @@ func TestParser_Parse_ElseIfStatement(t *testing.T) {
 	// but purely based on AST node traversal above, we are good.
 }
 
-func TestParser_Parse_ElseIf_Evaluation(t *testing.T) {
+// TestParser_ElseIfEval verifies parsing and evaluation of else-if conditions
+func TestParser_ElseIfEval(t *testing.T) {
 	src := `if (1 == 2) { 1 } else if (2 != 2) { 2 } else { 3 }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1695,7 +1740,8 @@ func TestParser_Parse_ElseIf_Evaluation(t *testing.T) {
 	assert.Equal(t, `if (1==2) {1;} else if (2!=2) {2;} else {3;};`, root.Literal())
 }
 
-func TestParser_Parse_ElseIf_EvaluationAgain(t *testing.T) {
+// TestParser_ElseIfEval2 verifies parsing of multi-line else-if statements
+func TestParser_ElseIfEval2(t *testing.T) {
 	src := `if (1 == 2) { 
 	   1
 	} else if (2 == 2) {
@@ -1711,7 +1757,8 @@ func TestParser_Parse_ElseIf_EvaluationAgain(t *testing.T) {
 	assert.Equal(t, `if (1==2) {1;} else if (2==2) {2;} else {3;};`, root.Literal())
 }
 
-func TestParser_Parse_ElseIf_EvaluationAgainAgain(t *testing.T) {
+// TestParser_ElseIfComplex verifies parsing of complex else-if with assignments
+func TestParser_ElseIfComplex(t *testing.T) {
 	src := `
 	var a = 100;
 	var b = 0;
@@ -1731,7 +1778,8 @@ func TestParser_Parse_ElseIf_EvaluationAgainAgain(t *testing.T) {
 	assert.Equal(t, `var a = 100;var b = 0;if (2*a==200) {b = 1;} else if (2*a!=200) {b = 2;} else {b = 311111;};return b;`, root.Literal())
 }
 
-func TestParser_Parse_ElseIf_EvaluationAgainAgainAgain(t *testing.T) {
+// TestParser_ElseIfNested verifies parsing of nested if-else in blocks
+func TestParser_ElseIfNested(t *testing.T) {
 	src := `{
 	var x = 1;
 	{
@@ -1777,8 +1825,8 @@ func TestParser_Parse_ElseIf_EvaluationAgainAgainAgain(t *testing.T) {
 
 }
 
-// parse string literal
-func TestParser_Parse_StringLiteral_Simple(t *testing.T) {
+// TestParser_StrSimple verifies parsing of simple string literals
+func TestParser_StrSimple(t *testing.T) {
 	src := `"hello"`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1800,8 +1848,8 @@ func TestParser_Parse_StringLiteral_Simple(t *testing.T) {
 	assert.Equal(t, `hello;`, root.Literal())
 }
 
-// parse string literal
-func TestParser_Parse_StringLiteral(t *testing.T) {
+// TestParser_Str verifies parsing of multiple string literals and identifiers
+func TestParser_Str(t *testing.T) {
 	src := `"hello" "there" boy 123`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1829,8 +1877,8 @@ func TestParser_Parse_StringLiteral(t *testing.T) {
 	assert.Equal(t, `hello;there;boy;123;`, root.Literal())
 }
 
-// function statements
-func TestParser_Parse_FunctionStatement(t *testing.T) {
+// TestParser_Func verifies parsing of simple function declarations
+func TestParser_Func(t *testing.T) {
 	src := `func foo() {  }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1852,7 +1900,8 @@ func TestParser_Parse_FunctionStatement(t *testing.T) {
 	assert.Equal(t, `func foo () {};`, root.Literal())
 }
 
-func TestParser_Parse_FunctionStatementWithReturn(t *testing.T) {
+// TestParser_FuncReturn verifies parsing of functions with return statements
+func TestParser_FuncReturn(t *testing.T) {
 	src := `func foo(a, b) { return a + b; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1888,8 +1937,8 @@ func TestParser_Parse_FunctionStatementWithReturn(t *testing.T) {
 	assert.Equal(t, `func foo (a,b) {return a+b;};`, root.Literal())
 }
 
-// complex function definition
-func TestParser_Parse_FunctionStatementComplex(t *testing.T) {
+// TestParser_FuncComplex verifies parsing of functions with conditional logic
+func TestParser_FuncComplex(t *testing.T) {
 	src := `func foo(a, b) {
 		if (a == b) {
 			return a + b;
@@ -1955,8 +2004,8 @@ func TestParser_Parse_FunctionStatementComplex(t *testing.T) {
 	assert.Equal(t, `func foo (a,b) {if (a==b) {return a+b;} else {return a-b;};};`, root.Literal())
 }
 
-// function call arguments
-func TestParser_Parse_FunctionCallArguments(t *testing.T) {
+// TestParser_FuncCallArgs verifies parsing of function calls with arguments
+func TestParser_FuncCallArgs(t *testing.T) {
 	src := `foo(1, 2, 3)`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -1980,8 +2029,8 @@ func TestParser_Parse_FunctionCallArguments(t *testing.T) {
 	assert.Equal(t, `foo(1,2,3);`, root.Literal())
 }
 
-// function call expression
-func TestParser_Parse_FunctionCallArguments_Simple(t *testing.T) {
+// TestParser_FuncCallSimple verifies parsing of function calls with variable arguments
+func TestParser_FuncCallSimple(t *testing.T) {
 	src := `
 	var a  = 1;
 	var b = 2;
@@ -2018,8 +2067,8 @@ func TestParser_Parse_FunctionCallArguments_Simple(t *testing.T) {
 	assert.Equal(t, `var a = 1;var b = 2;foo(a,b);`, root.Literal())
 }
 
-// function call expression with return value
-func TestParser_Parse_FunctionCallExpression(t *testing.T) {
+// TestParser_FuncCallExpr verifies parsing of function calls in variable assignments
+func TestParser_FuncCallExpr(t *testing.T) {
 	src := `var a = foo(1, 2, 3);`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2047,8 +2096,8 @@ func TestParser_Parse_FunctionCallExpression(t *testing.T) {
 	assert.Equal(t, `var a = foo(1,2,3);`, root.Literal())
 }
 
-// While loop tests
-func TestParser_Parse_WhileLoop_SingleCondition(t *testing.T) {
+// TestParser_WhileSingle verifies parsing of while loops with single condition
+func TestParser_WhileSingle(t *testing.T) {
 	src := `var i = 0; while(i < 5){ i = i + 1; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2062,7 +2111,8 @@ func TestParser_Parse_WhileLoop_SingleCondition(t *testing.T) {
 	assert.Equal(t, "while(i<5){i = i+1;}", whileStmt.Literal())
 }
 
-func TestParser_Parse_WhileLoop_TwoConditions(t *testing.T) {
+// TestParser_WhileTwo verifies parsing of while loops with two conditions
+func TestParser_WhileTwo(t *testing.T) {
 	src := `var i = 0; var j = 10; while(i < 5, j > 5){ i = i + 1; j = j - 1; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2076,7 +2126,8 @@ func TestParser_Parse_WhileLoop_TwoConditions(t *testing.T) {
 	assert.Equal(t, "while(i<5 && j>5){i = i+1;j = j-1;}", whileStmt.Literal())
 }
 
-func TestParser_Parse_WhileLoop_ThreeConditions(t *testing.T) {
+// TestParser_WhileThree verifies parsing of while loops with three conditions
+func TestParser_WhileThree(t *testing.T) {
 	src := `var a = 0; var b = 20; var c = 10; while(a < 10, b > 10, c > 5){ a = a + 1; b = b - 1; c = c - 1; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2090,7 +2141,8 @@ func TestParser_Parse_WhileLoop_ThreeConditions(t *testing.T) {
 	assert.Equal(t, "while(a<10 && b>10 && c>5){a = a+1;b = b-1;c = c-1;}", whileStmt.Literal())
 }
 
-func TestParser_Parse_WhileLoop_ComplexConditions(t *testing.T) {
+// TestParser_WhileComplex verifies parsing of while loops with complex conditions
+func TestParser_WhileComplex(t *testing.T) {
 	src := `var x = 0; var y = 0; while(x < 5, y < 10, x + y < 12){ x = x + 1; y = y + 2; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2116,7 +2168,8 @@ func TestParser_Parse_WhileLoop_ComplexConditions(t *testing.T) {
 	assert.Equal(t, lexer.LT_OP, cond3.Operation.Type)
 }
 
-func TestParser_Parse_WhileLoop_EmptyBody(t *testing.T) {
+// TestParser_WhileEmpty verifies parsing of while loops with empty body
+func TestParser_WhileEmpty(t *testing.T) {
 	src := `var i = 0; while(i < 5, i >= 0){}`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2130,7 +2183,8 @@ func TestParser_Parse_WhileLoop_EmptyBody(t *testing.T) {
 	assert.Equal(t, 0, len(whileStmt.Body.Statements))
 }
 
-func TestParser_Parse_WhileLoop_NestedInBlock(t *testing.T) {
+// TestParser_WhileNested verifies parsing of while loops nested in blocks
+func TestParser_WhileNested(t *testing.T) {
 	src := `{
 		var count = 0;
 		while(count < 3){
@@ -2153,7 +2207,8 @@ func TestParser_Parse_WhileLoop_NestedInBlock(t *testing.T) {
 	assert.Equal(t, 1, len(whileStmt.Conditions))
 }
 
-func TestParser_Parse_ForLoop_MultipleInitializersAndUpdates(t *testing.T) {
+// TestParser_ForMulti verifies parsing of for loops with multiple initializers and updates
+func TestParser_ForMulti(t *testing.T) {
 	src := `for(i = 0, j = 10; i < 5 && j > 5; i = i + 1, j = j - 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2168,9 +2223,8 @@ func TestParser_Parse_ForLoop_MultipleInitializersAndUpdates(t *testing.T) {
 	assert.NotNil(t, forStmt.Condition)
 }
 
-// Comprehensive While Loop Tests
-
-func TestParser_Parse_WhileLoop_RootValueNotNil(t *testing.T) {
+// TestParser_WhileValue verifies while loop root value initialization
+func TestParser_WhileValue(t *testing.T) {
 	src := `var i = 0; while(i < 5){ i = i + 1; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2180,7 +2234,8 @@ func TestParser_Parse_WhileLoop_RootValueNotNil(t *testing.T) {
 	assert.Equal(t, &objects.Nil{}, root.Value)
 }
 
-func TestParser_Parse_WhileLoop_ConditionTypes(t *testing.T) {
+// TestParser_WhileCondType verifies parsing of while loop condition types
+func TestParser_WhileCondType(t *testing.T) {
 	src := `while(true){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2195,7 +2250,8 @@ func TestParser_Parse_WhileLoop_ConditionTypes(t *testing.T) {
 	assert.Equal(t, true, boolCond.Value.(*objects.Boolean).Value)
 }
 
-func TestParser_Parse_WhileLoop_MultipleConditionsWithDifferentOperators(t *testing.T) {
+// TestParser_WhileMultiOps verifies parsing of while loops with different operators
+func TestParser_WhileMultiOps(t *testing.T) {
 	src := `while(a < 10, b >= 5, c != 0, d == 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2222,7 +2278,8 @@ func TestParser_Parse_WhileLoop_MultipleConditionsWithDifferentOperators(t *test
 	assert.Equal(t, lexer.EQ_OP, cond4.Operation.Type)
 }
 
-func TestParser_Parse_WhileLoop_BodyWithMultipleStatements(t *testing.T) {
+// TestParser_WhileBody verifies parsing of while loop bodies with multiple statements
+func TestParser_WhileBody(t *testing.T) {
 	src := `while(i < 5){
 		var a = i;
 		var b = a + 1;
@@ -2244,7 +2301,8 @@ func TestParser_Parse_WhileLoop_BodyWithMultipleStatements(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestParser_Parse_WhileLoop_NestedWhileLoops(t *testing.T) {
+// TestParser_WhileNested2 verifies parsing of nested while loops
+func TestParser_WhileNested2(t *testing.T) {
 	src := `while(i < 5){
 		while(j < 10){
 			j = j + 1;
@@ -2265,7 +2323,8 @@ func TestParser_Parse_WhileLoop_NestedWhileLoops(t *testing.T) {
 	assert.Equal(t, 1, len(innerWhile.Body.Statements))
 }
 
-func TestParser_Parse_WhileLoop_WithIfStatement(t *testing.T) {
+// TestParser_WhileIf verifies parsing of while loops with if statements
+func TestParser_WhileIf(t *testing.T) {
 	src := `while(i < 10){
 		if(i == 5){
 			break;
@@ -2284,7 +2343,8 @@ func TestParser_Parse_WhileLoop_WithIfStatement(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestParser_Parse_WhileLoop_ConditionWithComplexExpression(t *testing.T) {
+// TestParser_WhileComplexCond verifies parsing of while loops with complex condition expressions
+func TestParser_WhileComplexCond(t *testing.T) {
 	src := `while((a + b) < (c * d), x > y){
 		a = a + 1;
 	}`
@@ -2301,7 +2361,8 @@ func TestParser_Parse_WhileLoop_ConditionWithComplexExpression(t *testing.T) {
 	assert.Equal(t, lexer.LT_OP, cond1.Operation.Type)
 }
 
-func TestParser_Parse_WhileLoop_ValueField(t *testing.T) {
+// TestParser_WhileValueField verifies while loop value field initialization
+func TestParser_WhileValueField(t *testing.T) {
 	src := `while(i < 5){ i = i + 1; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2314,9 +2375,8 @@ func TestParser_Parse_WhileLoop_ValueField(t *testing.T) {
 	assert.Equal(t, &objects.Nil{}, whileStmt.Value)
 }
 
-// Comprehensive For Loop Tests
-
-func TestParser_Parse_ForLoop_RootValueNotNil(t *testing.T) {
+// TestParser_ForValue verifies for loop root value initialization
+func TestParser_ForValue(t *testing.T) {
 	src := `for(i = 0; i < 5; i = i + 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2326,7 +2386,8 @@ func TestParser_Parse_ForLoop_RootValueNotNil(t *testing.T) {
 	assert.Equal(t, &objects.Nil{}, root.Value)
 }
 
-func TestParser_Parse_ForLoop_SingleInitializer(t *testing.T) {
+// TestParser_ForSingle verifies parsing of for loops with single initializer
+func TestParser_ForSingle(t *testing.T) {
 	src := `for(i = 0; i < 5; i = i + 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2338,7 +2399,8 @@ func TestParser_Parse_ForLoop_SingleInitializer(t *testing.T) {
 	assert.NotNil(t, forStmt.Condition)
 }
 
-func TestParser_Parse_ForLoop_MultipleInitializers(t *testing.T) {
+// TestParser_ForMultiInit verifies parsing of for loops with multiple initializers
+func TestParser_ForMultiInit(t *testing.T) {
 	src := `for(i = 0, j = 10, k = 20; i < 5; i = i + 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2354,7 +2416,8 @@ func TestParser_Parse_ForLoop_MultipleInitializers(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_ForLoop_MultipleUpdates(t *testing.T) {
+// TestParser_ForMultiUpdate verifies parsing of for loops with multiple updates
+func TestParser_ForMultiUpdate(t *testing.T) {
 	src := `for(i = 0; i < 5; i = i + 1, j = j - 1, k = k * 2){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2370,7 +2433,8 @@ func TestParser_Parse_ForLoop_MultipleUpdates(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_ForLoop_NoInitializer(t *testing.T) {
+// TestParser_ForNoInit verifies parsing of for loops without initializer
+func TestParser_ForNoInit(t *testing.T) {
 	src := `for(; i < 5; i = i + 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2382,7 +2446,8 @@ func TestParser_Parse_ForLoop_NoInitializer(t *testing.T) {
 	assert.Equal(t, 1, len(forStmt.Updates))
 }
 
-func TestParser_Parse_ForLoop_NoCondition(t *testing.T) {
+// TestParser_ForNoCond verifies parsing of for loops without condition
+func TestParser_ForNoCond(t *testing.T) {
 	src := `for(i = 0; ; i = i + 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2394,7 +2459,8 @@ func TestParser_Parse_ForLoop_NoCondition(t *testing.T) {
 	assert.Equal(t, 1, len(forStmt.Updates))
 }
 
-func TestParser_Parse_ForLoop_NoUpdate(t *testing.T) {
+// TestParser_ForNoUpdate verifies parsing of for loops without update
+func TestParser_ForNoUpdate(t *testing.T) {
 	src := `for(i = 0; i < 5; ){ i = i + 1; }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2406,7 +2472,8 @@ func TestParser_Parse_ForLoop_NoUpdate(t *testing.T) {
 	assert.Equal(t, 0, len(forStmt.Updates))
 }
 
-func TestParser_Parse_ForLoop_ComplexCondition(t *testing.T) {
+// TestParser_ForComplexCond verifies parsing of for loops with complex conditions
+func TestParser_ForComplexCond(t *testing.T) {
 	src := `for(i = 0; i < 5 && j > 0 || k == 10; i = i + 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2420,7 +2487,8 @@ func TestParser_Parse_ForLoop_ComplexCondition(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestParser_Parse_ForLoop_BodyWithMultipleStatements(t *testing.T) {
+// TestParser_ForBody verifies parsing of for loop bodies with multiple statements
+func TestParser_ForBody(t *testing.T) {
 	src := `for(i = 0; i < 5; i = i + 1){
 		var a = i;
 		var b = a * 2;
@@ -2440,7 +2508,8 @@ func TestParser_Parse_ForLoop_BodyWithMultipleStatements(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_ForLoop_NestedForLoops(t *testing.T) {
+// TestParser_ForNested verifies parsing of nested for loops
+func TestParser_ForNested(t *testing.T) {
 	src := `for(i = 0; i < 5; i = i + 1){
 		for(j = 0; j < 10; j = j + 1){
 			var c = i + j;
@@ -2461,7 +2530,8 @@ func TestParser_Parse_ForLoop_NestedForLoops(t *testing.T) {
 	assert.Equal(t, 1, len(innerFor.Body.Statements))
 }
 
-func TestParser_Parse_ForLoop_WithIfStatement(t *testing.T) {
+// TestParser_ForIf verifies parsing of for loops with if statements
+func TestParser_ForIf(t *testing.T) {
 	src := `for(i = 0; i < 10; i = i + 1){
 		if(i == 5){
 			var x = i;
@@ -2479,7 +2549,8 @@ func TestParser_Parse_ForLoop_WithIfStatement(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestParser_Parse_ForLoop_ValueField(t *testing.T) {
+// TestParser_ForValueField verifies for loop value field initialization
+func TestParser_ForValueField(t *testing.T) {
 	src := `for(i = 0; i < 5; i = i + 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2492,7 +2563,8 @@ func TestParser_Parse_ForLoop_ValueField(t *testing.T) {
 	assert.Equal(t, &objects.Nil{}, forStmt.Value)
 }
 
-func TestParser_Parse_ForLoop_EmptyLoop(t *testing.T) {
+// TestParser_ForEmpty verifies parsing of empty for loops
+func TestParser_ForEmpty(t *testing.T) {
 	src := `for(;;){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2505,7 +2577,8 @@ func TestParser_Parse_ForLoop_EmptyLoop(t *testing.T) {
 	assert.Equal(t, 0, len(forStmt.Body.Statements))
 }
 
-func TestParser_Parse_ForLoop_WithWhileLoop(t *testing.T) {
+// TestParser_ForWhile verifies parsing of for loops containing while loops
+func TestParser_ForWhile(t *testing.T) {
 	src := `for(i = 0; i < 5; i = i + 1){
 		while(j < 10){
 			j = j + 1;
@@ -2523,7 +2596,8 @@ func TestParser_Parse_ForLoop_WithWhileLoop(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestParser_Parse_WhileLoop_WithForLoop(t *testing.T) {
+// TestParser_WhileFor verifies parsing of while loops containing for loops
+func TestParser_WhileFor(t *testing.T) {
 	src := `while(i < 5){
 		for(j = 0; j < 10; j = j + 1){
 			var c = i + j;
@@ -2542,7 +2616,8 @@ func TestParser_Parse_WhileLoop_WithForLoop(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestParser_Parse_ForLoop_Literal(t *testing.T) {
+// TestParser_ForLiteral verifies for loop literal representation
+func TestParser_ForLiteral(t *testing.T) {
 	src := `for(i = 0, j = 10; i < 5 && j > 5; i = i + 1, j = j - 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2555,7 +2630,8 @@ func TestParser_Parse_ForLoop_Literal(t *testing.T) {
 	assert.Equal(t, expected, forStmt.Literal())
 }
 
-func TestParser_Parse_WhileLoop_Literal(t *testing.T) {
+// TestParser_WhileLiteral verifies while loop literal representation
+func TestParser_WhileLiteral(t *testing.T) {
 	src := `while(i < 5, j > 0, k == 10 && l != 20){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2568,12 +2644,8 @@ func TestParser_Parse_WhileLoop_Literal(t *testing.T) {
 	assert.Equal(t, expected, whileStmt.Literal())
 }
 
-// Compound Assignment Tests
-// Note: Compound assignments are transformed to regular assignments at parse time
-// e.g., a += 5 becomes a = a + 5
-// The Value field is Nil because evaluation is deferred to the evaluator
-
-func TestParser_Parse_CompoundAssignment_PlusEquals(t *testing.T) {
+// TestParser_CompoundPlus verifies parsing of += compound assignment operator
+func TestParser_CompoundPlus(t *testing.T) {
 	src := `var a = 10; a += 5`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2592,7 +2664,8 @@ func TestParser_Parse_CompoundAssignment_PlusEquals(t *testing.T) {
 	assert.Equal(t, lexer.PLUS_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_MinusEquals(t *testing.T) {
+// TestParser_CompoundMinus verifies parsing of -= compound assignment operator
+func TestParser_CompoundMinus(t *testing.T) {
 	src := `var a = 20; a -= 5`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2610,7 +2683,8 @@ func TestParser_Parse_CompoundAssignment_MinusEquals(t *testing.T) {
 	assert.Equal(t, lexer.MINUS_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_MulEquals(t *testing.T) {
+// TestParser_CompoundMul verifies parsing of *= compound assignment operator
+func TestParser_CompoundMul(t *testing.T) {
 	src := `var a = 5; a *= 4`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2628,7 +2702,8 @@ func TestParser_Parse_CompoundAssignment_MulEquals(t *testing.T) {
 	assert.Equal(t, lexer.MUL_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_DivEquals(t *testing.T) {
+// TestParser_CompoundDiv verifies parsing of /= compound assignment operator
+func TestParser_CompoundDiv(t *testing.T) {
 	src := `var a = 20; a /= 4`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2646,7 +2721,8 @@ func TestParser_Parse_CompoundAssignment_DivEquals(t *testing.T) {
 	assert.Equal(t, lexer.DIV_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_ModEquals(t *testing.T) {
+// TestParser_CompoundMod verifies parsing of %= compound assignment operator
+func TestParser_CompoundMod(t *testing.T) {
 	src := `var a = 17; a %= 5`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2664,7 +2740,8 @@ func TestParser_Parse_CompoundAssignment_ModEquals(t *testing.T) {
 	assert.Equal(t, lexer.MOD_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_BitwiseAnd(t *testing.T) {
+// TestParser_CompoundAnd verifies parsing of &= compound assignment operator
+func TestParser_CompoundAnd(t *testing.T) {
 	src := `var a = 12; a &= 10`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2682,7 +2759,8 @@ func TestParser_Parse_CompoundAssignment_BitwiseAnd(t *testing.T) {
 	assert.Equal(t, lexer.BIT_AND_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_BitwiseOr(t *testing.T) {
+// TestParser_CompoundOr verifies parsing of |= compound assignment operator
+func TestParser_CompoundOr(t *testing.T) {
 	src := `var a = 12; a |= 3`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2700,7 +2778,8 @@ func TestParser_Parse_CompoundAssignment_BitwiseOr(t *testing.T) {
 	assert.Equal(t, lexer.BIT_OR_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_BitwiseXor(t *testing.T) {
+// TestParser_CompoundXor verifies parsing of ^= compound assignment operator
+func TestParser_CompoundXor(t *testing.T) {
 	src := `var a = 12; a ^= 5`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2718,7 +2797,8 @@ func TestParser_Parse_CompoundAssignment_BitwiseXor(t *testing.T) {
 	assert.Equal(t, lexer.BIT_XOR_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_LeftShift(t *testing.T) {
+// TestParser_CompoundLeftShift verifies parsing of <<= compound assignment operator
+func TestParser_CompoundLeftShift(t *testing.T) {
 	src := `var a = 4; a <<= 2`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2736,7 +2816,8 @@ func TestParser_Parse_CompoundAssignment_LeftShift(t *testing.T) {
 	assert.Equal(t, lexer.BIT_LEFT_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_RightShift(t *testing.T) {
+// TestParser_CompoundRightShift verifies parsing of >>= compound assignment operator
+func TestParser_CompoundRightShift(t *testing.T) {
 	src := `var a = 16; a >>= 2`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2754,7 +2835,8 @@ func TestParser_Parse_CompoundAssignment_RightShift(t *testing.T) {
 	assert.Equal(t, lexer.BIT_RIGHT_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_InForLoop(t *testing.T) {
+// TestParser_CompoundInFor verifies parsing of compound assignments in for loops
+func TestParser_CompoundInFor(t *testing.T) {
 	src := `for(i = 0; i < 5; i += 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2769,7 +2851,8 @@ func TestParser_Parse_CompoundAssignment_InForLoop(t *testing.T) {
 	assert.NotNil(t, forStmt.Condition)
 }
 
-func TestParser_Parse_CompoundAssignment_MultipleInForLoop(t *testing.T) {
+// TestParser_CompoundMultiFor verifies parsing of multiple compound assignments in for loops
+func TestParser_CompoundMultiFor(t *testing.T) {
 	src := `for(i = 0, j = 10; i < 5; i += 1, j -= 1){ }`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2783,7 +2866,8 @@ func TestParser_Parse_CompoundAssignment_MultipleInForLoop(t *testing.T) {
 	assert.Equal(t, 2, len(forStmt.Updates))
 }
 
-func TestParser_Parse_CompoundAssignment_WithComplexExpression(t *testing.T) {
+// TestParser_CompoundComplex verifies parsing of compound assignments with complex expressions
+func TestParser_CompoundComplex(t *testing.T) {
 	src := `var a = 10; a += 2 * 3`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2801,7 +2885,8 @@ func TestParser_Parse_CompoundAssignment_WithComplexExpression(t *testing.T) {
 	assert.Equal(t, lexer.PLUS_OP, binaryExpr.Operation.Type)
 }
 
-func TestParser_Parse_CompoundAssignment_Chained(t *testing.T) {
+// TestParser_CompoundChained verifies parsing of chained compound assignments
+func TestParser_CompoundChained(t *testing.T) {
 	src := `var a = 10; a += 5; a *= 2; a -= 10`
 	root := NewParser(src).Parse()
 	assert.NotNil(t, root)
@@ -2826,7 +2911,8 @@ func TestParser_Parse_CompoundAssignment_Chained(t *testing.T) {
 	assert.Equal(t, assignStmt3.Value, &objects.Integer{Value: 20})
 }
 
-func TestParser_Parse_ParseArrayLiteral(t *testing.T) {
+// TestParser_ArrayLiteral verifies parsing of array literal expressions
+func TestParser_ArrayLiteral(t *testing.T) {
 	tests := []struct {
 		Expr     string
 		Expected []Node
@@ -2896,7 +2982,8 @@ func TestParser_Parse_ParseArrayLiteral(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_ArrayLiteral_WithBooleans(t *testing.T) {
+// TestParser_ArrayBool verifies parsing of array literals with boolean elements
+func TestParser_ArrayBool(t *testing.T) {
 	src := `[true, false, true]`
 	par := NewParser(src)
 	rootNode := par.Parse()
@@ -2916,7 +3003,8 @@ func TestParser_Parse_ArrayLiteral_WithBooleans(t *testing.T) {
 	rootNode.Accept(testingVisitor)
 }
 
-func TestParser_Parse_ArrayLiteral_MixedTypes(t *testing.T) {
+// TestParser_ArrayMixed verifies parsing of array literals with mixed type elements
+func TestParser_ArrayMixed(t *testing.T) {
 	src := `[1, "hello", true, 42]`
 	par := NewParser(src)
 	rootNode := par.Parse()
@@ -2937,7 +3025,8 @@ func TestParser_Parse_ArrayLiteral_MixedTypes(t *testing.T) {
 	rootNode.Accept(testingVisitor)
 }
 
-func TestParser_Parse_ArrayLiteral_WithIdentifiers(t *testing.T) {
+// TestParser_ArrayIdent verifies parsing of array literals with identifier elements
+func TestParser_ArrayIdent(t *testing.T) {
 	src := `var x = 10; var arr = [x, 20, 30]`
 	par := NewParser(src)
 	rootNode := par.Parse()
@@ -2957,7 +3046,8 @@ func TestParser_Parse_ArrayLiteral_WithIdentifiers(t *testing.T) {
 	assert.Equal(t, 3, len(arrayExpr.Elements))
 }
 
-func TestParser_Parse_ArrayLiteral_WithExpressions(t *testing.T) {
+// TestParser_ArrayExpr verifies parsing of array literals with expression elements
+func TestParser_ArrayExpr(t *testing.T) {
 	src := `[1 + 2, 3 * 4, 10 - 5]`
 	par := NewParser(src)
 	rootNode := par.Parse()
@@ -2978,7 +3068,8 @@ func TestParser_Parse_ArrayLiteral_WithExpressions(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_ArrayLiteral_WithFunction(t *testing.T) {
+// TestParser_ArrayFunc verifies parsing of array literals with function elements
+func TestParser_ArrayFunc(t *testing.T) {
 	src := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
 	par := NewParser(src)
 	rootNode := par.Parse()
@@ -3029,7 +3120,8 @@ func TestParser_Parse_ArrayLiteral_WithFunction(t *testing.T) {
 	assert.Equal(t, "b", callExpr.FunctionIdentifier.Name)
 }
 
-func TestParser_Parse_ArrayLiteral_IndexAccess(t *testing.T) {
+// TestParser_ArrayIndex verifies parsing of array index access expressions
+func TestParser_ArrayIndex(t *testing.T) {
 	src := `var arr = [10, 20, 30]; arr[0]; arr[1]; arr[2]`
 	par := NewParser(src)
 	rootNode := par.Parse()
@@ -3060,7 +3152,8 @@ func TestParser_Parse_ArrayLiteral_IndexAccess(t *testing.T) {
 	}
 }
 
-func TestParser_Parse_ArrayLiteral_NestedIndexAccess(t *testing.T) {
+// TestParser_ArrayNested verifies parsing of nested array index access
+func TestParser_ArrayNested(t *testing.T) {
 	src := `var matrix = [[1, 2], [3, 4]]; matrix[0][1]`
 	par := NewParser(src)
 	rootNode := par.Parse()

@@ -15,7 +15,8 @@ import (
 	"github.com/akashmaji946/go-mix/parser"
 )
 
-func TestEvaluator_Integers(t *testing.T) {
+// TestEvaluator_Ints verifies integer literal evaluation and arithmetic operations
+func TestEvaluator_Ints(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
@@ -50,6 +51,7 @@ func TestEvaluator_Integers(t *testing.T) {
 	}
 }
 
+// TestEvaluator_Floats verifies float literal evaluation and arithmetic operations
 func TestEvaluator_Floats(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -86,7 +88,8 @@ func TestEvaluator_Floats(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Booleans(t *testing.T) {
+// TestEvaluator_Bools verifies boolean literal evaluation and comparison operations
+func TestEvaluator_Bools(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected bool
@@ -118,6 +121,7 @@ func TestEvaluator_Booleans(t *testing.T) {
 	}
 }
 
+// TestEvaluator_Nil verifies nil value evaluation
 func TestEvaluator_Nil(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -147,6 +151,7 @@ func TestEvaluator_Nil(t *testing.T) {
 	}
 }
 
+// TestEvaluator_Strings verifies string literal evaluation
 func TestEvaluator_Strings(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -172,8 +177,8 @@ func TestEvaluator_Strings(t *testing.T) {
 	}
 }
 
-// evaluate expression
-func TestEvaluator_ExpressionInteger(t *testing.T) {
+// TestEvaluator_IntExpr verifies integer expressions including arithmetic, bitwise, and unary operations
+func TestEvaluator_IntExpr(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
@@ -223,7 +228,8 @@ func TestEvaluator_ExpressionInteger(t *testing.T) {
 	}
 }
 
-func TestEvaluator_ExpressionErrror(t *testing.T) {
+// TestEvaluator_ExprErr verifies error handling for invalid expression operations
+func TestEvaluator_ExprErr(t *testing.T) {
 	tests := []struct {
 		Src              string
 		ExpectedErrorMsg string
@@ -345,7 +351,8 @@ func TestEvaluator_ExpressionErrror(t *testing.T) {
 
 }
 
-func TestEvaluator_Eval_Conditionals(t *testing.T) {
+// TestEvaluator_Conds verifies if/else conditional statement evaluation
+func TestEvaluator_Conds(t *testing.T) {
 	tests := []struct {
 		Src      string
 		Expected bool
@@ -406,7 +413,8 @@ func TestEvaluator_Eval_Conditionals(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Eval_ReturnStatement(t *testing.T) {
+// TestEvaluator_Return verifies return statement evaluation and early exit behavior
+func TestEvaluator_Return(t *testing.T) {
 	tests := []struct {
 		Src      string
 		Expected int64
@@ -447,7 +455,8 @@ func TestEvaluator_Eval_ReturnStatement(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Eval_Declarations(t *testing.T) {
+// TestEvaluator_Decls verifies variable declaration and initialization
+func TestEvaluator_Decls(t *testing.T) {
 	tests := []struct {
 		Src      string
 		Expected int64
@@ -493,7 +502,8 @@ func TestEvaluator_Eval_Declarations(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Eval_DeclarationError(t *testing.T) {
+// TestEvaluator_DeclErr verifies error handling for invalid variable declarations
+func TestEvaluator_DeclErr(t *testing.T) {
 	errorTests := []struct {
 		Src              string
 		ExpectedErrorMsg string
@@ -529,8 +539,8 @@ func TestEvaluator_Eval_DeclarationError(t *testing.T) {
 
 }
 
-// function declaration
-func TestEvaluator_Eval_FunctionCall(t *testing.T) {
+// TestEvaluator_FuncCall verifies function call evaluation with parameters
+func TestEvaluator_FuncCall(t *testing.T) {
 	tests := []struct {
 		Src      string
 		Expected int64
@@ -559,7 +569,8 @@ func TestEvaluator_Eval_FunctionCall(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Eval_FunctionCallArgumentCountError(t *testing.T) {
+// TestEvaluator_FuncArgErr verifies error handling for incorrect function argument counts
+func TestEvaluator_FuncArgErr(t *testing.T) {
 	errorTests := []struct {
 		Src              string
 		ExpectedErrorMsg string
@@ -600,7 +611,8 @@ func TestEvaluator_Eval_FunctionCallArgumentCountError(t *testing.T) {
 	}
 }
 
-func TestParser_LetKeyword(t *testing.T) {
+// TestEvaluator_Let verifies let keyword variable declaration evaluation
+func TestEvaluator_Let(t *testing.T) {
 	tests := []struct {
 		Src      string
 		Expected int64
@@ -631,7 +643,8 @@ func TestParser_LetKeyword(t *testing.T) {
 
 }
 
-func TestEvaluator_Eval_ConstDeclarationError(t *testing.T) {
+// TestEvaluator_ConstDeclErr verifies error handling for const redeclaration
+func TestEvaluator_ConstDeclErr(t *testing.T) {
 	errorTests := []struct {
 		Src              string
 		ExpectedErrorMsg string
@@ -665,7 +678,8 @@ func TestEvaluator_Eval_ConstDeclarationError(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Eval_ConstReassignmentError(t *testing.T) {
+// TestEvaluator_ConstReassignErr verifies error handling for const reassignment attempts
+func TestEvaluator_ConstReassignErr(t *testing.T) {
 	errorTests := []struct {
 		Src              string
 		ExpectedErrorMsg string
@@ -699,7 +713,8 @@ func TestEvaluator_Eval_ConstReassignmentError(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Eval_LetDeclarationError(t *testing.T) {
+// TestEvaluator_LetDeclErr verifies error handling for let redeclaration
+func TestEvaluator_LetDeclErr(t *testing.T) {
 	errorTests := []struct {
 		Src              string
 		ExpectedErrorMsg string
@@ -741,7 +756,8 @@ func TestEvaluator_Eval_LetDeclarationError(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Eval_LetReassignmentError(t *testing.T) {
+// TestEvaluator_LetReassignErr verifies error handling for let type mismatch on reassignment
+func TestEvaluator_LetReassignErr(t *testing.T) {
 	errorTests := []struct {
 		Src              string
 		ExpectedErrorMsg string
@@ -779,8 +795,8 @@ func TestEvaluator_Eval_LetReassignmentError(t *testing.T) {
 	}
 }
 
-// Compound Assignment Tests
-func TestEvaluator_CompoundAssignment_Arithmetic(t *testing.T) {
+// TestEvaluator_CompoundArith verifies arithmetic compound assignment operators (+=, -=, *=, /=, %=)
+func TestEvaluator_CompoundArith(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
@@ -812,7 +828,8 @@ func TestEvaluator_CompoundAssignment_Arithmetic(t *testing.T) {
 	}
 }
 
-func TestEvaluator_CompoundAssignment_Bitwise(t *testing.T) {
+// TestEvaluator_CompoundBitwise verifies bitwise compound assignment operators (&=, |=, ^=, <<=, >>=)
+func TestEvaluator_CompoundBitwise(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
@@ -844,7 +861,8 @@ func TestEvaluator_CompoundAssignment_Bitwise(t *testing.T) {
 	}
 }
 
-func TestEvaluator_CompoundAssignment_InLoops(t *testing.T) {
+// TestEvaluator_CompoundLoops verifies compound assignments within for and while loops
+func TestEvaluator_CompoundLoops(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
@@ -867,7 +885,8 @@ func TestEvaluator_CompoundAssignment_InLoops(t *testing.T) {
 	}
 }
 
-func TestEvaluator_CompoundAssignment_WithExpressions(t *testing.T) {
+// TestEvaluator_CompoundExpr verifies compound assignments with complex expressions
+func TestEvaluator_CompoundExpr(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int64
