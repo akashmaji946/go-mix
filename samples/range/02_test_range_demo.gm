@@ -1,0 +1,31 @@
+// Test 1: Create a range and print it
+println("Test 1: Range creation");
+var x = 2...5;
+println(x);
+
+println("");
+println("Test 2: Foreach with range literal");
+foreach i in 1...3 {
+    println(i);
+}
+
+println("");
+println("Test 3: Foreach with range variable");
+var myRange = 10...12;
+foreach num in myRange {
+    println(num);
+}
+
+println("");
+println("Test 4: Foreach with array");
+foreach item in [100, 200, 300] {
+    println(item);
+}
+
+println("");
+println("Test 5: Nested foreach");
+foreach i in 1...2 {
+    foreach j in 1...2 {
+        println(i * 10 + j);
+    }
+}

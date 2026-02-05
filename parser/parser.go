@@ -170,6 +170,9 @@ func (par *Parser) init() {
 	// Array indexing and slicing: arr[0], arr[1:3]
 	par.registerBinaryFuncs(par.parseIndexExpression, lexer.LEFT_BRACKET)
 
+	// Range operator: 2...5
+	par.registerBinaryFuncs(par.parseRangeExpression, lexer.RANGE_OP)
+
 	// Prime the token lookahead by advancing twice
 	// After this, CurrToken and NextToken are both valid
 	par.advance()

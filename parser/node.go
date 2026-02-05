@@ -53,6 +53,10 @@ type NodeVisitor interface {
 	VisitArrayExpressionNode(node ArrayExpressionNode) // Array literals: [1, 2, 3]
 	VisitIndexExpressionNode(node IndexExpressionNode) // Array indexing: arr[0], arr[-1]
 	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
+
+	// Range and foreach visitors
+	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
+	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
 }
 
 // Node: base interface for all nodes of the AST
@@ -819,5 +823,58 @@ func (node *SliceExpressionNode) Statement() {
 
 // SliceExpressionNode.Expression()
 func (node *SliceExpressionNode) Expression() {
+
+}
+
+// RangeExpressionNode: represents a range expression with inclusive bounds
+// Example: 2...5 creates a range from 2 to 5 (inclusive)
+type RangeExpressionNode struct {
+	Start ExpressionNode      // The start expression of the range
+	End   ExpressionNode      // The end expression of the range (inclusive)
+	Value objects.GoMixObject // The Range object value
+}
+
+// RangeExpressionNode.Literal()
+func (node *RangeExpressionNode) Literal() string {
+	return node.Start.Literal() + "..." + node.End.Literal()
+}
+
+// RangeExpressionNode.Accept()
+func (node *RangeExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitRangeExpressionNode(*node)
+}
+
+// RangeExpressionNode.Statement()
+func (node *RangeExpressionNode) Statement() {
+
+}
+
+// RangeExpressionNode.Expression()
+func (node *RangeExpressionNode) Expression() {
+
+}
+
+// ForeachLoopStatementNode: represents a foreach loop statement
+// Example: foreach i in 2...10 { body } or foreach item in array { body }
+type ForeachLoopStatementNode struct {
+	ForeachToken lexer.Token              // The 'foreach' keyword token
+	Iterator     IdentifierExpressionNode // The loop variable (e.g., 'i' or 'item')
+	Iterable     ExpressionNode           // The range or array to iterate over
+	Body         BlockStatementNode       // The loop body
+	Value        objects.GoMixObject      // The result value
+}
+
+// ForeachLoopStatementNode.Literal()
+func (node *ForeachLoopStatementNode) Literal() string {
+	return "foreach " + node.Iterator.Name + " in " + node.Iterable.Literal() + " " + node.Body.Literal()
+}
+
+// ForeachLoopStatementNode.Accept()
+func (node *ForeachLoopStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitForeachLoopStatementNode(*node)
+}
+
+// ForeachLoopStatementNode.Statement()
+func (node *ForeachLoopStatementNode) Statement() {
 
 }

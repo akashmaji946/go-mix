@@ -312,6 +312,31 @@ func (v *TestingVisitor) VisitSliceExpressionNode(node SliceExpressionNode) {
 	}
 }
 
+// VisitRangeExpressionNode visits a range expression node and visits the start and end expressions
+func (v *TestingVisitor) VisitRangeExpressionNode(node RangeExpressionNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*RangeExpressionNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	node.Start.Accept(v)
+	node.End.Accept(v)
+}
+
+// VisitForeachLoopStatementNode visits a foreach loop node and visits the iterator, iterable, and body
+func (v *TestingVisitor) VisitForeachLoopStatementNode(node ForeachLoopStatementNode) {
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*ForeachLoopStatementNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.Iterator.Name, curr.(*ForeachLoopStatementNode).Iterator.Name)
+	v.Ptr++
+
+	node.Iterable.Accept(v)
+	node.Body.Accept(v)
+}
+
 // String returns the string representation of the visitor (empty string)
 func (v *TestingVisitor) String() string {
 	return ""

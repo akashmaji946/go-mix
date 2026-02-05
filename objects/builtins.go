@@ -55,6 +55,10 @@ var commonMethods = []*Builtin{
 		Name:     "tostring", // Converts an object to its string representation
 		Callback: tostring,
 	},
+	{
+		Name:     "range", // Creates an inclusive range from start to end
+		Callback: rangeFunc,
+	},
 }
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
@@ -190,5 +194,39 @@ func length(writer io.Writer, args ...GoMixObject) GoMixObject {
 	default:
 		// Return an error for unsupported types
 		return &Error{Message: fmt.Sprintf("argument to `length` not supported, got '%s'", args[0].GetType())}
+	}
+}
+
+// rangeFunc creates an inclusive range from start to end, similar to the ... operator.
+// It takes two arguments: start and end (both must be integers).
+// Returns a Range object that can be used in foreach loops or stored in variables.
+// This provides a functional alternative to the ... operator syntax.
+//
+// Examples:
+//
+//	range(2, 5)    -> Range{Start: 2, End: 5}
+//	range(1, 10)   -> Range{Start: 1, End: 10}
+func rangeFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+	// Check if exactly two arguments are provided
+	if len(args) != 2 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
+	}
+
+	// Validate that both arguments are integers
+	if args[0].GetType() != IntegerType {
+		return createError("ERROR: first argument to `range` must be an integer, got '%s'", args[0].GetType())
+	}
+	if args[1].GetType() != IntegerType {
+		return createError("ERROR: second argument to `range` must be an integer, got '%s'", args[1].GetType())
+	}
+
+	// Extract the integer values
+	start := args[0].(*Integer).Value
+	end := args[1].(*Integer).Value
+
+	// Create and return the Range object
+	return &Range{
+		Start: start,
+		End:   end,
 	}
 }

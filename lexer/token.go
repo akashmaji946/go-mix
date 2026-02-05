@@ -150,6 +150,8 @@ const (
 	ELSE_KEY     TokenType = "else"     // Conditional else keyword
 	WHILE_KEY    TokenType = "while"    // While loop keyword
 	FOR_KEY      TokenType = "for"      // For loop keyword
+	FOREACH_KEY  TokenType = "foreach"  // Foreach loop keyword
+	IN_KEY       TokenType = "in"       // In keyword for foreach loops
 	BREAK_KEY    TokenType = "break"    // Loop break keyword
 	CONTINUE_KEY TokenType = "continue" // Loop continue keyword
 
@@ -181,6 +183,9 @@ const (
 	COMMA_DELIM     TokenType = "," // Comma - separates parameters, array elements
 	SEMICOLON_DELIM TokenType = ";" // Semicolon - statement terminator
 	COLON_DELIM     TokenType = ":" // Colon - used in slicing operations
+
+	// Range Operator
+	RANGE_OP TokenType = "..." // Range operator - creates inclusive ranges (e.g., 2...5)
 )
 
 // Print outputs a human-readable representation of the token to standard output.
@@ -219,6 +224,8 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"else":     ELSE_KEY,     // Conditional else
 	"while":    WHILE_KEY,    // While loop
 	"for":      FOR_KEY,      // For loop
+	"foreach":  FOREACH_KEY,  // Foreach loop
+	"in":       IN_KEY,       // In keyword for foreach
 	"break":    BREAK_KEY,    // Break from loop
 	"continue": CONTINUE_KEY, // Continue to next iteration
 	"nil":      NIL_LIT,      // Nil/null value

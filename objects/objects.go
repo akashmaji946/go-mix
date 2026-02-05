@@ -38,6 +38,8 @@ const (
 	FunctionType GoMixType = "func"
 	// ArrayType represents arrays of GoMix objects
 	ArrayType GoMixType = "array"
+	// RangeType represents range objects (inclusive ranges)
+	RangeType GoMixType = "range"
 )
 
 // GoMixObject is the core interface that all GoMix objects must implement.
@@ -272,4 +274,28 @@ func (a *Array) ToObject() string {
 	}
 	result += "])>"
 	return result
+}
+
+// Range represents an inclusive range of integers in GoMix.
+// It holds start and end values and provides methods for type identification
+// and string representation. Ranges are used for iteration in foreach loops
+// and can be created using the ... operator (e.g., 2...5).
+type Range struct {
+	Start int64 // The start value of the range (inclusive)
+	End   int64 // The end value of the range (inclusive)
+}
+
+// GetType returns the type of the Range object
+func (r *Range) GetType() GoMixType {
+	return RangeType
+}
+
+// ToString returns a string representation of the range as "range(start,end)"
+func (r *Range) ToString() string {
+	return fmt.Sprintf("range(%d,%d)", r.Start, r.End)
+}
+
+// ToObject returns a detailed representation of the range as "<range(start,end)>"
+func (r *Range) ToObject() string {
+	return fmt.Sprintf("<range(%d,%d)>", r.Start, r.End)
 }

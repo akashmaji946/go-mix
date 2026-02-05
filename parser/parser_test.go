@@ -3185,3 +3185,189 @@ func TestParser_ArrayNested(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "matrix", ident.Name)
 }
+
+// TestParser_RangeSimple verifies parsing of simple range expressions
+func TestParser_RangeSimple(t *testing.T) {
+	src := `2...5`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a range expression
+	rangeExpr, ok := root.Statements[0].(*RangeExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "2...5", rangeExpr.Literal())
+
+	// Check start is integer 2
+	startInt, ok := rangeExpr.Start.(*IntegerLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, &objects.Integer{Value: 2}, startInt.Value)
+
+	// Check end is integer 5
+	endInt, ok := rangeExpr.End.(*IntegerLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, &objects.Integer{Value: 5}, endInt.Value)
+
+	// Check value is a Range object
+	rangeObj, ok := rangeExpr.Value.(*objects.Range)
+	assert.True(t, ok)
+	assert.Equal(t, int64(2), rangeObj.Start)
+	assert.Equal(t, int64(5), rangeObj.End)
+}
+
+// TestParser_RangeVar verifies parsing of range expressions in variable declarations
+func TestParser_RangeVar(t *testing.T) {
+	src := `var x = 1...10`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a declarative statement
+	declStmt, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "x", declStmt.Identifier.Name)
+	assert.Equal(t, "var x = 1...10", declStmt.Literal())
+}
+
+// TestParser_RangeExpr verifies parsing of range expressions with arithmetic
+func TestParser_RangeExpr(t *testing.T) {
+	src := `(1+1)...(5*2)`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a range expression
+	rangeExpr, ok := root.Statements[0].(*RangeExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "(1+1)...(5*2)", rangeExpr.Literal())
+}
+
+// TestParser_ForeachSimple verifies parsing of simple foreach loops
+func TestParser_ForeachSimple(t *testing.T) {
+	src := `foreach i in 1...5 { }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a foreach loop
+	foreachStmt, ok := root.Statements[0].(*ForeachLoopStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "i", foreachStmt.Iterator.Name)
+
+	// Check iterable is a range expression
+	rangeExpr, ok := foreachStmt.Iterable.(*RangeExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "1...5", rangeExpr.Literal())
+
+	// Check body is empty
+	assert.Equal(t, 0, len(foreachStmt.Body.Statements))
+}
+
+// TestParser_ForeachArray verifies parsing of foreach loops with arrays
+func TestParser_ForeachArray(t *testing.T) {
+	src := `foreach item in [10, 20, 30] { }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a foreach loop
+	foreachStmt, ok := root.Statements[0].(*ForeachLoopStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "item", foreachStmt.Iterator.Name)
+
+	// Check iterable is an array expression
+	arrayExpr, ok := foreachStmt.Iterable.(*ArrayExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(arrayExpr.Elements))
+}
+
+// TestParser_ForeachVar verifies parsing of foreach loops with range variables
+func TestParser_ForeachVar(t *testing.T) {
+	src := `var r = 1...10; foreach i in r { }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 2, len(root.Statements))
+
+	// Check second statement is a foreach loop
+	foreachStmt, ok := root.Statements[1].(*ForeachLoopStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "i", foreachStmt.Iterator.Name)
+
+	// Check iterable is an identifier
+	ident, ok := foreachStmt.Iterable.(*IdentifierExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "r", ident.Name)
+}
+
+// TestParser_ForeachBody verifies parsing of foreach loop bodies
+func TestParser_ForeachBody(t *testing.T) {
+	src := `foreach i in 1...3 { var x = i * 2; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a foreach loop
+	foreachStmt, ok := root.Statements[0].(*ForeachLoopStatementNode)
+	assert.True(t, ok)
+
+	// Check body has one statement
+	assert.Equal(t, 1, len(foreachStmt.Body.Statements))
+
+	// Check body statement is a declaration
+	declStmt, ok := foreachStmt.Body.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "x", declStmt.Identifier.Name)
+}
+
+// TestParser_ForeachNested verifies parsing of nested foreach loops
+func TestParser_ForeachNested(t *testing.T) {
+	src := `foreach i in 1...2 { foreach j in 1...2 { var c = i + j; } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check outer foreach
+	outerForeach, ok := root.Statements[0].(*ForeachLoopStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "i", outerForeach.Iterator.Name)
+	assert.Equal(t, 1, len(outerForeach.Body.Statements))
+
+	// Check inner foreach
+	innerForeach, ok := outerForeach.Body.Statements[0].(*ForeachLoopStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "j", innerForeach.Iterator.Name)
+	assert.Equal(t, 1, len(innerForeach.Body.Statements))
+}
+
+// TestParser_RangeLiteral verifies range expression literal representation
+func TestParser_RangeLiteral(t *testing.T) {
+	src := `var x = 5...15`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	declStmt, ok := root.Statements[0].(*DeclarativeStatementNode)
+	assert.True(t, ok)
+
+	rangeExpr, ok := declStmt.Expr.(*RangeExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "5...15", rangeExpr.Literal())
+}
+
+// TestParser_ForeachLiteral verifies foreach loop literal representation
+func TestParser_ForeachLiteral(t *testing.T) {
+	src := `foreach num in 1...5 { var x = num; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	foreachStmt, ok := root.Statements[0].(*ForeachLoopStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "foreach num in 1...5 {var x = num;}", foreachStmt.Literal())
+}

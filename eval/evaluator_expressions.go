@@ -88,6 +88,10 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalIndexExpression(n)
 	case *parser.SliceExpressionNode:
 		return e.evalSliceExpression(n)
+	case *parser.RangeExpressionNode:
+		return e.evalRangeExpression(n)
+	case *parser.ForeachLoopStatementNode:
+		return e.evalForeachLoop(n)
 	default:
 		return &objects.Nil{}
 	}

@@ -909,3 +909,216 @@ func TestEvaluator_CompoundExpr(t *testing.T) {
 		AssertInteger(t, result, tt.expected)
 	}
 }
+
+// TestEvaluator_RangeSimple verifies simple range expression evaluation
+func TestEvaluator_RangeSimple(t *testing.T) {
+	tests := []struct {
+		input    string
+		expStart int64
+		expEnd   int64
+	}{
+		{"2...5", 2, 5},
+		{"1...10", 1, 10},
+		{"0...100", 0, 100},
+		{"-5...5", -5, 5},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.RangeType {
+			t.Errorf("expected %s, got %s", objects.RangeType, result.GetType())
+		}
+
+		rangeObj := result.(*objects.Range)
+		if rangeObj.Start != tt.expStart {
+			t.Errorf("expected start %d, got %d", tt.expStart, rangeObj.Start)
+		}
+		if rangeObj.End != tt.expEnd {
+			t.Errorf("expected end %d, got %d", tt.expEnd, rangeObj.End)
+		}
+	}
+}
+
+// TestEvaluator_RangeVar verifies range assignment to variables
+func TestEvaluator_RangeVar(t *testing.T) {
+	src := `var x = 2...9; x`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != objects.RangeType {
+		t.Errorf("expected %s, got %s", objects.RangeType, result.GetType())
+	}
+
+	rangeObj := result.(*objects.Range)
+	if rangeObj.Start != 2 || rangeObj.End != 9 {
+		t.Errorf("expected range(2,9), got range(%d,%d)", rangeObj.Start, rangeObj.End)
+	}
+}
+
+// TestEvaluator_RangeBuiltin verifies range() builtin function
+func TestEvaluator_RangeBuiltin(t *testing.T) {
+	tests := []struct {
+		input    string
+		expStart int64
+		expEnd   int64
+	}{
+		{"range(2, 9)", 2, 9},
+		{"range(1, 5)", 1, 5},
+		{"range(10, 20)", 10, 20},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != objects.RangeType {
+			t.Errorf("expected %s, got %s", objects.RangeType, result.GetType())
+		}
+
+		rangeObj := result.(*objects.Range)
+		if rangeObj.Start != tt.expStart {
+			t.Errorf("expected start %d, got %d", tt.expStart, rangeObj.Start)
+		}
+		if rangeObj.End != tt.expEnd {
+			t.Errorf("expected end %d, got %d", tt.expEnd, rangeObj.End)
+		}
+	}
+}
+
+// TestEvaluator_ForeachRange verifies foreach loop with range
+func TestEvaluator_ForeachRange(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var sum = 0; foreach i in 1...5 { sum += i; } sum`, 15}, // 1+2+3+4+5
+		{`var sum = 0; foreach i in 1...3 { sum += i; } sum`, 6},  // 1+2+3
+		{`var count = 0; foreach i in 1...10 { count += 1; } count`, 10},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ForeachRangeVar verifies foreach loop with range variable
+func TestEvaluator_ForeachRangeVar(t *testing.T) {
+	src := `var r = 1...5; var sum = 0; foreach i in r { sum += i; } sum`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 15) // 1+2+3+4+5
+}
+
+// TestEvaluator_ForeachArray verifies foreach loop with arrays
+func TestEvaluator_ForeachArray(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{`var sum = 0; foreach i in [1, 2, 3] { sum += i; } sum`, 6},
+		{`var sum = 0; foreach i in [10, 20, 30] { sum += i; } sum`, 60},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertInteger(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_ForeachNested verifies nested foreach loops
+func TestEvaluator_ForeachNested(t *testing.T) {
+	src := `var sum = 0; foreach i in 1...2 { foreach j in 1...2 { sum += i * 10 + j; } } sum`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 66) // 11+12+21+22 = 66 (actually: 11+12+21+22 = 66)
+}
+
+// TestEvaluator_RangeBuiltinError verifies error handling for range() builtin
+func TestEvaluator_RangeBuiltinError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`range(1)`,
+			"ERROR: wrong number of arguments",
+		},
+		{
+			`range(1, 2, 3)`,
+			"ERROR: wrong number of arguments",
+		},
+		{
+			`range("a", 5)`,
+			"ERROR: first argument to `range` must be an integer",
+		},
+		{
+			`range(1, "b")`,
+			"ERROR: second argument to `range` must be an integer",
+		},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertError(t, result, tt.ExpectedErrorMsg)
+	}
+}
+
+// TestEvaluator_ForeachError verifies error handling for foreach loops
+func TestEvaluator_ForeachError(t *testing.T) {
+	errorTests := []struct {
+		Src              string
+		ExpectedErrorMsg string
+	}{
+		{
+			`foreach i in 123 { }`,
+			"ERROR: foreach requires a `range` or `array`, got 'int'",
+		},
+		{
+			`foreach i in "hello" { }`,
+			"ERROR: foreach requires a `range` or `array`, got 'string'",
+		},
+		{
+			`foreach i in true { }`,
+			"ERROR: foreach requires a `range` or `array`, got 'bool'",
+		},
+	}
+
+	for _, tt := range errorTests {
+		p := parser.NewParser(tt.Src)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertError(t, result, tt.ExpectedErrorMsg)
+	}
+}

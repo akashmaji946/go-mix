@@ -1,0 +1,38 @@
+// Test the builtin range() function
+
+println("Test 1: range(2, 9)");
+var x = range(2, 9);
+println(x);
+
+println("");
+println("Test 2: foreach with range() function");
+foreach i in range(1, 5) {
+    println(i);
+}
+
+println("");
+println("Test 3: Comparison - range() vs ... operator");
+var r1 = range(3, 6);
+var r2 = 3...6;
+println("range(3, 6):");
+println(r1);
+println("3...6:");
+println(r2);
+
+println("");
+println("Test 4: Using range() in nested loops");
+foreach i in range(1, 2) {
+    foreach j in range(1, 2) {
+        println(i * 10 + j);
+    }
+}
+
+println("");
+println("Test 5: range() with variables");
+var start = 5;
+var end = 8;
+var myRange = range(start, end);
+println(myRange);
+foreach n in myRange {
+    println(n);
+}

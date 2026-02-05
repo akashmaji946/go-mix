@@ -64,6 +64,10 @@ const (
 	// Example: a < b, a >= b
 	RELATIONAL_PRIORITY = 100
 
+	// Range operator: ...
+	// Example: 2...5 (inclusive range)
+	RANGE_PRIORITY = 105
+
 	// Shift operators: << >>
 	// Example: a << 2, b >> 1
 	SHIFT_PRIORITY = 110
@@ -134,6 +138,10 @@ func getPrecedence(token *lexer.Token) int {
 	// Relational: < > <= >=
 	case lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP:
 		return RELATIONAL_PRIORITY
+
+	// Range: ...
+	case lexer.RANGE_OP:
+		return RANGE_PRIORITY
 
 	// Equality: == !=
 	case lexer.EQ_OP, lexer.NE_OP:

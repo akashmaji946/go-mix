@@ -739,4 +739,79 @@ func TestMain_Main(t *testing.T) {
 	root75.Accept(visitor75)
 	fmt.Println(visitor75)
 
+	// Test 76: Simple range expression
+	src76 := `var r = 2...5; r`
+	root76 := parser.NewParser(src76).Parse()
+	visitor76 := &PrintingVisitor{}
+	root76.Accept(visitor76)
+	fmt.Println(visitor76)
+
+	// Test 77: Foreach loop with range
+	src77 := `var sum = 0; foreach i in 1...5 { sum = sum + i; } sum`
+	root77 := parser.NewParser(src77).Parse()
+	visitor77 := &PrintingVisitor{}
+	root77.Accept(visitor77)
+	fmt.Println(visitor77)
+
+	// Test 78: Foreach loop with array
+	src78 := `var total = 0; foreach num in [10, 20, 30, 40] { total = total + num; } total`
+	root78 := parser.NewParser(src78).Parse()
+	visitor78 := &PrintingVisitor{}
+	root78.Accept(visitor78)
+	fmt.Println(visitor78)
+
+	// Test 79: Nested foreach loops with ranges
+	src79 := `
+	var result = 0;
+	foreach i in 1...3 {
+		foreach j in 1...3 {
+			result = result + i * 10 + j;
+		}
+	}
+	result
+	`
+	root79 := parser.NewParser(src79).Parse()
+	visitor79 := &PrintingVisitor{}
+	root79.Accept(visitor79)
+	fmt.Println(visitor79)
+
+	// Test 80: Range builtin function and foreach with complex operations
+	src80 := `
+	// Test range() builtin and foreach with various operations
+	
+	// Create range using builtin
+	var r1 = range(1, 5);
+	
+	// Use foreach to calculate factorial-like sum
+	var factorial_sum = 0;
+	var multiplier = 1;
+	foreach n in r1 {
+		factorial_sum = factorial_sum + n * multiplier;
+		multiplier = multiplier + 1;
+	}
+	
+	// Nested foreach with range and array
+	var matrix_result = 0;
+	foreach row in 1...2 {
+		var row_values = [10, 20, 30];
+		foreach col_val in row_values {
+			matrix_result = matrix_result + row * col_val;
+		}
+	}
+	
+	// Foreach with range variable
+	var my_range = 5...8;
+	var range_sum = 0;
+	foreach val in my_range {
+		range_sum = range_sum + val;
+	}
+	
+	// Return combined result
+	factorial_sum + matrix_result + range_sum
+	`
+	root80 := parser.NewParser(src80).Parse()
+	visitor80 := &PrintingVisitor{}
+	root80.Accept(visitor80)
+	fmt.Println(visitor80)
+
 }

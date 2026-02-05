@@ -296,6 +296,29 @@ func (p *PrintingVisitor) VisitSliceExpressionNode(node parser.SliceExpressionNo
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitRangeExpressionNode visits a range expression node and prints the range details
+func (p *PrintingVisitor) VisitRangeExpressionNode(node parser.RangeExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Range",
+		node.Literal(), node.Literal(), node.Value.ToObject()))
+	p.Indent += INDENT_SIZE
+	node.Start.Accept(p)
+	node.End.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
+// VisitForeachLoopStatementNode visits a foreach loop node and prints the loop details
+func (p *PrintingVisitor) VisitForeachLoopStatementNode(node parser.ForeachLoopStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Foreach",
+		node.Literal(), node.Literal(), node.Value.ToString()))
+	p.Indent += INDENT_SIZE
+	node.Iterator.Accept(p)
+	node.Iterable.Accept(p)
+	node.Body.Accept(p)
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the accumulated formatted output as a string
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

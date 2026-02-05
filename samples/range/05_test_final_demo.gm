@@ -1,0 +1,46 @@
+println("=== Range Feature Complete Demo ===");
+println("");
+
+println("1. Using ... operator:");
+var r1 = 2...5;
+println(r1);
+foreach i in r1 {
+    println(i);
+}
+
+println("");
+println("2. Using range() builtin function:");
+var r2 = range(2, 5);
+println(r2);
+foreach i in r2 {
+    println(i);
+}
+
+println("");
+println("3. Both produce the same result:");
+println("2...5 and range(2,5) are equivalent");
+
+println("");
+println("4. Direct usage in foreach:");
+println("foreach i in 1...3:");
+foreach i in 1...3 {
+    println(i);
+}
+
+println("");
+println("foreach i in range(1, 3):");
+foreach i in range(1, 3) {
+    println(i);
+}
+
+println("");
+println("5. Using with variables:");
+var start = 10;
+var end = 12;
+println("Using range(start, end) where start=10, end=12:");
+foreach n in range(start, end) {
+    println(n);
+}
+
+println("");
+println("=== All features working! ===");

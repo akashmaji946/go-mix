@@ -215,6 +215,26 @@ func (lex *Lexer) NextToken() Token {
 		token = NewTokenWithMetadata(SEMICOLON_DELIM, ";", lex.Line, lex.Column)
 	case ':':
 		token = NewTokenWithMetadata(COLON_DELIM, ":", lex.Line, lex.Column)
+	case '.':
+		// Could be '...' (range operator)
+		// Need to check if this is part of a number or a range operator
+		// If the previous token was a number and current is '.', it's handled in readNumber
+		// Here we only handle the case where '.' starts a token
+		if lex.peek() == '.' {
+			// Check if there's a third dot
+			if lex.Position+2 < lex.SrcLength && lex.Src[lex.Position+2] == '.' {
+				lex.advance() // consume second dot
+				lex.advance() // consume third dot
+				token = NewTokenWithMetadata(RANGE_OP, "...", lex.Line, lex.Column)
+			} else {
+				// Just two dots - invalid, treat as EOF for now
+				token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
+			}
+		} else {
+			// Single dot - could be start of a float like .5, but we don't support that yet
+			// Treat as invalid for now
+			token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
+		}
 	case '&':
 		// Could be '&' (bitwise AND), '&&' (logical AND), or '&='
 		if lex.peek() == '&' {
@@ -402,6 +422,11 @@ func readNumber(lex *Lexer) Token {
 	// Continue reading digits and at most one decimal point
 	for isNumeric(lex.Current) || lex.Current == '.' {
 		if lex.Current == '.' {
+			// Check if this is the start of a range operator (...)
+			if lex.peek() == '.' {
+				// This is a range operator, stop reading the number
+				break
+			}
 			if hasDot {
 				// Second dot encountered - stop here
 				break

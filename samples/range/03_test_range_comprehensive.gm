@@ -1,0 +1,50 @@
+// Comprehensive test for RangeExpressionNode feature
+
+println("=== Range Expression Tests ===");
+println("");
+
+// Test 1: Basic range creation and printing
+println("1. Basic range: 2...4");
+var r1 = 2...4;
+println(r1);
+println("");
+
+// Test 2: Foreach with range literal (as requested)
+println("2. foreach i in 2...10 { println(i); }");
+foreach i in 2...10 {
+    println(i);
+}
+println("");
+
+// Test 3: Range variable usage
+println("3. var x = 2...3; println(x); foreach i in x { println(i); }");
+var x = 2...3;
+println(x);
+foreach i in x {
+    println(i);
+}
+println("");
+
+// Test 4: Foreach with arrays (bonus feature)
+println("4. foreach with array");
+var arr = [10, 20, 30];
+foreach item in arr {
+    println(item);
+}
+println("");
+
+// Test 5: Using range in calculations
+println("5. Using range values in loop");
+foreach n in 1...5 {
+    var square = n * n;
+    println(square);
+}
+println("");
+
+// Test 6: Larger range
+println("6. Larger range 1...20");
+var bigRange = 1...20;
+println(bigRange);
+println("");
+
+println("=== All tests completed successfully! ===");

@@ -65,6 +65,9 @@ func (par *Parser) parseStatement() StatementNode {
 	case lexer.WHILE_KEY:
 		return par.parseWhileLoop()
 
+	case lexer.FOREACH_KEY:
+		return par.parseForeachLoop()
+
 	default:
 		return par.parseExpression()
 	}
@@ -1709,6 +1712,114 @@ func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
 		}
 	}
 	return left
+}
+
+// parseRangeExpression parses range expressions with the ... operator.
+// Range expressions create inclusive ranges from start to end.
+//
+// Parameters:
+//
+//	left - The already-parsed left operand (start of range)
+//
+// Returns:
+//
+//	A RangeExpressionNode representing the range
+//
+// Syntax:
+//
+//	start...end  (creates range from start to end, inclusive)
+//
+// Examples:
+//
+//	2...5    - Range from 2 to 5 (inclusive)
+//	1...10   - Range from 1 to 10 (inclusive)
+//	x...y    - Range from x to y (inclusive)
+func (par *Parser) parseRangeExpression(left ExpressionNode) ExpressionNode {
+	// Current token is RANGE_OP (...)
+	par.advance() // Move past ...
+
+	// Parse the right operand (end of range)
+	right := par.parseInternal(getPrecedence(&lexer.Token{Type: lexer.RANGE_OP}) + 1)
+	if right == nil {
+		return nil
+	}
+
+	// Evaluate both operands
+	startVal := eval(par, left)
+	endVal := eval(par, right)
+
+	// Create the range value (will be nil if not both integers)
+	var rangeVal objects.GoMixObject = &objects.Nil{}
+
+	// Check if both are integers
+	if startVal.GetType() == objects.IntegerType && endVal.GetType() == objects.IntegerType {
+		start := startVal.(*objects.Integer).Value
+		end := endVal.(*objects.Integer).Value
+		rangeVal = &objects.Range{Start: start, End: end}
+	}
+
+	return &RangeExpressionNode{
+		Start: left,
+		End:   right,
+		Value: rangeVal,
+	}
+}
+
+// parseForeachLoop parses foreach loop statements.
+// Foreach loops iterate over ranges or arrays.
+//
+// Syntax:
+//
+//	foreach identifier in iterable { body }
+//
+// Returns:
+//
+//	A ForeachLoopStatementNode
+//
+// Examples:
+//
+//	foreach i in 2...10 { print(i); }
+//	foreach item in array { print(item); }
+//	foreach x in myRange { body }
+func (par *Parser) parseForeachLoop() StatementNode {
+	foreachToken := par.CurrToken
+
+	// Expect iterator identifier
+	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+		return nil
+	}
+	iterator := IdentifierExpressionNode{
+		Name:  par.CurrToken.Literal,
+		Value: &objects.Nil{},
+	}
+
+	// Expect 'in' keyword
+	if !par.expectAdvance(lexer.IN_KEY) {
+		return nil
+	}
+
+	// Parse the iterable expression (range or array)
+	par.advance()
+	iterable := par.parseExpression()
+	if iterable == nil {
+		return nil
+	}
+
+	// Expect opening brace for body
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
+
+	// Parse the loop body
+	body := par.parseBlockStatement()
+
+	return &ForeachLoopStatementNode{
+		ForeachToken: foreachToken,
+		Iterator:     iterator,
+		Iterable:     iterable,
+		Body:         *body,
+		Value:        &objects.Nil{},
+	}
 }
 
 // eval evaluates an expression node during parsing.
