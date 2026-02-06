@@ -1,0 +1,36 @@
+// Test range indexing functionality
+
+// Test 1: Basic range indexing with range() function
+var x = range(0, 10);
+println("x = range(0, 10)");
+println("x[0] =", x[0]);  // Should be 0
+println("x[1] =", x[1]);  // Should be 1
+println("x[5] =", x[5]);  // Should be 5
+println("x[10] =", x[10]); // Should be 10
+
+// Test 2: Range indexing with ... operator
+var y = 1...100;
+println("\ny = 1...100");
+println("y[0] =", y[0]);   // Should be 1
+println("y[1] =", y[1]);   // Should be 2
+println("y[2] =", y[2]);   // Should be 3
+println("y[99] =", y[99]); // Should be 100
+
+// Test 3: Negative indices (Python-style)
+println("\nNegative indices:");
+println("x[-1] =", x[-1]);  // Should be 10 (last element)
+println("x[-2] =", x[-2]);  // Should be 9
+println("y[-1] =", y[-1]);  // Should be 100
+
+// Test 4: Small range
+var z = range(5, 7);
+println("\nz = range(5, 7)");
+println("z[0] =", z[0]);  // Should be 5
+println("z[1] =", z[1]);  // Should be 6
+println("z[2] =", z[2]);  // Should be 7
+println("z[-1] =", z[-1]); // Should be 7
+
+// Test 5: Single element range
+var single = range(42, 42);
+println("\nsingle = range(42, 42)");
+println("single[0] =", single[0]); // Should be 42

@@ -1,0 +1,58 @@
+// Test file for array() builtin function
+// Tests conversion of various iterables to arrays
+
+println("=== Testing array() builtin function ===");
+
+// Test 1: Convert array to array (creates a copy)
+println("\n--- Test 1: array([1, 2, 3]) ---");
+var x = array([1, 2, 3]);
+println(x);
+println(typeof(x));
+
+// Test 2: Convert array to array (verify it's a new copy)
+println("\n--- Test 2: array(x) where x is an array ---");
+var y = array(x);
+println(y);
+println(typeof(y));
+
+// Test 3: Convert list to array
+println("\n--- Test 3: array(list(1, 2, 3)) ---");
+var z = array(list(1, 2, 3));
+println(z);
+println(typeof(z));
+
+// Test 4: Convert tuple to array
+println("\n--- Test 4: array(tuple(1, 2, 3)) ---");
+var w = array(tuple(1, 2, 3));
+println(w);
+println(typeof(w));
+
+// Test 5: Convert set to array
+println("\n--- Test 5: array(set{1, 2, 3}) ---");
+var xx = array(set{1, 2, 3});
+println(xx);
+println(typeof(xx));
+
+// Test 6: Convert map to array (returns values in key order)
+println("\n--- Test 6: array(map{1: 10, 2: 20}) ---");
+var zz = array(map{1: 10, 2: 20});
+println(zz);
+println(typeof(zz));
+
+// Test 7: Empty collections
+println("\n--- Test 7: Empty collections ---");
+println(array([]));
+println(array(list()));
+println(array(tuple()));
+println(array(set{}));
+println(array(map{}));
+
+// Test 8: Mixed types
+println("\n--- Test 8: Mixed types ---");
+println(array(list(1, "hello", true, 3.14)));
+
+// Test 9: Nested arrays
+println("\n--- Test 9: Nested structures ---");
+println(array(list([1, 2], [3, 4])));
+
+println("\n=== All tests completed ===");

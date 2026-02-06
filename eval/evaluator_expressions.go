@@ -137,34 +137,149 @@ func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode)
 		return rightVal
 	}
 
+	// Check if left is an identifier or index expression
+	if identNode, ok := n.Left.(*parser.IdentifierExpressionNode); ok {
+		// Handle identifier assignment
+		return e.evalIdentifierAssignment(identNode, rightVal)
+	}
+
+	if indexNode, ok := n.Left.(*parser.IndexExpressionNode); ok {
+		// Handle index assignment (e.g., a[0] = 11, map["key"] = value)
+		return e.evalIndexAssignment(indexNode, rightVal)
+	}
+
+	// Should not reach here if parser is correct
+	return e.CreateError("ERROR: invalid assignment target")
+}
+
+// evalIdentifierAssignment handles assignment to an identifier (variable).
+func (e *Evaluator) evalIdentifierAssignment(ident *parser.IdentifierExpressionNode, val objects.GoMixObject) objects.GoMixObject {
 	// Check if the variable exists in the current scope or any parent scope
-	_, exists := e.Scp.LookUp(n.Left.Name)
+	_, exists := e.Scp.LookUp(ident.Name)
 	if !exists {
-		return e.CreateError("ERROR: identifier not found: (%s)", n.Left.Name)
+		return e.CreateError("ERROR: identifier not found: (%s)", ident.Name)
 	}
 
 	// Check if it's a constant using the new IsConstant method
-	if e.Scp.IsConstant(n.Left.Name) {
-		return e.CreateError("ERROR: can't assign to constant (%s)", n.Left.Name)
+	if e.Scp.IsConstant(ident.Name) {
+		return e.CreateError("ERROR: can't assign to constant (%s)", ident.Name)
 	}
 
-	val := rightVal
-
 	// Check if it's a let variable and if the type is compatible
-	if e.Scp.IsLetVariable(n.Left.Name) {
-		expectedType, ok := e.Scp.GetLetType(n.Left.Name)
+	if e.Scp.IsLetVariable(ident.Name) {
+		expectedType, ok := e.Scp.GetLetType(ident.Name)
 		if !ok {
-			return e.CreateError("ERROR: let variable type not found: (%s)", n.Left.Name)
+			return e.CreateError("ERROR: let variable type not found: (%s)", ident.Name)
 		}
 		if val.GetType() != expectedType {
-			return e.CreateError("ERROR: can't assign `%s` to variable (%s) of type `%s`", val.GetType(), n.Left.Name, expectedType)
+			return e.CreateError("ERROR: can't assign `%s` to variable (%s) of type `%s`", val.GetType(), ident.Name, expectedType)
 		}
 	}
 
 	// Use Assign to update the variable in the scope where it was defined
 	// This is essential for closures to work correctly
-	e.Scp.Assign(n.Left.Name, val)
+	e.Scp.Assign(ident.Name, val)
 
+	return val
+}
+
+// evalIndexAssignment handles assignment to an indexed element (e.g., a[0] = 11, map["key"] = value).
+func (e *Evaluator) evalIndexAssignment(indexNode *parser.IndexExpressionNode, val objects.GoMixObject) objects.GoMixObject {
+	// Evaluate the container (array, list, map, etc.)
+	container := e.Eval(indexNode.Left)
+	if IsError(container) {
+		return container
+	}
+
+	// Evaluate the index/key
+	index := e.Eval(indexNode.Index)
+	if IsError(index) {
+		return index
+	}
+
+	// Handle different container types
+	switch container.GetType() {
+	case objects.ArrayType:
+		return e.evalArrayIndexAssignment(container, index, val)
+	case objects.ListType:
+		return e.evalListIndexAssignment(container, index, val)
+	case objects.MapType:
+		return e.evalMapIndexAssignment(container, index, val)
+	default:
+		return e.CreateError("ERROR: index assignment not supported for type '%s'", container.GetType())
+	}
+}
+
+// evalArrayIndexAssignment handles assignment to an array element.
+func (e *Evaluator) evalArrayIndexAssignment(container, index, val objects.GoMixObject) objects.GoMixObject {
+	arr := container.(*objects.Array)
+
+	// Check if index is an integer
+	if index.GetType() != objects.IntegerType {
+		return e.CreateError("ERROR: array index must be an integer, got '%s'", index.GetType())
+	}
+
+	idx := index.(*objects.Integer).Value
+	length := int64(len(arr.Elements))
+
+	// Handle negative indices (Python-style)
+	if idx < 0 {
+		idx = length + idx
+	}
+
+	// Bounds checking
+	if idx < 0 || idx >= length {
+		return e.CreateError("ERROR: index out of bounds: index %d, length %d", idx, length)
+	}
+
+	// Assign the value
+	arr.Elements[idx] = val
+	return val
+}
+
+// evalListIndexAssignment handles assignment to a list element.
+func (e *Evaluator) evalListIndexAssignment(container, index, val objects.GoMixObject) objects.GoMixObject {
+	list := container.(*objects.List)
+
+	// Check if index is an integer
+	if index.GetType() != objects.IntegerType {
+		return e.CreateError("ERROR: list index must be an integer, got '%s'", index.GetType())
+	}
+
+	idx := index.(*objects.Integer).Value
+	length := int64(len(list.Elements))
+
+	// Handle negative indices (Python-style)
+	if idx < 0 {
+		idx = length + idx
+	}
+
+	// Bounds checking
+	if idx < 0 || idx >= length {
+		return e.CreateError("ERROR: index out of bounds: index %d, length %d", idx, length)
+	}
+
+	// Assign the value
+	list.Elements[idx] = val
+	return val
+}
+
+// evalMapIndexAssignment handles assignment to a map key.
+func (e *Evaluator) evalMapIndexAssignment(container, index, val objects.GoMixObject) objects.GoMixObject {
+	m := container.(*objects.Map)
+
+	// Convert index to string key
+	keyStr := index.ToString()
+
+	// Check if key already exists
+	_, exists := m.Pairs[keyStr]
+	if !exists {
+		// New key - add to keys list to maintain insertion order
+		m.Keys = append(m.Keys, keyStr)
+	}
+
+	// Assign the value
+	m.Pairs[keyStr] = val
 	return val
 }
 

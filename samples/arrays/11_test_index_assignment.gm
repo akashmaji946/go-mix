@@ -1,0 +1,71 @@
+// Test Array Index Assignment
+// This file tests the a[0] = value assignment support for arrays
+
+println("=== Array Index Assignment Tests ===")
+
+// Test 1: Basic index assignment
+println("\n--- Test 1: Basic Index Assignment ---")
+var arr1 = [10, 20, 30, 40, 50]
+println("Original array:", arr1)
+arr1[0] = 100
+println("After arr1[0] = 100:", arr1)
+
+// Test 2: Middle index assignment
+println("\n--- Test 2: Middle Index Assignment ---")
+var arr2 = [1, 2, 3, 4, 5]
+println("Original array:", arr2)
+arr2[2] = 999
+println("After arr2[2] = 999:", arr2)
+
+// Test 3: Negative index assignment
+println("\n--- Test 3: Negative Index Assignment ---")
+var arr3 = [100, 200, 300, 400]
+println("Original array:", arr3)
+arr3[-1] = 999
+println("After arr3[-1] = 999:", arr3)
+arr3[-2] = 888
+println("After arr3[-2] = 888:", arr3)
+
+// Test 4: Multiple assignments
+println("\n--- Test 4: Multiple Assignments ---")
+var arr4 = [0, 0, 0, 0, 0]
+println("Original array:", arr4)
+arr4[0] = 1
+arr4[1] = 2
+arr4[2] = 3
+arr4[3] = 4
+arr4[4] = 5
+println("After multiple assignments:", arr4)
+
+// Test 5: Assignment with expressions
+println("\n--- Test 5: Assignment with Expressions ---")
+var arr5 = [10, 20, 30]
+println("Original array:", arr5)
+arr5[0] = arr5[0] + 5
+arr5[1] = arr5[1] * 2
+arr5[2] = arr5[0] + arr5[1]
+println("After expression assignments:", arr5)
+
+// Test 6: Assignment in a loop
+println("\n--- Test 6: Assignment in a Loop ---")
+var arr6 = [0, 0, 0, 0, 0]
+println("Original array:", arr6)
+var i = 0
+while(i < 5) {
+    arr6[i] = i * 10
+    i = i + 1
+}
+println("After loop assignments:", arr6)
+
+// Test 7: Verify array length unchanged
+println("\n--- Test 7: Verify Array Length Unchanged ---")
+var arr7 = [1, 2, 3]
+println("Array:", arr7)
+println("Length before:", length(arr7))
+arr7[0] = 100
+arr7[1] = 200
+arr7[2] = 300
+println("Array after:", arr7)
+println("Length after:", length(arr7))
+
+println("\n=== All array index assignment tests completed! ===")

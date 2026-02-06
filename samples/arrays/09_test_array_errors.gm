@@ -1,0 +1,25 @@
+= // Test error handling for array() builtin function
+
+println("=== Testing array() error handling ===");
+
+// Test with no arguments
+println("\n--- Test 1: No arguments ---");
+array();
+
+// Test with too many arguments
+println("\n--- Test 2: Too many arguments ---");
+array([1, 2], [3, 4]);
+
+// Test with invalid type (string)
+println("\n--- Test 3: Invalid type (string) ---");
+array("hello");
+
+// Test with invalid type (integer)
+println("\n--- Test 4: Invalid type (integer) ---");
+array(42);
+
+// Test with invalid type (boolean)
+println("\n--- Test 5: Invalid type (boolean) ---");
+array(true);
+
+println("\n=== Error handling tests completed ===");

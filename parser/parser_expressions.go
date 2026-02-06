@@ -295,7 +295,7 @@ func (par *Parser) parseCompoundAssignment(left ExpressionNode, ident *Identifie
 	assignOp := lexer.Token{Type: lexer.ASSIGN_OP, Literal: "=", Line: op.Line, Column: op.Column}
 	return &AssignmentExpressionNode{
 		Operation: assignOp,
-		Left:      *ident,
+		Left:      ident,
 		Right:     binaryExpr,
 		Value:     binaryVal,
 	}
@@ -887,10 +887,11 @@ func (par *Parser) parseBlockStatement() *BlockStatementNode {
 
 // parseAssignmentExpression parses assignment expressions.
 // Handles both simple assignments (=) and compound assignments (+=, -=, etc.).
+// Supports identifier assignment (x = 10) and index assignment (a[0] = 11).
 //
 // Parameters:
 //
-//	left - The left-hand side expression (must be an identifier)
+//	left - The left-hand side expression (must be an identifier or index expression)
 //
 // Returns:
 //
@@ -906,6 +907,8 @@ func (par *Parser) parseBlockStatement() *BlockStatementNode {
 //	x = 10
 //	count += 1
 //	value *= 2
+//	a[0] = 11
+//	map["key"] = value
 func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode {
 	op := par.CurrToken
 	par.advance()
@@ -914,28 +917,43 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 		return nil
 	}
 
-	// if left is const - evaluator will handle this error
-	// just continue parsing without adding to parser errors
-	ident, ok := left.(*IdentifierExpressionNode)
-	if !ok {
+	// Check if left is a valid assignment target (identifier or index expression)
+	_, isIdent := left.(*IdentifierExpressionNode)
+	_, isIndex := left.(*IndexExpressionNode)
+
+	if !isIdent && !isIndex {
 		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: invalid assignment target", par.CurrToken.Line, par.CurrToken.Column)
 		par.addError(msg)
 		return nil
 	}
 
-	// Check if this is a compound assignment (+=, -=, *=, etc.)
-	if binaryOp, isCompound := getCompoundBinaryOp(op.Type); isCompound {
-		return par.parseCompoundAssignment(left, ident, op, right, binaryOp)
+	// Handle identifier assignment
+	if isIdent {
+		ident := left.(*IdentifierExpressionNode)
+
+		// Check if this is a compound assignment (+=, -=, *=, etc.)
+		if binaryOp, isCompound := getCompoundBinaryOp(op.Type); isCompound {
+			return par.parseCompoundAssignment(left, ident, op, right, binaryOp)
+		}
+
+		// Regular assignment - evaluate and store
+		val := eval(par, right)
+		par.Env[ident.Name] = val
+		return &AssignmentExpressionNode{
+			Operation: op,
+			Left:      ident,
+			Right:     right,
+			Value:     val,
+		}
 	}
 
-	// Regular assignment - evaluate and store
-	val := eval(par, right)
-	par.Env[ident.Name] = val
+	// Handle index assignment (e.g., a[0] = 11)
+	// For index expressions, we don't evaluate at parse time - let the evaluator handle it
 	return &AssignmentExpressionNode{
 		Operation: op,
-		Left:      *ident,
+		Left:      left,
 		Right:     right,
-		Value:     val,
+		Value:     &objects.Nil{},
 	}
 }
 

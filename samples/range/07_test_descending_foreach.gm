@@ -1,0 +1,49 @@
+// Test descending range in foreach loops
+
+println("=== Testing descending range in foreach ===");
+
+// Test descending range with foreach
+println("\n--- Test 1: foreach i in range(10, 0) ---");
+var a = range(10, 0);
+foreach i in a {
+    print(i);
+    print(" ");
+}
+println("");
+
+// Test with range literal
+println("\n--- Test 2: foreach i in 5...1 ---");
+foreach i in 5...1 {
+    print(i);
+    print(" ");
+}
+println("");
+
+// Test single element descending (same start and end)
+println("\n--- Test 3: foreach i in 3...3 ---");
+foreach i in 3...3 {
+    print(i);
+    print(" ");
+}
+println("");
+
+// Test negative descending range
+println("\n--- Test 4: foreach i in 3...-3 ---");
+foreach i in 3...-3 {
+    print(i);
+    print(" ");
+}
+println("");
+
+// Compare with array conversion
+println("\n--- Test 5: Compare array() and foreach ---");
+var r = range(5, 1);
+println("array(range(5, 1)):", array(r));
+print("foreach: ");
+foreach i in r {
+    print(i);
+    print(" ");
+}
+println("");
+
+println("\n=== Descending range tests completed ===");

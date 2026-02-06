@@ -1,0 +1,29 @@
+// Test array() with range support
+
+println("=== Testing array() with range ===");
+
+// Test ascending range
+println("\n--- Test 1: array(range(1, 5)) ---");
+var r1 = range(1, 5);
+println(array(r1));
+
+// Test descending range
+println("\n--- Test 2: array(range(5, 1)) ---");
+var r2 = range(5, 1);
+println(array(r2));
+
+// Test single element range
+println("\n--- Test 3: array(range(3, 3)) ---");
+var r3 = range(3, 3);
+println(array(r3));
+
+// Test negative range
+println("\n--- Test 4: array(range(-3, 3)) ---");
+var r4 = range(-3, 3);
+println(array(r4));
+
+// Test with range literal
+println("\n--- Test 5: array(1...5) ---");
+println(array(1...5));
+
+println("\n=== Range tests completed ===");

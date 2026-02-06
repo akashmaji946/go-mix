@@ -67,6 +67,10 @@ var commonMethods = []*Builtin{
 		Name:     "size", // Alias for length - returns the size of strings, arrays, maps, or sets
 		Callback: length,
 	},
+	{
+		Name:     "array", // Converts any iterable to a new array
+		Callback: arrayFunc,
+	},
 }
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
@@ -276,4 +280,113 @@ func typeofFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 
 	// Get the type of the argument and return it as a string
 	return &String{Value: string(args[0].GetType())}
+}
+
+// arrayFunc creates a new array from arguments or converts an iterable to an array.
+// It accepts zero or more arguments:
+//   - 0 arguments: returns an empty array
+//   - 1 iterable argument: converts the iterable to a new array
+//   - 1 non-iterable argument: wraps it in an array
+//   - Multiple arguments: creates an array containing all arguments
+//
+// Examples:
+//
+//	array()                    -> []
+//	array(1, 2, 3)             -> [1, 2, 3]
+//	array([1, 2, 3])           -> [1, 2, 3]
+//	array(list(1, 2, 3))       -> [1, 2, 3]
+//	array(tuple(1, 2, 3))      -> [1, 2, 3]
+//	array(set{1, 2, 3})        -> [1, 2, 3]
+//	array(map{"a": 1, "b": 2}) -> [1, 2]
+//	array(42)                  -> [42]
+func arrayFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+	// Handle 0 arguments: return empty array
+	if len(args) == 0 {
+		return &Array{Elements: []GoMixObject{}}
+	}
+
+	// Handle multiple arguments: create array from all arguments
+	if len(args) > 1 {
+		elements := make([]GoMixObject, len(args))
+		copy(elements, args)
+		return &Array{Elements: elements}
+	}
+
+	// Handle single argument
+	arg := args[0]
+	argType := arg.GetType()
+
+	// Handle iterable types (convert to array)
+	switch argType {
+	case ArrayType:
+		// Create a new array with copied elements from the input array
+		arr := arg.(*Array)
+		elements := make([]GoMixObject, len(arr.Elements))
+		copy(elements, arr.Elements)
+		return &Array{Elements: elements}
+
+	case ListType:
+		// Convert list elements to array
+		list := arg.(*List)
+		elements := make([]GoMixObject, len(list.Elements))
+		copy(elements, list.Elements)
+		return &Array{Elements: elements}
+
+	case TupleType:
+		// Convert tuple elements to array
+		tuple := arg.(*Tuple)
+		elements := make([]GoMixObject, len(tuple.Elements))
+		copy(elements, tuple.Elements)
+		return &Array{Elements: elements}
+
+	case MapType:
+		// Convert map values to array (in key insertion order)
+		m := arg.(*Map)
+		elements := make([]GoMixObject, len(m.Keys))
+		for i, key := range m.Keys {
+			elements[i] = m.Pairs[key]
+		}
+		return &Array{Elements: elements}
+
+	case SetType:
+		// Convert set values to array (in insertion order)
+		s := arg.(*Set)
+		elements := make([]GoMixObject, len(s.Values))
+		for i, val := range s.Values {
+			elements[i] = &String{Value: val}
+		}
+		return &Array{Elements: elements}
+
+	case RangeType:
+		// Convert range to array of integers
+		r := arg.(*Range)
+		start := r.Start
+		end := r.End
+
+		// Calculate size and direction
+		var size int
+		if start <= end {
+			size = int(end - start + 1)
+		} else {
+			size = int(start - end + 1)
+		}
+
+		elements := make([]GoMixObject, size)
+		if start <= end {
+			// Ascending range
+			for i := int64(0); i <= end-start; i++ {
+				elements[i] = &Integer{Value: start + i}
+			}
+		} else {
+			// Descending range
+			for i := int64(0); i <= start-end; i++ {
+				elements[i] = &Integer{Value: start - i}
+			}
+		}
+		return &Array{Elements: elements}
+
+	default:
+		// Non-iterable single argument: wrap it in an array
+		return &Array{Elements: []GoMixObject{arg}}
+	}
 }

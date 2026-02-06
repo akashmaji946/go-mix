@@ -2655,7 +2655,7 @@ func TestParser_CompoundPlus(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 	assert.Equal(t, lexer.ASSIGN_OP, assignStmt.Operation.Type) // Transformed to regular assignment
 
 	// Right side should be a binary expression (a + 5)
@@ -2675,7 +2675,7 @@ func TestParser_CompoundMinus(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a - 5)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2694,7 +2694,7 @@ func TestParser_CompoundMul(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a * 4)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2713,7 +2713,7 @@ func TestParser_CompoundDiv(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a / 4)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2732,7 +2732,7 @@ func TestParser_CompoundMod(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a % 5)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2751,7 +2751,7 @@ func TestParser_CompoundAnd(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a & 10)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2770,7 +2770,7 @@ func TestParser_CompoundOr(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a | 3)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2789,7 +2789,7 @@ func TestParser_CompoundXor(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a ^ 5)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2808,7 +2808,7 @@ func TestParser_CompoundLeftShift(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a << 2)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2827,7 +2827,7 @@ func TestParser_CompoundRightShift(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a >> 2)
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2877,7 +2877,7 @@ func TestParser_CompoundComplex(t *testing.T) {
 	// Check assignment statement
 	assignStmt, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt.Left.Name)
+	assert.Equal(t, "a", assignStmt.Left.Literal())
 
 	// Right side should be a binary expression (a + (2 * 3))
 	binaryExpr, ok := assignStmt.Right.(*BinaryExpressionNode)
@@ -2896,15 +2896,15 @@ func TestParser_CompoundChained(t *testing.T) {
 	// Check all assignments are transformed correctly
 	assignStmt1, ok := root.Statements[1].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt1.Left.Name)
+	assert.Equal(t, "a", assignStmt1.Left.Literal())
 
 	assignStmt2, ok := root.Statements[2].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt2.Left.Name)
+	assert.Equal(t, "a", assignStmt2.Left.Literal())
 
 	assignStmt3, ok := root.Statements[3].(*AssignmentExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, "a", assignStmt3.Left.Name)
+	assert.Equal(t, "a", assignStmt3.Left.Literal())
 
 	// Value should be the result of the compound assignment: a -= 10
 	// After: var a = 10 (a=10), a += 5 (a=15), a *= 2 (a=30), a -= 10 (a=20)
@@ -3753,28 +3753,28 @@ func TestParser_TupleMixed(t *testing.T) {
 
 // TestParser_ListTupleNewBuiltins verifies parsing of new list and tuple builtin functions
 func TestParser_ListTupleNewBuiltins(t *testing.T) {
-tests := []struct {
-src      string
-funcName string
-argCount int
-}{
-// New list functions
-{`insert_list(l, 2, 3)`, "insert_list", 3},
-{`remove_list(l, 2)`, "remove_list", 2},
-{`contains_list(l, 3)`, "contains_list", 2},
-// New tuple function
-{`contains_tuple(t, 3)`, "contains_tuple", 2},
-}
+	tests := []struct {
+		src      string
+		funcName string
+		argCount int
+	}{
+		// New list functions
+		{`insert_list(l, 2, 3)`, "insert_list", 3},
+		{`remove_list(l, 2)`, "remove_list", 2},
+		{`contains_list(l, 3)`, "contains_list", 2},
+		// New tuple function
+		{`contains_tuple(t, 3)`, "contains_tuple", 2},
+	}
 
-for _, tt := range tests {
-root := NewParser(tt.src).Parse()
-assert.NotNil(t, root)
-assert.Equal(t, 1, len(root.Statements))
+	for _, tt := range tests {
+		root := NewParser(tt.src).Parse()
+		assert.NotNil(t, root)
+		assert.Equal(t, 1, len(root.Statements))
 
-// Check the statement is a call expression
-callExpr, ok := root.Statements[0].(*CallExpressionNode)
-assert.True(t, ok)
-assert.Equal(t, tt.funcName, callExpr.FunctionIdentifier.Name)
-assert.Equal(t, tt.argCount, len(callExpr.Arguments))
-}
+		// Check the statement is a call expression
+		callExpr, ok := root.Statements[0].(*CallExpressionNode)
+		assert.True(t, ok)
+		assert.Equal(t, tt.funcName, callExpr.FunctionIdentifier.Name)
+		assert.Equal(t, tt.argCount, len(callExpr.Arguments))
+	}
 }

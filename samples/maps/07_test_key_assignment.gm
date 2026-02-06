@@ -1,0 +1,101 @@
+// Test Map Key Assignment
+// This file tests the map["key"] = value assignment support for maps
+
+println("=== Map Key Assignment Tests ===")
+
+// Test 1: Basic key assignment
+println("\n--- Test 1: Basic Key Assignment ---")
+var map1 = map{"name": "John", "age": 25}
+println("Original map:", map1)
+map1["name"] = "Jane"
+println("After map1[\"name\"] = \"Jane\":", map1)
+
+// Test 2: Update existing key
+println("\n--- Test 2: Update Existing Key ---")
+var map2 = map{"x": 10, "y": 20, "z": 30}
+println("Original map:", map2)
+map2["x"] = 100
+map2["y"] = 200
+println("After updates:", map2)
+
+// Test 3: Add new key via assignment
+println("\n--- Test 3: Add New Key via Assignment ---")
+var map3 = map{"a": 1, "b": 2}
+println("Original map:", map3)
+map3["c"] = 3
+map3["d"] = 4
+println("After adding new keys:", map3)
+
+// Test 4: Assignment with different value types
+println("\n--- Test 4: Assignment with Different Value Types ---")
+var map4 = map{"int": 1, "str": "hello", "bool": true}
+println("Original map:", map4)
+map4["int"] = 999
+map4["str"] = "world"
+map4["bool"] = false
+map4["new_float"] = 3.14
+println("After type changes:", map4)
+
+// Test 5: Assignment with expressions
+println("\n--- Test 5: Assignment with Expressions ---")
+var map5 = map{"sum": 0, "product": 1}
+println("Original map:", map5)
+map5["sum"] = 10 + 20
+map5["product"] = 5 * 6
+map5["calculated"] = map5["sum"] + map5["product"]
+println("After expression assignments:", map5)
+
+// Test 6: Integer key assignment
+println("\n--- Test 6: Integer Key Assignment ---")
+var map6 = map{1: "one", 2: "two"}
+println("Original map:", map6)
+map6[1] = "ONE"
+map6[2] = "TWO"
+map6[3] = "THREE"
+println("After integer key assignments:", map6)
+
+// Test 7: Overwrite with complex values
+println("\n--- Test 7: Overwrite with Complex Values ---")
+var map7 = map{"data": "simple"}
+println("Original map:", map7)
+map7["data"] = [1, 2, 3]
+println("After assigning array:", map7)
+map7["list"] = list(4, 5, 6)
+println("After adding list:", map7)
+
+// Test 8: Assignment in a loop
+println("\n--- Test 8: Assignment in a Loop ---")
+var map8 = map{}
+println("Empty map:", map8)
+var i = 0
+while(i < 5) {
+    var key = i
+    map8[key] = i * 10
+    i = i + 1
+}
+println("After loop assignments:", map8)
+
+// Test 9: Verify key count
+println("\n--- Test 9: Verify Key Count ---")
+var map9 = map{"a": 1, "b": 2}
+println("Map:", map9)
+var keys_before = keys_map(map9)
+println("Keys before:", keys_before)
+map9["c"] = 3
+map9["d"] = 4
+var keys_after = keys_map(map9)
+println("Keys after:", keys_after)
+
+// Test 10: Dynamic key assignment
+println("\n--- Test 10: Dynamic Key Assignment ---")
+var map10 = map{}
+var prefix = "item"
+var j = 0
+while(j < 3) {
+    var dynamic_key = prefix + j
+    map10[dynamic_key] = j * 100
+    j = j + 1
+}
+println("Dynamic keys map:", map10)
+
+println("\n=== All map key assignment tests completed! ===")

@@ -425,17 +425,17 @@ func (node *BooleanExpressionNode) Expression() {
 }
 
 // AssignmentExpressionNode: represents a variable assignment expression
-// Example: x = 10, count = count + 1
+// Example: x = 10, count = count + 1, a[0] = 11, map["key"] = value
 type AssignmentExpressionNode struct {
-	Operation lexer.Token              // The assignment operator token (=)
-	Left      IdentifierExpressionNode // The identifier being assigned to
-	Right     ExpressionNode           // The expression being assigned
-	Value     objects.GoMixObject      // The assigned value
+	Operation lexer.Token         // The assignment operator token (=)
+	Left      ExpressionNode      // The target being assigned to (identifier or index expression)
+	Right     ExpressionNode      // The expression being assigned
+	Value     objects.GoMixObject // The assigned value
 }
 
 // AssignmentExpressionNode.Literal(): string represenation of the node
 func (node *AssignmentExpressionNode) Literal() string {
-	return node.Left.Name + " " + node.Operation.Literal + " " + node.Right.Literal()
+	return node.Left.Literal() + " " + node.Operation.Literal + " " + node.Right.Literal()
 }
 
 // AssignmentExpressionNode.Accept(): accepts a visitor (eg PrintVisitor)

@@ -118,30 +118,60 @@ func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) objects.
 		start := rangeObj.Start
 		end := rangeObj.End
 
-		// Iterate from start to end (inclusive)
-		for i := start; i <= end; i++ {
-			// Create a new scope for each iteration
-			iterationScope := scope.NewScope(loopScope)
-			e.Scp = iterationScope
+		// Handle both ascending and descending ranges
+		if start <= end {
+			// Ascending range: iterate from start to end (inclusive)
+			for i := start; i <= end; i++ {
+				// Create a new scope for each iteration
+				iterationScope := scope.NewScope(loopScope)
+				e.Scp = iterationScope
 
-			// Bind the iterator variable to the current value
-			e.Scp.Bind(n.Iterator.Name, &objects.Integer{Value: i})
+				// Bind the iterator variable to the current value
+				e.Scp.Bind(n.Iterator.Name, &objects.Integer{Value: i})
 
-			// Execute loop body
-			result = e.Eval(&n.Body)
+				// Execute loop body
+				result = e.Eval(&n.Body)
 
-			// Restore to loop scope after body execution
-			e.Scp = loopScope
+				// Restore to loop scope after body execution
+				e.Scp = loopScope
 
-			if IsError(result) {
-				e.Scp = oldScope
-				return result
+				if IsError(result) {
+					e.Scp = oldScope
+					return result
+				}
+
+				// Stop if we hit a return statement
+				if _, isReturn := result.(*objects.ReturnValue); isReturn {
+					e.Scp = oldScope
+					return result
+				}
 			}
+		} else {
+			// Descending range: iterate from start down to end (inclusive)
+			for i := start; i >= end; i-- {
+				// Create a new scope for each iteration
+				iterationScope := scope.NewScope(loopScope)
+				e.Scp = iterationScope
 
-			// Stop if we hit a return statement
-			if _, isReturn := result.(*objects.ReturnValue); isReturn {
-				e.Scp = oldScope
-				return result
+				// Bind the iterator variable to the current value
+				e.Scp.Bind(n.Iterator.Name, &objects.Integer{Value: i})
+
+				// Execute loop body
+				result = e.Eval(&n.Body)
+
+				// Restore to loop scope after body execution
+				e.Scp = loopScope
+
+				if IsError(result) {
+					e.Scp = oldScope
+					return result
+				}
+
+				// Stop if we hit a return statement
+				if _, isReturn := result.(*objects.ReturnValue); isReturn {
+					e.Scp = oldScope
+					return result
+				}
 			}
 		}
 
