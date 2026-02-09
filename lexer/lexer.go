@@ -231,9 +231,8 @@ func (lex *Lexer) NextToken() Token {
 				token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
 			}
 		} else {
-			// Single dot - could be start of a float like .5, but we don't support that yet
-			// Treat as invalid for now
-			token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
+			// Single dot - could be member access operator
+			token = NewTokenWithMetadata(DOT_OP, ".", lex.Line, lex.Column)
 		}
 	case '&':
 		// Could be '&' (bitwise AND), '&&' (logical AND), or '&='

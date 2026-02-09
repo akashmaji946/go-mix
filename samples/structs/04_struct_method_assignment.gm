@@ -1,0 +1,6 @@
+// 04_struct_method_assignment.gm
+// Test assigning method result to variable
+struct A { func hello() { return 99 } }
+var a = new A();
+var res = a.hello();
+res

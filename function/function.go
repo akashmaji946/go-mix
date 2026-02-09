@@ -94,3 +94,25 @@ func (f *Function) ToObject() string {
 	// Return the formatted function representation
 	return fmt.Sprintf("<func[%s(%s)]>", f.Name, args)
 }
+
+// GetParameters returns the slice of parameter names for this function.
+// This is used to satisfy the FunctionInterface in the objects package.
+//
+// Returns:
+//   - []string: A slice of parameter names
+func (f *Function) GetParameters() []string {
+	params := make([]string, len(f.Params))
+	for i, param := range f.Params {
+		params[i] = param.Name
+	}
+	return params
+}
+
+// GetBody returns a string representation of the function body.
+// This is used to satisfy the FunctionInterface in the objects package.
+//
+// Returns:
+//   - string: A string representation of the body
+func (f *Function) GetBody() string {
+	return f.Body.Literal()
+}

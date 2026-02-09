@@ -3901,3 +3901,67 @@ func TestParser_StructMethodsLayout(t *testing.T) {
 
 	}
 }
+
+// TestParser_ParseNewCall verifies parsing of new struct instantiation expressions
+func TestParser_ParseNewCall(t *testing.T) {
+	tests := []struct {
+		Expr     string
+		Expected []Node
+	}{
+		{
+			Expr: `var a = new Data()`,
+			Expected: []Node{
+				&DeclarativeStatementNode{
+					VarToken:   lexer.Token{Literal: "var"},
+					Identifier: IdentifierExpressionNode{Name: "a"},
+				},
+				&NewCallExpressionNode{
+					StructName: IdentifierExpressionNode{Name: "Data"},
+				},
+			},
+		},
+		{
+			Expr: `var a = new Data(10, "foo")`,
+			Expected: []Node{
+				&DeclarativeStatementNode{
+					VarToken:   lexer.Token{Literal: "var"},
+					Identifier: IdentifierExpressionNode{Name: "a"},
+				},
+				&NewCallExpressionNode{
+					StructName: IdentifierExpressionNode{Name: "Data"},
+				},
+				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+				&StringLiteralExpressionNode{Value: &objects.String{Value: "foo"}},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		parser := NewParser(test.Expr)
+		rootNode := parser.Parse()
+		assert.NotNil(t, rootNode)
+		assert.False(t, parser.HasErrors())
+
+		testingVisitor := &TestingVisitor{
+			ExpectedNodes: test.Expected,
+			Ptr:           0,
+			T:             t,
+		}
+		rootNode.Accept(testingVisitor)
+	}
+}
+
+// TestParser_ParseErrorNewCall verifies error handling for invalid new call expressions
+func TestParser_ParseErrorNewCall(t *testing.T) {
+	tests := []string{
+		`var a = new S`,
+		`var a = new`,
+		`var c = new ()`,
+	}
+	for _, test := range tests {
+		parser := NewParser(test)
+		rootNode := parser.Parse()
+		assert.NotNil(t, rootNode)
+		assert.True(t, parser.HasErrors())
+	}
+}

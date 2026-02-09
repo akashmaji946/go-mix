@@ -2028,6 +2028,17 @@ func TestEvaluator_Structs(t *testing.T) {
 		{`struct Person { func init(){} }`, ""},
 		{`struct Rectangle { func init(x, y) {  } }`, ""},
 		{`struct Circle { func init(radius) { var area = 1.0; } }`, ""},
+		{`
+		struct Point {
+
+			func init(x, y) {
+
+			}
+			func move(dx, dy) {
+
+			}
+		}
+		`, ""},
 	}
 
 	for _, tt := range tests {
@@ -2040,9 +2051,156 @@ func TestEvaluator_Structs(t *testing.T) {
 			t.Errorf("unexpected error: %s", result.ToString())
 			continue
 		}
-		if result.GetType() != objects.STRUCT_TYPE {
+		if result.GetType() != objects.StructType {
 			t.Errorf("expected struct, got %s", result.GetType())
 		}
 
+	}
+}
+
+// parseOrDie parses source code or panics if parsing fails
+func parseOrDie(src string) *parser.RootNode {
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	if p.HasErrors() {
+		panic("parse failed")
+	}
+	return rootNode
+}
+
+// assertFoundType asserts that a struct type was registered in the evaluator
+func assertFoundType(t *testing.T, evaluator *Evaluator, typeName string) *objects.GoMixStruct {
+	tp, exists := evaluator.Types[typeName]
+	if !exists {
+		t.Fatalf("expected type '%s' to be registered", typeName)
+	}
+	return tp
+}
+
+// assertFoundInScope asserts that a variable exists in the current scope
+func assertFoundInScope(t *testing.T, evaluator *Evaluator, varName string, expectedType objects.GoMixType) objects.GoMixObject {
+	value, exists := evaluator.Scp.LookUp(varName)
+	if !exists {
+		t.Fatalf("expected variable '%s' to exist in scope", varName)
+	}
+	if value.GetType() != expectedType {
+		t.Errorf("expected type '%s', got '%s'", expectedType, value.GetType())
+	}
+	return value
+}
+
+// TestEvaluator_Eval_EvaluateInstanceCreation verifies struct instance creation with and without constructors
+func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
+	tests := []struct {
+		Src        string
+		AssertFunc func(*Evaluator)
+	}{
+		{
+			Src: `	
+						struct A { 
+						}
+						var a = new A()
+            `,
+			AssertFunc: func(evaluator *Evaluator) {
+				tp := assertFoundType(t, evaluator, "A")
+				s := assertFoundInScope(t, evaluator, "a", objects.ObjectType)
+				p, ok := s.(*objects.GoMixObjectInstance)
+				if !ok {
+					t.Fatalf("expected GoMixObjectInstance, got %T", s)
+				}
+				if p.Struct != tp {
+					t.Errorf("instance struct mismatch")
+				}
+				if len(p.Fields) != 0 {
+					t.Errorf("expected 0 fields, got %d", len(p.Fields))
+				}
+			},
+		},
+		{
+			Src: `	
+						struct A { 
+						}
+						var a = new A()
+						var b = new A()
+            `,
+			AssertFunc: func(evaluator *Evaluator) {
+				tp := assertFoundType(t, evaluator, "A")
+				sa := assertFoundInScope(t, evaluator, "a", objects.ObjectType)
+				sb := assertFoundInScope(t, evaluator, "b", objects.ObjectType)
+				pa, oka := sa.(*objects.GoMixObjectInstance)
+				pb, okb := sb.(*objects.GoMixObjectInstance)
+				if !oka || !okb {
+					t.Fatalf("expected GoMixObjectInstance, got %T and %T", sa, sb)
+				}
+				if pa.Struct != tp || pb.Struct != tp {
+					t.Errorf("instance struct mismatch")
+				}
+				if len(pa.Fields) != 0 || len(pb.Fields) != 0 {
+					t.Errorf("expected 0 fields, got %d and %d", len(pa.Fields), len(pb.Fields))
+				}
+			},
+		},
+		{
+			Src: `	
+						struct Point { 
+							func init(x, y) {
+								var px = x
+								var py = y
+							}
+						}
+						var p = new Point(10, 20)
+            `,
+			AssertFunc: func(evaluator *Evaluator) {
+				tp := assertFoundType(t, evaluator, "Point")
+				p := assertFoundInScope(t, evaluator, "p", objects.ObjectType)
+				inst, ok := p.(*objects.GoMixObjectInstance)
+				if !ok {
+					t.Fatalf("expected GoMixObjectInstance, got %T", p)
+				}
+				if inst.Struct != tp {
+					t.Errorf("instance struct mismatch")
+				}
+			},
+		},
+		{
+			Src: `	
+						struct Rectangle { 
+							func init(width, height) {
+								var w = width
+								var h = height
+							}
+						}
+						var r1 = new Rectangle(5, 10)
+						var r2 = new Rectangle(15, 20)
+            `,
+			AssertFunc: func(evaluator *Evaluator) {
+				tp := assertFoundType(t, evaluator, "Rectangle")
+				r1 := assertFoundInScope(t, evaluator, "r1", objects.ObjectType)
+				r2 := assertFoundInScope(t, evaluator, "r2", objects.ObjectType)
+				ir1, ok1 := r1.(*objects.GoMixObjectInstance)
+				ir2, ok2 := r2.(*objects.GoMixObjectInstance)
+				if !ok1 || !ok2 {
+					t.Fatalf("expected GoMixObjectInstance, got %T and %T", r1, r2)
+				}
+				if ir1.Struct != tp || ir2.Struct != tp {
+					t.Errorf("instance struct mismatch")
+				}
+				// Instances should be different
+				if ir1 == ir2 {
+					t.Errorf("instances should be different")
+				}
+			},
+		},
+	}
+
+	for i, test := range tests {
+		evaluator := NewEvaluator()
+		rootNode := parseOrDie(test.Src)
+		result := evaluator.Eval(rootNode)
+		if result.GetType() == objects.ErrorType {
+			t.Errorf("test %d: unexpected error: %s", i, result.ToString())
+			continue
+		}
+		test.AssertFunc(evaluator)
 	}
 }

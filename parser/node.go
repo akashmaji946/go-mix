@@ -57,6 +57,7 @@ type NodeVisitor interface {
 	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
 	// Structs
 	VisitStructDeclarationNode(node StructDeclarationNode) // Struct definitions: struct Name { method1, method2, ... }
+	VisitNewCallExpressionNode(node NewCallExpressionNode) // Struct instantiation: new Name(args)
 
 	// Range and foreach visitors
 	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
@@ -989,5 +990,41 @@ func (node *StructDeclarationNode) Statement() {
 
 // StructDeclarationNode.Expression()
 func (node *StructDeclarationNode) Expression() {
+
+}
+
+// NewCallExpressionNode: represents a struct instantiation expression
+// Example: new Person("Alice", 30) creates a new instance of the Person struct
+type NewCallExpressionNode struct {
+	NewToken   lexer.Token              // The 'new' keyword token
+	StructName IdentifierExpressionNode // The struct name being instantiated
+	Arguments  []ExpressionNode         // List of argument expressions for the constructor
+	Value      objects.GoMixObject      // The new struct instance object value
+}
+
+// NewCallExpressionNode.Literal()
+func (node *NewCallExpressionNode) Literal() string {
+	args := ""
+	for i, arg := range node.Arguments {
+		if i > 0 {
+			args += ","
+		}
+		args += arg.Literal()
+	}
+	return node.NewToken.Literal + " " + node.StructName.Name + "(" + args + ")"
+}
+
+// NewCallExpressionNode.Accept()
+func (node *NewCallExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitNewCallExpressionNode(*node)
+}
+
+// NewCallExpressionNode.Statement()
+func (node *NewCallExpressionNode) Statement() {
+
+}
+
+// NewCallExpressionNode.Expression()
+func (node *NewCallExpressionNode) Expression() {
 
 }

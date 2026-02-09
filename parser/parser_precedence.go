@@ -84,6 +84,10 @@ const (
 	// Example: !a, -b, ~c
 	PREFIX_PRIORITY = 140
 
+	// member access operator: .
+	// Example: obj.field, obj.method()
+	MEMBER_ACCESS_PRIORITY = 145
+
 	// Parentheses (highest precedence for grouping)
 	// Example: (a + b) * c
 	PAREN_PRIORITY = 150
@@ -171,6 +175,10 @@ func getPrecedence(token *lexer.Token) int {
 	case lexer.ASSIGN_OP, lexer.PLUS_ASSIGN, lexer.MINUS_ASSIGN, lexer.MUL_ASSIGN, lexer.DIV_ASSIGN, lexer.MOD_ASSIGN,
 		lexer.BIT_AND_ASSIGN, lexer.BIT_OR_ASSIGN, lexer.BIT_XOR_ASSIGN, lexer.BIT_LEFT_ASSIGN, lexer.BIT_RIGHT_ASSIGN:
 		return ASSIGN_PRIORITY
+
+	// Member access operator: .
+	case lexer.DOT_OP:
+		return MEMBER_ACCESS_PRIORITY
 
 	default:
 		return -1 // Not an operator token

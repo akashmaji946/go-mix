@@ -1,0 +1,5 @@
+// 08_struct_method_this.gm
+// Method returns this
+struct G { func self() { return this } func val() { return 99 } }
+var g = new G();
+g.self().val();

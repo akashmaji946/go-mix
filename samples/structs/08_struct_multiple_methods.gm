@@ -1,0 +1,6 @@
+// 05_struct_multiple_methods.gm
+// Test struct with multiple methods
+struct B { func foo() { return 100 } func bar() { return 200 } }
+var b = new B();
+b.foo();
+b.bar();

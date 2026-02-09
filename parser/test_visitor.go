@@ -488,6 +488,24 @@ func (v *TestingVisitor) VisitStructDeclarationNode(node StructDeclarationNode) 
 	}
 }
 
+// VisitNewCallExpressionNode visits a struct instantiation node and asserts the struct name matches expected, then visits all arguments
+func (v *TestingVisitor) VisitNewCallExpressionNode(node NewCallExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*NewCallExpressionNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.StructName.Literal(), curr.(*NewCallExpressionNode).StructName.Literal())
+	v.Ptr++
+
+	for _, arg := range node.Arguments {
+		arg.Accept(v)
+	}
+}
+
 // String returns the string representation of the visitor (empty string)
 func (v *TestingVisitor) String() string {
 	return ""

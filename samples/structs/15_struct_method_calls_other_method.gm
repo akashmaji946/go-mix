@@ -1,0 +1,5 @@
+// 10_struct_method_calls_other_method.gm
+// Test method calling another method in same struct
+struct H { func foo() { return 5 } func bar() { return this.foo() + 2 } }
+var h = new H();
+h.bar();

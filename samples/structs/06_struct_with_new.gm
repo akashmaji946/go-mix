@@ -1,0 +1,10 @@
+// Struct with new constructor
+var aa = 10;
+struct A { 
+    func init() { 
+        var dd = 12;
+        printf("%d\n", aa);
+        println("In the constructor"); 
+    } 
+}
+var a = new A();

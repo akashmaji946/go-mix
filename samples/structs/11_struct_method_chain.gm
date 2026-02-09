@@ -1,0 +1,5 @@
+// 07_struct_method_chain.gm
+// Chaining method calls
+struct F { func one() { return this; } func two() { return 2 } }
+var f = new F();
+f.one().two();

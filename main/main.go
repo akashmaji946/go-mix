@@ -13,6 +13,7 @@ The interpreter uses a lexer-parser-evaluator pipeline to process Go-Mix code.
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/akashmaji946/go-mix/eval"
@@ -169,6 +170,10 @@ func executeFileWithRecovery(source string) {
 		os.Exit(1)
 	}
 
+	// Print the AST for debugging purposes (currently commented out for cleaner output)
+	// fmt.Println("Parsed AST:")
+	// printAST(rootNode)
+
 	// Create evaluator and execute the AST
 	// The evaluator walks the AST and executes the program
 	evaluator := eval.NewEvaluator()
@@ -187,4 +192,19 @@ func executeFileWithRecovery(source string) {
 			yellowColor.Fprintf(os.Stdout, "%s\n", result.ToString())
 		}
 	}
+}
+
+// printAST is a helper function to display the AST structure for debugging.
+// It recursively prints the AST nodes with indentation to show hierarchy.
+//
+// Parameters:
+//   - node: The root AST node to print
+//   - indent: The current indentation level (used for recursive calls)
+//
+// This function is useful for developers to visualize the parsed structure of the code.
+// It can be enabled during development and debugging to understand how the parser is interpreting the source code.
+func printAST(rootNode *parser.RootNode) {
+	p := &PrintingVisitor{}
+	p.VisitRootNode(*rootNode)
+	fmt.Println(p.Buf.String())
 }

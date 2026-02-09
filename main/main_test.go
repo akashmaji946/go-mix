@@ -1164,9 +1164,75 @@ func TestMain_Main(t *testing.T) {
 	fmt.Println(visitor110)
 
 	// Test 111: struct with other methods
-	src111 := `var Point = struct Data { func init(){} func move(x, y){} }`
+	src111 := `struct Data { func init(){} func move(x, y){} }`
 	root111 := parser.NewParser(src111).Parse()
 	visitor111 := &PrintingVisitor{}
 	root111.Accept(visitor111)
 	fmt.Println(visitor111)
+
+	// Test 112: new keyword with struct
+	src112 := `struct Data {}; var p = new Point(10, 20);`
+	root112 := parser.NewParser(src112).Parse()
+	visitor112 := &PrintingVisitor{}
+	root112.Accept(visitor112)
+	fmt.Println(visitor112)
+
+	// Test 113: struct with fields and methods
+	src113 := `
+	struct Point {
+		func init(x, y) {
+			this.x = x;
+			this.y = y;
+		}
+		func move(dx, dy) {
+			this.x = this.x + dx;
+			this.y = this.y + dy;
+		}
+	}
+	var p = new Point(10, 20);
+	p.move(5, -5);
+	p
+	`
+	root113 := parser.NewParser(src113).Parse()
+	visitor113 := &PrintingVisitor{}
+	root113.Accept(visitor113)
+	fmt.Println(visitor113)
+
+	src114 := `
+	// Struct with new constructor
+	var aa = 10;
+	struct A { 
+		func init() { 
+			var dd = 12;
+			println(aa);
+			println("In the constructor"); 
+		} 
+	}
+	var a = new A();
+	println(a);
+	`
+	root114 := parser.NewParser(src114).Parse()
+	visitor114 := &PrintingVisitor{}
+	root114.Accept(visitor114)
+	fmt.Println(visitor114)
+
+	// Test 115: Struct with multiple methods and field access
+	src115 := `struct A{ func init(){} func hello(){ return 12 } } var a=new A(); var res=a.hello(); println(res);`
+	root115 := parser.NewParser(src115).Parse()
+	visitor115 := &PrintingVisitor{}
+	root115.Accept(visitor115)
+	fmt.Println(visitor115)
+
+	// Test 116: Struct with nested struct
+	src116 := `
+	struct C { func add(x, y) { return x + y } }
+	var c = new C();
+	var d = c.add(3, 4);
+	println(d);
+	`
+	root116 := parser.NewParser(src116).Parse()
+	visitor116 := &PrintingVisitor{}
+	root116.Accept(visitor116)
+	fmt.Println(visitor116)
+
 }

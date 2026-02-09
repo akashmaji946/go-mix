@@ -12,7 +12,7 @@ println("Empty struct declared successfully");
 // Test 2: Struct with single method
 println("\n--- Test 2: Single method struct ---");
 struct Calculator {
-    func add(a, b) {
+    func method01(a, b) {
         return a + b;
     }
 }
@@ -21,15 +21,15 @@ println("Calculator struct with 'add' method declared");
 // Test 3: Struct with multiple methods
 println("\n--- Test 3: Multiple methods struct ---");
 struct MathUtils {
-    func add(a, b) {
+    func method01(a, b) {
         return a + b;
     }
     
-    func subtract(a, b) {
+    func method02(a, b) {
         return a - b;
     }
     
-    func multiply(a, b) {
+    func method03(a, b) {
         return a * b;
     }
 }
@@ -38,11 +38,11 @@ println("MathUtils struct with multiple methods declared");
 // Test 4: Struct with method that has no parameters
 println("\n--- Test 4: No-parameter methods ---");
 struct Greeter {
-    func sayHello() {
+    func method01() {
         println("Hello, World!");
     }
     
-    func sayGoodbye() {
+    func method02() {
         println("Goodbye!");
     }
 }
@@ -51,19 +51,19 @@ println("Greeter struct with no-parameter methods declared");
 // Test 5: Multiple struct declarations
 println("\n--- Test 5: Multiple struct types ---");
 struct Point {
-    func distance() {
+    func method01() {
         return 0;
     }
 }
 
 struct Circle {
-    func area() {
+    func method01() {
         return 3.14;
     }
 }
 
 struct Rectangle {
-    func perimeter() {
+    func method01() {
         return 0;
     }
 }
@@ -72,7 +72,7 @@ println("Multiple struct types declared successfully");
 // Test 6: Struct with complex method body
 println("\n--- Test 6: Complex method bodies ---");
 struct LogicEngine {
-    func isEven(n) {
+    func method01(n) {
         if (n % 2 == 0) {
             return true;
         } else {
@@ -80,11 +80,11 @@ struct LogicEngine {
         }
     }
     
-    func factorial(n) {
+    func method02(n) {
         if (n <= 1) {
             return 1;
         } else {
-            return n * factorial(n - 1);
+            return n * method02(n - 1);
         }
     }
 }

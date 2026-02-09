@@ -192,6 +192,9 @@ const (
 
 	// Range Operator
 	RANGE_OP TokenType = "..." // Range operator - creates inclusive ranges (e.g., 2...5)
+
+	// Object member access operator
+	DOT_OP TokenType = "." // Dot operator - access struct fields and methods
 )
 
 // Print outputs a human-readable representation of the token to standard output.

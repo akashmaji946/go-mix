@@ -1,0 +1,6 @@
+// 04_struct_method_with_args.gm
+// Method with arguments
+struct C { func add(x, y) { return x + y } }
+var c = new C();
+var d = c.add(3, 4);
+println(d);

@@ -49,7 +49,10 @@ const (
 	// TupleType represents immutable tuple objects (heterogeneous)
 	TupleType GoMixType = "tuple"
 	// StructType represents user-defined struct types
-	STRUCT_TYPE GoMixType = "struct"
+	StructType GoMixType = "struct"
+
+	// ObjectType represents a struct instance (defined elsewhere)
+	ObjectType GoMixType = "object"
 )
 
 // GoMixObject is the core interface that all GoMix objects must implement.
@@ -89,6 +92,9 @@ func ExtractValue(obj GoMixObject) (interface{}, error) {
 	case ErrorType:
 		// Extract the error message from an Error object
 		return obj.(*Error).Message, nil
+	case ObjectType:
+		// Extract the struct instance from an Object object
+		return obj.(*GoMixObjectInstance), nil
 	default:
 		// Return an error for unsupported types like functions or arrays
 		return nil, fmt.Errorf("unsupported type: %s", obj.GetType())

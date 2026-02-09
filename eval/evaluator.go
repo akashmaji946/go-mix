@@ -207,3 +207,10 @@ func (e *Evaluator) CreateError(format string, a ...interface{}) *objects.Error 
 	fullMsg := fmt.Sprintf("[%d:%d] %s", e.Par.Lex.Line, e.Par.Lex.Column, msg)
 	return &objects.Error{Message: fullMsg}
 }
+
+// NamedParameter represents a named parameter in a function definition,
+// holding the parameter's name and its AST node.
+type NamedParameter struct {
+	Name  string              // The name of the parameter (e.g., "a", "b")
+	Value objects.GoMixObject //  The value of the parameter, which can be any GoMixObject (e.g., Integer, String, Array)
+}

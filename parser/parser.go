@@ -179,6 +179,12 @@ func (par *Parser) init() {
 	// Range operator: 2...5
 	par.registerBinaryFuncs(par.parseRangeExpression, lexer.RANGE_OP)
 
+	// new keyword for struct instantiation: new Name(args)
+	par.registerUnaryFuncs(par.parseNewCallExpression, lexer.NEW_KEY)
+
+	// memebr access operator: obj.field or obj.method()
+	par.registerBinaryFuncs(par.parseBinaryExpression, lexer.DOT_OP)
+
 	// Prime the token lookahead by advancing twice
 	// After this, CurrToken and NextToken are both valid
 	par.advance()

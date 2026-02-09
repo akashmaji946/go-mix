@@ -1,0 +1,6 @@
+// 06_struct_method_returns_func.gm
+// Method returns a function
+struct E { func f() { return func(x) { return x+1 } } }
+var e = new E();
+var g = e.f();
+g(10);

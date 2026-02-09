@@ -2043,6 +2043,62 @@ func (par *Parser) parseStructDeclaration() StatementNode {
 	}
 }
 
+// parseNewCallExpression parses expressions for creating new instances of structs.
+//
+// Syntax:
+//
+//	new StructName(arg1, arg2, ...)
+//
+// Returns:
+//
+//	A NewCallExpressionNode representing the instantiation of a struct
+//
+// Examples:
+//
+//	new MyStruct(10, "hello")
+//	new Point(5, 5)
+func (par *Parser) parseNewCallExpression() ExpressionNode {
+	// Current token is NEW_KEY
+
+	newCallNode := &NewCallExpressionNode{
+		NewToken: par.CurrToken,
+		Value:    &objects.Nil{},
+	}
+	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+		return nil
+	}
+	newCallNode.StructName = IdentifierExpressionNode{
+		Name:  par.CurrToken.Literal,
+		Value: &objects.Nil{}, // Default value for identifier
+	}
+
+	if !par.expectAdvance(lexer.LEFT_PAREN) {
+		return nil
+	}
+	// if there are arguments, parse them
+	if par.NextToken.Type != lexer.RIGHT_PAREN {
+		par.advance()
+		for {
+			arg := par.parseExpression()
+			if arg == nil {
+				return nil
+			}
+			newCallNode.Arguments = append(newCallNode.Arguments, arg)
+			if par.NextToken.Type == lexer.COMMA_DELIM {
+				par.advance()
+				par.advance()
+			} else {
+				break
+			}
+		}
+	}
+
+	if !par.expectAdvance(lexer.RIGHT_PAREN) {
+		return nil
+	}
+	return newCallNode
+}
+
 // eval evaluates an expression node during parsing.
 // This enables constant folding and early error detection.
 //

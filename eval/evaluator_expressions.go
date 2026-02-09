@@ -98,6 +98,8 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalForeachLoop(n)
 	case *parser.StructDeclarationNode:
 		return e.evalStructDeclaration(n)
+	case *parser.NewCallExpressionNode:
+		return e.evalNewCallExpression(n)
 	default:
 		return &objects.Nil{}
 	}
@@ -320,8 +322,36 @@ func (e *Evaluator) evalMapIndexAssignment(container, index, val objects.GoMixOb
 //	makeCounter()(10);        // Closure returning a function
 func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoMixObject {
 
-	// look for builtin name
 	funcName := n.FunctionIdentifier.Name
+
+	// Support method calls: obj.method()
+	if dotIdx := indexOfDot(funcName); dotIdx > 0 {
+		objName := funcName[:dotIdx]
+		methodName := funcName[dotIdx+1:]
+		// fmt.Printf("DEBUG: Method call detected: obj='%s', method='%s'\n", objName, methodName)
+		objVal, ok := e.Scp.LookUp(objName)
+		if !ok {
+			return e.CreateError("ERROR: object not found: (%s)", objName)
+		}
+		inst, ok := objVal.(*objects.GoMixObjectInstance)
+		if !ok {
+			return e.CreateError("ERROR: (%s) is not a struct instance", objName)
+		}
+		// Prepare named parameters for method call
+		params := make([]NamedParameter, len(n.Arguments))
+		for i, arg := range n.Arguments {
+			evaluated := e.Eval(arg)
+			if IsError(evaluated) {
+				return evaluated
+			}
+			params[i] = NamedParameter{Name: "", Value: evaluated}
+		}
+		result := e.callFunctionOnObject(methodName, inst, params...)
+		// fmt.Printf("DEBUG: Method call result type=%s\n", result.GetType())
+		return result
+	}
+
+	// look for builtin name
 	if ok := e.IsBuiltin(funcName); ok {
 		args := make([]objects.GoMixObject, len(n.Arguments))
 		for i, arg := range n.Arguments {
@@ -501,7 +531,9 @@ func (e *Evaluator) evalReturnStatement(n *parser.ReturnStatementNode) objects.G
 //	const PI = 3.14; // Immutable
 //	let name = "Go"; // Type-safe (must remain string)
 func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode) objects.GoMixObject {
+	// fmt.Printf("DEBUG: evalDeclarativeStatement for '%s', expr type=%T\n", n.Identifier.Name, n.Expr)
 	val := e.Eval(n.Expr)
+	// fmt.Printf("DEBUG: evalDeclarativeStatement result type=%s\n", val.GetType())
 	if IsError(val) {
 		return val
 	}
@@ -649,6 +681,51 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 	if IsError(left) {
 		return left
 	}
+
+	// we prioritize the dot (.) member access operator in the parser,
+	if n.Operation.Type == lexer.DOT_OP {
+
+		// fmt.Printf("DEBUG: Evaluating member access operator (.) with left operand type (%s)\n", left.GetType())
+
+		fn, ok := n.Right.(*parser.CallExpressionNode)
+		if !ok {
+			return e.CreateError("ERROR: member access operator (.) must be followed by a function call")
+		}
+		if left.GetType() != objects.ObjectType {
+			return e.CreateError("ERROR: member access operator (.) can only be used on struct instances, got (%s)", left.GetType())
+		}
+		structInstance := left.(*objects.GoMixObjectInstance)
+		methodName := fn.FunctionIdentifier.Name
+		methodInterface, exists := structInstance.Struct.Methods[methodName]
+		method, ok := methodInterface.(*function.Function)
+		if !ok {
+			return e.CreateError("ERROR: method (%s) not found in struct (%s)", methodName, structInstance.Struct.GetName())
+		}
+		if !exists {
+			return e.CreateError("ERROR: method (%s) does not exist in struct (%s)", methodName, structInstance.Struct.GetName())
+		}
+		params := make([]NamedParameter, len(fn.Arguments))
+		if len(fn.Arguments) != len(method.Params) {
+			return e.CreateError("ERROR: wrong number of arguments for method (%s): expected %d, got %d", methodName, len(method.Params), len(fn.Arguments))
+		}
+		for i, arg := range fn.Arguments {
+			params[i] = NamedParameter{
+				Name:  method.Params[i].Name,
+				Value: e.Eval(arg),
+			}
+			if IsError(params[i].Value) {
+				return params[i].Value
+			}
+		}
+
+		res := e.callFunctionOnObject(methodName, structInstance, params...)
+		if res.GetType() == objects.ErrorType {
+			return res
+		}
+		// fmt.Printf("DEBUG DOT_OP: method '%s' returned type '%s', value '%v'\n", methodName, res.GetType(), res.ToString())
+		return res
+	}
+
 	if IsError(right) {
 		return right
 	}
@@ -718,6 +795,38 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 		return err
 	}
 	return &objects.Nil{}
+}
+
+func (e *Evaluator) callFunctionOnObject(name string, obj *objects.GoMixObjectInstance, args ...NamedParameter) objects.GoMixObject {
+
+	initMethodInterface, exists := obj.Struct.Methods[name]
+	if !exists {
+		return e.CreateError("ERROR: method (%s) not found in struct (%s)", name, obj.Struct.GetName())
+	}
+
+	initMethod, ok := initMethodInterface.(*function.Function)
+	if !ok {
+		return e.CreateError("ERROR: method (%s) not found in struct (%s)", name, obj.Struct.GetName())
+	}
+
+	// Create a new scope for the method call with the struct instance's scope as parent
+	methodScope := scope.NewScope(e.Scp)
+
+	// Bind the struct instance to a special variable (e.g., "self") in the method scope
+	methodScope.Bind("this", obj)
+	for _, arg := range args {
+		methodScope.Bind(arg.Name, arg.Value)
+	}
+
+	// Save the current scope and switch to the method scope for evaluation
+	oldScope := e.Scp
+	e.Scp = methodScope
+	res := e.Eval(initMethod.Body)
+	e.Scp = oldScope
+	if res.GetType() == objects.ErrorType {
+		return res
+	}
+	return UnwrapReturnValue(res)
 }
 
 // toFloat64 is a helper function that converts numeric objects to float64.
@@ -1539,7 +1648,7 @@ func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objec
 	// Create a new struct type with the given name and fields
 	s := &objects.GoMixStruct{
 		Name:    n.StructName.Name,
-		Methods: make([]objects.FunctionInterface, 0),
+		Methods: make(map[string]objects.FunctionInterface, 0),
 	}
 
 	for _, m := range n.Methods {
@@ -1556,4 +1665,58 @@ func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objec
 
 	e.Types[s.Name] = s
 	return s
+}
+
+func (e *Evaluator) evalNewCallExpression(n *parser.NewCallExpressionNode) objects.GoMixObject {
+	// Look up the struct type by name
+	s, exists := e.Types[n.StructName.Name]
+	if !exists {
+		return e.CreateError("ERROR: struct type '%s' not defined", n.StructName.Name)
+	}
+
+	inst := objects.NewStructInstance(s)
+
+	initMethod, hasInit := s.GetConstructor()
+	if hasInit {
+		// Cast to Function to access Body and Params directly
+		fn, ok := initMethod.(*function.Function)
+		if !ok {
+			return e.CreateError("ERROR: constructor method is not a valid function")
+		}
+
+		if len(n.Arguments) != len(fn.Params) {
+			return e.CreateError("ERROR: constructor for struct '%s' expects %d arguments, got %d", s.Name, len(fn.Params), len(n.Arguments))
+		}
+
+		// Save the current scope before creating a new one
+		oldScope := e.Scp
+
+		// Create a new scope for the constructor call
+		constructorScope := scope.NewScope(e.Scp)
+		constructorScope.Bind("this", inst) // Set 'this' to the new instance
+
+		// Evaluate the constructor with the given arguments
+		for i, arg := range n.Arguments {
+			argValue := e.Eval(arg)
+			if IsError(argValue) {
+				e.Scp = oldScope
+				return argValue
+			}
+			constructorScope.Bind(fn.Params[i].Name, argValue)
+		}
+
+		// Switch to the constructor scope
+		e.Scp = constructorScope
+
+		// Execute the constructor body
+		result := e.Eval(fn.Body)
+		if IsError(result) {
+			e.Scp = oldScope
+			return result
+		}
+
+		// Restore the original scope
+		e.Scp = oldScope
+	}
+	return inst
 }

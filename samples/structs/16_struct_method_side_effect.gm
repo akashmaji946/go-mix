@@ -1,0 +1,5 @@
+// 10_struct_method_side_effect.gm
+// Method with side effect (simulate by returning value)
+struct I { func inc(x) { return x+1 } }
+var i = new I();
+i.inc(5);

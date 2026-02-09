@@ -1,0 +1,5 @@
+// 05_struct_method_calls_other.gm
+// Method calls another method
+struct D { func foo() { return 50 } func bar() { return this.foo() + 2 } }
+var d = new D();
+d.bar();

@@ -1,0 +1,5 @@
+// 09_struct_init_method.gm
+// Struct with init method
+struct H { func init(x) { return x+1 } func foo() { return 7 } }
+var h = new H(10);
+h.foo();

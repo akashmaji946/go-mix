@@ -1,0 +1,5 @@
+// 08_struct_method_return_struct.gm
+// Test method returning struct instance
+struct E { func self() { return this; } }
+var e = new E();
+e.self();
