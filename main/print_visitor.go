@@ -350,6 +350,9 @@ func (p *PrintingVisitor) VisitStructDeclarationNode(node parser.StructDeclarati
 	p.Buf.WriteString(fmt.Sprintf("Visiting %15s Node [%s] (%s => %v)\n", "struct",
 		node.Literal(), node.Literal(), node.Value.ToObject()))
 	p.Indent += INDENT_SIZE
+	for _, field := range node.Fields {
+		field.Accept(p)
+	}
 	for _, method := range node.Methods {
 		method.Accept(p)
 	}

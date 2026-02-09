@@ -1,0 +1,24 @@
+// 04_selection_sort.gm
+// Selection Sort Implementation
+
+func selectionSort(arr) {
+    var n = length(arr);
+    for (var i = 0; i < n - 1; i = i + 1) {
+        var min_idx = i;
+        for (var j = i + 1; j < n; j = j + 1) {
+            if (arr[j] < arr[min_idx]) {
+                min_idx = j;
+            }
+        }
+        // Swap the found minimum element with the first element
+        var temp = arr[min_idx];
+        arr[min_idx] = arr[i];
+        arr[i] = temp;
+    }
+    return arr;
+}
+
+var data = [64, 25, 12, 22, 11];
+println("Original: ", data);
+selectionSort(data);
+println("Sorted:   ", data);

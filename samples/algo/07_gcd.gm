@@ -1,0 +1,15 @@
+// 07_gcd.gm
+// Greatest Common Divisor (Euclidean Algorithm)
+
+func gcd(a, b) {
+    while (b != 0) {
+        var temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+var x = 48;
+var y = 18;
+println("GCD of ", x, " and ", y, " is ", gcd(x, y));

@@ -1,0 +1,32 @@
+// Test 'this' keyword usage
+
+struct Person {
+    func init(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    func introduce() {
+        printf("Hi, I'm %s and I'm %d years old.\n", this.name, this.age);
+    }
+
+    func haveBirthday() {
+        this.age += 1;
+        print("Happy Birthday!");
+        this.introduce(); // Calling another method using this
+    }
+
+    func updateName(name) {
+        // Parameter 'name' shadows field 'name', so we must use 'this.name'
+        println(">Changing name from ", this.name, " to ", name);
+        this.name = name;
+    }
+}
+
+var p = new Person("Alice", 30);
+p.introduce();
+
+p.haveBirthday();
+
+p.updateName("Bob");
+p.introduce();

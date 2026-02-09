@@ -21,8 +21,9 @@ type FunctionInterface interface {
 // GoMixStruct represents a user-defined struct type in GoMix.
 // It stores the struct name and a list of methods associated with it.
 type GoMixStruct struct {
-	Name    string                       // Name of the struct type
-	Methods map[string]FunctionInterface // Slice of method objects (using interface to avoid circular imports)
+	Name       string                       // Name of the struct type
+	Methods    map[string]FunctionInterface // Slice of method objects (using interface to avoid circular imports)
+	FieldNodes []interface{}                // AST nodes for field declarations (interface{} to avoid import cycle)
 }
 
 // GetConstructor returns the constructor function for the struct instance,
@@ -78,15 +79,15 @@ func (g *GoMixStruct) ToObject() string {
 
 // GoMixObjectInstance represents an instance of a struct type, holding field values and a reference to its struct definition.
 type GoMixObjectInstance struct {
-	Struct *GoMixStruct                   // Reference to the struct definition
-	Fields map[string]GoMixObjectInstance // Map of field names to their values
+	Struct *GoMixStruct           // Reference to the struct definition
+	Fields map[string]GoMixObject // Map of field names to their values
 }
 
 // NewStructInstance creates a new instance of a struct type given the struct definition.
 func NewStructInstance(s *GoMixStruct) *GoMixObjectInstance {
 	return &GoMixObjectInstance{
 		Struct: s,
-		Fields: make(map[string]GoMixObjectInstance), // Initialize fields map (if needed)
+		Fields: make(map[string]GoMixObject), // Initialize fields map (if needed)
 	}
 }
 

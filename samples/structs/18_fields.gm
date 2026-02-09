@@ -1,0 +1,48 @@
+// Test struct fields and methods
+
+func sqrt(x) {
+    return pow(x, 0.5);
+}
+
+
+struct Point {
+    func init(x, y) {
+        // Initialize fields using 'this'
+        this.x = x;
+        this.y = y;
+    }
+    
+    func printPoint() {
+        println("Point(", this.x, ", ", this.y, ")");
+    }
+
+    func dist(other) {
+        var dx = this.x - other.x;
+        var dy = this.y - other.y;
+        var distance = sqrt(dx * dx + dy * dy);
+        return distance;
+    }
+}
+
+var p1 = new Point(10, 20);
+p1.printPoint();
+
+println("Original x: ", p1.x);
+
+// Modify field
+p1.x = 100;
+println("New x: ", p1.x);
+
+// Verify method uses updated field
+p1.printPoint();
+
+var p2 = new Point(100, 200);
+p2.printPoint();
+
+// Modify field
+p2.x += 1;
+p2.printPoint();
+
+var d = p1.dist(p2);
+println("Distance: ", d);
+printf("Distance: %f\n", round(d, 3))

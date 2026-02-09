@@ -1,0 +1,41 @@
+// Test complex initialization logic
+
+struct Vector {
+    func init(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        
+        // Calculate magnitude during init
+        this.magnitude = sqrt(x*x + y*y + z*z);
+        
+        // Normalize if magnitude is not zero
+        if (this.magnitude > 0.0) {
+            this.nx = x / this.magnitude;
+            this.ny = y / this.magnitude;
+            this.nz = z / this.magnitude;
+        } else {
+            this.nx = 0.0;
+            this.ny = 0.0;
+            this.nz = 0.0;
+        }
+    }
+
+    func printVector() {
+        printf("Vector(%f, %f, %f)\n", this.x, this.y, this.z);
+        printf("Magnitude: %f\n", this.magnitude);
+        printf("Normalized: (%f, %f, %f)\n", this.nx, this.ny, this.nz);
+    }
+}
+
+println("--- Zero Vector ---");
+var v0 = new Vector(0.0, 0.0, 0.0);
+v0.printVector();
+
+println("\n--- Unit Vector ---");
+var v1 = new Vector(1.0, 0.0, 0.0);
+v1.printVector();
+
+println("\n--- Arbitrary Vector ---");
+var v2 = new Vector(3.0, 4.0, 0.0); // Magnitude should be 5.0
+v2.printVector();

@@ -483,6 +483,10 @@ func (v *TestingVisitor) VisitStructDeclarationNode(node StructDeclarationNode) 
 	assert.Equal(v.T, node.StructName.Literal(), curr.(*StructDeclarationNode).StructName.Literal())
 	v.Ptr++
 
+	for _, field := range node.Fields {
+		field.Accept(v)
+	}
+
 	for _, method := range node.Methods {
 		method.Accept(v)
 	}

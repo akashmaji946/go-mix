@@ -960,7 +960,7 @@ func (node *SetExpressionNode) Expression() {
 type StructDeclarationNode struct {
 	StructToken lexer.Token                 // The 'struct' keyword token
 	StructName  IdentifierExpressionNode    // The struct name identifier
-	Fields      []*IdentifierExpressionNode // List of field identifiers
+	Fields      []*DeclarativeStatementNode // List of field declarations
 	Methods     []*FunctionStatementNode    // List of method definitions (function statements)
 	Value       objects.GoMixObject         // The struct type object value
 }

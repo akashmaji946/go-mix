@@ -1,0 +1,21 @@
+// 08_prime_check.gm
+// Primality Test
+
+func isPrime(n) {
+    if (n <= 1) { return false; }
+    
+    // Check from 2 to sqrt(n)
+    for (var i = 2; i * i <= n; i = i + 1) {
+        if (n % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+var num = 29;
+if (isPrime(num)) {
+    println(num, " is a prime number.");
+} else {
+    println(num, " is NOT a prime number.");
+}

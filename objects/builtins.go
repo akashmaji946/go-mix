@@ -136,11 +136,11 @@ func println(writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Build the output string by concatenating string representations with spaces
 	res := ""
 	for _, arg := range args {
-		res += arg.ToString() + " "
+		res += arg.ToString() + ""
 	}
 	// Remove the trailing space if there are arguments
 	if len(args) > 0 {
-		res = res[:len(res)-1]
+		res = res[:len(res)]
 	}
 	// Print to the writer with a newline
 	fmt.Fprintln(writer, res)

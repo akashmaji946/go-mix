@@ -1,0 +1,46 @@
+// Test passing structs to functions and returning them
+
+struct Vector {
+    func init(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    func printVec() {
+        printf("[%d, %d]\n", this.x, this.y);
+    }
+}
+
+// Function that takes two vectors and returns a new one (addition)
+func addVectors(v1, v2) {
+    var newX = v1.x + v2.x;
+    var newY = v1.y + v2.y;
+    return new Vector(newX, newY);
+}
+
+// Function that modifies a vector in place (pass by reference check)
+// In Go-Mix, struct instances are passed by reference
+func scaleVector(v, factor) {
+    v.x *= factor;
+    v.y *= factor;
+}
+
+var vec1 = new Vector(1, 2);
+var vec2 = new Vector(3, 4);
+
+println("Vector 1:");
+vec1.printVec();
+println("Vector 2:");
+vec2.printVec();
+
+var vec3 = addVectors(vec1, vec2);
+println("Sum (Vector 3):");
+vec3.printVec();
+
+println("Scaling Vector 1 by 10...");
+scaleVector(vec1, 10);
+vec1.printVec();
+
+// Verify vec3 is unaffected
+println("Vector 3 should be unchanged:");
+vec3.printVec();

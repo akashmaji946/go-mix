@@ -1,0 +1,70 @@
+// Singly Linked List Implementation
+
+struct Node {
+    func init(data) {
+        this.data = data;
+        this.next = nil;
+    }
+}
+
+struct LinkedList {
+    func init() {
+        this.head = nil;
+    }
+
+    func append(data) {
+        var newNode = new Node(data);
+        if (this.head == nil) {
+            this.head = newNode;
+            return;
+        }
+        var last = this.head;
+        while (last.next != nil) {
+            last = last.next;
+        }
+        last.next = newNode;
+    }
+
+    func prepend(data) {
+        var newNode = new Node(data);
+        newNode.next = this.head;
+        this.head = newNode;
+    }
+
+    func delete(key) {
+        var curr = this.head;
+        var prev = nil;
+
+        if (curr != nil && curr.data == key) {
+            this.head = curr.next;
+            return;
+        }
+
+        while (curr != nil && curr.data != key) {
+            prev = curr;
+            curr = curr.next;
+        }
+
+        if (curr == nil) { return; }
+        prev.next = curr.next;
+    }
+
+    func printList() {
+        var curr = this.head;
+        while (curr != nil) {
+            print(curr.data, " -> ");
+            curr = curr.next;
+        }
+        println("nil");
+    }
+}
+
+var ll = new LinkedList();
+ll.append(10);
+ll.append(20);
+ll.prepend(5);
+ll.printList();
+
+println("Deleting 10...");
+ll.delete(10);
+ll.printList();

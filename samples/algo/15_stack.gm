@@ -1,0 +1,60 @@
+// Stack Implementation (using Linked List)
+
+struct StackNode {
+    func init(data) {
+        this.data = data;
+        this.next = nil;
+    }
+}
+
+struct Stack {
+    func init() {
+        this.top = nil;
+    }
+
+    func push(data) {
+        var newNode = new StackNode(data);
+        newNode.next = this.top;
+        this.top = newNode;
+        println("Pushed: ", data);
+    }
+
+    func pop() {
+        if (this.top == nil) {
+            println("Stack Underflow");
+            return nil;
+        }
+        var popped = this.top.data;
+        this.top = this.top.next;
+        return popped;
+    }
+
+    func peek() {
+        if (this.top == nil) { return nil; }
+        return this.top.data;
+    }
+
+    func isEmpty() {
+        return this.top == nil;
+    }
+    
+    func printStack() {
+        var curr = this.top;
+        print("Stack (Top -> Bottom): ");
+        while (curr != nil) {
+            print(curr.data, " ");
+            curr = curr.next;
+        }
+        println("");
+    }
+}
+
+var s = new Stack();
+s.push(10);
+s.push(20);
+s.push(30);
+s.printStack();
+
+println("Popped: ", s.pop());
+s.printStack();
+println("Top element is: ", s.peek());

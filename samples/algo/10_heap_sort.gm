@@ -1,0 +1,49 @@
+// Heap Sort Implementation
+
+func heapify(arr, n, i) {
+    var largest = i;
+    var l = 2 * i;
+    var r = 2 * i + 1;
+
+    // println(n, "--", l, "--", r);
+
+    if ((l < n) && (arr[l] > arr[largest])) {
+        largest = l;
+    }
+
+
+    if ((r < n) && (arr[r] > arr[largest])) {
+        largest = r;
+    }
+
+    if (largest != i) {
+        var swap = arr[i];
+        arr[i] = arr[largest];
+        arr[largest] = swap;
+
+        heapify(arr, n, largest);
+    }
+}
+
+func heapSort(arr) {
+    var n = length(arr);
+
+    // Build heap (rearrange array)
+    for (var i = n / 2 - 1; i >= 0; i = i - 1) {
+        // println(i)
+        heapify(arr, n, i);
+    }
+
+    // One by one extract an element from heap
+    for (var i = n - 1; i > 0; i = i - 1) {
+        var temp = arr[0];
+        arr[0] = arr[i];
+        arr[i] = temp;
+        heapify(arr, i, 0);
+    }
+}
+
+var data = [12, 11, 13, 5, 6, 7];
+println("Original array:", data);
+heapSort(data);
+println("Sorted array:  ", data);

@@ -1,0 +1,44 @@
+// Test multiple instances of structs
+
+struct Counter {
+    func init(start) {
+        this.count = start;
+        this.id = start; // just an identifier
+    }
+
+    func increment() {
+        this.count += 1;
+    }
+
+    func decrement() {
+        this.count -= 1;
+    }
+
+    func get() {
+        return this.count;
+    }
+}
+
+var c1 = new Counter(0);
+var c2 = new Counter(100);
+
+println("Initial state:");
+printf("C1: %d, C2: %d\n", c1.get(), c2.get());
+
+c1.increment();
+c1.increment();
+c2.decrement();
+
+println("After modification:");
+printf("C1: %d, C2: %d\n", c1.get(), c2.get());
+
+// Verify independence
+c1.count = 50;
+println("Set C1 to 50:");
+printf("C1: %d, C2: %d\n", c1.get(), c2.get());
+
+if (c1.get() == 50 && c2.get() == 99) {
+    println("SUCCESS: Instances are independent");
+} else {
+    println("FAILURE: Instances might be shared");
+}

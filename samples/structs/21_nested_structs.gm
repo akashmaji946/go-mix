@@ -1,0 +1,43 @@
+// Test nested structs
+
+struct Point {
+    func init(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    func toString() {
+        return "(" + tostring(this.x) + "," + tostring(this.y) + ")";
+    }
+}
+
+struct Line {
+    func init(p1, p2) {
+        this.start = p1;
+        this.end = p2;
+    }
+
+    func length() {
+        var dx = this.end.x - this.start.x;
+        var dy = this.end.y - this.start.y;
+        return sqrt(pow(dx, 2.0) + pow(dy, 2.0));
+    }
+    
+    func printLine() {
+        print("Line from ", this.start.toString(), " to ", this.end.toString());
+        println(" Length: ", this.length());
+    }
+}
+
+var p1 = new Point(0.0, 0.0);
+var p2 = new Point(3.0, 4.0);
+
+var line = new Line(p1, p2);
+line.printLine();
+
+// Move start point
+p1.x = 1.0;
+p1.y = 1.0;
+
+println("After moving start point:");
+line.printLine();

@@ -1,0 +1,43 @@
+// Test struct composition (struct inside struct)
+
+struct Engine {
+    func init(horsepower) {
+        this.hp = horsepower;
+        this.running = false;
+    }
+
+    func start() {
+        this.running = true;
+        println("Engine started. HP: ", this.hp);
+    }
+
+    func stop() {
+        this.running = false;
+        println("Engine stopped.");
+    }
+}
+
+struct Car {
+    func init(make, model, engine) {
+        this.make = make;
+        this.model = model;
+        this.engine = engine; // Engine struct instance
+    }
+
+    func drive() {
+        // Accessing nested field
+        if (this.engine.running) {
+            printf("Driving %s %s...\n", this.make, this.model);
+        } else {
+            println("Cannot drive. Start engine first.");
+        }
+    }
+}
+
+var v8 = new Engine(400);
+var myCar = new Car("Ford", "Mustang", v8);
+
+myCar.drive(); // Should fail
+myCar.engine.start();
+myCar.drive(); // Should work
+myCar.engine.stop();

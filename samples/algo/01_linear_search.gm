@@ -1,0 +1,20 @@
+// 01_linear_search.gm
+// Linear Search Implementation
+
+func linearSearch(arr, target) {
+    var n = length(arr);
+    for (var i = 0; i < n; i = i + 1) {
+        if (arr[i] == target) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+var data = [10, 50, 30, 70, 80, 20, 90, 40];
+var target = 30;
+
+println("Data: ", data);
+println("Searching for: ", target);
+var index = linearSearch(data, target);
+println("Found at index: ", index);

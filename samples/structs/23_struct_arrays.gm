@@ -1,0 +1,36 @@
+// Test structs containing arrays and arrays of structs
+
+struct Student {
+    func init(name, grades) {
+        this.name = name;
+        this.grades = grades; // Array of integers
+    }
+
+    func average() {
+        var sum = 0;
+        var count = length(this.grades);
+        if (count == 0) { return 0; }
+        
+        foreach g in this.grades {
+            sum += g;
+        }
+        // Integer division
+        return sum / count;
+    }
+}
+
+var grades1 = [85, 90, 95];
+var s1 = new Student("Alice", grades1);
+println("Student: ", s1.name);
+println("Average: ", s1.average());
+
+// Array of structs
+struct Point {
+    func init(x, y) { this.x = x; this.y = y; }
+}
+
+var points = [new Point(1, 1), new Point(2, 2), new Point(3, 3)];
+println("Points:");
+foreach p in points {
+    printf("(%d, %d)\n", p.x, p.y);
+}

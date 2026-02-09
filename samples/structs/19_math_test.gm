@@ -1,0 +1,52 @@
+// Test math functions inside struct methods
+
+struct Circle {
+    func init(r) {
+        this.radius = r;
+    }
+
+    func area() {
+        // Area = pi * r^2
+        // approximating pi as 3.14159
+        return 3.14159 * pow(this.radius, 2.0);
+    }
+
+    func circumference() {
+        return 2.0 * 3.14159 * this.radius;
+    }
+    
+    func scale(factor) {
+        this.radius = this.radius * factor;
+    }
+}
+
+var c = new Circle(5.0);
+printf("Radius: %f\n", c.radius);
+printf("Area: %f\n", c.area());
+printf("Circumference: %f\n", c.circumference());
+
+c.scale(2.0);
+println("After scaling by 2:");
+printf("Radius: %f\n", c.radius);
+printf("Area: %f\n", c.area());
+
+// Test trigonometric functions
+struct TrigCalc {
+    func init(angle) {
+        this.angle = angle; // in radians
+    }
+    
+    func calculate() {
+        var s = sin(this.angle);
+        var c = cos(this.angle);
+        var t = tan(this.angle);
+        printf("Angle: %f, Sin: %f, Cos: %f, Tan: %f\n", this.angle, s, c, t);
+        
+        // Verify identity sin^2 + cos^2 = 1
+        var identity = pow(s, 2.0) + pow(c, 2.0);
+        printf("sin^2 + cos^2 = %f\n", identity);
+    }
+}
+
+var t = new TrigCalc(0.785398); // approx pi/4 (45 degrees)
+t.calculate();

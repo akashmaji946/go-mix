@@ -1,0 +1,60 @@
+// Queue Implementation (using Linked List)
+
+struct QNode {
+    func init(data) {
+        this.data = data;
+        this.next = nil;
+    }
+}
+
+struct Queue {
+    func init() {
+        this.front = nil;
+        this.rear = nil;
+    }
+
+    func enqueue(data) {
+        var newNode = new QNode(data);
+        if (this.rear == nil) {
+            this.front = newNode;
+            this.rear = newNode;
+            println("Enqueued: ", data);
+            return;
+        }
+        this.rear.next = newNode;
+        this.rear = newNode;
+        println("Enqueued: ", data);
+    }
+
+    func dequeue() {
+        if (this.front == nil) {
+            println("Queue Underflow");
+            return nil;
+        }
+        var temp = this.front;
+        this.front = this.front.next;
+        if (this.front == nil) {
+            this.rear = nil;
+        }
+        return temp.data;
+    }
+    
+    func printQueue() {
+        var curr = this.front;
+        print("Queue (Front -> Rear): ");
+        while (curr != nil) {
+            print(curr.data, " ");
+            curr = curr.next;
+        }
+        println("");
+    }
+}
+
+var q = new Queue();
+q.enqueue(1);
+q.enqueue(2);
+q.enqueue(3);
+q.printQueue();
+
+println("Dequeued: ", q.dequeue());
+q.printQueue();

@@ -924,7 +924,14 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 	_, isIdent := left.(*IdentifierExpressionNode)
 	_, isIndex := left.(*IndexExpressionNode)
 
-	if !isIdent && !isIndex {
+	isMember := false
+	if binNode, ok := left.(*BinaryExpressionNode); ok {
+		if binNode.Operation.Type == lexer.DOT_OP {
+			isMember = true
+		}
+	}
+
+	if !isIdent && !isIndex && !isMember {
 		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: invalid assignment target", par.CurrToken.Line, par.CurrToken.Column)
 		par.addError(msg)
 		return nil
@@ -2014,6 +2021,7 @@ func (par *Parser) parseStructDeclaration() StatementNode {
 
 	// Parse struct methods
 	methods := make([]*FunctionStatementNode, 0)
+	fields := make([]*DeclarativeStatementNode, 0)
 	for par.NextToken.Type != lexer.RIGHT_BRACE {
 		par.advance()
 		if par.CurrToken.Type == lexer.FUNC_KEY {
@@ -2022,8 +2030,18 @@ func (par *Parser) parseStructDeclaration() StatementNode {
 				return nil
 			}
 			methods = append(methods, method.(*FunctionStatementNode))
+		} else if par.CurrToken.Type == lexer.VAR_KEY || par.CurrToken.Type == lexer.LET_KEY || par.CurrToken.Type == lexer.CONST_KEY {
+			stmt := par.parseDeclarativeStatement()
+			if stmt == nil {
+				return nil
+			}
+			fields = append(fields, stmt.(*DeclarativeStatementNode))
+			// Optional semicolon
+			if par.NextToken.Type == lexer.SEMICOLON_DELIM {
+				par.advance()
+			}
 		} else {
-			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected 'func' in struct body, got %s",
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected 'func' or field declaration in struct body, got %s",
 				par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Type)
 			par.addError(msg)
 			return nil
@@ -2039,6 +2057,7 @@ func (par *Parser) parseStructDeclaration() StatementNode {
 		StructToken: structToken,
 		StructName:  structName,
 		Methods:     methods,
+		Fields:      fields,
 		Value:       &objects.Nil{},
 	}
 }

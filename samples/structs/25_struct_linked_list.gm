@@ -1,0 +1,21 @@
+// Test linked list using structs
+
+struct Node {
+    func init(val) {
+        this.val = val;
+        this.next = nil;
+    }
+}
+
+var head = new Node(1);
+head.next = new Node(2);
+head.next.next = new Node(3);
+
+println("Traversing linked list:");
+var curr = head;
+while (curr != nil) {
+    print(curr.val);
+    if (curr.next != nil) { print(" --> "); }
+    curr = curr.next;
+}
+println("\nDONE");

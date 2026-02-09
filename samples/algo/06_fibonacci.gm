@@ -1,0 +1,26 @@
+// 06_fibonacci.gm
+// Fibonacci Sequence
+
+func fibRecursive(n) {
+    if (n <= 1) { return n; }
+    return fibRecursive(n - 1) + fibRecursive(n - 2);
+}
+
+func fibIterative(n) {
+    if (n <= 1) { return n; }
+    var a = 0;
+    var b = 1;
+    for (var i = 2; i <= n; i = i + 1) {
+        var temp = a + b;
+        a = b;
+        b = temp;
+    }
+    return b;
+}
+
+var n = 10;
+println("Calculating ", n, "th Fibonacci number");
+var f1 = fibRecursive(n);
+var f2 = fibIterative(n);
+println("Recursive: ", f1);
+println("Iterative: ", f2);

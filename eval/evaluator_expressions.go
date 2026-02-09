@@ -129,12 +129,19 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 //
 // Example:
 //
-//	let x = 10;  // Declares x as integer
-//	x = 20;      // Valid: same type
-//	x = "hi";    // Error: type mismatch
-//	const y = 5;
-//	y = 10;      // Error: can't assign to constant
+//		let x = 10;  // Declares x as integer
+//		x = 20;      // Valid: same type
+//		x = "hi";    // Error: type mismatch
+//		const y = 5;
+//		y = 10;      // Error: can't assign to constant
+//	 	var z = 15;
+//	 	z += 5;     // Valid compound assignment
 func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode) objects.GoMixObject {
+
+	if n.Operation.Type != lexer.ASSIGN_OP {
+		return e.evalCompoundAssignment(n)
+	}
+
 	// Evaluate the right-hand side
 	rightVal := e.Eval(n.Right)
 	if IsError(rightVal) {
@@ -152,7 +159,123 @@ func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode)
 		return e.evalIndexAssignment(indexNode, rightVal)
 	}
 
+	// Handle member assignment (obj.field = val)
+	if binNode, ok := n.Left.(*parser.BinaryExpressionNode); ok {
+		if binNode.Operation.Type == lexer.DOT_OP {
+			return e.evalMemberAssignment(binNode, rightVal)
+		}
+	}
+
 	// Should not reach here if parser is correct
+	return e.CreateError("ERROR: invalid assignment target")
+}
+
+func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) objects.GoMixObject {
+	var binOpType lexer.TokenType
+	switch n.Operation.Type {
+	case lexer.PLUS_ASSIGN:
+		binOpType = lexer.PLUS_OP
+	case lexer.MINUS_ASSIGN:
+		binOpType = lexer.MINUS_OP
+	case lexer.MUL_ASSIGN:
+		binOpType = lexer.MUL_OP
+	case lexer.DIV_ASSIGN:
+		binOpType = lexer.DIV_OP
+	case lexer.MOD_ASSIGN:
+		binOpType = lexer.MOD_OP
+	case lexer.BIT_AND_ASSIGN:
+		binOpType = lexer.BIT_AND_OP
+	case lexer.BIT_OR_ASSIGN:
+		binOpType = lexer.BIT_OR_OP
+	case lexer.BIT_XOR_ASSIGN:
+		binOpType = lexer.BIT_XOR_OP
+	case lexer.BIT_LEFT_ASSIGN:
+		binOpType = lexer.BIT_LEFT_OP
+	case lexer.BIT_RIGHT_ASSIGN:
+		binOpType = lexer.BIT_RIGHT_OP
+	default:
+		return e.CreateError("ERROR: unknown compound assignment operator: %s", n.Operation.Literal)
+	}
+
+	rightVal := e.Eval(n.Right)
+	if IsError(rightVal) {
+		return rightVal
+	}
+
+	// 1. Identifier
+	if identNode, ok := n.Left.(*parser.IdentifierExpressionNode); ok {
+		leftVal := e.evalIdentifierExpression(identNode)
+		if IsError(leftVal) {
+			return leftVal
+		}
+		newVal := e.evaluateBinaryOp(binOpType, n.Operation.Literal, leftVal, rightVal)
+		if IsError(newVal) {
+			return newVal
+		}
+		return e.evalIdentifierAssignment(identNode, newVal)
+	}
+
+	// 2. Index Expression
+	if indexNode, ok := n.Left.(*parser.IndexExpressionNode); ok {
+		container := e.Eval(indexNode.Left)
+		if IsError(container) {
+			return container
+		}
+		index := e.Eval(indexNode.Index)
+		if IsError(index) {
+			return index
+		}
+
+		leftVal := e.getIndexValue(container, index)
+		if IsError(leftVal) {
+			return leftVal
+		}
+
+		newVal := e.evaluateBinaryOp(binOpType, n.Operation.Literal, leftVal, rightVal)
+		if IsError(newVal) {
+			return newVal
+		}
+
+		switch container.GetType() {
+		case objects.ArrayType:
+			return e.evalArrayIndexAssignment(container, index, newVal)
+		case objects.ListType:
+			return e.evalListIndexAssignment(container, index, newVal)
+		case objects.MapType:
+			return e.evalMapIndexAssignment(container, index, newVal)
+		default:
+			return e.CreateError("ERROR: index assignment not supported for type '%s'", container.GetType())
+		}
+	}
+
+	// 3. Member Access
+	if binNode, ok := n.Left.(*parser.BinaryExpressionNode); ok {
+		if binNode.Operation.Type == lexer.DOT_OP {
+			leftObj := e.Eval(binNode.Left)
+			if IsError(leftObj) {
+				return leftObj
+			}
+			if leftObj.GetType() != objects.ObjectType {
+				return e.CreateError("ERROR: member access can only be done on struct instances")
+			}
+			inst := leftObj.(*objects.GoMixObjectInstance)
+			ident, ok := binNode.Right.(*parser.IdentifierExpressionNode)
+			if !ok {
+				return e.CreateError("ERROR: invalid member assignment target")
+			}
+			leftVal, ok := inst.Fields[ident.Name]
+			if !ok {
+				return e.CreateError("ERROR: field (%s) not found in struct instance", ident.Name)
+			}
+			newVal := e.evaluateBinaryOp(binOpType, n.Operation.Literal, leftVal, rightVal)
+			if IsError(newVal) {
+				return newVal
+			}
+			inst.Fields[ident.Name] = newVal
+			return newVal
+		}
+	}
+
 	return e.CreateError("ERROR: invalid assignment target")
 }
 
@@ -284,6 +407,28 @@ func (e *Evaluator) evalMapIndexAssignment(container, index, val objects.GoMixOb
 
 	// Assign the value
 	m.Pairs[keyStr] = val
+	return val
+}
+
+// evalMemberAssignment handles assignment to a struct member (e.g., obj.field = val).
+func (e *Evaluator) evalMemberAssignment(node *parser.BinaryExpressionNode, val objects.GoMixObject) objects.GoMixObject {
+	left := e.Eval(node.Left)
+	if IsError(left) {
+		return left
+	}
+
+	if left.GetType() != objects.ObjectType {
+		return e.CreateError("ERROR: member assignment can only be done on struct instances, got %s", left.GetType())
+	}
+
+	inst := left.(*objects.GoMixObjectInstance)
+
+	ident, ok := node.Right.(*parser.IdentifierExpressionNode)
+	if !ok {
+		return e.CreateError("ERROR: invalid member assignment target")
+	}
+
+	inst.Fields[ident.Name] = val
 	return val
 }
 
@@ -676,7 +821,6 @@ func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixOb
 //	5 & 3      // Returns Integer(1) - bitwise AND
 func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects.GoMixObject {
 	left := e.Eval(n.Left)
-	right := e.Eval(n.Right)
 
 	if IsError(left) {
 		return left
@@ -685,52 +829,72 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 	// we prioritize the dot (.) member access operator in the parser,
 	if n.Operation.Type == lexer.DOT_OP {
 
-		// fmt.Printf("DEBUG: Evaluating member access operator (.) with left operand type (%s)\n", left.GetType())
-
-		fn, ok := n.Right.(*parser.CallExpressionNode)
-		if !ok {
-			return e.CreateError("ERROR: member access operator (.) must be followed by a function call")
-		}
 		if left.GetType() != objects.ObjectType {
 			return e.CreateError("ERROR: member access operator (.) can only be used on struct instances, got (%s)", left.GetType())
 		}
 		structInstance := left.(*objects.GoMixObjectInstance)
-		methodName := fn.FunctionIdentifier.Name
-		methodInterface, exists := structInstance.Struct.Methods[methodName]
-		method, ok := methodInterface.(*function.Function)
-		if !ok {
-			return e.CreateError("ERROR: method (%s) not found in struct (%s)", methodName, structInstance.Struct.GetName())
-		}
-		if !exists {
-			return e.CreateError("ERROR: method (%s) does not exist in struct (%s)", methodName, structInstance.Struct.GetName())
-		}
-		params := make([]NamedParameter, len(fn.Arguments))
-		if len(fn.Arguments) != len(method.Params) {
-			return e.CreateError("ERROR: wrong number of arguments for method (%s): expected %d, got %d", methodName, len(method.Params), len(fn.Arguments))
-		}
-		for i, arg := range fn.Arguments {
-			params[i] = NamedParameter{
-				Name:  method.Params[i].Name,
-				Value: e.Eval(arg),
-			}
-			if IsError(params[i].Value) {
-				return params[i].Value
-			}
-		}
 
-		res := e.callFunctionOnObject(methodName, structInstance, params...)
-		if res.GetType() == objects.ErrorType {
+		// Handle Method Call
+		if fn, ok := n.Right.(*parser.CallExpressionNode); ok {
+			methodName := fn.FunctionIdentifier.Name
+			methodInterface, exists := structInstance.Struct.Methods[methodName]
+			if !exists {
+				return e.CreateError("ERROR: method (%s) does not exist in struct (%s)", methodName, structInstance.Struct.GetName())
+			}
+			method, ok := methodInterface.(*function.Function)
+			if !ok {
+				return e.CreateError("ERROR: method (%s) not found in struct (%s)", methodName, structInstance.Struct.GetName())
+			}
+			params := make([]NamedParameter, len(fn.Arguments))
+			if len(fn.Arguments) != len(method.Params) {
+				return e.CreateError("ERROR: wrong number of arguments for method (%s): expected %d, got %d", methodName, len(method.Params), len(fn.Arguments))
+			}
+			for i, arg := range fn.Arguments {
+				params[i] = NamedParameter{
+					Name:  method.Params[i].Name,
+					Value: e.Eval(arg),
+				}
+				if IsError(params[i].Value) {
+					return params[i].Value
+				}
+			}
+
+			res := e.callFunctionOnObject(methodName, structInstance, params...)
+			if res.GetType() == objects.ErrorType {
+				return res
+			}
 			return res
 		}
-		// fmt.Printf("DEBUG DOT_OP: method '%s' returned type '%s', value '%v'\n", methodName, res.GetType(), res.ToString())
-		return res
+
+		// Handle Field Access
+		if ident, ok := n.Right.(*parser.IdentifierExpressionNode); ok {
+			fieldName := ident.Name
+			if val, ok := structInstance.Fields[fieldName]; ok {
+				return val
+			}
+			return e.CreateError("ERROR: field (%s) not found in struct instance", fieldName)
+		}
+
+		return e.CreateError("ERROR: member access operator (.) must be followed by a function call or identifier")
 	}
 
+	right := e.Eval(n.Right)
 	if IsError(right) {
 		return right
 	}
 
-	err := e.CreateError("ERROR: operator (%s) not implemented for (%s) and (%s)", n.Operation.Literal, left.GetType(), right.GetType())
+	return e.evaluateBinaryOp(n.Operation.Type, n.Operation.Literal, left, right)
+}
+
+func (e *Evaluator) evaluateBinaryOp(opType lexer.TokenType, opLiteral string, left, right objects.GoMixObject) objects.GoMixObject {
+	err := e.CreateError("ERROR: operator (%s) not implemented for (%s) and (%s)", opLiteral, left.GetType(), right.GetType())
+
+	if left.GetType() == objects.StringType && right.GetType() == objects.StringType {
+		if opType == lexer.PLUS_OP {
+			return &objects.String{Value: left.(*objects.String).Value + right.(*objects.String).Value}
+		}
+		return err
+	}
 
 	if left.GetType() != objects.IntegerType && left.GetType() != objects.FloatType {
 		return err
@@ -742,7 +906,7 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 	leftType := left.GetType()
 	rightType := right.GetType()
 
-	switch n.Operation.Type {
+	switch opType {
 	case lexer.PLUS_OP:
 		if leftType == objects.IntegerType && rightType == objects.IntegerType {
 			return &objects.Integer{Value: left.(*objects.Integer).Value + right.(*objects.Integer).Value}
@@ -794,7 +958,7 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 		}
 		return err
 	}
-	return &objects.Nil{}
+	return err
 }
 
 func (e *Evaluator) callFunctionOnObject(name string, obj *objects.GoMixObjectInstance, args ...NamedParameter) objects.GoMixObject {
@@ -1544,6 +1708,50 @@ func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.G
 	return &objects.Array{Elements: slicedElements}
 }
 
+func (e *Evaluator) getIndexValue(container, index objects.GoMixObject) objects.GoMixObject {
+	if container.GetType() == objects.MapType {
+		mapObj := container.(*objects.Map)
+		keyStr := index.ToString()
+		if value, exists := mapObj.Pairs[keyStr]; exists {
+			return value
+		}
+		return &objects.Nil{}
+	}
+
+	leftType := container.GetType()
+	if leftType != objects.ArrayType && leftType != objects.ListType {
+		return e.CreateError("ERROR: index operator not supported for type '%s'", leftType)
+	}
+
+	if index.GetType() != objects.IntegerType {
+		return e.CreateError("ERROR: index must be an integer, got '%s'", index.GetType())
+	}
+
+	idx := index.(*objects.Integer).Value
+	var length int64
+	var elements []objects.GoMixObject
+
+	if leftType == objects.ArrayType {
+		arr := container.(*objects.Array)
+		elements = arr.Elements
+		length = int64(len(arr.Elements))
+	} else {
+		list := container.(*objects.List)
+		elements = list.Elements
+		length = int64(len(list.Elements))
+	}
+
+	if idx < 0 {
+		idx = length + idx
+	}
+
+	if idx < 0 || idx >= length {
+		return e.CreateError("ERROR: index out of bounds: index %d, length %d", idx, length)
+	}
+
+	return elements[idx]
+}
+
 // evalWhileLoop evaluates while loop statements with multiple condition support.
 //
 // This method implements while loops with the following features:
@@ -1647,8 +1855,13 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMi
 func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objects.GoMixObject {
 	// Create a new struct type with the given name and fields
 	s := &objects.GoMixStruct{
-		Name:    n.StructName.Name,
-		Methods: make(map[string]objects.FunctionInterface, 0),
+		Name:       n.StructName.Name,
+		Methods:    make(map[string]objects.FunctionInterface),
+		FieldNodes: make([]interface{}, len(n.Fields)),
+	}
+
+	for i, f := range n.Fields {
+		s.FieldNodes[i] = f
 	}
 
 	for _, m := range n.Methods {
@@ -1675,6 +1888,16 @@ func (e *Evaluator) evalNewCallExpression(n *parser.NewCallExpressionNode) objec
 	}
 
 	inst := objects.NewStructInstance(s)
+
+	// Initialize fields from struct definition
+	for _, fieldNode := range s.FieldNodes {
+		decl := fieldNode.(*parser.DeclarativeStatementNode)
+		val := e.Eval(decl.Expr)
+		if IsError(val) {
+			return val
+		}
+		inst.Fields[decl.Identifier.Name] = val
+	}
 
 	initMethod, hasInit := s.GetConstructor()
 	if hasInit {

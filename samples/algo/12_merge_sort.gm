@@ -1,0 +1,46 @@
+// Merge Sort Implementation
+
+func merge(left, right) {
+    var result = [];
+    var i = 0;
+    var j = 0;
+
+    while (i < length(left) && j < length(right)) {
+        if (left[i] <= right[j]) {
+            result = push(result, left[i]);
+            i = i + 1;
+        } else {
+            result = push(result, right[j]);
+            j = j + 1;
+        }
+    }
+
+    while (i < length(left)) {
+        result = push(result, left[i]);
+        i = i + 1;
+    }
+
+    while (j < length(right)) {
+        result = push(result, right[j]);
+        j = j + 1;
+    }
+
+    return result;
+}
+
+func mergeSort(arr) {
+    if (length(arr) <= 1) {
+        return arr;
+    }
+
+    var mid = length(arr) / 2;
+    var left = arr[:mid];
+    var right = arr[mid:];
+
+    return merge(mergeSort(left), mergeSort(right));
+}
+
+var data = [38, 27, 43, 3, 9, 82, 10];
+println("Original array:", data);
+var sorted = mergeSort(data);
+println("Sorted array:  ", sorted);
