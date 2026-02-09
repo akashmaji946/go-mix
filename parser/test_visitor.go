@@ -510,6 +510,22 @@ func (v *TestingVisitor) VisitNewCallExpressionNode(node NewCallExpressionNode) 
 	}
 }
 
+func (v *TestingVisitor) VisitBreakStatementNode(node BreakStatementNode) {
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	v.Ptr++
+	// No specific assertions for break node other than type which is handled by Accept
+}
+
+func (v *TestingVisitor) VisitContinueStatementNode(node ContinueStatementNode) {
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	v.Ptr++
+	// No specific assertions for continue node other than type which is handled by Accept
+}
+
 // String returns the string representation of the visitor (empty string)
 func (v *TestingVisitor) String() string {
 	return ""

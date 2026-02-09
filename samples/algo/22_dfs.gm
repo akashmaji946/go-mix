@@ -1,0 +1,30 @@
+// Depth First Search
+
+func dfs(graph, node, visited) {
+    visited[node] = true;
+    print(node, " ");
+
+    var neighbors = graph[node];
+    if (neighbors != nil) {
+        for (var i = 0; i < length(neighbors); i = i + 1) {
+            var neighbor = neighbors[i];
+            if (visited[neighbor] == nil) {
+                dfs(graph, neighbor, visited);
+            }
+        }
+    }
+}
+
+var graph = map{
+    "A": ["B", "C"],
+    "B": ["D", "E"],
+    "C": ["F"],
+    "D": [],
+    "E": ["F"],
+    "F": []
+};
+
+print("DFS Traversal: ");
+var visited = map{};
+dfs(graph, "A", visited);
+println("");

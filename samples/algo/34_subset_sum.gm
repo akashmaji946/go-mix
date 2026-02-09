@@ -1,0 +1,34 @@
+// Subset Sum Problem
+
+func isSubsetSum(setArr, n, sum) {
+    var subset = [];
+    for (var i = 0; i <= n; i = i + 1) {
+        var row = [];
+        for (var j = 0; j <= sum; j = j + 1) {
+            row = push(row, false);
+        }
+        subset = push(subset, row);
+    }
+
+    for (var i = 0; i <= n; i = i + 1) {
+        subset[i][0] = true;
+    }
+
+    for (var i = 1; i <= n; i = i + 1) {
+        for (var j = 1; j <= sum; j = j + 1) {
+            if (j < setArr[i-1]) {
+                subset[i][j] = subset[i-1][j];
+            } else {
+                subset[i][j] = subset[i-1][j] || subset[i-1][j - setArr[i-1]];
+            }
+        }
+    }
+
+    return subset[n][sum];
+}
+
+var setArr = [3, 34, 4, 12, 5, 2];
+var sum = 9;
+println("Set: ", setArr);
+println("Target Sum: ", sum);
+println("Subset with sum exists? ", isSubsetSum(setArr, length(setArr), sum));

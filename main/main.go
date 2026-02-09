@@ -182,10 +182,10 @@ func executeFileWithRecovery(source string) {
 
 	// Display result if any (and not nil)
 	// Only display non-nil results to avoid cluttering output
-	if result != nil && result.GetType() != "nil" {
+	if result != nil {
 		if result.GetType() == "error" {
 			// Evaluation produced an error object - display and exit
-			redColor.Fprintf(os.Stderr, "[ERROR] %s\n", result.ToString())
+			redColor.Fprintf(os.Stderr, "%s\n", result.ToString())
 			os.Exit(1)
 		} else {
 			// Successful evaluation - display result in yellow

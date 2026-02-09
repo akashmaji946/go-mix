@@ -1,0 +1,44 @@
+// Stack using Queue
+
+struct Stack {
+    func init() {
+        this.q = [];
+    }
+
+    func pushVal(x) {
+        this.q = push(this.q, x);
+        var sz = length(this.q);
+        // Rotate queue to bring new element to front
+        for (var i = 0; i < sz - 1; i = i + 1) {
+            var val = shift(this.q);
+            this.q = push(this.q, val);
+        }
+    }
+
+    func popVal() {
+        if (length(this.q) == 0) { return nil; }
+        return shift(this.q);
+    }
+
+    func top() {
+        if (length(this.q) == 0) { return nil; }
+        // var t = this.q;
+        // return t[0];
+        return this.q[0];
+        
+    }
+}
+
+var s = new Stack();
+s.pushVal(10);
+s.pushVal(20);
+s.pushVal(30);
+// s.top();
+
+
+
+println("Top: ", s.top());
+println("Pop: ", s.popVal());
+println("Top: ", s.top());
+println("Pop: ", s.popVal());
+println("Pop: ", s.popVal());

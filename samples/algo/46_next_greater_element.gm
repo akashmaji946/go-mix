@@ -1,0 +1,26 @@
+// Next Greater Element
+
+func nextGreater(nums) {
+    var n = length(nums);
+    var res = [];
+    // Init result with -1
+    for (var i = 0; i < n; i = i + 1) {
+        res = push(res, -1);
+    }
+
+    var stack = []; // Stores indices
+
+    for (var i = 0; i < n; i = i + 1) {
+        while (length(stack) > 0 && nums[stack[length(stack)-1]] < nums[i]) {
+            var idx = pop(stack);
+            res[idx] = nums[i];
+        }
+        stack = push(stack, i);
+    }
+    return res;
+}
+
+var nums = [2, 1, 2, 4, 3];
+println("Nums: ", nums);
+var res = nextGreater(nums);
+println("Next Greater: ", res);

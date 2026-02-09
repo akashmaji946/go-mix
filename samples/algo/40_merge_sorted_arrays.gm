@@ -1,0 +1,33 @@
+// Merge Sorted Arrays
+
+func mergeSorted(arr1, arr2) {
+    var n1 = length(arr1);
+    var n2 = length(arr2);
+    var res = [];
+    var i = 0;
+    var j = 0;
+
+    while (i < n1 && j < n2) {
+        if (arr1[i] < arr2[j]) {
+            res = push(res, arr1[i]);
+            i = i + 1;
+        } else {
+            res = push(res, arr2[j]);
+            j = j + 1;
+        }
+    }
+
+    while (i < n1) {
+        res = push(res, arr1[i]);
+        i = i + 1;
+    }
+    while (j < n2) {
+        res = push(res, arr2[j]);
+        j = j + 1;
+    }
+    return res;
+}
+
+var a1 = [1, 3, 5, 7];
+var a2 = [2, 4, 6, 8];
+println("Merged: ", mergeSorted(a1, a2));

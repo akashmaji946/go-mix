@@ -1,0 +1,32 @@
+// Coin Change Problem (Minimum Coins)
+
+func coinChange(coins, amount) {
+    var max_val = amount + 1;
+    var dp = [];
+    
+    for (var i = 0; i <= amount; i = i + 1) {
+        dp = push(dp, max_val);
+    }
+    dp[0] = 0;
+
+    for (var i = 1; i <= amount; i = i + 1) {
+        foreach coin in coins {
+            if (coin <= i) {
+                dp[i] = min(dp[i], dp[i - coin] + 1);
+            }
+        }
+    }
+
+    if (dp[amount] > amount) {
+        return -1;
+    }
+    return dp[amount];
+}
+
+var coins = [1, 2, 3, 5, 10, 20];
+var amount = 6;
+
+println("Coin Change: ", coinChange(coins, amount))
+println("Coins: ", coins);
+println("Amount: ", amount);
+println("Min coins needed: ", coinChange(coins, amount));

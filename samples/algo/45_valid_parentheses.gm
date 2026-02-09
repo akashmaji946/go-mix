@@ -1,0 +1,36 @@
+// Valid Parentheses
+
+func isValid(s) {
+    var stack = [];
+    var mapParen = map{
+        ")": "(",
+        "}": "{",
+        "]": "["
+    };
+
+    foreach char in s {
+        if (contain_map(mapParen, char)) {
+            // Closing bracket
+            var topElement = "";
+            if (length(stack) > 0) {
+                topElement = pop(stack);
+            } else {
+                topElement = "#";
+            }
+
+            if (topElement != mapParen[char]) {
+                return false;
+            }
+        } else {
+            // Opening bracket
+            stack = push(stack, char);
+        }
+    }
+    return length(stack) == 0;
+}
+
+var s1 = ["(", ")", "[", "]", "{", "}"];
+var s2 = ["(", "[", ")", "]"];
+
+println("s1 valid? ", isValid(s1));
+println("s2 valid? ", isValid(s2));

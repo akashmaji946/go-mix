@@ -1,0 +1,27 @@
+func foo(){
+    var m = [[0,0], [1, 1], [2, 2]]
+    return m;
+}
+
+struct Test{
+    func init() {
+        this.m = foo()
+    }
+    func getter(x){
+        return this.m[x]
+    }
+    func setter(x, y){
+        this.m[x] = y;
+    
+    }
+}
+
+var t = new Test();
+println(t.getter(2))
+t.setter(2, 20);
+println(t.getter(2))
+t.setter(1, 10);
+println(t.getter(1))
+t.setter(0, map{1:11, 2:22})
+println(t.getter(0)[1])
+

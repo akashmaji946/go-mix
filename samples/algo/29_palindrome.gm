@@ -1,0 +1,21 @@
+// Palindrome Check
+
+func isPalindrome(arr) {
+    var start = 0;
+    var end = length(arr) - 1;
+
+    while (start < end) {
+        if (arr[start] != arr[end]) {
+            return false;
+        }
+        start = start + 1;
+        end = end - 1;
+    }
+    return true;
+}
+
+var str1 = ["r", "a", "c", "e", "c", "a", "r"];
+var str2 = ["h", "e", "l", "l", "o"];
+
+println("racecar is palindrome? ", isPalindrome(str1));
+println("hello is palindrome? ", isPalindrome(str2));

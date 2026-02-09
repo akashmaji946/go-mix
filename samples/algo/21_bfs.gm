@@ -1,0 +1,40 @@
+// Breadth First Search
+
+func bfs(graph, startNode) {
+    var visited = map{};
+    var queue = [startNode];
+    visited[startNode] = true;
+
+    print("BFS Traversal: ");
+
+    while (length(queue) > 0) {
+        var node = queue[0];
+        // Dequeue
+        queue = queue[1:]; 
+        
+        print(node, " ");
+
+        var neighbors = graph[node];
+        if (neighbors != nil) {
+            for (var i = 0; i < length(neighbors); i = i + 1) {
+                var neighbor = neighbors[i];
+                if (visited[neighbor] == nil) {
+                    visited[neighbor] = true;
+                    queue = push(queue, neighbor);
+                }
+            }
+        }
+    }
+    println("");
+}
+
+var graph = map{
+    "A": ["B", "C"],
+    "B": ["D", "E"],
+    "C": ["F"],
+    "D": [],
+    "E": ["F"],
+    "F": []
+};
+
+bfs(graph, "A");

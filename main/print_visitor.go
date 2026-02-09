@@ -372,6 +372,16 @@ func (p *PrintingVisitor) VisitNewCallExpressionNode(node parser.NewCallExpressi
 	p.Indent -= INDENT_SIZE
 }
 
+func (p *PrintingVisitor) VisitBreakStatementNode(node parser.BreakStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s]\n", "Break", node.Literal()))
+}
+
+func (p *PrintingVisitor) VisitContinueStatementNode(node parser.ContinueStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s]\n", "Continue", node.Literal()))
+}
+
 // String returns the accumulated formatted output as a string
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

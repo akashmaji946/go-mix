@@ -1,0 +1,37 @@
+// Longest Common Subsequence (DP)
+
+func lcs(X, Y) {
+    var m = length(X);
+    var n = length(Y);
+
+    // Create a 2D array table[m+1][n+1]
+    var dp = [];
+    for (var i = 0; i <= m; i = i + 1) {
+        var row = [];
+        for (var j = 0; j <= n; j = j + 1) {
+            row = push(row, 0);
+        }
+        dp = push(dp, row);
+    }
+
+    // Fill dp table
+    for (var i = 1; i <= m; i = i + 1) {
+        for (var j = 1; j <= n; j = j + 1) {
+            if (X[i-1] == Y[j-1]) {
+                dp[i][j] = dp[i-1][j-1] + 1;
+            } else {
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
+            }
+        }
+    }
+
+    return dp[m][n];
+}
+
+// Using arrays of characters since string indexing isn't built-in yet
+var s1 = ["A", "G", "G", "T", "A", "B"];
+var s2 = ["G", "X", "T", "X", "A", "Y", "B"];
+
+println("Sequence 1: ", s1);
+println("Sequence 2: ", s2);
+println("LCS Length: ", lcs(s1, s2));

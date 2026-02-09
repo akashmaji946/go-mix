@@ -59,6 +59,10 @@ type NodeVisitor interface {
 	VisitStructDeclarationNode(node StructDeclarationNode) // Struct definitions: struct Name { method1, method2, ... }
 	VisitNewCallExpressionNode(node NewCallExpressionNode) // Struct instantiation: new Name(args)
 
+	// Control flow
+	VisitBreakStatementNode(node BreakStatementNode)       // break
+	VisitContinueStatementNode(node ContinueStatementNode) // continue
+
 	// Range and foreach visitors
 	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
 	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
@@ -320,6 +324,7 @@ func (node *DeclarativeStatementNode) Statement() {
 // IdentifierExpressionNode: represents a variable or function identifier
 // Example: x, myVar, functionName
 type IdentifierExpressionNode struct {
+	Token lexer.Token         // The token associated with the identifier
 	Name  string              // The identifier name
 	Value objects.GoMixObject // The value associated with this identifier
 	Type  string              // The type of the identifier (if applicable)
@@ -1028,3 +1033,33 @@ func (node *NewCallExpressionNode) Statement() {
 func (node *NewCallExpressionNode) Expression() {
 
 }
+
+// BreakStatementNode: represents a break statement
+type BreakStatementNode struct {
+	Token lexer.Token
+}
+
+func (node *BreakStatementNode) Literal() string {
+	return node.Token.Literal
+}
+
+func (node *BreakStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitBreakStatementNode(*node)
+}
+
+func (node *BreakStatementNode) Statement() {}
+
+// ContinueStatementNode: represents a continue statement
+type ContinueStatementNode struct {
+	Token lexer.Token
+}
+
+func (node *ContinueStatementNode) Literal() string {
+	return node.Token.Literal
+}
+
+func (node *ContinueStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitContinueStatementNode(*node)
+}
+
+func (node *ContinueStatementNode) Statement() {}

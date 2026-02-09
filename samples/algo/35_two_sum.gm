@@ -1,0 +1,22 @@
+// Two Sum using Map
+
+func twoSum(nums, target) {
+    var m = map{};
+    
+    for (var i = 0; i < length(nums); i = i + 1) {
+        var complement = target - nums[i];
+        if (contain_map(m, complement)) {
+            return [m[complement], i];
+        }
+        insert_map(m, nums[i], i);
+    }
+    return nil;
+}
+
+var nums = [2, 7, 11, 15];
+var target = 9;
+
+println("Nums: ", nums);
+println("Target: ", target);
+var result = twoSum(nums, target);
+println("Indices: ", result);

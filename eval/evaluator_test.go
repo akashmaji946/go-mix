@@ -2204,3 +2204,40 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
 		test.AssertFunc(evaluator)
 	}
 }
+
+// TestEvaluator_StructMethodCall verifies calling methods on struct instances
+func TestEvaluator_StructMethodCall(t *testing.T) {
+	src := `
+	struct Calc {
+		func add(a, b) { return a + b; }
+	}
+	var c = new Calc();
+	c.add(10, 20);
+	`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 30)
+}
+
+// TestEvaluator_StructThis verifies 'this' keyword usage in methods
+func TestEvaluator_StructThis(t *testing.T) {
+	src := `
+	struct Counter {
+		func init(start) { this.val = start; }
+		func inc() { this.val += 1; }
+		func get() { return this.val; }
+	}
+	var c = new Counter(10);
+	c.inc();
+	c.get();
+	`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 11)
+}

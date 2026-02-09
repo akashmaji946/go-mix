@@ -1,0 +1,22 @@
+// Intersection of two arrays
+
+func intersection(nums1, nums2) {
+    var s1 = set{};
+    foreach n in nums1 {
+        insert_set(s1, n);
+    }
+
+    var res = set{};
+    foreach n in nums2 {
+        if (contains_set(s1, n)) {
+            insert_set(res, n);
+        }
+    }
+    return values_set(res);
+}
+
+var nums1 = [1, 2, 2, 1];
+var nums2 = [2, 2];
+println("Nums1: ", nums1);
+println("Nums2: ", nums2);
+println("Intersection: ", intersection(nums1, nums2));

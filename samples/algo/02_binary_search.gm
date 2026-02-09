@@ -9,7 +9,7 @@ func binarySearch(arr, target) {
         var mid = (low + high) / 2;
         
         if (arr[mid] == target) {
-            return mid;
+             return mid;
         } else if (arr[mid] < target) {
             low = mid + 1;
         } else {
@@ -21,6 +21,7 @@ func binarySearch(arr, target) {
 
 var sortedData = [11, 22, 33, 44, 55, 66, 77, 88, 99];
 var target = 66;
+
 
 println("Sorted Data: ", sortedData);
 println("Searching for: ", target);

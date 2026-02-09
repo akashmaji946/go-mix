@@ -1,0 +1,55 @@
+// Binary Search Tree Implementation
+
+struct Node {
+    func init(val) {
+        this.val = val;
+        this.left = nil;
+        this.right = nil;
+    }
+}
+
+struct BST {
+    func init() {
+        this.root = nil;
+    }
+
+    func insert(val) {
+        var newNode = new Node(val);
+        if (this.root == nil) {
+            this.root = newNode;
+            return;
+        }
+        var current = this.root;
+        while (true) {
+            if (val < current.val) {
+                if (current.left == nil) {
+                    current.left = newNode;
+                    return;
+                }
+                current = current.left;
+            } else {
+                if (current.right == nil) {
+                    current.right = newNode;
+                    return;
+                }
+                current = current.right;
+            }
+        }
+    }
+
+    func inorder(node) {
+        if (node != nil) {
+            this.inorder(node.left);
+            print(node.val, " ");
+            this.inorder(node.right);
+        }
+    }
+}
+
+var tree = new BST();
+var values = [50, 30, 20, 40, 70, 60, 80];
+foreach v in values { tree.insert(v); }
+
+print("Inorder Traversal: ");
+tree.inorder(tree.root);
+println("");

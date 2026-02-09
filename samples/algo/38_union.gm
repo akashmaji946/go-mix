@@ -1,0 +1,18 @@
+// Union of two arrays
+
+func union(nums1, nums2) {
+    var s = set{};
+    foreach n in nums1 {
+        insert_set(s, n);
+    }
+    foreach n in nums2 {
+        insert_set(s, n);
+    }
+    return values_set(s);
+}
+
+var nums1 = [1, 2, 3];
+var nums2 = [3, 4, 5];
+println("Nums1: ", nums1);
+println("Nums2: ", nums2);
+println("Union: ", union(nums1, nums2));

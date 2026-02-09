@@ -1,0 +1,35 @@
+// Detect Cycle in Linked List
+
+struct Node {
+    func init(val) {
+        this.val = val;
+        this.next = nil;
+    }
+}
+
+func hasCycle(head) {
+    if (head == nil) { return false; }
+    var slow = head;
+    var fast = head;
+
+    while (fast != nil && fast.next != nil) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) {
+            return true;
+        }
+    }
+    return false;
+}
+
+var n1 = new Node(1);
+var n2 = new Node(2);
+var n3 = new Node(3);
+var n4 = new Node(4);
+
+n1.next = n2;
+n2.next = n3;
+n3.next = n4;
+n4.next = n2; // Cycle back to n2
+
+println("Has cycle? ", hasCycle(n1));

@@ -53,6 +53,10 @@ const (
 
 	// ObjectType represents a struct instance (defined elsewhere)
 	ObjectType GoMixType = "object"
+	// BreakType represents a break statement signal
+	BreakType GoMixType = "break"
+	// ContinueType represents a continue statement signal
+	ContinueType GoMixType = "continue"
 )
 
 // GoMixObject is the core interface that all GoMix objects must implement.
@@ -445,6 +449,30 @@ func (l *List) ToObject() string {
 	result += ")>"
 	return result
 }
+
+// Break represents a break statement signal.
+type Break struct{}
+
+// GetType returns the type of the Break object
+func (b *Break) GetType() GoMixType { return BreakType }
+
+// ToString returns "break"
+func (b *Break) ToString() string { return "break" }
+
+// ToObject returns "<break>"
+func (b *Break) ToObject() string { return "<break>" }
+
+// Continue represents a continue statement signal.
+type Continue struct{}
+
+// GetType returns the type of the Continue object
+func (c *Continue) GetType() GoMixType { return ContinueType }
+
+// ToString returns "continue"
+func (c *Continue) ToString() string { return "continue" }
+
+// ToObject returns "<continue>"
+func (c *Continue) ToObject() string { return "<continue>" }
 
 // Tuple represents an immutable, heterogeneous tuple in GoMix.
 // Tuples can contain elements of different types but cannot be modified after creation.

@@ -1,0 +1,27 @@
+// Test break and continue in loops
+
+println("--- While Loop ---");
+var i = 0;
+while (i < 10) {
+    i = i + 1;
+    if (i % 2 == 0) {
+        continue;
+    }
+    if (i > 7) {
+        break;
+    }
+    println(i);
+}
+
+println("\n--- For Loop ---");
+for (var j = 0; j < 10; j = j + 1) {
+    if (j == 2) {
+        println("Skipping 2");
+        continue;
+    }
+    if (j == 5) {
+        println("Breaking at 5");
+        break;
+    }
+    println("j =", j);
+}

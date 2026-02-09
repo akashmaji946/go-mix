@@ -1,0 +1,25 @@
+// Sliding Window Maximum (Brute Force for simplicity)
+
+func maxSlidingWindow(nums, k) {
+    var n = length(nums);
+    if (n == 0) { return []; }
+    var res = [];
+
+    for (var i = 0; i <= n - k; i = i + 1) {
+        var maxVal = nums[i];
+        for (var j = 1; j < k; j = j + 1) {
+            if (nums[i+j] > maxVal) {
+                maxVal = nums[i+j];
+            }
+        }
+        res = push(res, maxVal);
+    }
+    return res;
+}
+
+var nums = [1, 3, -1, -3, 5, 3, 6, 7];
+var k = 3;
+
+println("Nums: ", nums);
+println("Window size: ", k);
+println("Max sliding window: ", maxSlidingWindow(nums, k));

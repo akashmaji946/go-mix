@@ -145,6 +145,15 @@ func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) objects.
 					e.Scp = oldScope
 					return result
 				}
+
+				if result.GetType() == objects.BreakType {
+					e.Scp = oldScope
+					return &objects.Nil{}
+				}
+
+				if result.GetType() == objects.ContinueType {
+					continue
+				}
 			}
 		} else {
 			// Descending range: iterate from start down to end (inclusive)
@@ -171,6 +180,15 @@ func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) objects.
 				if _, isReturn := result.(*objects.ReturnValue); isReturn {
 					e.Scp = oldScope
 					return result
+				}
+
+				if result.GetType() == objects.BreakType {
+					e.Scp = oldScope
+					return &objects.Nil{}
+				}
+
+				if result.GetType() == objects.ContinueType {
+					continue
 				}
 			}
 		}
@@ -203,6 +221,15 @@ func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) objects.
 				e.Scp = oldScope
 				return result
 			}
+
+			if result.GetType() == objects.BreakType {
+				e.Scp = oldScope
+				return &objects.Nil{}
+			}
+
+			if result.GetType() == objects.ContinueType {
+				continue
+			}
 		}
 
 	case objects.ListType:
@@ -233,6 +260,15 @@ func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) objects.
 				e.Scp = oldScope
 				return result
 			}
+
+			if result.GetType() == objects.BreakType {
+				e.Scp = oldScope
+				return &objects.Nil{}
+			}
+
+			if result.GetType() == objects.ContinueType {
+				continue
+			}
 		}
 
 	case objects.TupleType:
@@ -262,6 +298,15 @@ func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) objects.
 			if _, isReturn := result.(*objects.ReturnValue); isReturn {
 				e.Scp = oldScope
 				return result
+			}
+
+			if result.GetType() == objects.BreakType {
+				e.Scp = oldScope
+				return &objects.Nil{}
+			}
+
+			if result.GetType() == objects.ContinueType {
+				continue
 			}
 		}
 

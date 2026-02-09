@@ -1,0 +1,15 @@
+// Break/continue inside deep if/else structures
+
+println("--- Deep Logic Break/Continue ---");
+for (var i = 0; i < 10; i = i + 1) {
+    if (i % 2 == 0) {
+        if (i > 5) {
+            println("Breaking at even > 5: ", i);
+            break;
+        } else {
+            println("Even <= 5: ", i);
+            continue;
+        }
+    }
+    println("Odd number: ", i);
+}

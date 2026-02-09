@@ -6,6 +6,8 @@ Contact : akashmaji(@iisc.ac.in)
 package eval
 
 import (
+	"fmt"
+
 	"github.com/akashmaji946/go-mix/function"
 	"github.com/akashmaji946/go-mix/lexer"
 	"github.com/akashmaji946/go-mix/objects"
@@ -100,6 +102,10 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalStructDeclaration(n)
 	case *parser.NewCallExpressionNode:
 		return e.evalNewCallExpression(n)
+	case *parser.BreakStatementNode:
+		return &objects.Break{}
+	case *parser.ContinueStatementNode:
+		return &objects.Continue{}
 	default:
 		return &objects.Nil{}
 	}
@@ -194,7 +200,7 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 	case lexer.BIT_RIGHT_ASSIGN:
 		binOpType = lexer.BIT_RIGHT_OP
 	default:
-		return e.CreateError("ERROR: unknown compound assignment operator: %s", n.Operation.Literal)
+		return e.createError(n.Operation, "ERROR: unknown compound assignment operator: %s", n.Operation.Literal)
 	}
 
 	rightVal := e.Eval(n.Right)
@@ -208,7 +214,7 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 		if IsError(leftVal) {
 			return leftVal
 		}
-		newVal := e.evaluateBinaryOp(binOpType, n.Operation.Literal, leftVal, rightVal)
+		newVal := e.evaluateBinaryOp(n.Operation, binOpType, leftVal, rightVal)
 		if IsError(newVal) {
 			return newVal
 		}
@@ -231,7 +237,7 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 			return leftVal
 		}
 
-		newVal := e.evaluateBinaryOp(binOpType, n.Operation.Literal, leftVal, rightVal)
+		newVal := e.evaluateBinaryOp(n.Operation, binOpType, leftVal, rightVal)
 		if IsError(newVal) {
 			return newVal
 		}
@@ -267,7 +273,7 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 			if !ok {
 				return e.CreateError("ERROR: field (%s) not found in struct instance", ident.Name)
 			}
-			newVal := e.evaluateBinaryOp(binOpType, n.Operation.Literal, leftVal, rightVal)
+			newVal := e.evaluateBinaryOp(n.Operation, binOpType, leftVal, rightVal)
 			if IsError(newVal) {
 				return newVal
 			}
@@ -284,22 +290,22 @@ func (e *Evaluator) evalIdentifierAssignment(ident *parser.IdentifierExpressionN
 	// Check if the variable exists in the current scope or any parent scope
 	_, exists := e.Scp.LookUp(ident.Name)
 	if !exists {
-		return e.CreateError("ERROR: identifier not found: (%s)", ident.Name)
+		return e.createError(ident.Token, "ERROR: identifier not found: (%s)", ident.Name)
 	}
 
 	// Check if it's a constant using the new IsConstant method
 	if e.Scp.IsConstant(ident.Name) {
-		return e.CreateError("ERROR: can't assign to constant (%s)", ident.Name)
+		return e.createError(ident.Token, "ERROR: can't assign to constant (%s)", ident.Name)
 	}
 
 	// Check if it's a let variable and if the type is compatible
 	if e.Scp.IsLetVariable(ident.Name) {
 		expectedType, ok := e.Scp.GetLetType(ident.Name)
 		if !ok {
-			return e.CreateError("ERROR: let variable type not found: (%s)", ident.Name)
+			return e.createError(ident.Token, "ERROR: let variable type not found: (%s)", ident.Name)
 		}
 		if val.GetType() != expectedType {
-			return e.CreateError("ERROR: can't assign `%s` to variable (%s) of type `%s`", val.GetType(), ident.Name, expectedType)
+			return e.createError(ident.Token, "ERROR: can't assign `%s` to variable (%s) of type `%s`", val.GetType(), ident.Name, expectedType)
 		}
 	}
 
@@ -476,7 +482,7 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 		// fmt.Printf("DEBUG: Method call detected: obj='%s', method='%s'\n", objName, methodName)
 		objVal, ok := e.Scp.LookUp(objName)
 		if !ok {
-			return e.CreateError("ERROR: object not found: (%s)", objName)
+			return e.createError(n.FunctionIdentifier.Token, "ERROR: object not found: (%s)", objName)
 		}
 		inst, ok := objVal.(*objects.GoMixObjectInstance)
 		if !ok {
@@ -501,6 +507,9 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 		args := make([]objects.GoMixObject, len(n.Arguments))
 		for i, arg := range n.Arguments {
 			args[i] = e.Eval(arg)
+			if IsError(args[i]) {
+				return args[i]
+			}
 		}
 		rv := e.InvokeBuiltin(funcName, args...)
 		return rv
@@ -509,10 +518,10 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 	// lookup for function name
 	obj, ok := e.Scp.LookUp(funcName)
 	if !ok {
-		return e.CreateError("ERROR: function not found: (%s)", funcName)
+		return e.createError(n.FunctionIdentifier.Token, "ERROR: function not found: (%s)", funcName)
 	}
 	if obj.GetType() != objects.FunctionType {
-		return e.CreateError("ERROR: not a function: (%s)", funcName)
+		return e.createError(n.FunctionIdentifier.Token, "ERROR: not a function: (%s)", funcName)
 	}
 	functionObject := obj.(*function.Function)
 
@@ -533,7 +542,11 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 	callSiteScope := scope.NewScope(parentScope)
 
 	for i, param := range functionObject.Params {
-		callSiteScope.Bind(param.Name, e.Eval(n.Arguments[i]))
+		val := e.Eval(n.Arguments[i])
+		if IsError(val) {
+			return val
+		}
+		callSiteScope.Bind(param.Name, val)
 	}
 	oldScope := e.Scp
 	e.Scp = callSiteScope
@@ -583,7 +596,7 @@ func (e *Evaluator) evalIdentifierExpression(n *parser.IdentifierExpressionNode)
 
 	val, ok := e.Scp.LookUp(n.Name)
 	if !ok {
-		return e.CreateError("ERROR: identifier not found: (%s)", n.Name)
+		return e.createError(n.Token, "ERROR: identifier not found: (%s)", n.Name)
 	}
 	return val
 }
@@ -777,6 +790,10 @@ func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixOb
 		if _, isReturn := result.(*objects.ReturnValue); isReturn {
 			return result
 		}
+		// Stop evaluation if we hit break or continue
+		if result.GetType() == objects.BreakType || result.GetType() == objects.ContinueType {
+			return result
+		}
 	}
 	return result
 }
@@ -834,48 +851,20 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 		}
 		structInstance := left.(*objects.GoMixObjectInstance)
 
-		// Handle Method Call
-		if fn, ok := n.Right.(*parser.CallExpressionNode); ok {
-			methodName := fn.FunctionIdentifier.Name
-			methodInterface, exists := structInstance.Struct.Methods[methodName]
-			if !exists {
-				return e.CreateError("ERROR: method (%s) does not exist in struct (%s)", methodName, structInstance.Struct.GetName())
+		// Handle Index Access on Field/Method (e.g. this.q[0])
+		if indexNode, ok := n.Right.(*parser.IndexExpressionNode); ok {
+			container := e.evalMemberAccess(structInstance, indexNode.Left)
+			if IsError(container) {
+				return container
 			}
-			method, ok := methodInterface.(*function.Function)
-			if !ok {
-				return e.CreateError("ERROR: method (%s) not found in struct (%s)", methodName, structInstance.Struct.GetName())
+			index := e.Eval(indexNode.Index)
+			if IsError(index) {
+				return index
 			}
-			params := make([]NamedParameter, len(fn.Arguments))
-			if len(fn.Arguments) != len(method.Params) {
-				return e.CreateError("ERROR: wrong number of arguments for method (%s): expected %d, got %d", methodName, len(method.Params), len(fn.Arguments))
-			}
-			for i, arg := range fn.Arguments {
-				params[i] = NamedParameter{
-					Name:  method.Params[i].Name,
-					Value: e.Eval(arg),
-				}
-				if IsError(params[i].Value) {
-					return params[i].Value
-				}
-			}
-
-			res := e.callFunctionOnObject(methodName, structInstance, params...)
-			if res.GetType() == objects.ErrorType {
-				return res
-			}
-			return res
+			return e.getIndexValue(container, index)
 		}
 
-		// Handle Field Access
-		if ident, ok := n.Right.(*parser.IdentifierExpressionNode); ok {
-			fieldName := ident.Name
-			if val, ok := structInstance.Fields[fieldName]; ok {
-				return val
-			}
-			return e.CreateError("ERROR: field (%s) not found in struct instance", fieldName)
-		}
-
-		return e.CreateError("ERROR: member access operator (.) must be followed by a function call or identifier")
+		return e.evalMemberAccess(structInstance, n.Right)
 	}
 
 	right := e.Eval(n.Right)
@@ -883,11 +872,11 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 		return right
 	}
 
-	return e.evaluateBinaryOp(n.Operation.Type, n.Operation.Literal, left, right)
+	return e.evaluateBinaryOp(n.Operation, n.Operation.Type, left, right)
 }
 
-func (e *Evaluator) evaluateBinaryOp(opType lexer.TokenType, opLiteral string, left, right objects.GoMixObject) objects.GoMixObject {
-	err := e.CreateError("ERROR: operator (%s) not implemented for (%s) and (%s)", opLiteral, left.GetType(), right.GetType())
+func (e *Evaluator) evaluateBinaryOp(token lexer.Token, opType lexer.TokenType, left, right objects.GoMixObject) objects.GoMixObject {
+	err := e.createError(token, "ERROR: operator (%s) not implemented for (%s) and (%s)", token.Literal, left.GetType(), right.GetType())
 
 	if left.GetType() == objects.StringType && right.GetType() == objects.StringType {
 		if opType == lexer.PLUS_OP {
@@ -1055,7 +1044,7 @@ func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.G
 		return right
 	}
 
-	err := e.CreateError("ERROR: operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
+	err := e.createError(n.Operation, "ERROR: operator (%s) not implemented for (%s)", n.Operation.Literal, right.GetType())
 
 	switch n.Operation.Type {
 	case lexer.NOT_OP:
@@ -1130,7 +1119,7 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 			return left
 		}
 		if left.GetType() != objects.BooleanType {
-			return e.CreateError("ERROR: left operand of '&&' must be a boolean, got %s", left.GetType())
+			return e.createError(n.Operation, "ERROR: left operand of '&&' must be a boolean, got %s", left.GetType())
 		}
 		if !left.(*objects.Boolean).Value {
 			return &objects.Boolean{Value: false} // short-circuit
@@ -1141,7 +1130,7 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 			return right
 		}
 		if right.GetType() != objects.BooleanType {
-			return e.CreateError("ERROR: right operand of '&&' must be a boolean, got %s", right.GetType())
+			return e.createError(n.Operation, "ERROR: right operand of '&&' must be a boolean, got %s", right.GetType())
 		}
 		return right // it's already a boolean object
 	}
@@ -1152,7 +1141,7 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 			return left
 		}
 		if left.GetType() != objects.BooleanType {
-			return e.CreateError("ERROR: left operand of '||' must be a boolean, got %s", left.GetType())
+			return e.createError(n.Operation, "ERROR: left operand of '||' must be a boolean, got %s", left.GetType())
 		}
 		if left.(*objects.Boolean).Value {
 			return &objects.Boolean{Value: true} // short-circuit
@@ -1163,7 +1152,7 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 			return right
 		}
 		if right.GetType() != objects.BooleanType {
-			return e.CreateError("ERROR: right operand of '||' must be a boolean, got %s", right.GetType())
+			return e.createError(n.Operation, "ERROR: right operand of '||' must be a boolean, got %s", right.GetType())
 		}
 		return right // it's already a boolean object
 	}
@@ -1296,12 +1285,31 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObj
 			return result
 		}
 
+		if result.GetType() == objects.BreakType {
+			result = &objects.Nil{}
+			break
+		}
+
+		if result.GetType() == objects.ContinueType {
+			result = &objects.Nil{}
+			// continue to updates
+		}
+
 		// Evaluate updates in the loop scope (not iteration scope)
 		for _, update := range n.Updates {
 			updateResult := e.Eval(update)
 			if IsError(updateResult) {
 				e.Scp = oldScope
 				return updateResult
+			}
+
+			if result.GetType() == objects.BreakType {
+				e.Scp = oldScope
+				return &objects.Nil{}
+			}
+
+			if result.GetType() == objects.ContinueType {
+				continue
 			}
 		}
 	}
@@ -1889,6 +1897,16 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMi
 			e.Scp = oldScope
 			return result
 		}
+
+		if result.GetType() == objects.BreakType {
+			result = &objects.Nil{}
+			break
+		}
+
+		if result.GetType() == objects.ContinueType {
+			result = &objects.Nil{}
+			continue
+		}
 	}
 
 	// Restore the original scope
@@ -1986,4 +2004,56 @@ func (e *Evaluator) evalNewCallExpression(n *parser.NewCallExpressionNode) objec
 		e.Scp = oldScope
 	}
 	return inst
+}
+
+// createError creates an error object with line and column information from the token
+func (e *Evaluator) createError(token lexer.Token, format string, args ...interface{}) objects.GoMixObject {
+	return &objects.Error{
+		Message: fmt.Sprintf("[%d:%d] %s", token.Line, token.Column, fmt.Sprintf(format, args...)),
+	}
+}
+
+func (e *Evaluator) evalMemberAccess(structInstance *objects.GoMixObjectInstance, node parser.ExpressionNode) objects.GoMixObject {
+	// Handle Method Call
+	if fn, ok := node.(*parser.CallExpressionNode); ok {
+		methodName := fn.FunctionIdentifier.Name
+		methodInterface, exists := structInstance.Struct.Methods[methodName]
+		if !exists {
+			return e.CreateError("ERROR: method (%s) does not exist in struct (%s)", methodName, structInstance.Struct.GetName())
+		}
+		method, ok := methodInterface.(*function.Function)
+		if !ok {
+			return e.CreateError("ERROR: method (%s) not found in struct (%s)", methodName, structInstance.Struct.GetName())
+		}
+		params := make([]NamedParameter, len(fn.Arguments))
+		if len(fn.Arguments) != len(method.Params) {
+			return e.CreateError("ERROR: wrong number of arguments for method (%s): expected %d, got %d", methodName, len(method.Params), len(fn.Arguments))
+		}
+		for i, arg := range fn.Arguments {
+			params[i] = NamedParameter{
+				Name:  method.Params[i].Name,
+				Value: e.Eval(arg),
+			}
+			if IsError(params[i].Value) {
+				return params[i].Value
+			}
+		}
+
+		res := e.callFunctionOnObject(methodName, structInstance, params...)
+		if res.GetType() == objects.ErrorType {
+			return res
+		}
+		return res
+	}
+
+	// Handle Field Access
+	if ident, ok := node.(*parser.IdentifierExpressionNode); ok {
+		fieldName := ident.Name
+		if val, ok := structInstance.Fields[fieldName]; ok {
+			return val
+		}
+		return e.CreateError("ERROR: field (%s) not found in struct instance", fieldName)
+	}
+
+	return e.CreateError("ERROR: member access operator (.) must be followed by a function call or identifier")
 }

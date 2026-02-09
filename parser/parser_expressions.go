@@ -71,6 +71,12 @@ func (par *Parser) parseStatement() StatementNode {
 	case lexer.STRUCT_KEY:
 		return par.parseStructDeclaration()
 
+	case lexer.BREAK_KEY:
+		return par.parseBreakStatement()
+
+	case lexer.CONTINUE_KEY:
+		return par.parseContinueStatement()
+
 	default:
 		return par.parseExpression()
 	}
@@ -506,6 +512,47 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 	}
 }
 
+// parseMemberAccess parses member access expressions (dot notation).
+// It handles both field access (obj.field) and method calls (obj.method()).
+// This function is specialized to allow keywords (like 'set', 'map', 'array')
+// to be used as member names, which parseBinaryExpression would otherwise reject
+// or misinterpret as start of a new expression.
+func (par *Parser) parseMemberAccess(left ExpressionNode) ExpressionNode {
+	op := par.CurrToken
+	par.advance() // consume dot
+
+	// Check if the member name is an identifier or an allowed keyword
+	if par.CurrToken.Type == lexer.IDENTIFIER_ID ||
+		par.CurrToken.Type == lexer.SET_KEY ||
+		par.CurrToken.Type == lexer.MAP_KEY ||
+		par.CurrToken.Type == lexer.ARRAY_KEY {
+		// Valid member name
+	} else {
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected identifier after '.', got %s",
+			par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Type)
+		par.addError(msg)
+		return nil
+	}
+
+	var right ExpressionNode
+	if par.NextToken.Type == lexer.LEFT_PAREN {
+		right = par.parseCallExpression()
+	} else {
+		right = &IdentifierExpressionNode{
+			Token: par.CurrToken,
+			Name:  par.CurrToken.Literal,
+			Value: &objects.Nil{},
+		}
+	}
+
+	return &BinaryExpressionNode{
+		Left:      left,
+		Operation: op,
+		Right:     right,
+		Value:     &objects.Nil{},
+	}
+}
+
 // parseUnaryExpression parses unary (prefix) expressions.
 // Unary expressions have an operator followed by an operand.
 //
@@ -628,7 +675,7 @@ func (par *Parser) parseDeclarativeStatement() StatementNode {
 
 	return &DeclarativeStatementNode{
 		VarToken:   varToken,
-		Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
+		Identifier: IdentifierExpressionNode{Token: identifier, Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
 		Expr:       expr,
 		Value:      val,
 	}
@@ -665,6 +712,7 @@ func (par *Parser) parseIdentifierExpression() ExpressionNode {
 
 	// Determine if this is a const or let or var
 	ident := &IdentifierExpressionNode{
+		Token: varToken,
 		Name:  varToken.Literal,
 		Value: val,
 		Type:  "var", // default type
@@ -697,12 +745,23 @@ func (par *Parser) parseIdentifierExpression() ExpressionNode {
 //
 // Examples:
 //
-//	return 42;
-//	return x + y;
-//	return func() { return 5; }();
+//	 	return;
+//		return 42;
+//		return x + y;
+//		return func() { return 5; }();
 func (par *Parser) parseReturnStatement() ExpressionNode {
 	returnToken := par.CurrToken
 	par.advance()
+
+	// Handle empty return (return;)
+	if par.CurrToken.Type == lexer.SEMICOLON_DELIM {
+		return &ReturnStatementNode{
+			ReturnToken: returnToken,
+			Expr:        &NilLiteralExpressionNode{Token: lexer.Token{Type: lexer.NIL_LIT, Literal: "nil"}, Value: &objects.Nil{}},
+			Value:       &objects.Nil{},
+		}
+	}
+
 	expr := par.parseExpression()
 	if expr == nil {
 		return nil
@@ -987,10 +1046,15 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 func (par *Parser) parseFunctionStatement() StatementNode {
 	funcNode := NewFunctionStatementNode()
 	funcNode.FuncToken = par.CurrToken
-	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+
+	// Allow identifiers and specific keywords as function names
+	if par.NextToken.Type == lexer.SET_KEY || par.NextToken.Type == lexer.MAP_KEY || par.NextToken.Type == lexer.ARRAY_KEY {
+		par.advance()
+	} else if !par.expectAdvance(lexer.IDENTIFIER_ID) {
 		return nil
 	}
 	funcNode.FuncName = IdentifierExpressionNode{
+		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
 		Value: &objects.Nil{}, // Default value for identifier
 	}
@@ -1005,6 +1069,7 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 			return nil
 		}
 		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+			Token: par.CurrToken,
 			Name:  par.CurrToken.Literal,
 			Value: &objects.Nil{}, // Default value for identifier
 		})
@@ -1016,6 +1081,7 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 				return nil
 			}
 			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+				Token: par.CurrToken,
 				Name:  par.CurrToken.Literal,
 				Value: &objects.Nil{}, // Default value for identifier
 			})
@@ -1054,6 +1120,7 @@ func (par *Parser) parseCallExpression() ExpressionNode {
 		Value: &objects.Nil{},
 	}
 	callNode.FunctionIdentifier = IdentifierExpressionNode{
+		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
 		Value: &objects.Nil{}, // Default value for identifier
 	}
@@ -1114,6 +1181,7 @@ func (par *Parser) parseFunctionAssignment() ExpressionNode {
 			return nil
 		}
 		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+			Token: par.CurrToken,
 			Name:  par.CurrToken.Literal,
 			Value: &objects.Nil{}, // Default value for identifier
 		})
@@ -1125,6 +1193,7 @@ func (par *Parser) parseFunctionAssignment() ExpressionNode {
 				return nil
 			}
 			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
+				Token: par.CurrToken,
 				Name:  par.CurrToken.Literal,
 				Value: &objects.Nil{}, // Default value for identifier
 			})
@@ -1343,7 +1412,7 @@ func (par *Parser) parseForLoop() StatementNode {
 
 			declStmt := &DeclarativeStatementNode{
 				VarToken:   varToken,
-				Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
+				Identifier: IdentifierExpressionNode{Token: identifier, Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
 				Expr:       expr,
 				Value:      val,
 			}
@@ -1388,7 +1457,7 @@ func (par *Parser) parseForLoop() StatementNode {
 
 				declStmt := &DeclarativeStatementNode{
 					VarToken:   varToken,
-					Identifier: IdentifierExpressionNode{Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
+					Identifier: IdentifierExpressionNode{Token: identifier, Name: identifier.Literal, Value: val, Type: typ, IsLet: isLet},
 					Expr:       expr,
 					Value:      val,
 				}
@@ -1966,6 +2035,7 @@ func (par *Parser) parseForeachLoop() StatementNode {
 		return nil
 	}
 	iterator := IdentifierExpressionNode{
+		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
 		Value: &objects.Nil{},
 	}
@@ -2010,6 +2080,7 @@ func (par *Parser) parseStructDeclaration() StatementNode {
 		return nil
 	}
 	structName := IdentifierExpressionNode{
+		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
 		Value: &objects.Nil{},
 	}
@@ -2087,6 +2158,7 @@ func (par *Parser) parseNewCallExpression() ExpressionNode {
 		return nil
 	}
 	newCallNode.StructName = IdentifierExpressionNode{
+		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
 		Value: &objects.Nil{}, // Default value for identifier
 	}
@@ -2116,6 +2188,18 @@ func (par *Parser) parseNewCallExpression() ExpressionNode {
 		return nil
 	}
 	return newCallNode
+}
+
+// parseBreakStatement parses a break statement.
+func (par *Parser) parseBreakStatement() StatementNode {
+	stmt := &BreakStatementNode{Token: par.CurrToken}
+	return stmt
+}
+
+// parseContinueStatement parses a continue statement.
+func (par *Parser) parseContinueStatement() StatementNode {
+	stmt := &ContinueStatementNode{Token: par.CurrToken}
+	return stmt
 }
 
 // eval evaluates an expression node during parsing.

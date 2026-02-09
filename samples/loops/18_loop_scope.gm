@@ -1,0 +1,26 @@
+// Verify variable scoping with break/continue
+
+println("--- Loop Scope Test ---");
+var x = 100;
+for (var i = 0; i < 3; i = i + 1) {
+    var x = i; // Shadowing outer x
+    println("Inner x: ", x);
+    if (i == 1) {
+        println("Continuing at i=1");
+        continue;
+    }
+}
+println("Outer x should be 100: ", x);
+
+var y = 50;
+var j = 0;
+while (j < 3) {
+    var y = j * 10;
+    println("Inner y: ", y);
+    if (j == 1) {
+        println("Breaking at j=1");
+        break;
+    }
+    j = j + 1;
+}
+println("Outer y should be 50: ", y);

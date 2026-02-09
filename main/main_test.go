@@ -1235,4 +1235,57 @@ func TestMain_Main(t *testing.T) {
 	root116.Accept(visitor116)
 	fmt.Println(visitor116)
 
+	// Test 117: struct with new and calling method
+	src117 := `
+	struct Point {
+		func init(x, y) {
+			this.x = x;
+			this.y = y;
+		}
+		func sum() {
+			return this.x + this.y;
+		}
+	}
+	var p = new Point(10, 20);
+	p.sum();
+	`
+	root117 := parser.NewParser(src117).Parse()
+	visitor117 := &PrintingVisitor{}
+	root117.Accept(visitor117)
+	fmt.Println(visitor117)
+
+	// Test 118: struct with new and field access
+	src118 := `
+	func foo(){
+		var m = [[0,0], [1, 1], [2, 2]]
+		return m;
+	}
+
+	struct Test{
+		func init() {
+			this.m = foo()
+		}
+		func getter(x){
+			return this.m[x]
+		}
+		func setter(x, y){
+			this.m[x] = y;
+		
+		}
+	}
+
+	var t = new Test();
+	println(t.getter(2))
+	t.setter(2, 20);
+	println(t.getter(2))
+	t.setter(1, 10);
+	println(t.getter(1))
+	t.setter(0, map{1:11, 2:22})
+	println(t.getter(0)[1])
+	`
+	root118 := parser.NewParser(src118).Parse()
+	visitor118 := &PrintingVisitor{}
+	root118.Accept(visitor118)
+	fmt.Println(visitor118)
+
 }

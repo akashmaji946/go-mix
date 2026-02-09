@@ -1,0 +1,42 @@
+// Reverse Linked List
+
+struct Node {
+    func init(val) {
+        this.val = val;
+        this.next = nil;
+    }
+}
+
+func printList(head) {
+    var curr = head;
+    while (curr != nil) {
+        print(curr.val, " -> ");
+        curr = curr.next;
+    }
+    println("nil");
+}
+
+func reverseList(head) {
+    var prev = nil;
+    var curr = head;
+    while (curr != nil) {
+        var nextTemp = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nextTemp;
+    }
+    return prev;
+}
+
+// Create list: 1 -> 2 -> 3 -> 4 -> nil
+var head = new Node(1);
+head.next = new Node(2);
+head.next.next = new Node(3);
+head.next.next.next = new Node(4);
+
+print("Original: ");
+printList(head);
+
+head = reverseList(head);
+print("Reversed: ");
+printList(head);

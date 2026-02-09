@@ -1,0 +1,48 @@
+// Matrix Multiplication
+
+func multiply(A, B) {
+    var r1 = length(A);
+    var c1 = length(A[0]);
+    var r2 = length(B);
+    var c2 = length(B[0]);
+
+    if (c1 != r2) {
+        println("Matrix multiplication not possible");
+        return nil;
+    }
+
+    var result = [];
+    for (var i = 0; i < r1; i = i + 1) {
+        var row = [];
+        for (var j = 0; j < c2; j = j + 1) {
+            row = push(row, 0);
+        }
+        result = push(result, row);
+    }
+
+    for (var i = 0; i < r1; i = i + 1) {
+        for (var j = 0; j < c2; j = j + 1) {
+            for (var k = 0; k < c1; k = k + 1) {
+                result[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+    return result;
+}
+
+var A = [
+    [1, 2, 3],
+    [4, 5, 6]
+];
+
+var B = [
+    [7, 8],
+    [9, 1],
+    [2, 3]
+];
+
+var C = multiply(A, B);
+println("Result matrix:");
+for (var i = 0; i < length(C); i = i + 1) {
+    println(C[i]);
+}

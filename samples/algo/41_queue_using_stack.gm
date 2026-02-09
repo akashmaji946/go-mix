@@ -1,0 +1,46 @@
+// Queue using Stacks
+
+struct Queue {
+    func init() {
+        this.s1 = [];
+        this.s2 = [];
+    }
+
+    func enqueue(x) {
+        this.s1 = push(this.s1, x);
+    }
+
+    func dequeue() {
+        if (length(this.s2) == 0) {
+            if (length(this.s1) == 0) {
+                return nil;
+            }
+            while (length(this.s1) > 0) {
+                var val = pop(this.s1);
+                this.s2 = push(this.s2, val);
+            }
+        }
+        return pop(this.s2);
+    }
+    
+    func printQ() {
+        print("S1: ", this.s1, " S2: ", this.s2, "\n");
+    }
+}
+
+var q = new Queue();
+q.enqueue(1);
+q.enqueue(2);
+q.enqueue(3);
+q.printQ();
+
+println("Dequeued: ", q.dequeue());
+q.printQ();
+
+q.enqueue(4);
+q.printQ();
+
+println("Dequeued: ", q.dequeue());
+println("Dequeued: ", q.dequeue());
+println("Dequeued: ", q.dequeue());
+q.printQ();

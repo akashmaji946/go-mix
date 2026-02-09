@@ -1,0 +1,18 @@
+// Test nested loops with break
+
+println("--- Nested Loops ---");
+
+for (var i = 1; i <= 3; i = i + 1) {
+    println("Outer:", i);
+    for (var j = 1; j <= 3; j = j + 1) {
+        if (i == 2 && j == 2) {
+            println("  Breaking inner at i=2, j=2");
+            break;
+        }
+        println("  Inner:", j);
+    }
+    if (i == 3) {
+        println("Breaking outer at i=3");
+        break;
+    }
+}

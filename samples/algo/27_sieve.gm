@@ -1,0 +1,27 @@
+// Sieve of Eratosthenes
+
+func sieve(n) {
+    var primes = [];
+    // Initialize primes array with true
+    for (var i = 0; i <= n; i = i + 1) {
+        primes = push(primes, true);
+    }
+
+    for (var p = 2; p * p <= n; p = p + 1) {
+        if (primes[p] == true) {
+            for (var i = p * p; i <= n; i = i + p) {
+                primes[i] = false;
+            }
+        }
+    }
+
+    print("Primes up to ", n, ": ");
+    for (var p = 2; p <= n; p = p + 1) {
+        if (primes[p] == true) {
+            print(p, " ");
+        }
+    }
+    println("");
+}
+
+sieve(50);

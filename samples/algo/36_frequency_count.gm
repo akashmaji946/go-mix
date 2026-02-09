@@ -1,0 +1,20 @@
+// Frequency Count using Map
+
+func countFreq(arr) {
+    var freq = map{};
+    foreach item in arr {
+        if (contain_map(freq, item)) {
+            var count = freq[item];
+            insert_map(freq, item, count + 1);
+        } else {
+            insert_map(freq, item, 1);
+        }
+    }
+    return freq;
+}
+
+var arr = [1, 2, 2, 3, 3, 3, 4, 4, 4, 4];
+println("Array: ", arr);
+var counts = countFreq(arr);
+println("Frequencies: ");
+println(counts);

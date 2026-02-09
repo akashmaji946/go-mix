@@ -269,14 +269,27 @@ func (lex *Lexer) NextToken() Token {
 		} else if isAlpha(lex.Current) || (lex.Current == '_') {
 			return readIdentifier(lex)
 		}
-		// Unrecognized character - return EOF
-		token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
+
+		// any special characters that are not recognized as valid tokens will be treated as EOF for now
+		if isSpecial(lex.Current) {
+			token = NewTokenWithMetadata(INVALID_TYPE, string(lex.Current), lex.Line, lex.Column)
+		} else {
+			// Unrecognized character - return EOF
+			token = NewTokenWithMetadata(EOF_TYPE, "EOF", lex.Line, lex.Column)
+		}
+
 	}
 
 	// Move to the next character for the next token
 	lex.advance()
 
 	return token
+}
+
+// isSpecial checks if a character is a special symbol that is not valid in GoMix.
+// This includes characters that are not part of the defined token set and are not alphanumeric or whitespace.
+func isSpecial(c byte) bool {
+	return !isAlphanumeric(c) && !isWhitespace(c) && !strings.ContainsRune("=+-*/%&|^~!<>.,;:(){}[]\"", rune(c))
 }
 
 // readStringLiteral reads and tokenizes a string literal from the source.

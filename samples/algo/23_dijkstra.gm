@@ -1,0 +1,67 @@
+// Dijkstra's Algorithm
+
+func findMinDistance(dist, visited, nodes) {
+    var min = 999999; // Infinity
+    var minIndex = -1;
+
+    for (var i = 0; i < length(nodes); i = i + 1) {
+        var v = nodes[i];
+        if (visited[v] == nil && dist[v] <= min) {
+            min = dist[v];
+            minIndex = v;
+        }
+    }
+    return minIndex;
+}
+
+func dijkstra(graph, src) {
+
+
+    var dist = map{};
+    var visited = map{};
+    var nodes = keys_map(graph);
+
+    // Initialize distances
+    for (var i = 0; i < length(nodes); i = i + 1) {
+        dist[nodes[i]] = 999999;
+    }
+    dist[src] = 0;
+
+    for (var count = 0; count < length(nodes) - 1; count = count + 1) {
+        var u = findMinDistance(dist, visited, nodes);
+        if (u == -1) { break; }
+        
+        visited[u] = true;
+
+        var neighbors = graph[u];
+        // neighbors is a list of [neighbor, weight]
+        for (var i = 0; i < length(neighbors); i = i + 1) {
+            var edge = neighbors[i];
+            var v = edge[0];
+            var weight = edge[1];
+            
+            if (visited[v] == nil && dist[u] != 999999 && dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+            }
+        }
+    }
+
+    println("Vertex \t Distance from Source");
+    for (var i = 0; i < length(nodes); i = i + 1) {
+        var node = nodes[i];
+        println(node, " \t\t ", dist[node]);
+    }
+}
+
+var graph = map{
+    "A": [ ["B", 4], ["C", 2] ],
+    "B": [ ["C", 5], ["D", 10] ],
+    "C": [ ["E", 3] ],
+    "D": [ ["F", 11] ],
+    "E": [ ["D", 4] ],
+    "F": []
+};
+
+
+println("Dijkstra's Algorithm");
+dijkstra(graph, "A");

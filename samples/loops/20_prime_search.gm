@@ -1,0 +1,22 @@
+// Prime search using loops and break
+
+println("--- Finding Primes ---");
+var count = 0;
+var num = 2;
+
+while (count < 5) {
+    var isPrime = true;
+    // Check divisors
+    for (var div = 2; div * div <= num; div = div + 1) {
+        if (num % div == 0) {
+            isPrime = false;
+            break; // Not prime, stop checking
+        }
+    }
+    
+    if (isPrime) {
+        println("Prime found: ", num);
+        count = count + 1;
+    }
+    num = num + 1;
+}

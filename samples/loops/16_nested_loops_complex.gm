@@ -1,0 +1,19 @@
+// Complex nested loops with mixed types
+
+println("--- Mixed Nested Loops ---");
+var i = 0;
+while (i < 3) {
+    println("Outer while: ", i);
+    for (var j = 0; j < 3; j = j + 1) {
+        if (i == 1 && j == 1) {
+            println("  Skipping inner for j=1 when i=1");
+            continue;
+        }
+        println("  Inner for: ", j);
+        if (i == 2 && j == 0) {
+            println("  Breaking inner for when i=2, j=0");
+            break;
+        }
+    }
+    i = i + 1;
+}

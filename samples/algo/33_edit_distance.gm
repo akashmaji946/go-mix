@@ -1,0 +1,41 @@
+// Edit Distance (Levenshtein)
+
+func min3(a, b, c) {
+    return min(a, min(b, c));
+}
+
+func editDist(str1, str2) {
+    var m = length(str1);
+    var n = length(str2);
+    
+    var dp = [];
+    for (var i = 0; i <= m; i = i + 1) {
+        var row = [];
+        for (var j = 0; j <= n; j = j + 1) {
+            row = push(row, 0);
+        }
+        dp = push(dp, row);
+    }
+
+    for (var i = 0; i <= m; i = i + 1) {
+        for (var j = 0; j <= n; j = j + 1) {
+            if (i == 0) {
+                dp[i][j] = j;
+            } else if (j == 0) {
+                dp[i][j] = i;
+            } else if (str1[i-1] == str2[j-1]) {
+                dp[i][j] = dp[i-1][j-1];
+            } else {
+                dp[i][j] = 1 + min3(dp[i][j-1], dp[i-1][j], dp[i-1][j-1]);
+            }
+        }
+    }
+    return dp[m][n];
+}
+
+var s1 = ["s", "u", "n", "d", "a", "y"];
+var s2 = ["s", "a", "t", "u", "r", "d", "a", "y"];
+
+println("String 1: ", s1);
+println("String 2: ", s2);
+println("Edit Distance: ", editDist(s1, s2));

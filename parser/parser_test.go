@@ -3965,3 +3965,79 @@ func TestParser_ParseErrorNewCall(t *testing.T) {
 		assert.True(t, parser.HasErrors())
 	}
 }
+
+// TestParser_MemberIndexAccess verifies parsing of member access followed by index
+func TestParser_MemberIndexAccess(t *testing.T) {
+	src := `this.m[1]`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 1, len(root.Statements))
+	// Should be IndexExpression
+	// Left: BinaryExpression (this.m)
+	// Index: Integer(1)
+
+	indexExpr, ok := root.Statements[0].(*IndexExpressionNode)
+	assert.True(t, ok)
+
+	binExpr, ok := indexExpr.Left.(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.DOT_OP, binExpr.Operation.Type)
+
+	leftIdent, ok := binExpr.Left.(*IdentifierExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "this", leftIdent.Name)
+
+	rightIdent, ok := binExpr.Right.(*IdentifierExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "m", rightIdent.Name)
+
+	indexVal, ok := indexExpr.Index.(*IntegerLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, int64(1), indexVal.Value.(*objects.Integer).Value)
+
+	assert.Equal(t, "this.m[1];", root.Literal())
+}
+
+// TestParser_ThisAccess verifies parsing of 'this' keyword access
+func TestParser_ThisAccess(t *testing.T) {
+	src := `this.x`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 1, len(root.Statements))
+	// Should be BinaryExpression (DOT_OP)
+	binExpr, ok := root.Statements[0].(*BinaryExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, lexer.DOT_OP, binExpr.Operation.Type)
+
+	left, ok := binExpr.Left.(*IdentifierExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "this", left.Name)
+
+	right, ok := binExpr.Right.(*IdentifierExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "x", right.Name)
+}
+
+// TestParser_MethodCall verifies parsing of method calls on objects
+func TestParser_MethodCall(t *testing.T) {
+	src := `obj.method(1, 2)`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	assert.False(t, par.HasErrors())
+
+	assert.Equal(t, 1, len(root.Statements))
+	binExpr, ok := root.Statements[0].(*BinaryExpressionNode)
+	assert.True(t, ok)
+
+	right, ok := binExpr.Right.(*CallExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "method", right.FunctionIdentifier.Name)
+	assert.Equal(t, 2, len(right.Arguments))
+}
