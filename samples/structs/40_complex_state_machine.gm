@@ -1,0 +1,32 @@
+struct StateMachine {
+    const START = 0;
+    const RUNNING = 1;
+    const STOPPED = 2;
+    
+    let currentState = 0; // int
+    var cycles = 0;
+
+    func run(maxCycles) {
+        self.currentState = StateMachine.RUNNING;
+        
+        while (StateMachine.currentState == self.RUNNING) {
+            self.cycles += 1;
+            println("Cycle: " + self.cycles);
+
+            if (self.cycles == 2) {
+                println("Skipping cycle logic...");
+                continue;
+            }
+
+            if (self.cycles >= maxCycles) {
+                StateMachine.currentState = StateMachine.STOPPED;
+                println("Max cycles reached. Stopping.");
+                break;
+            }
+        }
+    }
+}
+
+var sm = new StateMachine();
+sm.run(4);
+println("Final State: " + StateMachine.currentState);

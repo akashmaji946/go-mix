@@ -44,7 +44,9 @@ func (v *TestingVisitor) VisitIntegerLiteralExpressionNode(node IntegerLiteralEx
 	curr := v.ExpectedNodes[v.Ptr]
 	exp, ok := curr.(*IntegerLiteralExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Value, exp.Value)
+	if ok {
+		assert.Equal(v.T, node.Value, exp.Value)
+	}
 	v.Ptr++
 }
 
@@ -58,8 +60,10 @@ func (v *TestingVisitor) VisitBooleanLiteralExpressionNode(node BooleanLiteralEx
 	curr := v.ExpectedNodes[v.Ptr]
 	exp, ok := curr.(*BooleanLiteralExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Value, exp.Value)
-	assert.Equal(v.T, node.Token.Type, exp.Token.Type)
+	if ok {
+		assert.Equal(v.T, node.Value, exp.Value)
+		assert.Equal(v.T, node.Token.Type, exp.Token.Type)
+	}
 	v.Ptr++
 }
 
@@ -135,9 +139,11 @@ func (v *TestingVisitor) VisitIdentifierExpressionNode(node IdentifierExpression
 	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
-	_, ok := curr.(*IdentifierExpressionNode)
+	exp, ok := curr.(*IdentifierExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Name, curr.(*IdentifierExpressionNode).Name)
+	if ok {
+		assert.Equal(v.T, node.Name, exp.Name)
+	}
 	v.Ptr++
 }
 
@@ -188,18 +194,20 @@ func (v *TestingVisitor) VisitBlockStatementNode(node BlockStatementNode) {
 
 // VisitAssignmentExpressionNode visits an assignment expression node and asserts the operator and operands match expected
 func (v *TestingVisitor) VisitAssignmentExpressionNode(node AssignmentExpressionNode) {
+	node.Left.Accept(v)
 	// Check bounds before accessing ExpectedNodes
 	if v.Ptr >= len(v.ExpectedNodes) {
 		return
 	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
-	_, ok := curr.(*AssignmentExpressionNode)
+	exp, ok := curr.(*AssignmentExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Operation.Literal, curr.(*AssignmentExpressionNode).Operation.Literal)
-	assert.Equal(v.T, node.Left, curr.(*AssignmentExpressionNode).Left)
-	assert.Equal(v.T, node.Right.Literal(), curr.(*AssignmentExpressionNode).Right.Literal())
+	if ok {
+		assert.Equal(v.T, node.Operation.Literal, exp.Operation.Literal)
+	}
 	v.Ptr++
+	node.Right.Accept(v)
 }
 
 // VisitIfExpressionNode visits an if-else expression node and asserts the if token matches expected
@@ -229,7 +237,9 @@ func (v *TestingVisitor) VisitStringLiteralExpressionNode(node StringLiteralExpr
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*StringLiteralExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Value, curr.(*StringLiteralExpressionNode).Value)
+	if ok {
+		assert.Equal(v.T, node.Value, curr.(*StringLiteralExpressionNode).Value)
+	}
 	v.Ptr++
 }
 
@@ -243,7 +253,9 @@ func (v *TestingVisitor) VisitFloatLiteralExpressionNode(node FloatLiteralExpres
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*FloatLiteralExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Value, curr.(*FloatLiteralExpressionNode).Value)
+	if ok {
+		assert.Equal(v.T, node.Value, curr.(*FloatLiteralExpressionNode).Value)
+	}
 	v.Ptr++
 }
 
@@ -257,7 +269,9 @@ func (v *TestingVisitor) VisitNilLiteralExpressionNode(node NilLiteralExpression
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*NilLiteralExpressionNode)
 	assert.True(v.T, ok)
-	assert.Equal(v.T, node.Value, curr.(*NilLiteralExpressionNode).Value)
+	if ok {
+		assert.Equal(v.T, node.Value, curr.(*NilLiteralExpressionNode).Value)
+	}
 	v.Ptr++
 }
 

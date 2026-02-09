@@ -1,0 +1,32 @@
+struct Task {
+    const LIMIT = 3;
+    var activeTasks = 0;
+
+    func init(name) {
+        if (Task.activeTasks >= Task.LIMIT) {
+            println("Cannot create task " + name + ": Limit reached");
+            this.valid = false;
+        } else {
+            Task.activeTasks += 1;
+            this.name = name;
+            this.valid = true;
+            println("Task ",  name, " created. Active: ", Task.activeTasks);
+        }
+    }
+
+    func process(steps) {
+        if (!this.valid) { return; }
+        for (var i = 1; i <= steps; i += 1) {
+            if (i % 2 == 0) {
+                continue; // Skip even steps
+            }
+            println(this.name, " processing step ", i);
+        }
+    }
+}
+
+var t1 = new Task("A");
+var t2 = new Task("B");
+var t3 = new Task("C");
+var t4 = new Task("D"); // Should fail
+t1.process(3);

@@ -1,0 +1,22 @@
+struct Config {
+    var defaultRetries = 3;
+    var timeout = 1000;
+    
+    func init(t) {
+        if (t > 0) {
+            this.timeout = t;
+        }
+    }
+}
+
+println("Default retries: " + tostring(Config.defaultRetries));
+Config.defaultRetries = 5;
+println("Updated default retries: " + tostring(Config.defaultRetries));
+
+var c = new Config(0);
+println("Instance retries (fallback): " + tostring(c.defaultRetries));
+println("Instance timeout (fallback): " + tostring(c.timeout));
+
+var c2 = new Config(500);
+println("Instance 2 timeout: " + tostring(c2.timeout));
+println("Instance 2 retries: " + tostring(c2.defaultRetries));

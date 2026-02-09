@@ -95,7 +95,7 @@ func tostring(writer io.Writer, args ...GoMixObject) GoMixObject {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
 	// Return the string representation wrapped in quotes
-	return &String{Value: fmt.Sprintf("\"%s\"", args[0].ToString())}
+	return &String{Value: fmt.Sprintf("%s", args[0].ToString())}
 }
 
 // print outputs the string representations of its arguments to the writer without a trailing newline.

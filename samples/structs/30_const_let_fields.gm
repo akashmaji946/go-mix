@@ -1,0 +1,19 @@
+struct Settings {
+    const VERSION = "1.0.0";
+    let maxConnections = 10; // int
+    var debugMode = false; // bool
+}
+
+println("Version: " + Settings.VERSION);
+println("Max Connections: " + tostring(Settings.maxConnections));
+
+// Update let variable with same type
+Settings.maxConnections = 20;
+println("New Max Connections: " + tostring(Settings.maxConnections));
+
+// Update var variable
+Settings.debugMode = true;
+println("Debug Mode: " + tostring(Settings.debugMode));
+
+var s = new Settings();
+println("Instance Version: " + s.VERSION);

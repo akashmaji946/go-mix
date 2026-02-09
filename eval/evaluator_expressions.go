@@ -261,6 +261,33 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 			if IsError(leftObj) {
 				return leftObj
 			}
+			if leftObj.GetType() == objects.StructType {
+				s := leftObj.(*objects.GoMixStruct)
+				ident, ok := binNode.Right.(*parser.IdentifierExpressionNode)
+				if !ok {
+					return e.CreateError("ERROR: invalid member assignment target")
+				}
+				if s.ConstFields[ident.Name] {
+					return e.CreateError("ERROR: can't assign to constant field (%s) in struct (%s)", ident.Name, s.Name)
+				}
+				leftVal, ok := s.ClassFields[ident.Name]
+				if !ok {
+					return e.CreateError("ERROR: class field (%s) not found", ident.Name)
+				}
+				newVal := e.evaluateBinaryOp(n.Operation, binOpType, leftVal, rightVal)
+				if IsError(newVal) {
+					return newVal
+				}
+				if s.LetFields[ident.Name] {
+					expectedType := s.LetTypes[ident.Name]
+					if newVal.GetType() != expectedType {
+						return e.CreateError("ERROR: can't assign `%s` to field (%s) of type `%s` in struct (%s)", newVal.GetType(), ident.Name, expectedType, s.Name)
+					}
+				}
+				s.ClassFields[ident.Name] = newVal
+				return newVal
+			}
+
 			if leftObj.GetType() != objects.ObjectType {
 				return e.CreateError("ERROR: member access can only be done on struct instances")
 			}
@@ -269,7 +296,7 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 			if !ok {
 				return e.CreateError("ERROR: invalid member assignment target")
 			}
-			leftVal, ok := inst.Fields[ident.Name]
+			leftVal, ok := inst.InstanceFields[ident.Name]
 			if !ok {
 				return e.CreateError("ERROR: field (%s) not found in struct instance", ident.Name)
 			}
@@ -277,7 +304,7 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 			if IsError(newVal) {
 				return newVal
 			}
-			inst.Fields[ident.Name] = newVal
+			inst.InstanceFields[ident.Name] = newVal
 			return newVal
 		}
 	}
@@ -423,6 +450,25 @@ func (e *Evaluator) evalMemberAssignment(node *parser.BinaryExpressionNode, val 
 		return left
 	}
 
+	if left.GetType() == objects.StructType {
+		s := left.(*objects.GoMixStruct)
+		ident, ok := node.Right.(*parser.IdentifierExpressionNode)
+		if !ok {
+			return e.CreateError("ERROR: invalid member assignment target")
+		}
+		if s.ConstFields[ident.Name] {
+			return e.CreateError("ERROR: can't assign to constant field (%s) in struct (%s)", ident.Name, s.Name)
+		}
+		if s.LetFields[ident.Name] {
+			expectedType := s.LetTypes[ident.Name]
+			if val.GetType() != expectedType {
+				return e.CreateError("ERROR: can't assign `%s` to field (%s) of type `%s` in struct (%s)", val.GetType(), ident.Name, expectedType, s.Name)
+			}
+		}
+		s.ClassFields[ident.Name] = val
+		return val
+	}
+
 	if left.GetType() != objects.ObjectType {
 		return e.CreateError("ERROR: member assignment can only be done on struct instances, got %s", left.GetType())
 	}
@@ -434,7 +480,7 @@ func (e *Evaluator) evalMemberAssignment(node *parser.BinaryExpressionNode, val 
 		return e.CreateError("ERROR: invalid member assignment target")
 	}
 
-	inst.Fields[ident.Name] = val
+	inst.InstanceFields[ident.Name] = val
 	return val
 }
 
@@ -846,8 +892,12 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 	// we prioritize the dot (.) member access operator in the parser,
 	if n.Operation.Type == lexer.DOT_OP {
 
+		if left.GetType() == objects.StructType {
+			return e.evalStructMemberAccess(left.(*objects.GoMixStruct), n.Right)
+		}
+
 		if left.GetType() != objects.ObjectType {
-			return e.CreateError("ERROR: member access operator (.) can only be used on struct instances, got (%s)", left.GetType())
+			return e.CreateError("ERROR: member access operator (.) can only be used on struct instances or types, got (%s)", left.GetType())
 		}
 		structInstance := left.(*objects.GoMixObjectInstance)
 
@@ -877,6 +927,12 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 
 func (e *Evaluator) evaluateBinaryOp(token lexer.Token, opType lexer.TokenType, left, right objects.GoMixObject) objects.GoMixObject {
 	err := e.createError(token, "ERROR: operator (%s) not implemented for (%s) and (%s)", token.Literal, left.GetType(), right.GetType())
+
+	if opType == lexer.PLUS_OP {
+		if left.GetType() == objects.StringType || right.GetType() == objects.StringType {
+			return &objects.String{Value: left.ToString() + right.ToString()}
+		}
+	}
 
 	if left.GetType() == objects.StringType && right.GetType() == objects.StringType {
 		if opType == lexer.PLUS_OP {
@@ -967,6 +1023,7 @@ func (e *Evaluator) callFunctionOnObject(name string, obj *objects.GoMixObjectIn
 
 	// Bind the struct instance to a special variable (e.g., "self") in the method scope
 	methodScope.Bind("this", obj)
+	methodScope.Bind("self", obj.Struct)
 	for _, arg := range args {
 		methodScope.Bind(arg.Name, arg.Value)
 	}
@@ -1917,13 +1974,28 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMi
 func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objects.GoMixObject {
 	// Create a new struct type with the given name and fields
 	s := &objects.GoMixStruct{
-		Name:       n.StructName.Name,
-		Methods:    make(map[string]objects.FunctionInterface),
-		FieldNodes: make([]interface{}, len(n.Fields)),
+		Name:        n.StructName.Name,
+		Methods:     make(map[string]objects.FunctionInterface),
+		FieldNodes:  make([]interface{}, len(n.Fields)),
+		ClassFields: make(map[string]objects.GoMixObject),
+		ConstFields: make(map[string]bool),
+		LetFields:   make(map[string]bool),
+		LetTypes:    make(map[string]objects.GoMixType),
 	}
 
 	for i, f := range n.Fields {
 		s.FieldNodes[i] = f
+		val := e.Eval(f.Expr)
+		if IsError(val) {
+			return val
+		}
+		s.ClassFields[f.Identifier.Name] = val
+		if f.VarToken.Type == lexer.CONST_KEY {
+			s.ConstFields[f.Identifier.Name] = true
+		} else if f.VarToken.Type == lexer.LET_KEY {
+			s.LetFields[f.Identifier.Name] = true
+			s.LetTypes[f.Identifier.Name] = val.GetType()
+		}
 	}
 
 	for _, m := range n.Methods {
@@ -1939,6 +2011,7 @@ func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objec
 	}
 
 	e.Types[s.Name] = s
+	e.Scp.Bind(s.Name, s)
 	return s
 }
 
@@ -1952,15 +2025,6 @@ func (e *Evaluator) evalNewCallExpression(n *parser.NewCallExpressionNode) objec
 	inst := objects.NewStructInstance(s)
 
 	// Initialize fields from struct definition
-	for _, fieldNode := range s.FieldNodes {
-		decl := fieldNode.(*parser.DeclarativeStatementNode)
-		val := e.Eval(decl.Expr)
-		if IsError(val) {
-			return val
-		}
-		inst.Fields[decl.Identifier.Name] = val
-	}
-
 	initMethod, hasInit := s.GetConstructor()
 	if hasInit {
 		// Cast to Function to access Body and Params directly
@@ -2049,11 +2113,29 @@ func (e *Evaluator) evalMemberAccess(structInstance *objects.GoMixObjectInstance
 	// Handle Field Access
 	if ident, ok := node.(*parser.IdentifierExpressionNode); ok {
 		fieldName := ident.Name
-		if val, ok := structInstance.Fields[fieldName]; ok {
+		if val, ok := structInstance.InstanceFields[fieldName]; ok {
+			return val
+		}
+		if val, ok := structInstance.Struct.ClassFields[fieldName]; ok {
+			return val
+		}
+		if val, ok := structInstance.Struct.ClassFields[fieldName]; ok {
 			return val
 		}
 		return e.CreateError("ERROR: field (%s) not found in struct instance", fieldName)
 	}
 
 	return e.CreateError("ERROR: member access operator (.) must be followed by a function call or identifier")
+}
+
+func (e *Evaluator) evalStructMemberAccess(s *objects.GoMixStruct, node parser.ExpressionNode) objects.GoMixObject {
+	// Handle Field Access
+	if ident, ok := node.(*parser.IdentifierExpressionNode); ok {
+		fieldName := ident.Name
+		if val, ok := s.ClassFields[fieldName]; ok {
+			return val
+		}
+		return e.CreateError("ERROR: class field (%s) not found in struct (%s)", fieldName, s.Name)
+	}
+	return e.CreateError("ERROR: invalid member access on struct")
 }

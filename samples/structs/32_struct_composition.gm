@@ -1,0 +1,27 @@
+struct Address {
+    func init(city, zip) {
+        this.city = city;
+        this.zip = zip;
+    }
+    
+    func fullAddress() {
+        return this.city + " " + this.zip;
+    }
+}
+
+struct User {
+    func init(name, addr) {
+        this.name = name;
+        this.address = addr;
+    }
+    
+    func printDetails() {
+        println("User: ", this.name);
+        println("Address: ", this.address.fullAddress());
+    }
+}
+
+var addr = new Address("New York", "10001");
+var user = new User("Alice", addr);
+
+user.printDetails();

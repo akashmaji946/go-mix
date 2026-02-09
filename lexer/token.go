@@ -194,7 +194,10 @@ const (
 	RANGE_OP TokenType = "..." // Range operator - creates inclusive ranges (e.g., 2...5)
 
 	// Object member access operator
-	DOT_OP TokenType = "." // Dot operator - access struct fields and methods
+	DOT_OP   TokenType = "."    // Dot operator - access struct fields and methods
+	THIS_KEY TokenType = "this" // 'this' keyword for referring to the current struct instance member
+	SELF_KEY TokenType = "self" // 'self' keyword for referring to the current class member
+
 )
 
 // Print outputs a human-readable representation of the token to standard output.
@@ -242,6 +245,8 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"map":      MAP_KEY,      // Map literal
 	"set":      SET_KEY,      // Set literal
 	"nil":      NIL_LIT,      // Nil/null value
+	"this":     THIS_KEY,     // 'this' keyword
+	"self":     SELF_KEY,     // 'self' keyword
 }
 
 // lookupIdent determines the token type for an identifier string.

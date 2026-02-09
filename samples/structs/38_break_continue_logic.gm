@@ -1,0 +1,21 @@
+struct Processor {
+    var data = list(10, -1, 20, -5, 30, 0, 40);
+    const STOP_MARKER = 0;
+
+    func run() {
+        foreach val in this.data {
+            if (val == Processor.STOP_MARKER) {
+                println("Stop marker found. Halting.");
+                break;
+            }
+            if (val < 0) {
+                println("Skipping negative value: " + val);
+                continue;
+            }
+            println("Processing: " + val);
+        }
+    }
+}
+
+var p = new Processor();
+p.run();

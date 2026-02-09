@@ -265,7 +265,11 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 		} else {
 			// Successful evaluation - display result in yellow
 			// Note: nil results are still printed (unlike file mode)
-			yellowColor.Fprintf(writer, "%s\n", result.ToString())
+			if result.GetType() == "string" {
+				yellowColor.Fprintf(writer, "%q\n", result.ToString())
+			} else {
+				yellowColor.Fprintf(writer, "%s\n", result.ToString())
+			}
 		}
 	}
 }

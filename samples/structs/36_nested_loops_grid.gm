@@ -1,0 +1,29 @@
+struct Grid {
+    let rows = 3;
+    let cols = 3;
+    var matrix = list();
+
+    func init() {
+        // Initialize instance matrix to avoid using static one
+        this.matrix = list();
+        for (var r = 0; r < Grid.rows; r += 1) {
+            var rowList = list();
+            for (var c = 0; c < Grid.cols; c += 1) {
+                if (r == c) {
+                    pushback_list(rowList, 1); // Diagonal
+                    continue;
+                }
+                pushback_list(rowList, 0);
+            }
+            pushback_list(this.matrix, rowList);
+        }
+    }
+
+    func printGrid() {
+        println("Grid " + Grid.rows + "x" + Grid.cols + ":");
+    }
+}
+
+var g = new Grid();
+g.printGrid();
+println(g.matrix);

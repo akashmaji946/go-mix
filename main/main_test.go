@@ -1288,4 +1288,20 @@ func TestMain_Main(t *testing.T) {
 	root118.Accept(visitor118)
 	fmt.Println(visitor118)
 
+	src119 := `
+	struct Logic { func run(x) { if (x > 0) { while(x > 0) { x = x - 1; } } return x; } }
+	`
+	root119 := parser.NewParser(src119).Parse()
+	visitor119 := &PrintingVisitor{}
+	root119.Accept(visitor119)
+	fmt.Println(visitor119)
+
+	src120 := `
+	struct S { func init(v) { this.v = v; } func get() { return this.v; } } var s = new S(5); s.get()
+	`
+	root120 := parser.NewParser(src120).Parse()
+	visitor120 := &PrintingVisitor{}
+	root120.Accept(visitor120)
+	fmt.Println(visitor120)
+
 }

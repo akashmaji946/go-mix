@@ -1,0 +1,23 @@
+struct Order {
+    var totalSales = 0;
+    const THRESHOLD = 100;
+
+    func init(amount) {
+        this.amount = amount;
+    }
+
+    func process() {
+        if (Order.totalSales + this.amount > Order.THRESHOLD) {
+            println("Threshold exceeded with amount " + this.amount + ". Skipping.");
+            return;
+        }
+        Order.totalSales += this.amount;
+        println("Processed " + this.amount + ". Total: " + Order.totalSales);
+    }
+}
+
+var amounts = [20, 30, 60, 10];
+foreach amt in amounts {
+    var o = new Order(amt);
+    o.process();
+}

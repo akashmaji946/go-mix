@@ -1,0 +1,27 @@
+struct Server {
+    const MAX_RETRIES = 3;
+    let status = "idle"; // string
+    var retryCount = 0;
+
+    func connect() {
+        Server.status = "connecting";
+        while (self.retryCount < Server.MAX_RETRIES) {
+            self.retryCount += 1;
+            println("Attempt " + self.retryCount);
+            
+            if (self.retryCount == 2) {
+                println("Success at attempt 2");
+                Server.status = "connected";
+                break;
+            }
+        }
+        
+        if (Server.status != "connected") {
+            Server.status = "failed";
+        }
+        println("Final Status: " + Server.status);
+    }
+}
+
+var s = new Server();
+s.connect();

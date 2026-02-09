@@ -21,9 +21,13 @@ type FunctionInterface interface {
 // GoMixStruct represents a user-defined struct type in GoMix.
 // It stores the struct name and a list of methods associated with it.
 type GoMixStruct struct {
-	Name       string                       // Name of the struct type
-	Methods    map[string]FunctionInterface // Slice of method objects (using interface to avoid circular imports)
-	FieldNodes []interface{}                // AST nodes for field declarations (interface{} to avoid import cycle)
+	Name        string                       // Name of the struct type
+	Methods     map[string]FunctionInterface // Slice of method objects (using interface to avoid circular imports)
+	FieldNodes  []interface{}                // AST nodes for field declarations (interface{} to avoid import cycle)
+	ClassFields map[string]GoMixObject       // Map of class fields (if needed)
+	ConstFields map[string]bool              // Set of constant field names
+	LetFields   map[string]bool              // Set of let field names
+	LetTypes    map[string]GoMixType         // Map of let field types
 }
 
 // GetConstructor returns the constructor function for the struct instance,
@@ -65,7 +69,24 @@ func (g *GoMixStruct) GetType() GoMixType {
 
 // ToString returns the string representation of the struct in the format "struct(name)".
 func (g *GoMixStruct) ToString() string {
-	return fmt.Sprintf("struct(%s)", g.Name)
+	fieldStr := ""
+	for name, val := range g.ClassFields {
+		fieldStr += fmt.Sprintf("%s:%s; ", name, val.ToString())
+	}
+
+	methodStr := ""
+	for name := range g.Methods {
+		args := ""
+		method, _ := g.GetMethod(name)
+		for i, param := range method.GetParameters() {
+			if i > 0 {
+				args += ","
+			}
+			args += param
+		}
+		methodStr += fmt.Sprintf("%s(%s); ", name, args)
+	}
+	return fmt.Sprintf("struct(%s) {\nstatic fields: %s\nmethods: %s\n}", g.Name, fieldStr, methodStr)
 }
 
 // ToObject returns the detailed string representation of the struct including methods.
@@ -79,15 +100,16 @@ func (g *GoMixStruct) ToObject() string {
 
 // GoMixObjectInstance represents an instance of a struct type, holding field values and a reference to its struct definition.
 type GoMixObjectInstance struct {
-	Struct *GoMixStruct           // Reference to the struct definition
-	Fields map[string]GoMixObject // Map of field names to their values
+	Struct         *GoMixStruct           // Reference to the struct definition
+	InstanceFields map[string]GoMixObject // Map of field names to their values
+	ClassFields    map[string]GoMixObject // Map of class fields (if needed)
 }
 
 // NewStructInstance creates a new instance of a struct type given the struct definition.
 func NewStructInstance(s *GoMixStruct) *GoMixObjectInstance {
 	return &GoMixObjectInstance{
-		Struct: s,
-		Fields: make(map[string]GoMixObject), // Initialize fields map (if needed)
+		Struct:         s,
+		InstanceFields: make(map[string]GoMixObject), // Initialize fields map (if needed)
 	}
 }
 
@@ -97,12 +119,43 @@ func (o *GoMixObjectInstance) GetType() GoMixType {
 }
 
 // ToString returns the string representation of the struct instance in the format "object(structName)".
-func (o *GoMixObjectInstance) ToString() string {
+func (o *GoMixObjectInstance) ToObject() string {
 	return fmt.Sprintf("object(%s)", o.Struct.Name)
 }
 
 // ToObject returns the detailed string representation of the struct instance including its struct type and fields.
-func (o *GoMixObjectInstance) ToObject() string {
-	// For simplicity, we are not including field values here
-	return fmt.Sprintf("<object(%s)>", o.Struct.Name)
+func (o *GoMixObjectInstance) ToString() string {
+	// include all fields and their values in the output
+	// include all methods and their params
+	fieldStr := ""
+
+	for name, val := range o.InstanceFields {
+		fieldStr += fmt.Sprintf("%s:%s; ", name, val.ToString())
+	}
+
+	classFieldStr := ""
+	if o.Struct != nil {
+		for name, val := range o.Struct.ClassFields {
+			classFieldStr += fmt.Sprintf("%s:%s; ", name, val.ToString())
+		}
+	}
+
+	methodStr := ""
+	for name := range o.Struct.Methods {
+		args := ""
+		method, _ := o.Struct.GetMethod(name)
+		for i, param := range method.GetParameters() {
+			if i > 0 {
+				args += ","
+			}
+			args += param
+		}
+		methodStr += fmt.Sprintf("%s(%s); ", name, args)
+	}
+	res := fmt.Sprintf("object(%s) {\nfields: %s\n", o.Struct.Name, fieldStr)
+	if classFieldStr != "" {
+		res += fmt.Sprintf("static fields: %s\n", classFieldStr)
+	}
+	res += fmt.Sprintf("methods: %s\n}", methodStr)
+	return res
 }

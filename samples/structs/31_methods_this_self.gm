@@ -1,0 +1,27 @@
+struct Counter {
+    var globalCount = 0;
+    
+    func init(start) {
+        this.localCount = start;
+    }
+    
+    func increment() {
+        this.localCount += 1;
+        self.globalCount += 1;
+    }
+    
+    func status() {
+        println("Local: " , this.localCount, ", Global: ",  self.globalCount);
+    }
+}
+
+var c1 = new Counter(10);
+var c2 = new Counter(20);
+
+c1.increment();
+c1.status(); // Local: 11, Global: 1
+
+c2.increment();
+c2.status(); // Local: 21, Global: 2
+
+println("Final Global: ", Counter.globalCount);

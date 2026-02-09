@@ -4041,3 +4041,497 @@ func TestParser_MethodCall(t *testing.T) {
 	assert.Equal(t, "method", right.FunctionIdentifier.Name)
 	assert.Equal(t, 2, len(right.Arguments))
 }
+
+// TestParser_StructFields verifies parsing of struct with const, let, var fields
+func TestParser_StructFields(t *testing.T) {
+	src := `struct Config { const MAX = 100; let retries = 3; var debug = true; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	assert.False(t, NewParser(src).HasErrors())
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{
+				StructName: IdentifierExpressionNode{Name: "Config"},
+			},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Type: lexer.CONST_KEY, Literal: "const"},
+				Identifier: IdentifierExpressionNode{Name: "MAX"},
+			},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 100}},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Type: lexer.LET_KEY, Literal: "let"},
+				Identifier: IdentifierExpressionNode{Name: "retries"},
+			},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Type: lexer.VAR_KEY, Literal: "var"},
+				Identifier: IdentifierExpressionNode{Name: "debug"},
+			},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructConstLetVar verifies parsing of struct with const, let, var fields
+func TestParser_StructConstLetVar(t *testing.T) {
+	src := `struct S { const C = 1; let L = 2; var V = 3; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
+			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.CONST_KEY, Literal: "const"}, Identifier: IdentifierExpressionNode{Name: "C"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.LET_KEY, Literal: "let"}, Identifier: IdentifierExpressionNode{Name: "L"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.VAR_KEY, Literal: "var"}, Identifier: IdentifierExpressionNode{Name: "V"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructMethodAccessStatic verifies parsing of method accessing static fields via StructName
+func TestParser_StructMethodAccessStatic(t *testing.T) {
+	src := `struct S { var x = 0; func f() { return S.x; } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
+			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.VAR_KEY, Literal: "var"}, Identifier: IdentifierExpressionNode{Name: "x"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "f"}},
+			&BlockStatementNode{},
+			&ReturnStatementNode{},
+			&IdentifierExpressionNode{Name: "S"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "x"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructMethodAccessSelf verifies parsing of method accessing static fields via self
+func TestParser_StructMethodAccessSelf(t *testing.T) {
+	src := `struct S { var x = 0; func f() { return self.x; } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
+			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.VAR_KEY, Literal: "var"}, Identifier: IdentifierExpressionNode{Name: "x"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "f"}},
+			&BlockStatementNode{},
+			&ReturnStatementNode{},
+			&IdentifierExpressionNode{Name: "self"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "x"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructMethodAccessThis verifies parsing of method accessing instance fields via this
+func TestParser_StructMethodAccessThis(t *testing.T) {
+	src := `struct S { func init(v) { this.v = v; } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "init"}},
+			&IdentifierExpressionNode{Name: "v"},
+			&BlockStatementNode{},
+			&IdentifierExpressionNode{Name: "this"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "v"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&IdentifierExpressionNode{Name: "v"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructNestedInstantiation verifies parsing of nested struct instantiation
+func TestParser_StructNestedInstantiation(t *testing.T) {
+	src := `struct B { func create() { return new A(); } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "B"}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "create"}},
+			&BlockStatementNode{},
+			&ReturnStatementNode{},
+			&NewCallExpressionNode{StructName: IdentifierExpressionNode{Name: "A"}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructStaticAssignmentExternal verifies parsing of assignment to static field
+func TestParser_StructStaticAssignmentExternal(t *testing.T) {
+	src := `S.x = 5`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IdentifierExpressionNode{Name: "S"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "x"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructInstanceAssignmentExternal verifies parsing of assignment to instance field
+func TestParser_StructInstanceAssignmentExternal(t *testing.T) {
+	src := `s.x = 5`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IdentifierExpressionNode{Name: "s"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "x"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructComplexMethodLogic verifies parsing of complex method logic
+func TestParser_StructComplexMethodLogic(t *testing.T) {
+	src := `struct S { func f() { while(true) { break; } } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "f"}},
+			&BlockStatementNode{},
+			&WhileLoopStatementNode{},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BlockStatementNode{},
+			&BreakStatementNode{},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructArrayFieldPush verifies parsing of method pushing to array field
+func TestParser_StructArrayFieldPush(t *testing.T) {
+	src := `struct S { var arr = []; func add(x) { push(self.arr, x); } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
+			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.VAR_KEY, Literal: "var"}, Identifier: IdentifierExpressionNode{Name: "arr"}},
+			&ArrayExpressionNode{},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "add"}},
+			&IdentifierExpressionNode{Name: "x"},
+			&BlockStatementNode{},
+			&CallExpressionNode{FunctionIdentifier: IdentifierExpressionNode{Name: "push"}},
+			&IdentifierExpressionNode{Name: "self"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "arr"},
+			&IdentifierExpressionNode{Name: "x"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructRecursiveMethod verifies parsing of recursive method call
+func TestParser_StructRecursiveMethod(t *testing.T) {
+	src := `struct S { func f() { this.f(); } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "f"}},
+			&BlockStatementNode{},
+			&IdentifierExpressionNode{Name: "this"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&CallExpressionNode{FunctionIdentifier: IdentifierExpressionNode{Name: "f"}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StaticMemberAccess verifies parsing of static member access
+func TestParser_StaticMemberAccess(t *testing.T) {
+	src := `Config.MAX`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IdentifierExpressionNode{Name: "Config"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "MAX"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StaticAssignment verifies parsing of assignment to static fields
+func TestParser_StaticAssignment(t *testing.T) {
+	src := `Config.retries = false`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IdentifierExpressionNode{Name: "Config"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "retries"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructMethodSelf verifies parsing of methods using self and this
+func TestParser_StructMethodSelf(t *testing.T) {
+	src := `struct A { func get() { return self.x + this.y; } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{
+				StructName: IdentifierExpressionNode{Name: "A"},
+			},
+			&FunctionStatementNode{
+				FuncName: IdentifierExpressionNode{Name: "get"},
+			},
+			&BlockStatementNode{},
+			&ReturnStatementNode{
+				ReturnToken: lexer.Token{Type: lexer.RETURN_KEY, Literal: "return"},
+			},
+			&IdentifierExpressionNode{Name: "self"},
+			&BinaryExpressionNode{
+				Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."},
+			},
+			&IdentifierExpressionNode{Name: "x"},
+			&BinaryExpressionNode{
+				Operation: lexer.Token{Type: lexer.PLUS_OP, Literal: "+"},
+			},
+			&IdentifierExpressionNode{Name: "this"},
+			&BinaryExpressionNode{
+				Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."},
+			},
+			&IdentifierExpressionNode{Name: "y"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructNestedLogic verifies parsing of complex logic inside struct methods
+func TestParser_StructNestedLogic(t *testing.T) {
+	src := `struct Logic { func run(x) { if (x > 0) { while(x > 0) { x = x - 1; } } return x; } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "Logic"}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "run"}},
+			&IdentifierExpressionNode{Name: "x"},
+			&BlockStatementNode{},
+			&IfExpressionNode{IfToken: lexer.Token{Type: lexer.IF_KEY, Literal: "if"}},
+			&IdentifierExpressionNode{Name: "x"},
+			&BooleanExpressionNode{Operation: lexer.Token{Type: lexer.GT_OP, Literal: ">"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&ParenthesizedExpressionNode{},
+			&BlockStatementNode{},
+			&WhileLoopStatementNode{WhileToken: lexer.Token{Type: lexer.WHILE_KEY, Literal: "while"}},
+			&IdentifierExpressionNode{Name: "x"},
+			&BooleanExpressionNode{Operation: lexer.Token{Type: lexer.GT_OP, Literal: ">"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&BlockStatementNode{},
+			&IdentifierExpressionNode{Name: "x"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&IdentifierExpressionNode{Name: "x"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.MINUS_OP, Literal: "-"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&ReturnStatementNode{ReturnToken: lexer.Token{Type: lexer.RETURN_KEY, Literal: "return"}},
+			&IdentifierExpressionNode{Name: "x"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructStaticComplex verifies parsing of complex static field usage
+func TestParser_StructStaticComplex(t *testing.T) {
+	src := `Config.max = Config.min + 10 * 2`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IdentifierExpressionNode{Name: "Config"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "max"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&IdentifierExpressionNode{Name: "Config"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "min"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.PLUS_OP, Literal: "+"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.MUL_OP, Literal: "*"}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructArrayFieldInit verifies parsing of array initialization in struct fields
+func TestParser_StructArrayFieldInit(t *testing.T) {
+	src := `struct Data { var items = [1, 2, 3]; }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "Data"}},
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Type: lexer.VAR_KEY, Literal: "var"},
+				Identifier: IdentifierExpressionNode{Name: "items"},
+			},
+			&ArrayExpressionNode{},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructMethodChainedCall verifies parsing of chained member access
+func TestParser_StructMethodChainedCall(t *testing.T) {
+	src := `obj.get().val`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&IdentifierExpressionNode{Name: "obj"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&CallExpressionNode{FunctionIdentifier: IdentifierExpressionNode{Name: "get"}},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "val"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_StructComplexConstructor verifies parsing of complex constructor logic
+func TestParser_StructComplexConstructor(t *testing.T) {
+	src := `struct Point { func init(x, y) { this.x = x; this.y = y; } }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "Point"}},
+			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "init"}},
+			&IdentifierExpressionNode{Name: "x"},
+			&IdentifierExpressionNode{Name: "y"},
+			&BlockStatementNode{},
+			&IdentifierExpressionNode{Name: "this"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "x"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&IdentifierExpressionNode{Name: "x"},
+			&IdentifierExpressionNode{Name: "this"},
+			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
+			&IdentifierExpressionNode{Name: "y"},
+			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
+			&IdentifierExpressionNode{Name: "y"},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}
+
+// TestParser_NewCallArgs verifies parsing of new struct instantiation with arguments
+func TestParser_NewCallArgs(t *testing.T) {
+	src := `var a = new A(1, true)`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+
+	testingVisitor := &TestingVisitor{
+		ExpectedNodes: []Node{
+			&DeclarativeStatementNode{
+				VarToken:   lexer.Token{Literal: "var"},
+				Identifier: IdentifierExpressionNode{Name: "a"},
+			},
+			&NewCallExpressionNode{
+				StructName: IdentifierExpressionNode{Name: "A"},
+			},
+			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+		},
+		Ptr: 0,
+		T:   t,
+	}
+	root.Accept(testingVisitor)
+}

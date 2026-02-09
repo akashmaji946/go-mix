@@ -2111,8 +2111,8 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
 				if p.Struct != tp {
 					t.Errorf("instance struct mismatch")
 				}
-				if len(p.Fields) != 0 {
-					t.Errorf("expected 0 fields, got %d", len(p.Fields))
+				if len(p.InstanceFields) != 0 {
+					t.Errorf("expected 0 fields, got %d", len(p.InstanceFields))
 				}
 			},
 		},
@@ -2135,8 +2135,8 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
 				if pa.Struct != tp || pb.Struct != tp {
 					t.Errorf("instance struct mismatch")
 				}
-				if len(pa.Fields) != 0 || len(pb.Fields) != 0 {
-					t.Errorf("expected 0 fields, got %d and %d", len(pa.Fields), len(pb.Fields))
+				if len(pa.InstanceFields) != 0 || len(pb.InstanceFields) != 0 {
+					t.Errorf("expected 0 fields, got %d and %d", len(pa.InstanceFields), len(pb.InstanceFields))
 				}
 			},
 		},
@@ -2240,4 +2240,330 @@ func TestEvaluator_StructThis(t *testing.T) {
 	e.SetParser(p)
 	result := e.Eval(root)
 	AssertInteger(t, result, 11)
+}
+
+// TestEvaluator_StructStaticFields verifies static field access and modification
+func TestEvaluator_StructStaticFields(t *testing.T) {
+	src := `
+	struct Config {
+		var count = 0;
+	}
+	Config.count = 10;
+	var c1 = new Config();
+	var c2 = new Config();
+	// Access via class and instances (fallback)
+	Config.count + c1.count + c2.count
+	`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	// 10 + 10 + 10 = 30
+	AssertInteger(t, result, 30)
+}
+
+// TestEvaluator_StructConstField verifies error when assigning to const field
+func TestEvaluator_StructConstField(t *testing.T) {
+	src := `
+	struct Math {
+		const PI = 3.14;
+	}
+	Math.PI = 3.14159;
+	`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertError(t, result, "ERROR: can't assign to constant field (PI) in struct (Math)")
+}
+
+// TestEvaluator_StructLetFieldType verifies type checking for let fields
+func TestEvaluator_StructLetFieldType(t *testing.T) {
+	src := `
+	struct User {
+		let name = "Anonymous";
+	}
+	User.name = 12345;
+	`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertError(t, result, "ERROR: can't assign `int` to field (name) of type `string` in struct (User)")
+}
+
+// TestEvaluator_StructSelfVsThis verifies distinction between self (static) and this (instance)
+func TestEvaluator_StructSelfVsThis(t *testing.T) {
+	src := `
+	struct Counter {
+		var total = 0; // static
+		func init(start) {
+			this.local = start; // instance
+		}
+		func increment() {
+			self.total += 1;
+			this.local += 1;
+		}
+		func get() {
+			return self.total + this.local;
+		}
+	}
+	var c1 = new Counter(10);
+	var c2 = new Counter(20);
+	c1.increment(); // total=1, c1.local=11
+	c2.increment(); // total=2, c2.local=21
+	c1.get() + c2.get() // (2+11) + (2+21) = 13 + 23 = 36
+	`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 36)
+}
+
+// TestEvaluator_StructComplexLogic verifies complex logic within struct methods
+func TestEvaluator_StructComplexLogic(t *testing.T) {
+	src := `
+	struct Processor {
+		const LIMIT = 5;
+		var processed = 0;
+		
+		func process(items) {
+			foreach item in items {
+				if (self.processed >= self.LIMIT) {
+					break;
+				}
+				if (item < 0) {
+					continue;
+				}
+				self.processed += 1;
+			}
+			return self.processed;
+		}
+	}
+	var p = new Processor();
+	// Should process 1, 2, 3, 4, 5. Skip -1. Stop at 6.
+	// Items: 1, -1, 2, 3, 4, 5, 6
+	p.process([1, -1, 2, 3, 4, 5, 6])
+	`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 5)
+}
+
+// TestEvaluator_StructFibonacci verifies recursion within a struct method
+func TestEvaluator_StructFibonacci(t *testing.T) {
+	src := `
+    struct Math {
+        func fib(n) {
+            if (n <= 1) { return n; }
+            return this.fib(n-1) + this.fib(n-2);
+        }
+    }
+    var m = new Math();
+    m.fib(10)
+    `
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 55)
+}
+
+// TestEvaluator_StructLinkedList verifies linked list creation with structs
+func TestEvaluator_StructLinkedList(t *testing.T) {
+	src := `
+    struct Node {
+        var next = nil;
+        func init(val) { this.val = val; }
+    }
+    var head = new Node(1);
+    head.next = new Node(2);
+    head.next.next = new Node(3);
+    head.val + head.next.val + head.next.next.val
+    `
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 6)
+}
+
+// TestEvaluator_StructStaticCounter verifies static fields for instance counting
+func TestEvaluator_StructStaticCounter(t *testing.T) {
+	src := `
+    struct Item {
+        var count = 0;
+        func init() { Item.count += 1; }
+    }
+    new Item();
+    new Item();
+    new Item();
+    Item.count
+    `
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 3)
+}
+
+// TestEvaluator_StructArrayManagement verifies array manipulation within struct
+func TestEvaluator_StructArrayManagement(t *testing.T) {
+	src := `
+    struct Stack {
+        var data = list();
+        func push(x) { pushback_list(this.data, x); }
+        func pop() { return popback_list(this.data); }
+    }
+    var s = new Stack();
+    s.push(10);
+    s.push(20);
+    s.pop() + s.pop()
+    `
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 30)
+}
+
+// TestEvaluator_StructNestedAccess verifies accessing nested struct fields
+func TestEvaluator_StructNestedAccess(t *testing.T) {
+	src := `
+    struct Inner { var val = 10; }
+    struct Outer { 
+        var inner = nil;
+        func init() { this.inner = new Inner(); }
+    }
+    var o = new Outer();
+    o.inner.val
+    `
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 10)
+}
+
+// TestEvaluator_StructConstProtection verifies error when modifying const static field
+func TestEvaluator_StructConstProtection(t *testing.T) {
+	src := `struct S { const VAL = 10; } S.VAL = 20;`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertError(t, result, "ERROR: can't assign to constant field (VAL) in struct (S)")
+}
+
+// TestEvaluator_StructLetTypeProtection verifies error when modifying let static field with wrong type
+func TestEvaluator_StructLetTypeProtection(t *testing.T) {
+	src := `struct S { let VAL = 10; } S.VAL = "hello";`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertError(t, result, "ERROR: can't assign `string` to field (VAL) of type `int` in struct (S)")
+}
+
+// TestEvaluator_StructStaticPersistence verifies static fields persist across instances
+func TestEvaluator_StructStaticPersistence(t *testing.T) {
+	src := `struct S { var count = 0; func inc() { S.count += 1; } } var s1 = new S(); var s2 = new S(); s1.inc(); s2.inc(); S.count`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 2)
+}
+
+// TestEvaluator_StructSelfAccess verifies self keyword accesses static fields
+func TestEvaluator_StructSelfAccess(t *testing.T) {
+	src := `struct S { var x = 10; func getX() { return self.x; } } var s = new S(); s.getX()`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 10)
+}
+
+// TestEvaluator_StructThisInstance verifies this keyword accesses instance fields
+func TestEvaluator_StructThisInstance(t *testing.T) {
+	src := `struct S { func init(v) { this.v = v; } func get() { return this.v; } } var s = new S(5); s.get()`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 5)
+}
+
+// TestEvaluator_StructShadowing verifies instance fields shadow static fields
+func TestEvaluator_StructShadowing(t *testing.T) {
+	src := `struct S { var x = 10; func init(v) { this.x = v; } func getStatic() { return self.x; } func getInstance() { return this.x; } } var s = new S(20); s.getStatic() + s.getInstance()`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 30)
+}
+
+// TestEvaluator_StructMethodChaining verifies method chaining by returning this
+func TestEvaluator_StructMethodChaining(t *testing.T) {
+	src := `struct S { var val = 100; func add(v) { self.val += v; return this; } } var s = new S(); var d = s.add(5).add(10).val; d;`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 115)
+}
+
+// TestEvaluator_StructArrayStatic verifies static array field shared across instances
+func TestEvaluator_StructArrayStatic(t *testing.T) {
+	src := `struct S { var list = []; func add(v) { self.list = push(self.list, v); } } var s1 = new S(); var s2 = new S(); s1.add(1); s2.add(2); length(S.list)`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 2)
+}
+
+// TestEvaluator_StructComplexLoop verifies complex loop logic in struct method
+func TestEvaluator_StructComplexLoop(t *testing.T) {
+	src := `struct Math { func sum(n) { var s = 0; for(var i=1; i<=n; i+=1) { s += i; } return s; } } var m = new Math(); m.sum(5)`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 15)
+}
+
+// TestEvaluator_StructFibonacciRecursive verifies recursive method call in struct
+func TestEvaluator_StructFibonacciRecursive(t *testing.T) {
+	src := `struct Fib { func calc(n) { if (n <= 1) { return n; } return this.calc(n-1) + this.calc(n-2); } } var f = new Fib(); f.calc(6)`
+	p := parser.NewParser(src)
+	root := p.Parse()
+	e := NewEvaluator()
+	e.SetParser(p)
+	result := e.Eval(root)
+	AssertInteger(t, result, 8)
 }

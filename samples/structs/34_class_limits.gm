@@ -1,0 +1,25 @@
+struct Container {
+    const MAX_CAPACITY = 5;
+    let currentLoad = 0; // int
+    var items = list();
+
+    func init(incomingItems) {
+        foreach item in incomingItems {
+            if (Container.currentLoad >= Container.MAX_CAPACITY) {
+                println("Capacity reached, stopping load.");
+                break;
+            }
+            if (item == "skip") {
+                continue;
+            }
+            // Use static list
+            pushback_list(Container.items, item);
+            Container.currentLoad += 1;
+            println("Loaded: " + item);
+        }
+    }
+}
+
+var data = ["a", "b", "skip", "c", "d", "e", "f"];
+var c = new Container(data);
+println("Final load: ", Container.currentLoad);

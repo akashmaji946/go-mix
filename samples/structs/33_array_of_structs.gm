@@ -1,0 +1,21 @@
+struct Product {
+    func init(name, price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+
+var inventory = [
+    new Product("Laptop", 1000),
+    new Product("Mouse", 25),
+    new Product("Keyboard", 50)
+];
+
+var totalValue = 0;
+
+foreach p in inventory {
+    println("Product: ", p.name, " ($", p.price, ")");
+    totalValue += p.price;
+}
+
+println("Total Inventory Value: $", totalValue);

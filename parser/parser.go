@@ -128,7 +128,7 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseReturnStatement, lexer.RETURN_KEY)
 
 	// Identifiers: variable names, function names
-	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID)
+	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID, lexer.THIS_KEY, lexer.SELF_KEY)
 
 	// Boolean literals: true, false
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
