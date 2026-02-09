@@ -1123,41 +1123,85 @@ func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.G
 //	true && false   // Returns Boolean(false)
 //	10 >= 10.0      // Returns Boolean(true) - mixed types
 func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objects.GoMixObject {
+	// Handle short-circuiting for logical operators
+	if n.Operation.Type == lexer.AND_OP {
+		left := e.Eval(n.Left)
+		if IsError(left) {
+			return left
+		}
+		if left.GetType() != objects.BooleanType {
+			return e.CreateError("ERROR: left operand of '&&' must be a boolean, got %s", left.GetType())
+		}
+		if !left.(*objects.Boolean).Value {
+			return &objects.Boolean{Value: false} // short-circuit
+		}
+		// if left is true, the result is the boolean value of the right side
+		right := e.Eval(n.Right)
+		if IsError(right) {
+			return right
+		}
+		if right.GetType() != objects.BooleanType {
+			return e.CreateError("ERROR: right operand of '&&' must be a boolean, got %s", right.GetType())
+		}
+		return right // it's already a boolean object
+	}
+
+	if n.Operation.Type == lexer.OR_OP {
+		left := e.Eval(n.Left)
+		if IsError(left) {
+			return left
+		}
+		if left.GetType() != objects.BooleanType {
+			return e.CreateError("ERROR: left operand of '||' must be a boolean, got %s", left.GetType())
+		}
+		if left.(*objects.Boolean).Value {
+			return &objects.Boolean{Value: true} // short-circuit
+		}
+		// if left is false, the result is the boolean value of the right side
+		right := e.Eval(n.Right)
+		if IsError(right) {
+			return right
+		}
+		if right.GetType() != objects.BooleanType {
+			return e.CreateError("ERROR: right operand of '||' must be a boolean, got %s", right.GetType())
+		}
+		return right // it's already a boolean object
+	}
+
+	// For other operators, evaluate both sides
 	left := e.Eval(n.Left)
+	if IsError(left) {
+		return left
+	}
 	right := e.Eval(n.Right)
-
-	leftType := left.GetType()
-	rightType := right.GetType()
-
+	if IsError(right) {
+		return right
+	}
 	switch n.Operation.Type {
 	case lexer.EQ_OP:
 		return &objects.Boolean{Value: left.ToString() == right.ToString()}
 	case lexer.NE_OP:
 		return &objects.Boolean{Value: left.ToString() != right.ToString()}
 	case lexer.GT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
 			return &objects.Boolean{Value: left.(*objects.Integer).Value > right.(*objects.Integer).Value}
 		}
 		return &objects.Boolean{Value: toFloat64(left) > toFloat64(right)}
 	case lexer.LT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
 			return &objects.Boolean{Value: left.(*objects.Integer).Value < right.(*objects.Integer).Value}
 		}
 		return &objects.Boolean{Value: toFloat64(left) < toFloat64(right)}
 	case lexer.GE_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
 			return &objects.Boolean{Value: left.(*objects.Integer).Value >= right.(*objects.Integer).Value}
 		}
 		return &objects.Boolean{Value: toFloat64(left) >= toFloat64(right)}
 	case lexer.LE_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
+		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
 			return &objects.Boolean{Value: left.(*objects.Integer).Value <= right.(*objects.Integer).Value}
 		}
 		return &objects.Boolean{Value: toFloat64(left) <= toFloat64(right)}
-	case lexer.AND_OP:
-		return &objects.Boolean{Value: left.(*objects.Boolean).Value && right.(*objects.Boolean).Value}
-	case lexer.OR_OP:
-		return &objects.Boolean{Value: left.(*objects.Boolean).Value || right.(*objects.Boolean).Value}
 	}
 	return &objects.Nil{}
 }
