@@ -48,6 +48,8 @@ const (
 	ListType GoMixType = "list"
 	// TupleType represents immutable tuple objects (heterogeneous)
 	TupleType GoMixType = "tuple"
+	// StructType represents user-defined struct types
+	STRUCT_TYPE GoMixType = "struct"
 )
 
 // GoMixObject is the core interface that all GoMix objects must implement.

@@ -36,6 +36,15 @@ type Function struct {
 	Scp    *scope.Scope                       // Captured scope for closures
 }
 
+// GetName returns the name of the function.
+// This is used to satisfy the FunctionInterface in the objects package.
+//
+// Returns:
+//   - string: The name of the function
+func (f *Function) GetName() string {
+	return f.Name
+}
+
 // GetType returns the type identifier for this Function object.
 // This implements the objects.GoMixObject interface.
 // The function type is represented as "func" in the GoMix type system.

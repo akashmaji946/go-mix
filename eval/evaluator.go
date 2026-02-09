@@ -21,10 +21,11 @@ import (
 // It serves as the main execution engine for the GoMix interpreter,
 // managing the evaluation context and providing access to built-in functions.
 type Evaluator struct {
-	Par      *parser.Parser              // Parser instance for error reporting with line/column information
-	Scp      *scope.Scope                // Current scope for variable bindings and lexical scoping
-	Builtins map[string]*objects.Builtin // Map of builtin functions (e.g., print, len, push, pop)
-	Writer   io.Writer                   // Output writer for builtin functions (default: os.Stdout)
+	Par      *parser.Parser                  // Parser instance for error reporting with line/column information
+	Scp      *scope.Scope                    // Current scope for variable bindings and lexical scoping
+	Builtins map[string]*objects.Builtin     // Map of builtin functions (e.g., print, len, push, pop)
+	Types    map[string]*objects.GoMixStruct // Map of user-defined struct types (name to struct definition)
+	Writer   io.Writer                       // Output writer for builtin functions (default: os.Stdout)
 }
 
 // NewEvaluator creates and initializes a new Evaluator instance with default configuration.
@@ -48,6 +49,7 @@ func NewEvaluator() *Evaluator {
 		Par:      nil,
 		Scp:      scope.NewScope(nil),
 		Builtins: make(map[string]*objects.Builtin),
+		Types:    make(map[string]*objects.GoMixStruct),
 		Writer:   os.Stdout, // Default to stdout
 	}
 	for _, builtin := range objects.Builtins {

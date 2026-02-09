@@ -3778,3 +3778,126 @@ func TestParser_ListTupleNewBuiltins(t *testing.T) {
 		assert.Equal(t, tt.argCount, len(callExpr.Arguments))
 	}
 }
+
+// TestParser_Struct
+func TestParser_Struct(t *testing.T) {
+	src := `struct Point {}`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a struct declaration
+	structDecl, ok := root.Statements[0].(*StructDeclarationNode)
+	assert.True(t, ok)
+	assert.Equal(t, "Point", structDecl.StructName.Literal())
+	assert.Equal(t, 0, len(structDecl.Fields))
+	assert.Equal(t, "struct Point {}", structDecl.Literal())
+}
+
+// TestParser_StructInit verifies parsing of struct initialization
+func TestParser_StructInit(t *testing.T) {
+	src := `struct Point { func init(){} }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 1, len(root.Statements))
+	// Check the statement is a struct declaration
+	structDecl, ok := root.Statements[0].(*StructDeclarationNode)
+	assert.True(t, ok)
+	assert.Equal(t, "Point", structDecl.StructName.Literal())
+	assert.Equal(t, 0, len(structDecl.Fields))
+	assert.Equal(t, "struct Point {func init () {} }", structDecl.Literal())
+	assert.Equal(t, 1, len(structDecl.Methods))
+
+	// Check the field is an init function
+	initFunc := structDecl.Methods[0]
+	// assert.True(t, ok)
+	assert.Equal(t, "init", initFunc.FuncName.Literal())
+}
+
+// TestParser_StructMethods verifies parsing of struct methods
+func TestParser_StructMethods(t *testing.T) {
+	src := `struct Point { func init(){} func move(x, y){} }`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 1, len(root.Statements))
+
+	// Check the statement is a struct declaration
+	structDecl, ok := root.Statements[0].(*StructDeclarationNode)
+	assert.True(t, ok)
+	assert.Equal(t, "Point", structDecl.StructName.Literal())
+	assert.Equal(t, 0, len(structDecl.Fields))
+	assert.Equal(t, "struct Point {func init () {} func move (x,y) {} }", structDecl.Literal())
+	assert.Equal(t, 2, len(structDecl.Methods))
+
+	// Check the first method is an init function
+	initFunc := structDecl.Methods[0]
+	// assert.True(t, ok)
+	assert.Equal(t, "init", initFunc.FuncName.Literal())
+
+	// Check the second method is a move function
+	moveFunc := structDecl.Methods[1]
+	// assert.True(t, ok)
+	assert.Equal(t, "move", moveFunc.FuncName.Literal())
+}
+
+// TestParser_StructMethods verifies parsing of struct fields
+func TestParser_StructMethodsLayout(t *testing.T) {
+	tests := []struct {
+		Expr     string
+		Expected []Node
+	}{
+		{
+			Expr: `struct Point { func init(){} func move(x, y){} }; func foo(){};`,
+			Expected: []Node{
+				&StructDeclarationNode{
+					StructName: IdentifierExpressionNode{Name: "Point"},
+					Methods: []*FunctionStatementNode{
+						&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "init"}},
+						&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "move"}},
+					},
+				},
+				&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "init"}},
+				&BlockStatementNode{},
+				&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "move"}},
+				&IdentifierExpressionNode{Name: "x"},
+				&IdentifierExpressionNode{Name: "y"},
+				&BlockStatementNode{},
+				&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "foo"}},
+				&BlockStatementNode{},
+			},
+		},
+		{
+			Expr: `struct Point { func init(){} }; func foo(){};`,
+			Expected: []Node{
+				&StructDeclarationNode{
+					StructName: IdentifierExpressionNode{Name: "Point"},
+					Methods: []*FunctionStatementNode{
+						&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "init"}},
+					},
+				},
+				&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "init"}},
+				&BlockStatementNode{},
+				&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "foo"}},
+				&BlockStatementNode{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		parser := NewParser(tt.Expr)
+		root := parser.Parse()
+		assert.NotNil(t, root)
+		assert.False(t, parser.HasErrors())
+		assert.Equal(t, 2, len(root.Statements))
+		_, ok := root.Statements[0].(*StructDeclarationNode)
+		assert.True(t, ok)
+
+		testingVisitor := &TestingVisitor{
+			ExpectedNodes: tt.Expected,
+			Ptr:           0,
+			T:             t,
+		}
+		root.Accept(testingVisitor)
+
+	}
+}

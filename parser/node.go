@@ -55,6 +55,8 @@ type NodeVisitor interface {
 	VisitSetExpressionNode(node SetExpressionNode)     // Set literals: set{1, 2, 3}
 	VisitIndexExpressionNode(node IndexExpressionNode) // Array indexing: arr[0], arr[-1]
 	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
+	// Structs
+	VisitStructDeclarationNode(node StructDeclarationNode) // Struct definitions: struct Name { method1, method2, ... }
 
 	// Range and foreach visitors
 	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
@@ -949,5 +951,43 @@ func (node *SetExpressionNode) Statement() {
 
 // SetExpressionNode.Expression()
 func (node *SetExpressionNode) Expression() {
+
+}
+
+// StructDeclarationNode: represents a struct definition statement
+// Example: struct Person { name, age, greet() { ... } }
+type StructDeclarationNode struct {
+	StructToken lexer.Token                 // The 'struct' keyword token
+	StructName  IdentifierExpressionNode    // The struct name identifier
+	Fields      []*IdentifierExpressionNode // List of field identifiers
+	Methods     []*FunctionStatementNode    // List of method definitions (function statements)
+	Value       objects.GoMixObject         // The struct type object value
+}
+
+// StructDeclarationNode.Literal()
+func (node *StructDeclarationNode) Literal() string {
+	res := node.StructToken.Literal + " " + node.StructName.Name + " {"
+	for _, field := range node.Fields {
+		res += field.Literal() + "; "
+	}
+	for _, method := range node.Methods {
+		res += method.Literal() + " "
+	}
+	res += "}"
+	return res
+}
+
+// StructDeclarationNode.Accept()
+func (node *StructDeclarationNode) Accept(visitor NodeVisitor) {
+	visitor.VisitStructDeclarationNode(*node)
+}
+
+// StructDeclarationNode.Statement()
+func (node *StructDeclarationNode) Statement() {
+
+}
+
+// StructDeclarationNode.Expression()
+func (node *StructDeclarationNode) Expression() {
 
 }

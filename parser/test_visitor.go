@@ -36,6 +36,10 @@ func (v *TestingVisitor) VisitStatementNode(node StatementNode) {
 
 // VisitIntegerLiteralExpressionNode visits an integer literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	exp, ok := curr.(*IntegerLiteralExpressionNode)
@@ -46,6 +50,10 @@ func (v *TestingVisitor) VisitIntegerLiteralExpressionNode(node IntegerLiteralEx
 
 // VisitBooleanLiteralExpressionNode visits a boolean literal node and asserts its value and token type match expected
 func (v *TestingVisitor) VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	exp, ok := curr.(*BooleanLiteralExpressionNode)
@@ -58,6 +66,10 @@ func (v *TestingVisitor) VisitBooleanLiteralExpressionNode(node BooleanLiteralEx
 // VisitBinaryExpressionNode visits a binary expression node and asserts the operator matches expected
 func (v *TestingVisitor) VisitBinaryExpressionNode(node BinaryExpressionNode) {
 	node.Left.Accept(v)
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	exp, ok := curr.(*BinaryExpressionNode)
@@ -71,6 +83,10 @@ func (v *TestingVisitor) VisitBinaryExpressionNode(node BinaryExpressionNode) {
 // VisitUnaryExpressionNode visits a unary expression node and asserts the operator matches expected
 func (v *TestingVisitor) VisitUnaryExpressionNode(node UnaryExpressionNode) {
 	node.Right.Accept(v)
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	exp, ok := curr.(*UnaryExpressionNode)
@@ -83,6 +99,10 @@ func (v *TestingVisitor) VisitUnaryExpressionNode(node UnaryExpressionNode) {
 // VisitParenthesizedExpressionNode visits a parenthesized expression node and asserts its type
 func (v *TestingVisitor) VisitParenthesizedExpressionNode(node ParenthesizedExpressionNode) {
 	node.Expr.Accept(v)
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*ParenthesizedExpressionNode)
@@ -92,6 +112,10 @@ func (v *TestingVisitor) VisitParenthesizedExpressionNode(node ParenthesizedExpr
 
 // VisitDeclarativeStatementNode visits a variable declaration node and asserts the keyword and identifier match expected
 func (v *TestingVisitor) VisitDeclarativeStatementNode(node DeclarativeStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	currNode, ok := curr.(*DeclarativeStatementNode)
@@ -105,6 +129,10 @@ func (v *TestingVisitor) VisitDeclarativeStatementNode(node DeclarativeStatement
 
 // VisitIdentifierExpressionNode visits an identifier node and asserts its name matches expected
 func (v *TestingVisitor) VisitIdentifierExpressionNode(node IdentifierExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*IdentifierExpressionNode)
@@ -115,6 +143,10 @@ func (v *TestingVisitor) VisitIdentifierExpressionNode(node IdentifierExpression
 
 // VisitReturnStatementNode visits a return statement node and asserts its type
 func (v *TestingVisitor) VisitReturnStatementNode(node ReturnStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*ReturnStatementNode)
@@ -125,6 +157,10 @@ func (v *TestingVisitor) VisitReturnStatementNode(node ReturnStatementNode) {
 // VisitBooleanExpressionNode visits a boolean comparison/logical expression node and asserts its type
 func (v *TestingVisitor) VisitBooleanExpressionNode(node BooleanExpressionNode) {
 	node.Left.Accept(v)
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*BooleanExpressionNode)
@@ -135,6 +171,10 @@ func (v *TestingVisitor) VisitBooleanExpressionNode(node BooleanExpressionNode) 
 
 // VisitBlockStatementNode visits a block statement node and recursively visits all statements within
 func (v *TestingVisitor) VisitBlockStatementNode(node BlockStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*BlockStatementNode)
@@ -148,6 +188,10 @@ func (v *TestingVisitor) VisitBlockStatementNode(node BlockStatementNode) {
 
 // VisitAssignmentExpressionNode visits an assignment expression node and asserts the operator and operands match expected
 func (v *TestingVisitor) VisitAssignmentExpressionNode(node AssignmentExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*AssignmentExpressionNode)
@@ -160,6 +204,10 @@ func (v *TestingVisitor) VisitAssignmentExpressionNode(node AssignmentExpression
 
 // VisitIfExpressionNode visits an if-else expression node and asserts the if token matches expected
 func (v *TestingVisitor) VisitIfExpressionNode(node IfExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*IfExpressionNode)
@@ -173,6 +221,10 @@ func (v *TestingVisitor) VisitIfExpressionNode(node IfExpressionNode) {
 
 // VisitStringLiteralExpressionNode visits a string literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitStringLiteralExpressionNode(node StringLiteralExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*StringLiteralExpressionNode)
@@ -183,6 +235,10 @@ func (v *TestingVisitor) VisitStringLiteralExpressionNode(node StringLiteralExpr
 
 // VisitFloatLiteralExpressionNode visits a float literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*FloatLiteralExpressionNode)
@@ -193,6 +249,10 @@ func (v *TestingVisitor) VisitFloatLiteralExpressionNode(node FloatLiteralExpres
 
 // VisitNilLiteralExpressionNode visits a nil literal node and asserts its value matches expected
 func (v *TestingVisitor) VisitNilLiteralExpressionNode(node NilLiteralExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*NilLiteralExpressionNode)
@@ -203,6 +263,10 @@ func (v *TestingVisitor) VisitNilLiteralExpressionNode(node NilLiteralExpression
 
 // VisitFunctionStatementNode visits a function declaration node and asserts the function name matches expected
 func (v *TestingVisitor) VisitFunctionStatementNode(node FunctionStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*FunctionStatementNode)
@@ -218,6 +282,10 @@ func (v *TestingVisitor) VisitFunctionStatementNode(node FunctionStatementNode) 
 
 // VisitCallExpressionNode visits a function call expression node and asserts the function identifier matches expected
 func (v *TestingVisitor) VisitCallExpressionNode(node CallExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*CallExpressionNode)
@@ -232,6 +300,10 @@ func (v *TestingVisitor) VisitCallExpressionNode(node CallExpressionNode) {
 
 // VisitForLoopStatementNode visits a for loop node and recursively visits initializers, condition, updates, and body
 func (v *TestingVisitor) VisitForLoopStatementNode(node ForLoopStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*ForLoopStatementNode)
@@ -256,6 +328,10 @@ func (v *TestingVisitor) VisitForLoopStatementNode(node ForLoopStatementNode) {
 
 // VisitArrayExpressionNode visits an array literal node and recursively visits all elements
 func (v *TestingVisitor) VisitArrayExpressionNode(node ArrayExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*ArrayExpressionNode)
@@ -269,6 +345,10 @@ func (v *TestingVisitor) VisitArrayExpressionNode(node ArrayExpressionNode) {
 
 // VisitIndexExpressionNode visits an array index expression node and visits the array and index
 func (v *TestingVisitor) VisitIndexExpressionNode(node IndexExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*IndexExpressionNode)
@@ -281,6 +361,10 @@ func (v *TestingVisitor) VisitIndexExpressionNode(node IndexExpressionNode) {
 
 // VisitWhileLoopStatementNode visits a while loop node and recursively visits conditions and body
 func (v *TestingVisitor) VisitWhileLoopStatementNode(node WhileLoopStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*WhileLoopStatementNode)
@@ -297,6 +381,10 @@ func (v *TestingVisitor) VisitWhileLoopStatementNode(node WhileLoopStatementNode
 
 // VisitSliceExpressionNode visits an array slice expression node and visits the array, start, and end indices
 func (v *TestingVisitor) VisitSliceExpressionNode(node SliceExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*SliceExpressionNode)
@@ -314,6 +402,10 @@ func (v *TestingVisitor) VisitSliceExpressionNode(node SliceExpressionNode) {
 
 // VisitRangeExpressionNode visits a range expression node and visits the start and end expressions
 func (v *TestingVisitor) VisitRangeExpressionNode(node RangeExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*RangeExpressionNode)
@@ -326,6 +418,10 @@ func (v *TestingVisitor) VisitRangeExpressionNode(node RangeExpressionNode) {
 
 // VisitForeachLoopStatementNode visits a foreach loop node and visits the iterator, iterable, and body
 func (v *TestingVisitor) VisitForeachLoopStatementNode(node ForeachLoopStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*ForeachLoopStatementNode)
@@ -339,6 +435,10 @@ func (v *TestingVisitor) VisitForeachLoopStatementNode(node ForeachLoopStatement
 
 // VisitMapExpressionNode visits a map literal node and recursively visits all keys and values
 func (v *TestingVisitor) VisitMapExpressionNode(node MapExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*MapExpressionNode)
@@ -354,6 +454,10 @@ func (v *TestingVisitor) VisitMapExpressionNode(node MapExpressionNode) {
 
 // VisitSetExpressionNode visits a set literal node and recursively visits all elements
 func (v *TestingVisitor) VisitSetExpressionNode(node SetExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
 	// assert on type
 	curr := v.ExpectedNodes[v.Ptr]
 	_, ok := curr.(*SetExpressionNode)
@@ -363,6 +467,24 @@ func (v *TestingVisitor) VisitSetExpressionNode(node SetExpressionNode) {
 	// Visit all elements
 	for _, elem := range node.Elements {
 		elem.Accept(v)
+	}
+}
+
+// VisitStructDeclarationNode visits a struct declaration node and asserts the struct name matches expected, then visits all methods
+func (v *TestingVisitor) VisitStructDeclarationNode(node StructDeclarationNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*StructDeclarationNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.StructName.Literal(), curr.(*StructDeclarationNode).StructName.Literal())
+	v.Ptr++
+
+	for _, method := range node.Methods {
+		method.Accept(v)
 	}
 }
 

@@ -2017,3 +2017,32 @@ func TestEvaluator_TupleMixed2(t *testing.T) {
 	result := evaluator.Eval(rootNode)
 	AssertInteger(t, result, 3)
 }
+
+// TestEvaluator_Structs verifies struct creation and field access
+func TestEvaluator_Structs(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`struct Point { };`, ""},
+		{`struct Person { func init(){} }`, ""},
+		{`struct Rectangle { func init(x, y) {  } }`, ""},
+		{`struct Circle { func init(radius) { var area = 1.0; } }`, ""},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.GetType() == objects.ErrorType {
+			t.Errorf("unexpected error: %s", result.ToString())
+			continue
+		}
+		if result.GetType() != objects.STRUCT_TYPE {
+			t.Errorf("expected struct, got %s", result.GetType())
+		}
+
+	}
+}

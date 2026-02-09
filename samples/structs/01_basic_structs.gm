@@ -1,0 +1,93 @@
+// Basic Struct Declarations Test
+// This file demonstrates basic struct creation and type registration
+
+println("=== Basic Struct Declarations ===");
+
+// Test 1: Empty struct (no methods)
+println("\n--- Test 1: Empty struct ---");
+struct EmptyStruct {
+}
+println("Empty struct declared successfully");
+
+// Test 2: Struct with single method
+println("\n--- Test 2: Single method struct ---");
+struct Calculator {
+    func add(a, b) {
+        return a + b;
+    }
+}
+println("Calculator struct with 'add' method declared");
+
+// Test 3: Struct with multiple methods
+println("\n--- Test 3: Multiple methods struct ---");
+struct MathUtils {
+    func add(a, b) {
+        return a + b;
+    }
+    
+    func subtract(a, b) {
+        return a - b;
+    }
+    
+    func multiply(a, b) {
+        return a * b;
+    }
+}
+println("MathUtils struct with multiple methods declared");
+
+// Test 4: Struct with method that has no parameters
+println("\n--- Test 4: No-parameter methods ---");
+struct Greeter {
+    func sayHello() {
+        println("Hello, World!");
+    }
+    
+    func sayGoodbye() {
+        println("Goodbye!");
+    }
+}
+println("Greeter struct with no-parameter methods declared");
+
+// Test 5: Multiple struct declarations
+println("\n--- Test 5: Multiple struct types ---");
+struct Point {
+    func distance() {
+        return 0;
+    }
+}
+
+struct Circle {
+    func area() {
+        return 3.14;
+    }
+}
+
+struct Rectangle {
+    func perimeter() {
+        return 0;
+    }
+}
+println("Multiple struct types declared successfully");
+
+// Test 6: Struct with complex method body
+println("\n--- Test 6: Complex method bodies ---");
+struct LogicEngine {
+    func isEven(n) {
+        if (n % 2 == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    func factorial(n) {
+        if (n <= 1) {
+            return 1;
+        } else {
+            return n * factorial(n - 1);
+        }
+    }
+}
+println("LogicEngine struct with complex methods declared");
+
+println("\n=== All Basic Struct Tests Completed ===");

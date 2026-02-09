@@ -1119,4 +1119,54 @@ func TestMain_Main(t *testing.T) {
 	root105.Accept(visitor105)
 	fmt.Println(visitor105)
 
+	// Test 106: List and tuple with nested structures
+	src106 := `
+	var complex_list = list(tuple(1, 2), tuple(3, 4), tuple(5, 6));
+	var first_tuple = complex_list[0];
+	var second_elem = first_tuple[1];
+	second_elem
+	`
+	root106 := parser.NewParser(src106).Parse()
+	visitor106 := &PrintingVisitor{}
+	root106.Accept(visitor106)
+	fmt.Println(visitor106)
+
+	// Test 107: Empty list and tuple
+	src107 := `var empty_list = list(); var empty_tuple = tuple(); empty_list; empty_tuple;`
+	root107 := parser.NewParser(src107).Parse()
+	visitor107 := &PrintingVisitor{}
+	root107.Accept(visitor107)
+	fmt.Println(visitor107)
+
+	// Test 108: List and tuple with different data types
+	src108 := `
+	var mixed_list = list(1, "two", 3.0, true, func() { return "hello"; });
+	var mixed_tuple = tuple("start", 42, false, func() { return "world"; });
+	mixed_list; mixed_tuple;
+	`
+	root108 := parser.NewParser(src108).Parse()
+	visitor108 := &PrintingVisitor{}
+	root108.Accept(visitor108)
+	fmt.Println(visitor108)
+
+	// Test 109: struct creation
+	src109 := `var Point = struct Data {}`
+	root109 := parser.NewParser(src109).Parse()
+	visitor109 := &PrintingVisitor{}
+	root109.Accept(visitor109)
+	fmt.Println(visitor109)
+
+	// Test 110: struct with init
+	src110 := `var Point = struct Data { func init(){} }`
+	root110 := parser.NewParser(src110).Parse()
+	visitor110 := &PrintingVisitor{}
+	root110.Accept(visitor110)
+	fmt.Println(visitor110)
+
+	// Test 111: struct with other methods
+	src111 := `var Point = struct Data { func init(){} func move(x, y){} }`
+	root111 := parser.NewParser(src111).Parse()
+	visitor111 := &PrintingVisitor{}
+	root111.Accept(visitor111)
+	fmt.Println(visitor111)
 }

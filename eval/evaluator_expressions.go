@@ -96,6 +96,8 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 		return e.evalRangeExpression(n)
 	case *parser.ForeachLoopStatementNode:
 		return e.evalForeachLoop(n)
+	case *parser.StructDeclarationNode:
+		return e.evalStructDeclaration(n)
 	default:
 		return &objects.Nil{}
 	}
@@ -1208,6 +1210,11 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 		return &objects.Nil{}
 	}
 
+	// Handle range indexing
+	if left.GetType() == objects.RangeType {
+		return e.evalRangeIndexExpression(left, index)
+	}
+
 	// Handle array, list, and tuple indexing
 	leftType := left.GetType()
 	if leftType != objects.ArrayType && leftType != objects.ListType && leftType != objects.TupleType {
@@ -1250,6 +1257,52 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 	}
 
 	return elements[idx]
+}
+
+// evalRangeIndexExpression evaluates index access on range objects.
+// Returns the value at the specified index in the range sequence.
+// Example: range(1, 5)[0] returns 1, range(1, 5)[2] returns 3
+func (e *Evaluator) evalRangeIndexExpression(left, index objects.GoMixObject) objects.GoMixObject {
+	r := left.(*objects.Range)
+
+	// Check if index is an integer
+	if index.GetType() != objects.IntegerType {
+		return e.CreateError("ERROR: range index must be an integer, got '%s'", index.GetType())
+	}
+
+	idx := index.(*objects.Integer).Value
+	start := r.Start
+	end := r.End
+
+	// Calculate the size and direction of the range
+	var size int64
+	if start <= end {
+		size = end - start + 1
+	} else {
+		size = start - end + 1
+	}
+
+	// Handle negative indices (Python-style)
+	if idx < 0 {
+		idx = size + idx
+	}
+
+	// Bounds checking
+	if idx < 0 || idx >= size {
+		return e.CreateError("ERROR: range index out of bounds: index %d, size %d", idx, size)
+	}
+
+	// Calculate the value at the index
+	var value int64
+	if start <= end {
+		// Ascending range
+		value = start + idx
+	} else {
+		// Descending range
+		value = start - idx
+	}
+
+	return &objects.Integer{Value: value}
 }
 
 // evalSliceExpression evaluates array, list, and tuple slicing operations to extract sub-sequences.
@@ -1480,4 +1533,27 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMi
 	// Restore the original scope
 	e.Scp = oldScope
 	return result
+}
+
+func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objects.GoMixObject {
+	// Create a new struct type with the given name and fields
+	s := &objects.GoMixStruct{
+		Name:    n.StructName.Name,
+		Methods: make([]objects.FunctionInterface, 0),
+	}
+
+	for _, m := range n.Methods {
+		method := &function.Function{
+			Name:   m.FuncName.Name,
+			Params: m.FuncParams,
+			Body:   &m.FuncBody,
+			Scp:    e.Scp, // Capture the current scope for closures
+		}
+		if err := s.Add(method); err != nil {
+			return e.CreateError("ERROR: struct method '%s' already defined", method.Name)
+		}
+	}
+
+	e.Types[s.Name] = s
+	return s
 }

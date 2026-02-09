@@ -1,0 +1,50 @@
+// Struct Error Cases Test
+// This file tests error handling for invalid struct declarations
+
+println("=== Struct Error Cases Test ===");
+
+// Test 1: Duplicate method names (should error)
+println("\n--- Test 1: Duplicate method names ---");
+struct DuplicateTest {
+    func method1() {
+        return 1;
+    }
+    
+    func method1() {
+        return 2;
+    }
+}
+println("If you see this, duplicate detection failed!");
+
+// Test 2: Multiple duplicates
+println("\n--- Test 2: Multiple duplicate methods ---");
+struct MultiDuplicate {
+    func foo() {
+        return 1;
+    }
+    
+    func bar() {
+        return 2;
+    }
+    
+    func foo() {
+        return 3;
+    }
+}
+println("If you see this, duplicate detection failed!");
+
+// Test 3: Same method name, different parameters (still duplicate)
+println("\n--- Test 3: Same name, different params ---");
+struct OverloadAttempt {
+    func compute(x) {
+        return x;
+    }
+    
+    func compute(x, y) {
+        return x + y;
+    }
+}
+println("If you see this, duplicate detection failed!");
+
+println("\n=== Error Cases Tests Completed ===");
+println("Note: If tests passed, you should see error messages above!");

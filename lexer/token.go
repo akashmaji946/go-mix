@@ -154,8 +154,12 @@ const (
 	IN_KEY       TokenType = "in"       // In keyword for foreach loops
 	BREAK_KEY    TokenType = "break"    // Loop break keyword
 	CONTINUE_KEY TokenType = "continue" // Loop continue keyword
-	MAP_KEY      TokenType = "map"      // Map literal keyword
-	SET_KEY      TokenType = "set"      // Set literal keyword
+
+	// Data Structure Literals
+	ARRAY_KEY  TokenType = "array"  // Array literal keyword
+	MAP_KEY    TokenType = "map"    // Map literal keyword
+	SET_KEY    TokenType = "set"    // Set literal keyword
+	STRUCT_KEY TokenType = "struct" // Struct declaration keyword
 
 	// Identifiers
 	// Token types for user-defined names and character classes
@@ -230,6 +234,8 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"in":       IN_KEY,       // In keyword for foreach
 	"break":    BREAK_KEY,    // Break from loop
 	"continue": CONTINUE_KEY, // Continue to next iteration
+	"array":    ARRAY_KEY,    // Array literal
+	"struct":   STRUCT_KEY,   // Struct declaration
 	"map":      MAP_KEY,      // Map literal
 	"set":      SET_KEY,      // Set literal
 	"nil":      NIL_LIT,      // Nil/null value

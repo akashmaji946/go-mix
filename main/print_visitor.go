@@ -344,6 +344,18 @@ func (p *PrintingVisitor) VisitSetExpressionNode(node parser.SetExpressionNode) 
 	p.Indent -= INDENT_SIZE
 }
 
+// VisitStructDeclarationNode visits a struct declaration node and prints the struct details
+func (p *PrintingVisitor) VisitStructDeclarationNode(node parser.StructDeclarationNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Struct",
+		node.Literal(), node.Literal(), node.Value.ToObject()))
+	p.Indent += INDENT_SIZE
+	for _, method := range node.Methods {
+		method.Accept(p)
+	}
+	p.Indent -= INDENT_SIZE
+}
+
 // String returns the accumulated formatted output as a string
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

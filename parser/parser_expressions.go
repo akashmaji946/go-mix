@@ -68,6 +68,9 @@ func (par *Parser) parseStatement() StatementNode {
 	case lexer.FOREACH_KEY:
 		return par.parseForeachLoop()
 
+	case lexer.STRUCT_KEY:
+		return par.parseStructDeclaration()
+
 	default:
 		return par.parseExpression()
 	}
@@ -1986,6 +1989,57 @@ func (par *Parser) parseForeachLoop() StatementNode {
 		Iterable:     iterable,
 		Body:         *body,
 		Value:        &objects.Nil{},
+	}
+}
+
+// parseStructDeclaration parses struct declarations.
+//
+// Syntax:
+func (par *Parser) parseStructDeclaration() StatementNode {
+	structToken := par.CurrToken
+
+	// Expect struct name
+	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+		return nil
+	}
+	structName := IdentifierExpressionNode{
+		Name:  par.CurrToken.Literal,
+		Value: &objects.Nil{},
+	}
+
+	// Expect opening brace for struct body
+	if !par.expectAdvance(lexer.LEFT_BRACE) {
+		return nil
+	}
+
+	// Parse struct methods
+	methods := make([]*FunctionStatementNode, 0)
+	for par.NextToken.Type != lexer.RIGHT_BRACE {
+		par.advance()
+		if par.CurrToken.Type == lexer.FUNC_KEY {
+			method := par.parseFunctionStatement()
+			if method == nil {
+				return nil
+			}
+			methods = append(methods, method.(*FunctionStatementNode))
+		} else {
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: expected 'func' in struct body, got %s",
+				par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Type)
+			par.addError(msg)
+			return nil
+		}
+	}
+
+	// Expect closing brace for struct body
+	if !par.expectAdvance(lexer.RIGHT_BRACE) {
+		return nil
+	}
+
+	return &StructDeclarationNode{
+		StructToken: structToken,
+		StructName:  structName,
+		Methods:     methods,
+		Value:       &objects.Nil{},
 	}
 }
 

@@ -16,6 +16,7 @@ and integrates with the parser and evaluator to execute user input.
 package repl
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -177,6 +178,18 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 			break
 		}
 
+		// Check for scope command
+		if line == "/scope" {
+			printScope(writer, evaluator)
+			continue
+		}
+
+		// Check for clear command
+		if line == "/clear" {
+			clearScreen(writer)
+			continue
+		}
+
 		// Save the command to history for up/down arrow navigation
 		rl.SaveHistory(line)
 
@@ -255,4 +268,39 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 			yellowColor.Fprintf(writer, "%s\n", result.ToString())
 		}
 	}
+}
+
+// printScope displays the current scope of the evaluator.
+// This function prints all variables in the scope chain and all registered types.
+// It allows users to inspect what variables are currently defined and what types
+// are available in the current execution context.
+//
+// Parameters:
+//
+//	writer    - Output destination for scope information
+//	evaluator - The evaluator instance containing scope and type information
+func printScope(writer io.Writer, evaluator *eval.Evaluator) {
+	fmt.Fprintf(writer, "==== Variables ====\n")
+	scope := evaluator.Scp
+	for cur := scope; cur != nil; cur = cur.Parent {
+		for k, v := range cur.Variables {
+			fmt.Fprintf(writer, "%s => %v\n", k, v.GetType())
+		}
+	}
+	fmt.Fprintf(writer, "==== Types     ====\n")
+	for _, t := range evaluator.Types {
+		fmt.Fprintf(writer, "%s => %v\n", t.Name, t.GetType())
+	}
+}
+
+// clearScreen clears the terminal screen using ANSI escape codes.
+// This function works on Unix-like systems (Linux, macOS) and Windows 10+
+// It uses the escape sequence to clear the screen and move cursor to home position.
+//
+// Parameters:
+//
+//	writer - Output destination where the clear command is written
+func clearScreen(writer io.Writer) {
+	// ANSI escape code to clear screen and move cursor to home (0,0)
+	fmt.Fprint(writer, "\x1b[2J\x1b[H")
 }

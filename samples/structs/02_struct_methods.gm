@@ -1,0 +1,176 @@
+// Struct Methods Test
+// This file demonstrates method definitions with various features
+
+println("=== Struct Methods Test ===");
+
+// Test 1: Methods with multiple parameters
+println("\n--- Test 1: Multiple parameters ---");
+struct Calculator {
+    func add(a, b) {
+        return a + b;
+    }
+    
+    func addThree(a, b, c) {
+        return a + b + c;
+    }
+    
+    func addFour(a, b, c, d) {
+        return a + b + c + d;
+    }
+}
+println("Calculator with multi-parameter methods declared");
+
+// Test 2: Methods with return values
+println("\n--- Test 2: Return values ---");
+struct MathOps {
+    func square(x) {
+        return x * x;
+    }
+    
+    func cube(x) {
+        return x * x * x;
+    }
+    
+    func power(base, exp) {
+        var result = 1;
+        for (var i = 0; i < exp; i = i + 1) {
+            result = result * base;
+        }
+        return result;
+    }
+}
+println("MathOps with return value methods declared");
+
+// Test 3: Methods using loops
+println("\n--- Test 3: Methods with loops ---");
+struct Looper {
+    func countTo(n) {
+        for (var i = 1; i <= n; i = i + 1) {
+            println("Count:", i);
+        }
+        return n;
+    }
+    
+    func sumRange(start, end) {
+        var sum = 0;
+        for (var i = start; i <= end; i = i + 1) {
+            sum = sum + i;
+        }
+        return sum;
+    }
+}
+println("Looper with loop-based methods declared");
+
+// Test 4: Methods with conditionals
+println("\n--- Test 4: Methods with conditionals ---");
+struct DecisionMaker {
+    func max(a, b) {
+        if (a > b) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+    
+    func min(a, b) {
+        if (a < b) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+    
+    func abs(x) {
+        if (x < 0) {
+            return -x;
+        } else {
+            return x;
+        }
+    }
+}
+println("DecisionMaker with conditional methods declared");
+
+// Test 5: Methods calling other methods (when supported)
+println("\n--- Test 5: Recursive methods ---");
+struct RecursionDemo {
+    func factorial(n) {
+        if (n <= 1) {
+            return 1;
+        } else {
+            return n * factorial(n - 1);
+        }
+    }
+    
+    func fibonacci(n) {
+        if (n <= 1) {
+            return n;
+        } else {
+            return fibonacci(n - 1) + fibonacci(n - 2);
+        }
+    }
+}
+println("RecursionDemo with recursive methods declared");
+
+// Test 6: Methods with various data types
+println("\n--- Test 6: Methods with different types ---");
+struct TypeHandler {
+    func concat(a, b) {
+        return a + b;
+    }
+    
+    func isPositive(n) {
+        return n > 0;
+    }
+    
+    func greet(name) {
+        return "Hello, " + name;
+    }
+}
+println("TypeHandler with various type methods declared");
+
+// Test 7: Methods with no return statement
+println("\n--- Test 7: Void-like methods ---");
+struct Printer {
+    func printMessage(msg) {
+        println("Message:", msg);
+    }
+    
+    func printTwice(msg) {
+        println("First:", msg);
+        println("Second:", msg);
+    }
+}
+println("Printer with no-return methods declared");
+
+// Test 8: Complex nested logic
+println("\n--- Test 8: Complex nested logic ---");
+struct Validator {
+    func isValidAge(age) {
+        if (age >= 0) {
+            if (age <= 120) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    func grade(score) {
+        if (score >= 90) {
+            return "A";
+        } else if (score >= 80) {
+            return "B";
+        } else if (score >= 70) {
+            return "C";
+        } else if (score >= 60) {
+            return "D";
+        } else {
+            return "F";
+        }
+    }
+}
+println("Validator with complex logic methods declared");
+
+println("\n=== All Struct Methods Tests Completed ===");
