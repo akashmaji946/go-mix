@@ -18,18 +18,22 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var arrayMethods = []*Builtin{
-	{Name: "push_array", Callback: push},          // Adds an element to the end of the array
-	{Name: "pop_array", Callback: pop},            // Removes and returns the last element of the array
-	{Name: "shift_array", Callback: shift},        // Removes and returns the first element of the array
-	{Name: "unshift_array", Callback: unshift},    // Adds an element to the beginning of the array
-	{Name: "sort_array", Callback: sortArray},     // Sorts the elements of the array in-place
-	{Name: "sorted_array", Callback: sortedArray}, // Returns a new sorted array
-	{Name: "clone_array", Callback: cloneArray},   // Returns a shallow copy of the array
-	{Name: "csort", Callback: csort},              // Custom sort for an array using a comparator
-	{Name: "csorted", Callback: csorted},          // Returns a new sorted array using a comparator
-	{Name: "map_array", Callback: mapArray},       // Applies a function to each element
-	{Name: "filter_array", Callback: filterArray}, // Filters elements based on a predicate
-	{Name: "reduce_array", Callback: reduceArray}, // Accumulates a value across an array
+	{Name: "push_array", Callback: push},            // Adds an element to the end of the array
+	{Name: "pop_array", Callback: pop},              // Removes and returns the last element of the array
+	{Name: "shift_array", Callback: shift},          // Removes and returns the first element of the array
+	{Name: "unshift_array", Callback: unshift},      // Adds an element to the beginning of the array
+	{Name: "sort_array", Callback: sortArray},       // Sorts the elements of the array in-place
+	{Name: "sorted_array", Callback: sortedArray},   // Returns a new sorted array
+	{Name: "clone_array", Callback: cloneArray},     // Returns a shallow copy of the array
+	{Name: "csort", Callback: csort},                // Custom sort for an array using a comparator
+	{Name: "csorted", Callback: csorted},            // Returns a new sorted array using a comparator
+	{Name: "map_array", Callback: mapArray},         // Applies a function to each element
+	{Name: "filter_array", Callback: filterArray},   // Filters elements based on a predicate
+	{Name: "reduce_array", Callback: reduceArray},   // Accumulates a value across an array
+	{Name: "find_array", Callback: findArray},       // Finds the first element matching a predicate
+	{Name: "some_array", Callback: someArray},       // Checks if at least one element matches
+	{Name: "every_array", Callback: everyArray},     // Checks if all elements match
+	{Name: "reverse_array", Callback: reverseArray}, // Returns a new reversed array
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -65,15 +69,11 @@ func push(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 
 	// Type assert to *Array
 	arr := args[0].(*Array)
-	// Create a new slice with space for the additional element
-	newElements := make([]GoMixObject, len(arr.Elements)+1)
-	// Copy existing elements
-	copy(newElements, arr.Elements)
-	// Add the new element at the end
-	newElements[len(arr.Elements)] = args[1]
+	// Append the new element in-place
+	arr.Elements = append(arr.Elements, args[1])
 
 	// Return the modified array
-	return &Array{Elements: newElements}
+	return arr
 }
 
 // sortArray sorts the elements of an array in-place.
@@ -364,6 +364,101 @@ func reduceArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject 
 	return accumulator
 }
 
+// findArray returns the first element that satisfies the provided testing function.
+// If no values satisfy the testing function, nil is returned.
+func findArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: find_array expects 2 arguments (array, function)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: first argument to `find_array` must be an array")
+	}
+	fn := args[1]
+
+	for _, elem := range arr.Elements {
+		res := rt.CallFunction(fn, elem)
+		if IsTruthy(res) {
+			return elem
+		}
+	}
+	return &Nil{}
+}
+
+// someArray tests whether at least one element in the array passes the test.
+func someArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: some_array expects 2 arguments (array, function)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: first argument to `some_array` must be an array")
+	}
+	fn := args[1]
+
+	for _, elem := range arr.Elements {
+		res := rt.CallFunction(fn, elem)
+		if IsTruthy(res) {
+			return &Boolean{Value: true}
+		}
+	}
+	return &Boolean{Value: false}
+}
+
+// everyArray tests whether all elements in the array pass the test.
+func everyArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: every_array expects 2 arguments (array, function)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: first argument to `every_array` must be an array")
+	}
+	fn := args[1]
+
+	for _, elem := range arr.Elements {
+		res := rt.CallFunction(fn, elem)
+		if !IsTruthy(res) {
+			return &Boolean{Value: false}
+		}
+	}
+	return &Boolean{Value: true}
+}
+
+// reverseArray returns a new array with the elements in reverse order.
+func reverseArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: reverse_array expects 1 argument (array)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: argument to `reverse_array` must be an array")
+	}
+
+	n := len(arr.Elements)
+	newElements := make([]GoMixObject, n)
+	for i, elem := range arr.Elements {
+		newElements[n-1-i] = elem
+	}
+	return &Array{Elements: newElements}
+}
+
+// IsTruthy is a helper to determine the boolean value of a GoMixObject.
+func IsTruthy(obj GoMixObject) bool {
+	switch v := obj.(type) {
+	case *Boolean:
+		return v.Value
+	case *Integer:
+		return v.Value != 0
+	case *Nil:
+		return false
+	case *String:
+		return len(v.Value) > 0
+	default:
+		return true
+	}
+}
+
 // pop removes and returns the last element from an array.
 // It takes one argument: the array to modify.
 // If the array is empty or arguments are invalid, it returns an error.
@@ -475,13 +570,9 @@ func unshift(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 
 	// Type assert to *Array
 	arr := args[0].(*Array)
-	// Create a new slice with space for the additional element at the front
-	newElements := make([]GoMixObject, len(arr.Elements)+1)
-	// Place the new element at index 0
-	newElements[0] = args[1]
-	// Copy the existing elements starting from index 1
-	copy(newElements[1:], arr.Elements)
+	// Prepend the new element in-place
+	arr.Elements = append([]GoMixObject{args[1]}, arr.Elements...)
 
 	// Return the modified array
-	return &Array{Elements: newElements}
+	return arr
 }

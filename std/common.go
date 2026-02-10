@@ -20,25 +20,30 @@ import (
 // commonMethods is a slice of common builtin functions that are always available.
 // These include printing functions, length calculation, and string conversion.
 var commonMethods = []*Builtin{
-	{Name: "print", Callback: print},           // Prints arguments without a newline
-	{Name: "println", Callback: println},       // Prints arguments with a newline
-	{Name: "printf", Callback: printf},         // Prints formatted string with arguments
-	{Name: "length", Callback: length},         // Returns the length of strings or arrays
-	{Name: "tostring", Callback: tostring},     // Converts an object to its string representation
-	{Name: "range", Callback: rangeFunc},       // Creates an inclusive range from start to end
-	{Name: "typeof", Callback: typeofFunc},     // Returns the type of a GoMix object as a string
-	{Name: "size", Callback: length},           // Alias for length - returns the size of strings, arrays, maps, or sets
-	{Name: "array", Callback: arrayFunc},       // Converts any iterable to a new array
-	{Name: "sorted", Callback: sortedArray},    // Returns a new sorted array
-	{Name: "sort", Callback: sortArray},        // Sorts an array in-place
-	{Name: "csort", Callback: csort},           // Custom sort for an array using a comparator
-	{Name: "csorted", Callback: csorted},       // Returns a new sorted array using a comparator
-	{Name: "map", Callback: mapArray},          // Applies a function to each element
-	{Name: "filter", Callback: filterArray},    // Filters elements based on a predicate
-	{Name: "reduce", Callback: reduceArray},    // Accumulates a value across an array
-	{Name: "str", Callback: tostring},          // Alias for tostring - converts an object to a string
-	{Name: "addr", Callback: addrFunc},         // Returns the memory address of an object as an integer
-	{Name: "is_same_ref", Callback: isSameRef}, // Checks if two objects point to the same memory address
+	{Name: "print", Callback: print},                  // Prints arguments without a newline
+	{Name: "println", Callback: println},              // Prints arguments with a newline
+	{Name: "printf", Callback: printf},                // Prints formatted string with arguments
+	{Name: "length", Callback: length},                // Returns the length of strings or arrays
+	{Name: "tostring", Callback: tostring},            // Converts an object to its string representation
+	{Name: "range", Callback: rangeFunc},              // Creates an inclusive range from start to end
+	{Name: "typeof", Callback: typeofFunc},            // Returns the type of a GoMix object as a string
+	{Name: "size", Callback: length},                  // Alias for length - returns the size of strings, arrays, maps, or sets
+	{Name: "array", Callback: arrayFunc},              // Converts any iterable to a new array
+	{Name: "sorted", Callback: sortedArray},           // Returns a new sorted array
+	{Name: "sort", Callback: sortArray},               // Sorts an array in-place
+	{Name: "csort", Callback: csort},                  // Custom sort for an array using a comparator
+	{Name: "csorted", Callback: csorted},              // Returns a new sorted array using a comparator
+	{Name: "map", Callback: mapArray},                 // Applies a function to each element
+	{Name: "filter", Callback: filterArray},           // Filters elements based on a predicate
+	{Name: "reduce", Callback: reduceArray},           // Accumulates a value across an array
+	{Name: "find", Callback: findArray},               // Finds the first element matching a predicate
+	{Name: "some", Callback: someArray},               // Checks if at least one element matches
+	{Name: "every", Callback: everyArray},             // Checks if all elements match
+	{Name: "reverse", Callback: reverseArray},         // Returns a new reversed array
+	{Name: "json_encode", Callback: jsonStringEncode}, // Alias for json_string_encode
+	{Name: "str", Callback: tostring},                 // Alias for tostring - converts an object to a string
+	{Name: "addr", Callback: addrFunc},                // Returns the memory address of an object as an integer
+	{Name: "is_same_ref", Callback: isSameRef},        // Checks if two objects point to the same memory address
 }
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
@@ -63,7 +68,7 @@ func tostring(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
 	// Return the string representation wrapped in quotes
-	return &String{Value: fmt.Sprintf("%s", args[0].ToString())}
+	return &String{Value: args[0].ToString()}
 }
 
 // print outputs the string representations of its arguments to the writer without a trailing newline.
@@ -104,11 +109,11 @@ func println(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Build the output string by concatenating string representations with spaces
 	res := ""
 	for _, arg := range args {
-		res += arg.ToString() + ""
+		res += arg.ToString() + " "
 	}
 	// Remove the trailing space if there are arguments
 	if len(args) > 0 {
-		res = res[:len(res)]
+		res = res[:len(res)-1]
 	}
 	// Print to the writer with a newline
 	fmt.Fprintln(writer, res)

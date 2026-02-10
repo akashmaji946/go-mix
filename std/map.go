@@ -25,6 +25,7 @@ var mapMethods = []*Builtin{
 	{Name: "contain_map", Callback: mapContain},                  // Checks if a map contains a key
 	{Name: "enumerate_map", Callback: mapEnumerate},              // Returns array of [key, value] pairs
 	{Name: "json_string_decode_map", Callback: jsonStringDecode}, // Decodes a JSON string into a map
+	{Name: "json_string_encode_map", Callback: jsonStringEncode}, // Encodes a GoMix object to JSON string
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -249,6 +250,52 @@ func jsonStringDecode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixOb
 	}
 
 	return convertToGoMix(data)
+}
+
+// jsonStringEncode converts a GoMix object into a JSON string.
+func jsonStringEncode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: json_string_encode expects 1 argument")
+	}
+
+	data := convertFromGoMix(args[0])
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return createError("ERROR: failed to encode JSON: %v", err)
+	}
+
+	return &String{Value: string(bytes)}
+}
+
+func convertFromGoMix(obj GoMixObject) interface{} {
+	switch obj.GetType() {
+	case ArrayType:
+		arr := obj.(*Array)
+		res := make([]interface{}, len(arr.Elements))
+		for i, e := range arr.Elements {
+			res[i] = convertFromGoMix(e)
+		}
+		return res
+	case MapType:
+		m := obj.(*Map)
+		res := make(map[string]interface{})
+		for k, v := range m.Pairs {
+			res[k] = convertFromGoMix(v)
+		}
+		return res
+	case IntegerType:
+		return obj.(*Integer).Value
+	case FloatType:
+		return obj.(*Float).Value
+	case BooleanType:
+		return obj.(*Boolean).Value
+	case StringType:
+		return obj.(*String).Value
+	case NilType:
+		return nil
+	default:
+		return obj.ToString()
+	}
 }
 
 // convertToGoMix recursively converts Go native types from json.Unmarshal

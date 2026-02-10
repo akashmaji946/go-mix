@@ -2897,3 +2897,36 @@ func TestEvaluator_ReduceArray(t *testing.T) {
 	result := evaluator.Eval(rootNode)
 	AssertInteger(t, result, 10)
 }
+
+// TestEvaluator_FindArray verifies the find_array builtin function
+func TestEvaluator_FindArray(t *testing.T) {
+	input := `
+		var a = [1, 2, 3, 4];
+		var found = find(a, func(x) { return x > 2; });
+		found
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 3)
+}
+
+// TestEvaluator_JSONEncode verifies the json_encode builtin function
+func TestEvaluator_JSONEncode(t *testing.T) {
+	input := `
+		var m = map{"a": 1, "b": [true, nil]};
+		json_encode(m)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	// JSON map keys are sorted alphabetically by Go's json.Marshal
+	expected := `{"a":1,"b":[true,null]}`
+	if result.ToString() != expected {
+		t.Errorf("expected %s, got %s", expected, result.ToString())
+	}
+}
