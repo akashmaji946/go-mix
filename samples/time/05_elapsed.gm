@@ -1,0 +1,12 @@
+var start = now_ms();
+println("Starting heavy calculation...");
+
+var sum = 0;
+for (var i = 0; i < 100000; i += 1) {
+    sum += i;
+}
+
+var end = now_ms();
+var elapsed = end - start;
+println("Calculation finished.");
+println("Elapsed time: " + elapsed + " ms");

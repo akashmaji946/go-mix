@@ -1,0 +1,7 @@
+var dateStr = "2023-12-25";
++var layout = "2006-01-02";
+var ts = parse_time(dateStr, layout);
+println("Parsed timestamp for " + dateStr + ": " + ts);
+
+var backToDate = format_time(ts, "Jan 02, 2006");
+println("Formatted back: " + backToDate);

@@ -1,0 +1,4 @@
+var nums = [1, 2, 3, 4, 5];
+var sum = reduce(nums, func(acc, x) { return acc + x; }, 0);
+
+println("Sum of " + tostring(nums) + " is " + sum);

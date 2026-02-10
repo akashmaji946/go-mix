@@ -1,0 +1,6 @@
+var t = now();
+var layout = "2006-01-02 15:04:05";
+var formatted = format_time(t, layout);
+println("Formatted time: " + formatted);
+
+println("Date only: " + format_time(t, "2006-01-02"));

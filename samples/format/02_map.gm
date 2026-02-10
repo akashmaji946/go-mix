@@ -1,0 +1,5 @@
+var nums = [1, 2, 3, 4, 5];
+var squared = map(nums, func(x) { return x * x; });
+
+println("Original: " + tostring(nums));
+println("Squared: " + tostring(squared));

@@ -1,0 +1,6 @@
+var myArgs = args();
+println("Number of arguments: " + length(myArgs));
+
+foreach a in myArgs {
+    println("Arg: " + a);
+}

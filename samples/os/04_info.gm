@@ -1,0 +1,3 @@
+println("Process ID: " + getpid());
+println("Hostname: " + hostname());
+println("Current User: " + user());

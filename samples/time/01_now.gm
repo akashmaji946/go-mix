@@ -1,0 +1,8 @@
+var t = now();
+println("Current Unix timestamp (seconds): " + t);
+
+var ms = now_ms();
+println("Current timestamp in milliseconds: " + ms);
+
+var utc = utc_now();
+println("Current UTC timestamp: " + utc);

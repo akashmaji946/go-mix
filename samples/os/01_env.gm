@@ -1,0 +1,8 @@
+var path = getenv("PATH");
+println("PATH: " + path);
+
+setenv("GOMIX_VAR", "hello_world");
+println("GOMIX_VAR: " + getenv("GOMIX_VAR"));
+
+unsetenv("GOMIX_VAR");
+println("GOMIX_VAR after unset: " + getenv("GOMIX_VAR"));

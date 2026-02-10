@@ -1,0 +1,2 @@
+var tz = timezone();
+println("Current system timezone: " + tz);
