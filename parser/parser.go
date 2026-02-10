@@ -124,6 +124,9 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseNumberLiteral, lexer.INT_LIT)
 	par.registerUnaryFuncs(par.parseFloatLiteral, lexer.FLOAT_LIT)
 
+	// Char literals: 'a'
+	par.registerUnaryFuncs(par.parseCharLiteral, lexer.CHAR_LIT)
+
 	// Return statements: return expr
 	par.registerUnaryFuncs(par.parseReturnStatement, lexer.RETURN_KEY)
 

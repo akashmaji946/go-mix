@@ -256,6 +256,9 @@ func (lex *Lexer) NextToken() Token {
 	case '"':
 		// String literal - delegate to specialized handler
 		return readStringLiteral(lex)
+	case '\'':
+		// Character literal - delegate to specialized handler
+		return readCharLiteral(lex)
 	default:
 		// Check for numeric literals, identifiers, or invalid characters
 		if isNumeric(lex.Current) {

@@ -72,6 +72,21 @@ func (v *TestingVisitor) VisitBooleanLiteralExpressionNode(node BooleanLiteralEx
 	v.Ptr++
 }
 
+func (v *TestingVisitor) VisitCharLiteralExpressionNode(node CharLiteralExpressionNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	exp, ok := curr.(*CharLiteralExpressionNode)
+	assert.True(v.T, ok)
+	if ok {
+		assert.Equal(v.T, node.Value, exp.Value)
+	}
+	v.Ptr++
+}
+
 // VisitBinaryExpressionNode visits a binary expression node and asserts the operator matches expected
 func (v *TestingVisitor) VisitBinaryExpressionNode(node BinaryExpressionNode) {
 	node.Left.Accept(v)

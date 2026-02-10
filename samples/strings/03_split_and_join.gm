@@ -1,0 +1,14 @@
+// 03_split_and_join.gm: Demonstrates splitting and joining strings
+var csv = "apple,banana,cherry,date";
+println("CSV string: " + csv);
+
+var fruits = split(csv, ",");
+println("Split into array: " + fruits);
+
+var joined = join(fruits, " | ");
+println("Joined with pipe: " + joined);
+
+println("Iterating over fruits:");
+foreach f in fruits {
+    println("- " + capitalize(f));
+}

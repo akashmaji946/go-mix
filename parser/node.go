@@ -21,6 +21,7 @@ type NodeVisitor interface {
 	// Literal value visitors - handle primitive data types
 	VisitIntegerLiteralExpressionNode(node IntegerLiteralExpressionNode) // Integer literals: 42, -15, 0
 	VisitBooleanLiteralExpressionNode(node BooleanLiteralExpressionNode) // Boolean literals: true, false
+	VisitCharLiteralExpressionNode(node CharLiteralExpressionNode)       // Char literals: 'a'
 	VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode)     // Float literals: 3.14, -2.5
 	VisitStringLiteralExpressionNode(node StringLiteralExpressionNode)   // String literals: "hello", 'world'
 	VisitNilLiteralExpressionNode(node NilLiteralExpressionNode)         // Nil/null literal
@@ -1063,3 +1064,23 @@ func (node *ContinueStatementNode) Accept(visitor NodeVisitor) {
 }
 
 func (node *ContinueStatementNode) Statement() {}
+
+// CharLiteralExpressionNode: represents a character literal
+type CharLiteralExpressionNode struct {
+	Token lexer.Token
+	Value std.GoMixObject
+}
+
+func (node *CharLiteralExpressionNode) Literal() string {
+	return node.Token.Literal
+}
+
+func (node *CharLiteralExpressionNode) Accept(visitor NodeVisitor) {
+	visitor.VisitCharLiteralExpressionNode(*node)
+}
+
+func (node *CharLiteralExpressionNode) Statement() {
+}
+
+func (node *CharLiteralExpressionNode) Expression() {
+}

@@ -104,6 +104,7 @@ const (
 	// Token types for literal values in the source code
 	INT_LIT    TokenType = "IntLiteral"    // Integer literal (e.g., 42, -10)
 	FLOAT_LIT  TokenType = "FloatLiteral"  // Floating-point literal (e.g., 3.14, -0.5)
+	CHAR_LIT   TokenType = "CharLiteral"   // Character literal (e.g., 'a', '\n')
 	STRING_LIT TokenType = "StringLiteral" // String literal (e.g., "hello")
 	BOOL_LIT   TokenType = "BoolLiteral"   // Boolean literal (true or false)
 	NIL_LIT    TokenType = "NilLiteral"    // Nil/null literal

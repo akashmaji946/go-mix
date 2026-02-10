@@ -4578,3 +4578,29 @@ func TestParser_NewCallArgs(t *testing.T) {
 	}
 	root.Accept(testingVisitor)
 }
+
+// TestParser_StringFunctions verifies parsing of string builtin function calls
+func TestParser_StringFunctions(t *testing.T) {
+	tests := []struct {
+		src      string
+		funcName string
+		argCount int
+	}{
+		{`upper("hello")`, "upper", 1},
+		{`trim("  space  ")`, "trim", 1},
+		{`split("a,b,c", ",")`, "split", 2},
+		{`ord('A')`, "ord", 1},
+		{`substring("hello", 1, 2)`, "substring", 3},
+	}
+
+	for _, tt := range tests {
+		root := NewParser(tt.src).Parse()
+		assert.NotNil(t, root)
+		assert.Equal(t, 1, len(root.Statements))
+
+		callExpr, ok := root.Statements[0].(*CallExpressionNode)
+		assert.True(t, ok)
+		assert.Equal(t, tt.funcName, callExpr.FunctionIdentifier.Name)
+		assert.Equal(t, tt.argCount, len(callExpr.Arguments))
+	}
+}

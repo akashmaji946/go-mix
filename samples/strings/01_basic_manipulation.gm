@@ -1,0 +1,12 @@
+// 01_basic_manipulation.gm: Demonstrates case conversion and trimming
+var text = "   Hello Go-Mix!   ";
+
+println("Original: '" + text + "'");
+println("Upper: '" + upper(text) + "'");
+println("Lower: '" + lower(text) + "'");
+println("Trim: '" + trim(text) + "'");
+println("LTrim: '" + ltrim(text) + "'");
+println("RTrim: '" + rtrim(text) + "'");
+
+var mixed = "gOMIX iS aWESOME";
+println("Capitalize: " + capitalize(mixed));

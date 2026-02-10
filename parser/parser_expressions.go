@@ -162,6 +162,21 @@ func (par *Parser) parseNumberLiteral() ExpressionNode {
 	}
 }
 
+// parseCharLiteral parses character literal expressions.
+func (par *Parser) parseCharLiteral() ExpressionNode {
+	token := par.CurrToken
+	// The literal in the token is the character itself
+	runes := []rune(token.Literal)
+	var r rune
+	if len(runes) > 0 {
+		r = runes[0]
+	}
+	return &CharLiteralExpressionNode{
+		Token: token,
+		Value: &std.Char{Value: r},
+	}
+}
+
 // parseFloatLiteral parses floating-point literal expressions.
 //
 // Returns:

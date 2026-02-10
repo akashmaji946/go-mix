@@ -1,0 +1,14 @@
+// 05_advanced_ops.gm: Demonstrates substring, replace, reverse, and strcmp
+var s = "Go-Mix Programming Language";
+
+println("Substring (0, 6): " + substring(s, 0, 6));
+println("Substring (7): " + substring(s, 7));
+
+var replaced = replace(s, "Language", "Environment");
+println("Replace: " + replaced);
+
+var rev = reverse("racecar");
+println("Reverse 'racecar': " + rev);
+println("Is palindrome: " + (strcmp("racecar", rev) == 0));
+
+println("strcmp('abc', 'abd'): " + strcmp("abc", "abd"));

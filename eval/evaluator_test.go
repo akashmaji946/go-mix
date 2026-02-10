@@ -2567,3 +2567,82 @@ func TestEvaluator_StructFibonacciRecursive(t *testing.T) {
 	result := e.Eval(root)
 	AssertInteger(t, result, 8)
 }
+
+// TestEvaluator_StringFunctions verifies evaluation of string builtin functions
+func TestEvaluator_StringFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`upper("mix")`, "MIX"},
+		{`reverse("abc")`, "cba"},
+		{`contains("hello", "ell")`, true},
+		{`ord('A')`, int64(65)},
+		{`substring("hello", 1, 2)`, "el"},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		switch exp := tt.expected.(type) {
+		case string:
+			AssertString(t, result, exp)
+		case bool:
+			AssertBoolean(t, result, exp)
+		case int64:
+			AssertInteger(t, result, exp)
+		}
+	}
+}
+
+// TestEvaluator_AdditionalScenarios verifies various complex evaluation scenarios
+func TestEvaluator_AdditionalScenarios(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		// 1. Mixed Arithmetic (Int + Float promotion)
+		{`1 + 2.5`, 3.5},
+		// 2. String Concatenation with non-string types
+		{`"Value: " + 10`, "Value: 10"},
+		// 3. Short-circuiting AND (Right side would panic if evaluated)
+		{"false && (1 / 0 == 0)", false},
+		// 4. Short-circuiting OR
+		{"true || (1 / 0 == 0)", true},
+		// 5. Functional Programming: Closures
+		{`var adder = func(x) { return func(y) { return x + y; }; }; var add5 = adder(5); add5(10)`, int64(15)},
+		// 6. Data Structures: Array of functions
+		{`var arr = [func(x){return x*x;}, func(x){return x*x*x;}]; var f = arr[0]; var g = arr[1]; f(2) + g(2)`, int64(12)},
+		// 7. Data Structures: Map of functions
+		{`var m = map{"f": func(x){return x+1;}}; var f = m["f"]; f(10)`, int64(11)},
+		// 8. Iteration: Foreach over enumerate_map
+		{`var m = map{"a": 10, "b": 20}; var s = 0; foreach p in enumerate_map(m) { s += p[1]; } s`, int64(30)},
+		// 9. OOP: Struct method returning a new instance
+		{`struct Factory { func create() { return new Item(); } } struct Item { var id = 100; } var f = new Factory(); f.create().id`, int64(100)},
+		// 10. Integration: Combining multiple builtins and operators
+		{`length(split("a,b,c", ",")) * 10 + ord('0')`, int64(78)},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		switch exp := tt.expected.(type) {
+		case int64:
+			AssertInteger(t, result, exp)
+		case float64:
+			AssertFloat(t, result, exp)
+		case string:
+			AssertString(t, result, exp)
+		case bool:
+			AssertBoolean(t, result, exp)
+		}
+	}
+}

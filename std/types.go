@@ -21,6 +21,8 @@ const (
 	IntegerType GoMixType = "int"
 	// FloatType represents 64-bit floating-point values
 	FloatType GoMixType = "float"
+	// CharType represents a single character
+	CharType GoMixType = "char"
 	// StringType represents string values
 	StringType GoMixType = "string"
 	// BooleanType represents boolean (true/false) values
@@ -82,6 +84,9 @@ func ExtractValue(obj GoMixObject) (interface{}, error) {
 	case FloatType:
 		// Extract the float64 value from a Float object
 		return obj.(*Float).Value, nil
+	case CharType:
+		// Extract the rune value from a Char object
+		return obj.(*Char).Value, nil
 	case StringType:
 		// Extract the string value from a String object
 		return obj.(*String).Value, nil
@@ -146,6 +151,26 @@ func (f *Float) ToString() string {
 // ToObject returns a detailed representation including type info (e.g., "<float(3.140000)>")
 func (f *Float) ToObject() string {
 	return fmt.Sprintf("<float(%f)>", f.Value)
+}
+
+// Char represents a single character value in GoMix.
+type Char struct {
+	Value rune // The underlying character value
+}
+
+// GetType returns the type of the Char object
+func (c *Char) GetType() GoMixType {
+	return CharType
+}
+
+// ToString returns the string representation of the character
+func (c *Char) ToString() string {
+	return string(c.Value)
+}
+
+// ToObject returns a detailed representation including type info
+func (c *Char) ToObject() string {
+	return fmt.Sprintf("<char('%c')>", c.Value)
 }
 
 // String represents a string value in GoMix.

@@ -70,6 +70,12 @@ func (p *PrintingVisitor) VisitBooleanLiteralExpressionNode(node parser.BooleanL
 		node.Literal(), node.Literal(), node.Value.ToObject()))
 }
 
+func (p *PrintingVisitor) VisitCharLiteralExpressionNode(node parser.CharLiteralExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node ['%s'] ('%s' => %v)\n", "Char",
+		node.Literal(), node.Literal(), node.Value.ToObject()))
+}
+
 // VisitBinaryExpressionNode visits a binary expression node and prints the operator with operands
 func (p *PrintingVisitor) VisitBinaryExpressionNode(node parser.BinaryExpressionNode) {
 	p.indent()

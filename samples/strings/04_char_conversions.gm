@@ -1,0 +1,16 @@
+// 04_char_conversions.gm: Demonstrates ord, chr and char literals
+var c = 'A';
+var code = ord(c);
+println("Character: " + c);
+println("Unicode code point: " + code);
+
+var nextChar = chr(code + 1);
+println("Next character: " + nextChar);
+
+println("ord('GoMix'): " + ord("GoMix"));
+
+var result = "";
+for (var i = 0; i < 5; i += 1) {
+    result = result + chr(ord('a') + i);
+}
+println("First 5 letters: " + result);

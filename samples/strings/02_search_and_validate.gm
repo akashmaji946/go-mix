@@ -1,0 +1,16 @@
+// 02_search_and_validate.gm: Demonstrates searching and validation functions
+var s = "The quick brown fox jumps over the lazy dog";
+
+println("Contains 'fox': " + contains(s, "fox"));
+println("Index of 'quick': " + index(s, "quick"));
+println("Starts with 'The': " + starts_with(s, "The"));
+println("Ends with 'dog': " + ends_with(s, "dog"));
+println("Count of 'the' (case sensitive): " + count(s, "the"));
+
+var d = "12345";
+var a = "GoMix";
+var m = "GoMix123";
+
+println("is_digit('12345'): " + is_digit(d));
+println("is_alpha('GoMix'): " + is_alpha(a));
+println("is_alpha('GoMix123'): " + is_alpha(m));

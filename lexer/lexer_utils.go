@@ -156,6 +156,42 @@ func readStringLiteral(lex *Lexer) Token {
 	return NewTokenWithMetadata(STRING_LIT, builder.String(), lex.Line, lex.Column)
 }
 
+// readCharLiteral reads and tokenizes a character literal from the source.
+// It handles escape sequences like '\n', '\t', etc.
+// Character literals must be enclosed in single quotes (').
+func readCharLiteral(lex *Lexer) Token {
+	line, col := lex.Line, lex.Column
+	lex.Advance() // Consume opening quote
+
+	var charVal byte
+
+	// Handle empty char literal error
+	if lex.Current == '\'' {
+		return NewTokenWithMetadata(INVALID_TYPE, "", lex.Line, lex.Column)
+	}
+
+	// Handle escape sequences
+	if lex.Current == '\\' {
+		lex.Advance() // Consume backslash
+		escaped, valid := escapeChar(lex.Current)
+		if !valid {
+			return NewTokenWithMetadata(INVALID_TYPE, string(lex.Current), lex.Line, lex.Column)
+		}
+		charVal = escaped
+	} else {
+		charVal = lex.Current
+	}
+	lex.Advance()
+
+	if lex.Current != '\'' {
+		// Error: expected closing quote
+		return NewTokenWithMetadata(INVALID_TYPE, string(charVal), lex.Line, lex.Column)
+	}
+	lex.Advance() // Consume closing quote
+
+	return NewTokenWithMetadata(CHAR_LIT, string(charVal), line, col)
+}
+
 // escapeChar converts an escape sequence character to its actual byte value.
 // This is used when processing escape sequences in string literals.
 //

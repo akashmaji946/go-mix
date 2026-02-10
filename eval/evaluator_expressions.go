@@ -50,6 +50,8 @@ func (e *Evaluator) Eval(n parser.Node) std.GoMixObject {
 		return n.Value
 	case *parser.IntegerLiteralExpressionNode:
 		return n.Value
+	case *parser.CharLiteralExpressionNode:
+		return n.Value
 	case *parser.StringLiteralExpressionNode:
 		return n.Value
 	case *parser.FloatLiteralExpressionNode:

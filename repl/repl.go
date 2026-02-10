@@ -107,7 +107,7 @@ func (r *Repl) PrintBannerInfo(writer io.Writer) {
 	// Print welcome message and usage instructions in cyan
 	cyanColor.Fprintf(writer, "%s\n", "Welcome to Go-Mix!")
 	cyanColor.Fprintf(writer, "%s\n", "Type your code and press enter")
-	cyanColor.Fprintf(writer, "%s\n", "Type '.exit' to quit")
+	cyanColor.Fprintf(writer, "%s\n", "Type '/exit' to quit")
 	cyanColor.Fprintf(writer, "%s\n", "Use up/down arrows to navigate command history")
 
 	// Print bottom separator line
@@ -175,7 +175,7 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 		}
 
 		// Check for exit command
-		if line == ".exit" {
+		if line == "/exit" {
 			writer.Write([]byte("Good Bye!\n"))
 			break
 		}
@@ -269,6 +269,9 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 			// Note: nil results are still printed (unlike file mode)
 			if result.GetType() == "string" {
 				yellowColor.Fprintf(writer, "%q\n", result.ToString())
+			} else if result.GetType() == "char" {
+				yellowColor.Fprintf(writer, "'%s'\n", result.ToString())
+				// yellowColor.Fprintf(writer, "%s\n", result.ToString())
 			} else {
 				yellowColor.Fprintf(writer, "%s\n", result.ToString())
 			}
