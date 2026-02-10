@@ -4604,3 +4604,55 @@ func TestParser_StringFunctions(t *testing.T) {
 		assert.Equal(t, tt.argCount, len(callExpr.Arguments))
 	}
 }
+
+// TestParser_TimeFunctions verifies parsing of time builtin function calls
+func TestParser_TimeFunctions(t *testing.T) {
+	tests := []struct {
+		src      string
+		funcName string
+		argCount int
+	}{
+		{`now()`, "now", 0},
+		{`now_ms()`, "now_ms", 0},
+		{`utc_now()`, "utc_now", 0},
+		{`format_time(123, "2006")`, "format_time", 2},
+		{`parse_time("2023", "2006")`, "parse_time", 2},
+	}
+
+	for _, tt := range tests {
+		root := NewParser(tt.src).Parse()
+		assert.NotNil(t, root)
+		assert.Equal(t, 1, len(root.Statements))
+
+		callExpr, ok := root.Statements[0].(*CallExpressionNode)
+		assert.True(t, ok)
+		assert.Equal(t, tt.funcName, callExpr.FunctionIdentifier.Name)
+		assert.Equal(t, tt.argCount, len(callExpr.Arguments))
+	}
+}
+
+// TestParser_FormatFunctions verifies parsing of type conversion builtin function calls
+func TestParser_FormatFunctions(t *testing.T) {
+	tests := []struct {
+		src      string
+		funcName string
+		argCount int
+	}{
+		{`to_int("123")`, "to_int", 1},
+		{`to_float(3.14)`, "to_float", 1},
+		{`to_bool(true)`, "to_bool", 1},
+		{`to_string(nil)`, "to_string", 1},
+		{`to_int('z')`, "to_int", 1},
+	}
+
+	for _, tt := range tests {
+		root := NewParser(tt.src).Parse()
+		assert.NotNil(t, root)
+		assert.Equal(t, 1, len(root.Statements))
+
+		callExpr, ok := root.Statements[0].(*CallExpressionNode)
+		assert.True(t, ok)
+		assert.Equal(t, tt.funcName, callExpr.FunctionIdentifier.Name)
+		assert.Equal(t, tt.argCount, len(callExpr.Arguments))
+	}
+}

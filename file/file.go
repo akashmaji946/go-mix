@@ -59,7 +59,7 @@ func createError(format string, a ...interface{}) *std.Error {
 // Example:
 //
 //	var f = fopen("test.txt", "r");
-func fopen(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
+func fopen(rt std.Runtime, writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: fopen expects 2 arguments (path, mode)")
 	}
@@ -94,7 +94,7 @@ func fopen(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 // fclose closes an open file handle.
 //
 // Syntax: fclose(file_handle)
-func fclose(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
+func fclose(rt std.Runtime, writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: fclose expects 1 argument")
 	}
@@ -112,7 +112,7 @@ func fclose(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 // fread reads a specified number of bytes from the file handle.
 //
 // Syntax: fread(file_handle, num_bytes)
-func fread(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
+func fread(rt std.Runtime, writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: fread expects 2 arguments (handle, size)")
 	}
@@ -138,7 +138,7 @@ func fread(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 // fwrite writes a string to the file handle.
 //
 // Syntax: fwrite(file_handle, content_string)
-func fwrite(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
+func fwrite(rt std.Runtime, writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: fwrite expects 2 arguments (handle, content)")
 	}
@@ -161,7 +161,7 @@ func fwrite(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 //
 // Syntax: fseek(file_handle, offset, whence)
 // Whence: 0 (start), 1 (current), 2 (end)
-func fseek(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
+func fseek(rt std.Runtime, writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 	if len(args) != 3 {
 		return createError("ERROR: fseek expects 3 arguments (handle, offset, whence)")
 	}
@@ -191,7 +191,7 @@ func fseek(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 // ftell returns the current offset of the file cursor.
 //
 // Syntax: ftell(file_handle)
-func ftell(writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
+func ftell(rt std.Runtime, writer io.Writer, args ...std.GoMixObject) std.GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: ftell expects 1 argument")
 	}

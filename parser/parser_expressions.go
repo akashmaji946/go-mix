@@ -1954,6 +1954,22 @@ func (par *Parser) parseMapLiteral() ExpressionNode {
 	return mapNode
 }
 
+// parseMapKeyword dispatches between map literals and function calls.
+func (par *Parser) parseMapKeyword() ExpressionNode {
+	if par.NextToken.Type == lexer.LEFT_PAREN {
+		return par.parseCallExpression()
+	}
+	return par.parseMapLiteral()
+}
+
+// parseSetKeyword dispatches between set literals and function calls.
+func (par *Parser) parseSetKeyword() ExpressionNode {
+	if par.NextToken.Type == lexer.LEFT_PAREN {
+		return par.parseCallExpression()
+	}
+	return par.parseSetLiteral()
+}
+
 // parseSetLiteral parses set literal expressions.
 // Set literals use the syntax: set{value1, value2, value3, ...}
 // Sets automatically remove duplicates and maintain unique values.

@@ -13,33 +13,38 @@ package std
 import (
 	"io"
 	"math"
+	"math/rand"
+	"time"
 )
 
 var mathMethods = []*Builtin{
-	{Name: "abs", Callback: abs},     // Returns the absolute value of a number
-	{Name: "fabs", Callback: fabs},   // Returns the absolute value of a floating-point number (alias for abs)
-	{Name: "min", Callback: min},     // Returns the smaller of two numbers
-	{Name: "max", Callback: max},     // Returns the larger of two numbers
-	{Name: "floor", Callback: floor}, // Returns the largest integer less than or equal to a number
-	{Name: "ceil", Callback: ceil},   // Returns the smallest integer greater than or equal to a number
-	{Name: "round", Callback: round}, // Returns the nearest integer to a number
-	{Name: "sqrt", Callback: sqrt},   // Returns the square root of a number
-	{Name: "pow", Callback: pow},     // Returns the result of raising a number to a power
-	{Name: "sin", Callback: sin},     // Returns the sine of the radian argument
-	{Name: "cos", Callback: cos},     // Returns the cosine of the radian argument
-	{Name: "tan", Callback: tan},     // Returns the tangent of the radian argument
-	{Name: "asin", Callback: asin},   // Returns the arcsine, in radians
-	{Name: "acos", Callback: acos},   // Returns the arccosine, in radians
-	{Name: "atan", Callback: atan},   // Returns the arctangent, in radians
-	{Name: "atan2", Callback: atan2}, // Returns the arctangent of y/x, in radians
-	{Name: "log", Callback: log},     // Returns the natural logarithm
-	{Name: "log10", Callback: log10}, // Returns the decimal logarithm
-	{Name: "exp", Callback: exp},     // Returns e**x
+	{Name: "abs", Callback: abs},          // Returns the absolute value of a number
+	{Name: "fabs", Callback: fabs},        // Returns the absolute value of a floating-point number (alias for abs)
+	{Name: "min", Callback: min},          // Returns the smaller of two numbers
+	{Name: "max", Callback: max},          // Returns the larger of two numbers
+	{Name: "floor", Callback: floor},      // Returns the largest integer less than or equal to a number
+	{Name: "ceil", Callback: ceil},        // Returns the smallest integer greater than or equal to a number
+	{Name: "round", Callback: round},      // Returns the nearest integer to a number
+	{Name: "sqrt", Callback: sqrt},        // Returns the square root of a number
+	{Name: "pow", Callback: pow},          // Returns the result of raising a number to a power
+	{Name: "sin", Callback: sin},          // Returns the sine of the radian argument
+	{Name: "cos", Callback: cos},          // Returns the cosine of the radian argument
+	{Name: "tan", Callback: tan},          // Returns the tangent of the radian argument
+	{Name: "asin", Callback: asin},        // Returns the arcsine, in radians
+	{Name: "acos", Callback: acos},        // Returns the arccosine, in radians
+	{Name: "atan", Callback: atan},        // Returns the arctangent, in radians
+	{Name: "atan2", Callback: atan2},      // Returns the arctangent of y/x, in radians
+	{Name: "log", Callback: log},          // Returns the natural logarithm
+	{Name: "log10", Callback: log10},      // Returns the decimal logarithm
+	{Name: "exp", Callback: exp},          // Returns e**x
+	{Name: "rand", Callback: randFunc},    // Returns a random float [0.0, 1.0)
+	{Name: "rand_int", Callback: randInt}, // Returns a random integer in range
 }
 
 // init registers the math methods as global builtins by appending them to the Builtins slice.
 func init() {
 	Builtins = append(Builtins, mathMethods...)
+	rand.Seed(time.Now().UnixNano())
 }
 
 // abs returns the absolute value of an integer.
@@ -55,7 +60,7 @@ func init() {
 //
 //	abs(-5); // Returns 5
 //	abs(10); // Returns 10
-func abs(writer io.Writer, args ...GoMixObject) GoMixObject {
+func abs(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -83,7 +88,7 @@ func abs(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	fabs(-3.14); // Returns 3.14
 //	fabs(2.5);   // Returns 2.5
-func fabs(writer io.Writer, args ...GoMixObject) GoMixObject {
+func fabs(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -111,7 +116,7 @@ func fabs(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	min(10, 20);   // Returns 10
 //	min(5.5, 2.1); // Returns 2.1
-func min(writer io.Writer, args ...GoMixObject) GoMixObject {
+func min(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -158,7 +163,7 @@ func min(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	max(10, 20);   // Returns 20
 //	max(5.5, 2.1); // Returns 5.5
-func max(writer io.Writer, args ...GoMixObject) GoMixObject {
+func max(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -204,7 +209,7 @@ func max(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	floor(3.9);  // Returns 3
 //	floor(-3.1); // Returns -4
-func floor(writer io.Writer, args ...GoMixObject) GoMixObject {
+func floor(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -232,7 +237,7 @@ func floor(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	ceil(3.1);  // Returns 4
 //	ceil(-3.9); // Returns -3
-func ceil(writer io.Writer, args ...GoMixObject) GoMixObject {
+func ceil(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -262,7 +267,7 @@ func ceil(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	round(3.5);       // Returns 4.0
 //	round(3.14159, 2); // Returns 3.14
-func round(writer io.Writer, args ...GoMixObject) GoMixObject {
+func round(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) == 0 || len(args) > 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1 or 2", len(args))
 	}
@@ -296,7 +301,7 @@ func round(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	sqrt(16);   // Returns 4.0
 //	sqrt(2.25); // Returns 1.5
-func sqrt(writer io.Writer, args ...GoMixObject) GoMixObject {
+func sqrt(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -313,7 +318,7 @@ func sqrt(writer io.Writer, args ...GoMixObject) GoMixObject {
 	if value < 0 {
 		return createError("ERROR: cannot compute square root of a negative number")
 	}
-	powVal := pow(writer, &Float{Value: value}, &Float{Value: 0.5})
+	powVal := pow(rt, writer, &Float{Value: value}, &Float{Value: 0.5})
 	return powVal
 }
 
@@ -330,7 +335,7 @@ func sqrt(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	pow(2, 3);   // Returns 8.0
 //	pow(9, 0.5); // Returns 3.0
-func pow(writer io.Writer, args ...GoMixObject) GoMixObject {
+func pow(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -365,7 +370,7 @@ func pow(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	sin(0); // Returns 0.0
-func sin(writer io.Writer, args ...GoMixObject) GoMixObject {
+func sin(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -390,7 +395,7 @@ func sin(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	cos(0); // Returns 1.0
-func cos(writer io.Writer, args ...GoMixObject) GoMixObject {
+func cos(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -415,7 +420,7 @@ func cos(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	tan(0); // Returns 0.0
-func tan(writer io.Writer, args ...GoMixObject) GoMixObject {
+func tan(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -440,7 +445,7 @@ func tan(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	asin(0); // Returns 0.0
-func asin(writer io.Writer, args ...GoMixObject) GoMixObject {
+func asin(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -465,7 +470,7 @@ func asin(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	acos(1); // Returns 0.0
-func acos(writer io.Writer, args ...GoMixObject) GoMixObject {
+func acos(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -490,7 +495,7 @@ func acos(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	atan(0); // Returns 0.0
-func atan(writer io.Writer, args ...GoMixObject) GoMixObject {
+func atan(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -518,7 +523,7 @@ func atan(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	atan2(1, 0); // Returns π/2 radians (90 degrees)
-func atan2(writer io.Writer, args ...GoMixObject) GoMixObject {
+func atan2(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -553,7 +558,7 @@ func atan2(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	log(1); // Returns 0.0
-func log(writer io.Writer, args ...GoMixObject) GoMixObject {
+func log(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -578,7 +583,7 @@ func log(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	log10(100); // Returns 2.0
-func log10(writer io.Writer, args ...GoMixObject) GoMixObject {
+func log10(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -603,7 +608,7 @@ func log10(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	exp(1); // Returns e (approximately 2.71828)
-func exp(writer io.Writer, args ...GoMixObject) GoMixObject {
+func exp(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -615,4 +620,33 @@ func exp(writer io.Writer, args ...GoMixObject) GoMixObject {
 		}
 	}
 	return &Float{Value: math.Exp(args[0].(*Float).Value)}
+}
+
+// randFunc returns a random floating-point number in [0.0, 1.0).
+// Syntax: rand()
+func randFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 0 {
+		return createError("ERROR: rand expects 0 arguments")
+	}
+	return &Float{Value: rand.Float64()}
+}
+
+// randInt returns a random integer between min and max (inclusive).
+// Syntax: rand_int(min, max)
+func randInt(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: rand_int expects 2 arguments (min, max)")
+	}
+	if args[0].GetType() != IntegerType || args[1].GetType() != IntegerType {
+		return createError("ERROR: arguments to `rand_int` must be integers")
+	}
+
+	min := args[0].(*Integer).Value
+	max := args[1].(*Integer).Value
+
+	if min > max {
+		return createError("ERROR: min cannot be greater than max in `rand_int`")
+	}
+
+	return &Integer{Value: min + rand.Int63n(max-min+1)}
 }

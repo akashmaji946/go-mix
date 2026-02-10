@@ -15,10 +15,16 @@ import (
 	"io" // io.Writer is used for output operations in builtin functions
 )
 
+// Runtime defines the interface for the evaluator to allow builtins
+// to call back into GoMix functions (e.g., for custom sorting).
+type Runtime interface {
+	CallFunction(fn GoMixObject, args ...GoMixObject) GoMixObject
+}
+
 // CallbackFunc is the function signature for builtin functions.
 // It takes an io.Writer for output (e.g., console) and a variadic list of GoMixObject arguments,
 // returning a GoMixObject result (or an error if something goes wrong).
-type CallbackFunc func(writer io.Writer, args ...GoMixObject) GoMixObject
+type CallbackFunc func(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject
 
 // Builtin represents a builtin function with a name and its implementation callback.
 // This struct is used to store and invoke builtin functions in the language.

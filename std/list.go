@@ -62,7 +62,7 @@ func normalizeIndex(index int64, length int) (int, bool) {
 //	list()                    -> list()
 //	list(1, 2, 3)            -> list(1, 2, 3)
 //	list("a", 1, true)       -> list(a, 1, true)
-func listFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+func listFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	elements := make([]GoMixObject, len(args))
 	copy(elements, args)
 	return &List{Elements: elements}
@@ -76,7 +76,7 @@ func listFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var l = list(1, 2, 3);
 //	pushback_list(l, 4);     -> list(1, 2, 3, 4)
-func pushbackList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func pushbackList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -97,7 +97,7 @@ func pushbackList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var l = list(2, 3, 4);
 //	pushfront_list(l, 1);    -> list(1, 2, 3, 4)
-func pushfrontList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func pushfrontList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -118,7 +118,7 @@ func pushfrontList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var l = list(1, 2, 3);
 //	popback_list(l);         -> 3 (list becomes list(1, 2))
-func popbackList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func popbackList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -144,7 +144,7 @@ func popbackList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var l = list(1, 2, 3);
 //	popfront_list(l);        -> 1 (list becomes list(2, 3))
-func popfrontList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func popfrontList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -170,7 +170,7 @@ func popfrontList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var l = list(1, 2, 3);
 //	size_list(l);            -> 3
-func sizeList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func sizeList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -190,7 +190,7 @@ func sizeList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var l = list(1, 2, 3);
 //	peekback_list(l);        -> 3 (list unchanged)
-func peekbackList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func peekbackList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -214,7 +214,7 @@ func peekbackList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var l = list(1, 2, 3);
 //	peekfront_list(l);       -> 1 (list unchanged)
-func peekfrontList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func peekfrontList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -241,7 +241,7 @@ func peekfrontList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	insert_list(l, 2, 3);    -> list(1, 2, 3, 4)
 //	insert_list(l, -1, 5);   -> list(1, 2, 3, 4, 5)
 //	insert_list(l, 0, 0);    -> list(0, 1, 2, 3, 4, 5)
-func insertList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func insertList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 3 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=3", len(args))
 	}
@@ -295,7 +295,7 @@ func insertList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	remove_list(l, 2);       -> 3 (list becomes list(1, 2, 4))
 //	remove_list(l, -1);      -> 4 (list becomes list(1, 2))
 //	remove_list(l, 0);       -> 1 (list becomes list(2))
-func removeList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func removeList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -340,7 +340,7 @@ func removeList(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	contains_list(l, 3);     -> true
 //	contains_list(l, 5);     -> false
 //	contains_list(l, "2");   -> false (type matters)
-func containsList(writer io.Writer, args ...GoMixObject) GoMixObject {
+func containsList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}

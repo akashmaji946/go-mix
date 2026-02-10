@@ -11,6 +11,7 @@ Contact : akashmaji(@iisc.ac.in)
 package std
 
 import (
+	"encoding/json"
 	"io" // io.Writer is used for output in builtin functions
 )
 
@@ -18,11 +19,12 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var mapMethods = []*Builtin{
-	{Name: "keys_map", Callback: mapKeys},           // Returns an array of all keys in a map
-	{Name: "insert_map", Callback: mapInsert},       // Inserts or updates a key-value pair in a map
-	{Name: "remove_map", Callback: mapRemove},       // Removes a key-value pair from a map
-	{Name: "contain_map", Callback: mapContain},     // Checks if a map contains a key
-	{Name: "enumerate_map", Callback: mapEnumerate}, // Returns array of [key, value] pairs
+	{Name: "keys_map", Callback: mapKeys},                        // Returns an array of all keys in a map
+	{Name: "insert_map", Callback: mapInsert},                    // Inserts or updates a key-value pair in a map
+	{Name: "remove_map", Callback: mapRemove},                    // Removes a key-value pair from a map
+	{Name: "contain_map", Callback: mapContain},                  // Checks if a map contains a key
+	{Name: "enumerate_map", Callback: mapEnumerate},              // Returns array of [key, value] pairs
+	{Name: "json_string_decode_map", Callback: jsonStringDecode}, // Decodes a JSON string into a map
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -44,7 +46,7 @@ func init() {
 //
 //	var m = map{"name": "John", "age": 25};
 //	keys_map(m);  // Returns ["name", "age"]
-func mapKeys(writer io.Writer, args ...GoMixObject) GoMixObject {
+func mapKeys(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -79,7 +81,7 @@ func mapKeys(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	var m = map{"name": "John"};
 //	insert_map(m, "age", 25);     // m is now map{"name": "John", "age": 25}
 //	insert_map(m, "name", "Jane"); // m is now map{"name": "Jane", "age": 25}
-func mapInsert(writer io.Writer, args ...GoMixObject) GoMixObject {
+func mapInsert(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 3 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=3", len(args))
 	}
@@ -119,7 +121,7 @@ func mapInsert(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	var m = map{"name": "John", "age": 25};
 //	remove_map(m, "age");  // Returns 25, m is now map{"name": "John"}
 //	remove_map(m, "city"); // Returns nil (key didn't exist)
-func mapRemove(writer io.Writer, args ...GoMixObject) GoMixObject {
+func mapRemove(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -165,7 +167,7 @@ func mapRemove(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	var m = map{"name": "John", "age": 25};
 //	contain_map(m, "name");  // Returns true
 //	contain_map(m, "city");  // Returns false
-func mapContain(writer io.Writer, args ...GoMixObject) GoMixObject {
+func mapContain(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -194,7 +196,7 @@ func mapContain(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var m = map{"name": "John", "age": 25};
 //	enumerate_map(m);  // Returns [["name", "John"], ["age", 25]]
-func mapEnumerate(writer io.Writer, args ...GoMixObject) GoMixObject {
+func mapEnumerate(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -217,4 +219,69 @@ func mapEnumerate(writer io.Writer, args ...GoMixObject) GoMixObject {
 	}
 
 	return &Array{Elements: pairs}
+}
+
+// jsonStringDecode parses a JSON string into a GoMix Map.
+//
+// Parameters:
+//   - args[0]: The JSON string to decode
+//
+// Returns:
+//   - Map object, or Error if decoding fails
+//
+// Example:
+//
+//	var s = "{\"name\": \"John\", \"age\": 25}";
+//	var m = json_string_decode(s);
+func jsonStringDecode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: json_string_decode expects 1 argument (string)")
+	}
+
+	if args[0].GetType() != StringType {
+		return createError("ERROR: argument to `json_string_decode` must be a string, got '%s'", args[0].GetType())
+	}
+
+	var data interface{}
+	err := json.Unmarshal([]byte(args[0].ToString()), &data)
+	if err != nil {
+		return createError("ERROR: failed to decode JSON: %v", err)
+	}
+
+	return convertToGoMix(data)
+}
+
+// convertToGoMix recursively converts Go native types from json.Unmarshal
+// into GoMix internal objects.
+func convertToGoMix(val interface{}) GoMixObject {
+	switch v := val.(type) {
+	case map[string]interface{}:
+		m := &Map{
+			Pairs: make(map[string]GoMixObject),
+			Keys:  make([]string, 0, len(v)),
+		}
+		for k, rawVal := range v {
+			m.Pairs[k] = convertToGoMix(rawVal)
+			m.Keys = append(m.Keys, k)
+		}
+		return m
+	case []interface{}:
+		elements := make([]GoMixObject, len(v))
+		for i, rawVal := range v {
+			elements[i] = convertToGoMix(rawVal)
+		}
+		return &Array{Elements: elements}
+	case string:
+		return &String{Value: v}
+	case bool:
+		return &Boolean{Value: v}
+	case float64:
+		// Check if it's actually an integer
+		if v == float64(int64(v)) {
+			return &Integer{Value: int64(v)}
+		}
+		return &Float{Value: v}
+	default:
+		return &Nil{}
+	}
 }

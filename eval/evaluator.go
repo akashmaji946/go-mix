@@ -175,9 +175,34 @@ func (e *Evaluator) IsBuiltin(name string) bool {
 func (e *Evaluator) InvokeBuiltin(name string, args ...std.GoMixObject) std.GoMixObject {
 
 	if builtin, ok := e.Builtins[name]; ok {
-		return builtin.Callback(e.Writer, args...)
+		return builtin.Callback(e, e.Writer, args...)
 	}
 	return &std.Nil{}
+}
+
+// CallFunction executes a GoMix function object with the provided arguments.
+// This implements the std.Runtime interface.
+func (e *Evaluator) CallFunction(fn std.GoMixObject, args ...std.GoMixObject) std.GoMixObject {
+	if fn.GetType() != std.FunctionType {
+		return e.CreateError("ERROR: object is not a function")
+	}
+	functionObject := fn.(*function.Function)
+
+	if len(args) != len(functionObject.Params) {
+		return e.CreateError("ERROR: wrong number of arguments: expected %d, got %d", len(functionObject.Params), len(args))
+	}
+
+	callSiteScope := scope.NewScope(functionObject.Scp)
+	for i, param := range functionObject.Params {
+		callSiteScope.Bind(param.Name, args[i])
+	}
+
+	oldScope := e.Scp
+	e.Scp = callSiteScope
+	result := e.Eval(functionObject.Body)
+	e.Scp = oldScope
+
+	return UnwrapReturnValue(result)
 }
 
 // CreateError creates a new Error object with a formatted message including source position.

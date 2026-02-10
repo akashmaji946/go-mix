@@ -14,20 +14,31 @@ package std
 import (
 	"fmt"
 	"io"
+	"reflect"
 )
 
 // commonMethods is a slice of common builtin functions that are always available.
 // These include printing functions, length calculation, and string conversion.
 var commonMethods = []*Builtin{
-	{Name: "print", Callback: print},       // Prints arguments without a newline
-	{Name: "println", Callback: println},   // Prints arguments with a newline
-	{Name: "printf", Callback: printf},     // Prints formatted string with arguments
-	{Name: "length", Callback: length},     // Returns the length of strings or arrays
-	{Name: "tostring", Callback: tostring}, // Converts an object to its string representation
-	{Name: "range", Callback: rangeFunc},   // Creates an inclusive range from start to end
-	{Name: "typeof", Callback: typeofFunc}, // Returns the type of a GoMix object as a string
-	{Name: "size", Callback: length},       // Alias for length - returns the size of strings, arrays, maps, or sets
-	{Name: "array", Callback: arrayFunc},   // Converts any iterable to a new array
+	{Name: "print", Callback: print},           // Prints arguments without a newline
+	{Name: "println", Callback: println},       // Prints arguments with a newline
+	{Name: "printf", Callback: printf},         // Prints formatted string with arguments
+	{Name: "length", Callback: length},         // Returns the length of strings or arrays
+	{Name: "tostring", Callback: tostring},     // Converts an object to its string representation
+	{Name: "range", Callback: rangeFunc},       // Creates an inclusive range from start to end
+	{Name: "typeof", Callback: typeofFunc},     // Returns the type of a GoMix object as a string
+	{Name: "size", Callback: length},           // Alias for length - returns the size of strings, arrays, maps, or sets
+	{Name: "array", Callback: arrayFunc},       // Converts any iterable to a new array
+	{Name: "sorted", Callback: sortedArray},    // Returns a new sorted array
+	{Name: "sort", Callback: sortArray},        // Sorts an array in-place
+	{Name: "csort", Callback: csort},           // Custom sort for an array using a comparator
+	{Name: "csorted", Callback: csorted},       // Returns a new sorted array using a comparator
+	{Name: "map", Callback: mapArray},          // Applies a function to each element
+	{Name: "filter", Callback: filterArray},    // Filters elements based on a predicate
+	{Name: "reduce", Callback: reduceArray},    // Accumulates a value across an array
+	{Name: "str", Callback: tostring},          // Alias for tostring - converts an object to a string
+	{Name: "addr", Callback: addrFunc},         // Returns the memory address of an object as an integer
+	{Name: "is_same_ref", Callback: isSameRef}, // Checks if two objects point to the same memory address
 }
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
@@ -46,7 +57,7 @@ func createError(format string, a ...interface{}) *Error {
 // tostring converts a GoMixObject to its string representation, wrapped in quotes.
 // It takes one argument: the object to convert.
 // Returns a String object containing the quoted string representation of the input.
-func tostring(writer io.Writer, args ...GoMixObject) GoMixObject {
+func tostring(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly one argument is provided
 	if len(args) == 0 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
@@ -58,7 +69,7 @@ func tostring(writer io.Writer, args ...GoMixObject) GoMixObject {
 // print outputs the string representations of its arguments to the writer without a trailing newline.
 // It takes one or more arguments to print.
 // Returns a Nil object. Flushes the writer if it supports syncing (e.g., for buffered output).
-func print(writer io.Writer, args ...GoMixObject) GoMixObject {
+func print(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if at least one argument is provided
 	if len(args) == 0 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1 or more", len(args))
@@ -85,7 +96,7 @@ func print(writer io.Writer, args ...GoMixObject) GoMixObject {
 // println outputs the string representations of its arguments to the writer with a trailing newline.
 // It takes one or more arguments to print.
 // Returns a Nil object. Flushes the writer if it supports syncing.
-func println(writer io.Writer, args ...GoMixObject) GoMixObject {
+func println(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if at least one argument is provided
 	if len(args) == 0 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1 or more", len(args))
@@ -113,7 +124,7 @@ func println(writer io.Writer, args ...GoMixObject) GoMixObject {
 // The first argument must be a format string, followed by arguments to format.
 // It extracts raw values from GoMixObjects for formatting.
 // Returns a Nil object. Flushes the writer if it supports syncing.
-func printf(writer io.Writer, args ...GoMixObject) GoMixObject {
+func printf(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if at least one argument (the format string) is provided
 	if len(args) == 0 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1 or more", len(args))
@@ -149,7 +160,7 @@ func printf(writer io.Writer, args ...GoMixObject) GoMixObject {
 // for maps, returns the number of key-value pairs; for sets, returns the number of unique values;
 // for lists and tuples, returns the number of elements.
 // Returns an error for unsupported types.
-func length(writer io.Writer, args ...GoMixObject) GoMixObject {
+func length(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly one argument is provided
 	if len(args) != 1 {
 		return &Error{Message: fmt.Sprintf("wrong number of arguments. got=%d, want=1", len(args))}
@@ -189,7 +200,7 @@ func length(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	range(2, 5)    -> Range{Start: 2, End: 5}
 //	range(1, 10)   -> Range{Start: 1, End: 10}
-func rangeFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+func rangeFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly two arguments are provided
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
@@ -229,7 +240,7 @@ func rangeFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	typeof([1, 2, 3])    -> "array"
 //	typeof(range(1, 5))  -> "range"
 //	typeof(myFunc)       -> "func"
-func typeofFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+func typeofFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly one argument is provided
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
@@ -256,7 +267,7 @@ func typeofFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	array(set{1, 2, 3})        -> [1, 2, 3]
 //	array(map{"a": 1, "b": 2}) -> [1, 2]
 //	array(42)                  -> [42]
-func arrayFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+func arrayFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Handle 0 arguments: return empty array
 	if len(args) == 0 {
 		return &Array{Elements: []GoMixObject{}}
@@ -346,4 +357,63 @@ func arrayFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 		// Non-iterable single argument: wrap it in an array
 		return &Array{Elements: []GoMixObject{arg}}
 	}
+}
+
+// addrFunc returns the memory address of a GoMixObject as an integer.
+// It uses Go's pointer representation to extract the address of the underlying value.
+//
+// Example:
+//
+//	var a = [1, 2];
+//	println(addr(a)); // Prints the numeric memory address
+func addrFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
+	}
+
+	if args[0] == nil {
+		return &Integer{Value: 0}
+	}
+
+	rv := reflect.ValueOf(args[0])
+	// Check if the underlying value is a pointer-like type that has an address
+	if rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Map || rv.Kind() == reflect.Slice || rv.Kind() == reflect.Func {
+		return &Integer{Value: int64(rv.Pointer())}
+	}
+
+	return createError("ERROR: could not determine memory address for type %s", args[0].GetType())
+}
+
+// isSameRef checks if two GoMixObjects point to the same memory address.
+//
+// Example:
+//
+//	var a = [1];
+//	var b = a;
+//	println(is_same_ref(a, b)); // true
+func isSameRef(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: is_same_ref expects 2 arguments, got %d", len(args))
+	}
+
+	// Handle nil cases
+	if args[0].GetType() == NilType && args[1].GetType() == NilType {
+		return &Boolean{Value: true}
+	}
+	if args[0].GetType() == NilType || args[1].GetType() == NilType {
+		return &Boolean{Value: false}
+	}
+
+	rv1 := reflect.ValueOf(args[0])
+	rv2 := reflect.ValueOf(args[1])
+
+	// Check if both are pointer-like types
+	canHaveAddr1 := rv1.Kind() == reflect.Ptr || rv1.Kind() == reflect.Map || rv1.Kind() == reflect.Slice || rv1.Kind() == reflect.Func
+	canHaveAddr2 := rv2.Kind() == reflect.Ptr || rv2.Kind() == reflect.Map || rv2.Kind() == reflect.Slice || rv2.Kind() == reflect.Func
+
+	if !canHaveAddr1 || !canHaveAddr2 {
+		return &Boolean{Value: false}
+	}
+
+	return &Boolean{Value: rv1.Pointer() == rv2.Pointer()}
 }

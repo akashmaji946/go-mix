@@ -54,7 +54,7 @@ func init() {
 //	tuple()                   -> tuple()
 //	tuple(1, 2, 3)           -> tuple(1, 2, 3)
 //	tuple("a", 1, true)      -> tuple(a, 1, true)
-func tupleFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+func tupleFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	elements := make([]GoMixObject, len(args))
 	copy(elements, args)
 	return &Tuple{Elements: elements}
@@ -68,7 +68,7 @@ func tupleFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var t = tuple(1, 2, 3);
 //	size_tuple(t);           -> 3
-func sizeTuple(writer io.Writer, args ...GoMixObject) GoMixObject {
+func sizeTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -88,7 +88,7 @@ func sizeTuple(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var t = tuple(1, 2, 3);
 //	peekback_tuple(t);       -> 3
-func peekbackTuple(writer io.Writer, args ...GoMixObject) GoMixObject {
+func peekbackTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -112,7 +112,7 @@ func peekbackTuple(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var t = tuple(1, 2, 3);
 //	peekfront_tuple(t);      -> 1
-func peekfrontTuple(writer io.Writer, args ...GoMixObject) GoMixObject {
+func peekfrontTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -139,7 +139,7 @@ func peekfrontTuple(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	contains_tuple(t, 3);     -> true
 //	contains_tuple(t, 5);     -> false
 //	contains_tuple(t, "2");   -> false (type matters)
-func containsTuple(writer io.Writer, args ...GoMixObject) GoMixObject {
+func containsTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}

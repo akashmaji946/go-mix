@@ -35,7 +35,7 @@ var ioMethods = []*Builtin{
 	{Name: "flush", Callback: flush},       // Flushes the input buffer and output writer
 	{Name: "eprintln", Callback: eprintln}, // Prints to standard error with newline
 	{Name: "eprintf", Callback: eprintf},   // Prints formatted string to standard error
-	{Name: "exit", Callback: exitFunc},     // Terminates the program
+	// {Name: "exit", Callback: exitFunc},     // Terminates the program
 }
 
 // init registers the I/O methods as global builtins.
@@ -56,7 +56,7 @@ func init() {
 //
 //	var name = scanln();
 //	println("Hello, " + name);
-func scanln(writer io.Writer, args ...GoMixObject) GoMixObject {
+func scanln(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 0 {
 		return createError("ERROR: scanln expects 0 arguments, got %d", len(args))
 	}
@@ -85,7 +85,7 @@ func scanln(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	var data = scanf("%d %s");
 //	var age = data[0];
 //	var name = data[1];
-func scanf(writer io.Writer, args ...GoMixObject) GoMixObject {
+func scanf(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: scanf expects 1 argument (format string), got %d", len(args))
 	}
@@ -174,14 +174,14 @@ func scanf(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	var age = input("Enter your age: ");
-func input(writer io.Writer, args ...GoMixObject) GoMixObject {
+func input(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) > 0 {
-		print(writer, args...)
+		print(rt, writer, args...)
 		if flusher, ok := writer.(interface{ Sync() error }); ok {
 			flusher.Sync()
 		}
 	}
-	return scanln(writer)
+	return scanln(rt, writer)
 }
 
 // scan reads from stdin until the specified string delimiter is encountered.
@@ -193,7 +193,7 @@ func input(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var part = scan(";;");
 //	var first_semi = getchar(); // Consumes the first ";"
-func scan(writer io.Writer, args ...GoMixObject) GoMixObject {
+func scan(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: scan expects 1 argument (delimiter), got %d", len(args))
 	}
@@ -228,7 +228,7 @@ func scan(writer io.Writer, args ...GoMixObject) GoMixObject {
 // getchar reads a single character from standard input.
 //
 // Syntax: getchar()
-func getchar(writer io.Writer, args ...GoMixObject) GoMixObject {
+func getchar(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 0 {
 		return createError("ERROR: getchar expects 0 arguments, got %d", len(args))
 	}
@@ -247,7 +247,7 @@ func getchar(writer io.Writer, args ...GoMixObject) GoMixObject {
 // putchar outputs a single character to the writer.
 //
 // Syntax: putchar(char_or_int)
-func putchar(writer io.Writer, args ...GoMixObject) GoMixObject {
+func putchar(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: putchar expects 1 argument, got %d", len(args))
 	}
@@ -276,7 +276,7 @@ func putchar(writer io.Writer, args ...GoMixObject) GoMixObject {
 // eprintln outputs string representations to standard error with a trailing newline.
 //
 // Syntax: eprintln(arg1, arg2, ...)
-func eprintln(writer io.Writer, args ...GoMixObject) GoMixObject {
+func eprintln(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	res := ""
 	for _, arg := range args {
 		res += arg.ToString() + " "
@@ -291,7 +291,7 @@ func eprintln(writer io.Writer, args ...GoMixObject) GoMixObject {
 // eprintf outputs a formatted string to standard error.
 //
 // Syntax: eprintf(format, arg1, ...)
-func eprintf(writer io.Writer, args ...GoMixObject) GoMixObject {
+func eprintf(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) == 0 {
 		return createError("ERROR: eprintf expects at least 1 argument")
 	}
@@ -312,27 +312,10 @@ func eprintf(writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Nil{}
 }
 
-// exitFunc terminates the current process with an optional exit code.
-//
-// Syntax: exit([code])
-// Default code is 0.
-func exitFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
-	code := 0
-	if len(args) > 0 {
-		if args[0].GetType() == IntegerType {
-			code = int(args[0].(*Integer).Value)
-		} else {
-			return createError("ERROR: exit code must be an integer")
-		}
-	}
-	os.Exit(code)
-	return &Nil{}
-}
-
 // sprintf returns a formatted string using Go's fmt.Sprintf style formatting.
 //
 // Syntax: sprintf(format_string, arg1, arg2, ...)
-func sprintf(writer io.Writer, args ...GoMixObject) GoMixObject {
+func sprintf(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) == 0 {
 		return createError("ERROR: sprintf expects at least 1 argument (format string)")
 	}
@@ -362,7 +345,7 @@ func sprintf(writer io.Writer, args ...GoMixObject) GoMixObject {
 //  1. Discards all currently buffered characters in the input stream. This ensures
 //     that the next input operation (like scanln) will wait for new typing.
 //  2. Flushes the output writer (if supported) to ensure all text is displayed.
-func flush(writer io.Writer, args ...GoMixObject) GoMixObject {
+func flush(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 0 {
 		return createError("ERROR: flush expects 0 arguments, got %d", len(args))
 	}

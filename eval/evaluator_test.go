@@ -2537,7 +2537,7 @@ func TestEvaluator_StructMethodChaining(t *testing.T) {
 
 // TestEvaluator_StructArrayStatic verifies static array field shared across instances
 func TestEvaluator_StructArrayStatic(t *testing.T) {
-	src := `struct S { var list = []; func add(v) { self.list = push(self.list, v); } } var s1 = new S(); var s2 = new S(); s1.add(1); s2.add(2); length(S.list)`
+	src := `struct S { var list = []; func add(v) { self.list = push_array(self.list, v); } } var s1 = new S(); var s2 = new S(); s1.add(1); s2.add(2); length(S.list)`
 	p := parser.NewParser(src)
 	root := p.Parse()
 	e := NewEvaluator()
@@ -2645,4 +2645,255 @@ func TestEvaluator_AdditionalScenarios(t *testing.T) {
 			AssertBoolean(t, result, exp)
 		}
 	}
+}
+
+// TestEvaluator_TimeFunctions verifies evaluation of time builtin functions
+func TestEvaluator_TimeFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`typeof(now())`, "int"},
+		{`typeof(now_ms())`, "int"},
+		{`typeof(utc_now())`, "int"},
+		{`typeof(timezone())`, "string"},
+		{`format_time(parse_time("2023-10-27", "2006-01-02"), "2006-01-02")`, "2023-10-27"},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		switch exp := tt.expected.(type) {
+		case string:
+			AssertString(t, result, exp)
+		case int64:
+			AssertInteger(t, result, exp)
+		}
+	}
+}
+
+// TestEvaluator_FormatFunctions verifies evaluation of type conversion builtin functions
+func TestEvaluator_FormatFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`to_int("42")`, int64(42)},
+		{`to_float("3.14")`, 3.14},
+		{`to_bool(1)`, true},
+		{`to_string(123)`, "123"},
+		{`to_int('A')`, int64(65)},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		switch exp := tt.expected.(type) {
+		case int64:
+			AssertInteger(t, result, exp)
+		case float64:
+			AssertFloat(t, result, exp)
+		case bool:
+			AssertBoolean(t, result, exp)
+		case string:
+			AssertString(t, result, exp)
+		}
+	}
+}
+
+// TestEvaluator_JSONFunctions verifies evaluation of JSON decoding builtin functions
+func TestEvaluator_JSONFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`var m = json_string_decode_map("{\"name\": \"John\", \"age\": 25}"); m["name"]`, "John"},
+		{`var m = json_string_decode_map("{\"name\": \"John\", \"age\": 25}"); m["age"]`, int64(25)},
+		{`var a = json_string_decode_map("[1, 2, 3]"); a[1]`, int64(2)},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		switch exp := tt.expected.(type) {
+		case string:
+			AssertString(t, result, exp)
+		case int64:
+			AssertInteger(t, result, exp)
+		}
+	}
+}
+
+// TestEvaluator_SortFunction verifies evaluation of the sort builtin function
+func TestEvaluator_SortFunction(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`var a = [3, 1, 4, 2]; sort(a); a`, "[1, 2, 3, 4]"},
+		{`var a = ["c", "a", "b"]; sort(a); a`, "[a, b, c]"},
+		{`var a = [1, 2, 3]; sort(a, true); a`, "[3, 2, 1]"},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.ToString() != tt.expected {
+			t.Errorf("input %s: expected %s, got %s", tt.input, tt.expected, result.ToString())
+		}
+	}
+}
+
+// TestEvaluator_SortedArray verifies evaluation of the sorted_array builtin function
+func TestEvaluator_SortedArray(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`var a = [3, 1, 4, 2]; var b = sorted_array(a); b`, "[1, 2, 3, 4]"},
+		{`var a = [3, 1, 4, 2]; sorted_array(a); a`, "[3, 1, 4, 2]"}, // verify original is not modified
+		{`var a = [1, 2, 3]; sorted_array(a, true)`, "[3, 2, 1]"},
+		{`var a = [1, 2, 3]; sorted(a, true)`, "[3, 2, 1]"},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.ToString() != tt.expected {
+			t.Errorf("input %s: expected %s, got %s", tt.input, tt.expected, result.ToString())
+		}
+	}
+}
+
+// TestEvaluator_CloneArray verifies evaluation of the clone_array builtin function
+func TestEvaluator_CloneArray(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`var a = [1, 2, 3]; var b = clone_array(a); b`, "[1, 2, 3]"},
+		{`var a = [1, 2, 3]; var b = clone_array(a); pop_array(b); a`, "[1, 2, 3]"}, // verify original is not modified
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		if result.ToString() != tt.expected {
+			t.Errorf("input %s: expected %s, got %s", tt.input, tt.expected, result.ToString())
+		}
+	}
+}
+
+// TestEvaluator_ReferenceEquality verifies the is_same_ref builtin function
+func TestEvaluator_ReferenceEquality(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected bool
+	}{
+		{`var a = [1]; var b = a; is_same_ref(a, b)`, true},
+		{`var a = [1]; var b = [1]; is_same_ref(a, b)`, false},
+		{`var a = map{"x": 1}; var b = a; is_same_ref(a, b)`, true},
+		{`is_same_ref(nil, nil)`, true},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+		AssertBoolean(t, result, tt.expected)
+	}
+}
+
+// TestEvaluator_CustomSort verifies the csort builtin function with a custom comparator
+func TestEvaluator_CustomSort(t *testing.T) {
+	input := `
+		var a = ["apple", "go", "banana", "c"];
+		var cmp = func(x, y) { return length(x) < length(y); };
+		var b = csorted(a, cmp);
+		csort(a, cmp);
+		tostring(a) + " " + tostring(b)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	expected := "[c, go, apple, banana] [c, go, apple, banana]"
+	if result.ToString() != expected {
+		t.Errorf("expected %s, got %s", expected, result.ToString())
+	}
+}
+
+// TestEvaluator_MapArray verifies the map_array builtin function
+func TestEvaluator_MapArray(t *testing.T) {
+	input := `
+		var a = [1, 2, 3];
+		var b = map_array(a, func(x) { return x * x; });
+		tostring(b)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	expected := "[1, 4, 9]"
+	if result.ToString() != expected {
+		t.Errorf("expected %s, got %s", expected, result.ToString())
+	}
+}
+
+// TestEvaluator_FilterArray verifies the filter_array builtin function
+func TestEvaluator_FilterArray(t *testing.T) {
+	input := `
+		var a = [1, 2, 3, 4, 5, 6];
+		var b = filter_array(a, func(x) { return x % 2 == 0; });
+		tostring(b)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	expected := "[2, 4, 6]"
+	if result.ToString() != expected {
+		t.Errorf("expected %s, got %s", expected, result.ToString())
+	}
+}
+
+// TestEvaluator_ReduceArray verifies the reduce_array builtin function
+func TestEvaluator_ReduceArray(t *testing.T) {
+	input := `
+		var a = [1, 2, 3, 4];
+		var sum = reduce_array(a, func(acc, x) { return acc + x; }, 0);
+		sum
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+	AssertInteger(t, result, 10)
 }

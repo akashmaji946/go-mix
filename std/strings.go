@@ -56,7 +56,7 @@ func init() {
 // Example:
 //
 //	upper("hello"); // Returns "HELLO"
-func upper(writer io.Writer, args ...GoMixObject) GoMixObject {
+func upper(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: upper expects 1 argument, got %d", len(args))
 	}
@@ -74,7 +74,7 @@ func upper(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	lower("HELLO"); // Returns "hello"
-func lower(writer io.Writer, args ...GoMixObject) GoMixObject {
+func lower(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: lower expects 1 argument, got %d", len(args))
 	}
@@ -92,7 +92,7 @@ func lower(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	trim("  hello  "); // Returns "hello"
-func trim(writer io.Writer, args ...GoMixObject) GoMixObject {
+func trim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: trim expects 1 argument, got %d", len(args))
 	}
@@ -110,7 +110,7 @@ func trim(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	ltrim("  hello  "); // Returns "hello  "
-func ltrim(writer io.Writer, args ...GoMixObject) GoMixObject {
+func ltrim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: ltrim expects 1 argument, got %d", len(args))
 	}
@@ -128,7 +128,7 @@ func ltrim(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	rtrim("  hello  "); // Returns "  hello"
-func rtrim(writer io.Writer, args ...GoMixObject) GoMixObject {
+func rtrim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: rtrim expects 1 argument, got %d", len(args))
 	}
@@ -146,7 +146,7 @@ func rtrim(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	split("a,b,c", ","); // Returns ["a", "b", "c"]
-func split(writer io.Writer, args ...GoMixObject) GoMixObject {
+func split(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: split expects 2 arguments (str, sep), got %d", len(args))
 	}
@@ -172,7 +172,7 @@ func split(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	join(["Go", "Mix"], "-"); // Returns "Go-Mix"
-func join(writer io.Writer, args ...GoMixObject) GoMixObject {
+func join(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: join expects 2 arguments (array, sep), got %d", len(args))
 	}
@@ -199,7 +199,7 @@ func join(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	replace("banana", "a", "o"); // Returns "bonono"
-func replace(writer io.Writer, args ...GoMixObject) GoMixObject {
+func replace(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 3 {
 		return createError("ERROR: replace expects 3 arguments (str, old, new), got %d", len(args))
 	}
@@ -220,7 +220,7 @@ func replace(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	contains("hello", "ell"); // Returns true
-func contains(writer io.Writer, args ...GoMixObject) GoMixObject {
+func contains(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: contains expects 2 arguments, got %d", len(args))
 	}
@@ -238,7 +238,7 @@ func contains(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	index("hello", "e"); // Returns 1
-func index(writer io.Writer, args ...GoMixObject) GoMixObject {
+func index(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: index expects 2 arguments, got %d", len(args))
 	}
@@ -258,7 +258,7 @@ func index(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	ord('A');   // Returns 65
 //	ord("ABC"); // Returns 65
-func ord(writer io.Writer, args ...GoMixObject) GoMixObject {
+func ord(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: ord expects 1 argument, got %d", len(args))
 	}
@@ -283,7 +283,7 @@ func ord(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	chr(65); // Returns 'A'
-func chr(writer io.Writer, args ...GoMixObject) GoMixObject {
+func chr(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: chr expects 1 argument, got %d", len(args))
 	}
@@ -304,7 +304,7 @@ func chr(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	starts_with("hello", "he"); // Returns true
-func startsWith(writer io.Writer, args ...GoMixObject) GoMixObject {
+func startsWith(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: starts_with expects 2 arguments, got %d", len(args))
 	}
@@ -322,7 +322,7 @@ func startsWith(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	ends_with("hello", "lo"); // Returns true
-func endsWith(writer io.Writer, args ...GoMixObject) GoMixObject {
+func endsWith(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: ends_with expects 2 arguments, got %d", len(args))
 	}
@@ -343,7 +343,7 @@ func endsWith(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	strcmp("apple", "banana"); // Returns -1
 //	strcmp("hello", "hello");  // Returns 0
 //	strcmp("zoo", "zebra");    // Returns 1
-func strcmp(writer io.Writer, args ...GoMixObject) GoMixObject {
+func strcmp(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: strcmp expects 2 arguments, got %d", len(args))
 	}
@@ -369,7 +369,7 @@ func strcmp(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	reverse("abc"); // Returns "cba"
-func reverse(writer io.Writer, args ...GoMixObject) GoMixObject {
+func reverse(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: reverse expects 1 argument, got %d", len(args))
 	}
@@ -394,7 +394,7 @@ func reverse(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	substring("hello", 1, 2); // Returns "el"
 //	substring("hello", 2);    // Returns "llo"
-func substring(writer io.Writer, args ...GoMixObject) GoMixObject {
+func substring(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) < 2 || len(args) > 3 {
 		return createError("ERROR: substring expects 2 or 3 arguments, got %d", len(args))
 	}
@@ -433,7 +433,7 @@ func substring(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	capitalize("gOMIX"); // Returns "Gomix"
-func capitalize(writer io.Writer, args ...GoMixObject) GoMixObject {
+func capitalize(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: capitalize expects 1 argument, got %d", len(args))
 	}
@@ -452,7 +452,7 @@ func capitalize(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	count("banana", "a"); // Returns 3
-func count(writer io.Writer, args ...GoMixObject) GoMixObject {
+func count(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: count expects 2 arguments, got %d", len(args))
 	}
@@ -467,7 +467,7 @@ func count(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	is_digit("123"); // Returns true
 //	is_digit("12a"); // Returns false
-func isDigitFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+func isDigitFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: is_digit expects 1 argument, got %d", len(args))
 	}
@@ -491,7 +491,7 @@ func isDigitFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	is_alpha("abc"); // Returns true
 //	is_alpha("a12"); // Returns false
-func isAlphaFunc(writer io.Writer, args ...GoMixObject) GoMixObject {
+func isAlphaFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: is_alpha expects 1 argument, got %d", len(args))
 	}

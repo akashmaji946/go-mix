@@ -1,0 +1,12 @@
+var s = "123";
+var i = to_int(s);
+println("String to Int: " + i + " (type: " + typeof(i) + ")");
+
+var f = to_float("3.14");
+println("String to Float: " + f);
+
+var b = to_bool(1);
+println("Int to Bool: " + b);
+
+var c = to_char(65);
+println("Int to Char: " + c);

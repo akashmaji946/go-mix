@@ -44,7 +44,7 @@ func init() {
 // readFile reads the entire contents of a file into a string.
 //
 // Syntax: read_file(path)
-func readFile(writer io.Writer, args ...GoMixObject) GoMixObject {
+func readFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: read_file expects 1 argument (path)")
 	}
@@ -59,7 +59,7 @@ func readFile(writer io.Writer, args ...GoMixObject) GoMixObject {
 // writeFile writes a string to a file, creating it if it doesn't exist.
 //
 // Syntax: write_file(path, content)
-func writeFile(writer io.Writer, args ...GoMixObject) GoMixObject {
+func writeFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: write_file expects 2 arguments (path, content)")
 	}
@@ -79,7 +79,7 @@ func writeFile(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	cat("build.sh");
-func cat(writer io.Writer, args ...GoMixObject) GoMixObject {
+func cat(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) == 0 {
 		return createError("ERROR: cat expects at least 1 argument (path)")
 	}
@@ -101,7 +101,7 @@ func cat(writer io.Writer, args ...GoMixObject) GoMixObject {
 // modification times to the current time if it does.
 //
 // Syntax: touch(path)
-func touch(writer io.Writer, args ...GoMixObject) GoMixObject {
+func touch(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: touch expects 1 argument (path)")
 	}
@@ -126,7 +126,7 @@ func touch(writer io.Writer, args ...GoMixObject) GoMixObject {
 // listDir returns an array containing the names of the entries in the directory.
 //
 // Syntax: list_dir(path)
-func listDir(writer io.Writer, args ...GoMixObject) GoMixObject {
+func listDir(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: list_dir expects 1 argument (path)")
 	}
@@ -150,8 +150,7 @@ func listDir(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	var current = pwd();
-//	println("Working in: " + current);
-func pwd(writer io.Writer, args ...GoMixObject) GoMixObject {
+func pwd(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 0 {
 		return createError("ERROR: pwd expects 0 arguments")
 	}
@@ -171,7 +170,7 @@ func pwd(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	truncate_file("data.log", 0); // Clears the file content
-func truncateFile(writer io.Writer, args ...GoMixObject) GoMixObject {
+func truncateFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: truncate_file expects 2 arguments (path, size)")
 	}
@@ -193,7 +192,7 @@ func truncateFile(writer io.Writer, args ...GoMixObject) GoMixObject {
 // It is the GoMix equivalent of 'rm -rf'.
 //
 // Syntax: remove_all(path)
-func removeAll(writer io.Writer, args ...GoMixObject) GoMixObject {
+func removeAll(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: remove_all expects 1 argument (path)")
 	}
@@ -209,7 +208,7 @@ func removeAll(writer io.Writer, args ...GoMixObject) GoMixObject {
 // If newpath already exists and is not a directory, it is replaced.
 //
 // Syntax: rename_file(oldpath, newpath)
-func renameFile(writer io.Writer, args ...GoMixObject) GoMixObject {
+func renameFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: rename_file expects 2 arguments (old, new)")
 	}
@@ -230,7 +229,7 @@ func renameFile(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	chmod("script.gm", 0755);
-func chmod(writer io.Writer, args ...GoMixObject) GoMixObject {
+func chmod(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: chmod expects 2 arguments (path, mode)")
 	}
@@ -255,8 +254,7 @@ func chmod(writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	var userHome = home();
-//	println("Home is: " + userHome);
-func home(writer io.Writer, args ...GoMixObject) GoMixObject {
+func home(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 0 {
 		return createError("ERROR: home expects 0 arguments")
 	}
@@ -272,7 +270,7 @@ func home(writer io.Writer, args ...GoMixObject) GoMixObject {
 // appendFile appends a string to a file, creating it if it doesn't exist.
 //
 // Syntax: append_file(path, content)
-func appendFile(writer io.Writer, args ...GoMixObject) GoMixObject {
+func appendFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: append_file expects 2 arguments (path, content)")
 	}
@@ -292,7 +290,7 @@ func appendFile(writer io.Writer, args ...GoMixObject) GoMixObject {
 // fileExists checks if a file or directory exists at the given path.
 //
 // Syntax: file_exists(path)
-func fileExists(writer io.Writer, args ...GoMixObject) GoMixObject {
+func fileExists(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: file_exists expects 1 argument")
 	}
@@ -304,7 +302,7 @@ func fileExists(writer io.Writer, args ...GoMixObject) GoMixObject {
 // isDir checks if the given path is a directory.
 //
 // Syntax: is_dir(path)
-func isDir(writer io.Writer, args ...GoMixObject) GoMixObject {
+func isDir(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: is_dir expects 1 argument")
 	}
@@ -319,7 +317,7 @@ func isDir(writer io.Writer, args ...GoMixObject) GoMixObject {
 // isFile checks if the given path is a regular file.
 //
 // Syntax: is_file(path)
-func isFile(writer io.Writer, args ...GoMixObject) GoMixObject {
+func isFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: is_file expects 1 argument")
 	}
@@ -334,7 +332,7 @@ func isFile(writer io.Writer, args ...GoMixObject) GoMixObject {
 // mkdir creates a new directory and any necessary parent directories.
 //
 // Syntax: mkdir(path)
-func mkdir(writer io.Writer, args ...GoMixObject) GoMixObject {
+func mkdir(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: mkdir expects 1 argument")
 	}
@@ -360,7 +358,7 @@ func mkdir(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	remove_file("temp.txt");
 //	remove_file("old_dir", true);
-func removeFile(writer io.Writer, args ...GoMixObject) GoMixObject {
+func removeFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) < 1 || len(args) > 2 {
 		return createError("ERROR: remove_file expects 1 or 2 arguments")
 	}

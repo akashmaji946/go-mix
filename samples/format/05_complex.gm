@@ -1,0 +1,12 @@
+var inputs = ["10", "20", "30", "abc", "40"];
+
+// Filter out non-digits and map to integers
+var validInts = map(
+    filter(inputs, func(s) { return is_digit(s); }),
+    func(s) { return to_int(s); }
+);
+
+println("Valid integers: " + tostring(validInts));
+
+var total = reduce(validInts, func(acc, x) { return acc + x; }, 0);
+println("Total sum: " + total);

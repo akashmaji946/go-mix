@@ -131,7 +131,7 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseReturnStatement, lexer.RETURN_KEY)
 
 	// Identifiers: variable names, function names
-	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID, lexer.THIS_KEY, lexer.SELF_KEY)
+	par.registerUnaryFuncs(par.parseIdentifierExpression, lexer.IDENTIFIER_ID, lexer.THIS_KEY, lexer.SELF_KEY, lexer.ARRAY_KEY)
 
 	// Boolean literals: true, false
 	par.registerUnaryFuncs(par.parseBooleanLiteral, lexer.TRUE_KEY, lexer.FALSE_KEY)
@@ -171,10 +171,10 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseArrayExpressionNode, lexer.LEFT_BRACKET)
 
 	// Map literals: map{key: value}
-	par.registerUnaryFuncs(par.parseMapLiteral, lexer.MAP_KEY)
+	par.registerUnaryFuncs(par.parseMapKeyword, lexer.MAP_KEY)
 
 	// Set literals: set{1, 2, 3}
-	par.registerUnaryFuncs(par.parseSetLiteral, lexer.SET_KEY)
+	par.registerUnaryFuncs(par.parseSetKeyword, lexer.SET_KEY)
 
 	// Array indexing and slicing: arr[0], arr[1:3]
 	par.registerBinaryFuncs(par.parseIndexExpression, lexer.LEFT_BRACKET)

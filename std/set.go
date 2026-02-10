@@ -46,7 +46,7 @@ func init() {
 //	var s = set{1, 2, 3};
 //	insert_set(s, 4);     // s is now set{1, 2, 3, 4}
 //	insert_set(s, 2);     // s remains set{1, 2, 3, 4} (2 already exists)
-func setInsert(writer io.Writer, args ...GoMixObject) GoMixObject {
+func setInsert(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -83,7 +83,7 @@ func setInsert(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	var s = set{1, 2, 3};
 //	remove_set(s, 2);  // Returns true, s is now set{1, 3}
 //	remove_set(s, 5);  // Returns false (5 didn't exist)
-func setRemove(writer io.Writer, args ...GoMixObject) GoMixObject {
+func setRemove(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -128,7 +128,7 @@ func setRemove(writer io.Writer, args ...GoMixObject) GoMixObject {
 //	var s = set{1, 2, 3};
 //	contains_set(s, 2);  // Returns true
 //	contains_set(s, 5);  // Returns false
-func setContains(writer io.Writer, args ...GoMixObject) GoMixObject {
+func setContains(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
 	}
@@ -156,7 +156,7 @@ func setContains(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var s = set{1, 2, 3};
 //	values_set(s);  // Returns [1, 2, 3]
-func setValues(writer io.Writer, args ...GoMixObject) GoMixObject {
+func setValues(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
@@ -183,7 +183,7 @@ func setValues(writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	var s = set{1, 2, 3};
 //	size_set(s);  // Returns 3
-func setSize(writer io.Writer, args ...GoMixObject) GoMixObject {
+func setSize(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
