@@ -17,6 +17,7 @@ import (
 	"os"
 
 	"github.com/akashmaji946/go-mix/eval"
+	_ "github.com/akashmaji946/go-mix/file"
 	"github.com/akashmaji946/go-mix/parser"
 	"github.com/akashmaji946/go-mix/repl"
 	"github.com/fatih/color"

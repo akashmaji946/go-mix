@@ -46,6 +46,8 @@ const (
 	TupleType GoMixType = "tuple"
 	// StructType represents user-defined struct types
 	StructType GoMixType = "struct"
+	// FileType represents an open file handle
+	FileType GoMixType = "file"
 
 	// ObjectType represents a struct instance (defined elsewhere)
 	ObjectType GoMixType = "object"

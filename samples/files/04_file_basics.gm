@@ -1,0 +1,14 @@
+// 04_file_basics.gm: Demonstrates write_file and read_file
+var path = "samples/files/note.txt";
+var message = "This is a high-level file write operation.\n";
+
+write_file(path, message);
+println("File written successfully.");
+
+if (file_exists(path)) {
+    var saved = read_file(path);
+    println("Content read back:");
+    print(saved);
+} else {
+    eprintln("Error: File was not created.");
+}

@@ -1,0 +1,19 @@
+// 10_cleanup.gm: Demonstrates renaming and removal
+var old_path = "samples/files/temp.txt";
+var new_path = "samples/files/permanent.txt";
+
+append_file(old_path, "Temporary data");
+rename_file(old_path, new_path);
+println("Renamed temp.txt to permanent.txt");
+
+getchar();
+
+remove_file(new_path);
+println("Removed permanent.txt");
+
+getchar();
+getchar();
+
+// Remove the test folder created in program 06
+remove_all("samples/files/test_folder");
+println("Cleaned up test_folder.");
