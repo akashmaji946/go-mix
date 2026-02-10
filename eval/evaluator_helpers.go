@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/akashmaji946/go-mix/objects"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // IsError checks if a GoMixObject represents an error condition.
@@ -34,9 +34,9 @@ import (
 //	    return result  // Propagate error up
 //	}
 //	// Continue with normal evaluation
-func IsError(obj objects.GoMixObject) bool {
+func IsError(obj std.GoMixObject) bool {
 	if obj != nil {
-		return obj.GetType() == objects.ErrorType
+		return obj.GetType() == std.ErrorType
 	}
 	return false
 }
@@ -67,8 +67,8 @@ func IsError(obj objects.GoMixObject) bool {
 //
 //	func add(a, b) { return a + b; }  // Creates ReturnValue(Integer(8))
 //	add(5, 3)                          // UnwrapReturnValue extracts Integer(8)
-func UnwrapReturnValue(obj objects.GoMixObject) objects.GoMixObject {
-	if retVal, isReturn := obj.(*objects.ReturnValue); isReturn {
+func UnwrapReturnValue(obj std.GoMixObject) std.GoMixObject {
+	if retVal, isReturn := obj.(*std.ReturnValue); isReturn {
 		return retVal.Value
 	}
 	return obj
@@ -96,8 +96,8 @@ func UnwrapReturnValue(obj objects.GoMixObject) objects.GoMixObject {
 //	result := ev.Eval(node)
 //	AssertError(t, result, "identifier not found")
 //	// Passes if result is Error with message containing "identifier not found"
-func AssertError(t *testing.T, obj objects.GoMixObject, expected string) {
-	errObj, ok := obj.(*objects.Error)
+func AssertError(t *testing.T, obj std.GoMixObject, expected string) {
+	errObj, ok := obj.(*std.Error)
 	if !ok {
 		t.Errorf("not error. got=%T (%+v)", obj, obj)
 		return
@@ -126,8 +126,8 @@ func AssertError(t *testing.T, obj objects.GoMixObject, expected string) {
 //	result := ev.Eval(parseExpression("5 + 3"))
 //	AssertInteger(t, result, 8)
 //	// Passes if result is Integer with value 8
-func AssertInteger(t *testing.T, obj objects.GoMixObject, expected int64) {
-	result, ok := obj.(*objects.Integer)
+func AssertInteger(t *testing.T, obj std.GoMixObject, expected int64) {
+	result, ok := obj.(*std.Integer)
 	if !ok {
 		t.Errorf("object is not Integer. got=%T (%+v)", obj, obj)
 		return
@@ -156,8 +156,8 @@ func AssertInteger(t *testing.T, obj objects.GoMixObject, expected int64) {
 //	result := ev.Eval(parseExpression("5 > 3"))
 //	AssertBoolean(t, result, true)
 //	// Passes if result is Boolean with value true
-func AssertBoolean(t *testing.T, obj objects.GoMixObject, expected bool) {
-	result, ok := obj.(*objects.Boolean)
+func AssertBoolean(t *testing.T, obj std.GoMixObject, expected bool) {
+	result, ok := obj.(*std.Boolean)
 	if !ok {
 		t.Errorf("object is not Boolean. got=%T (%+v)", obj, obj)
 		return
@@ -191,8 +191,8 @@ func AssertBoolean(t *testing.T, obj objects.GoMixObject, expected bool) {
 //	result := ev.Eval(parseExpression("3.14 + 2.86"))
 //	AssertFloat(t, result, 6.0)
 //	// Passes if result is Float with value 6.0
-func AssertFloat(t *testing.T, obj objects.GoMixObject, expected float64) {
-	result, ok := obj.(*objects.Float)
+func AssertFloat(t *testing.T, obj std.GoMixObject, expected float64) {
+	result, ok := obj.(*std.Float)
 	if !ok {
 		t.Errorf("object is not Float. got=%T (%+v)", obj, obj)
 		return
@@ -224,7 +224,7 @@ func AssertFloat(t *testing.T, obj objects.GoMixObject, expected float64) {
 //
 // Note: To check for GoMix Nil objects (the language's nil value), compare
 // the type instead: obj.GetType() == objects.NilType
-func AssertNil(t *testing.T, obj objects.GoMixObject) {
+func AssertNil(t *testing.T, obj std.GoMixObject) {
 	if obj != nil {
 		t.Errorf("object is not nil. got=%T (%+v)", obj, obj)
 		return
@@ -251,8 +251,8 @@ func AssertNil(t *testing.T, obj objects.GoMixObject) {
 //	result := ev.Eval(parseExpression("\"Hello\" + \" World\""))
 //	AssertString(t, result, "Hello World")
 //	// Passes if result is String with value "Hello World"
-func AssertString(t *testing.T, obj objects.GoMixObject, expected string) {
-	result, ok := obj.(*objects.String)
+func AssertString(t *testing.T, obj std.GoMixObject, expected string) {
+	result, ok := obj.(*std.String)
 	if !ok {
 		t.Errorf("object is not String. got=%T (%+v)", obj, obj)
 		return

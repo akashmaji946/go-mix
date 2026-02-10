@@ -34,7 +34,7 @@ import (
 	"fmt"
 
 	"github.com/akashmaji946/go-mix/lexer"
-	"github.com/akashmaji946/go-mix/objects"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // Parser represents the parser state and configuration.
@@ -51,7 +51,7 @@ type Parser struct {
 	BinaryFuncs map[lexer.TokenType]binaryParseFunction // Binary/infix operators
 
 	// Environment and variable tracking
-	Env map[string]objects.GoMixObject // Variable environment (name -> value)
+	Env map[string]std.GoMixObject // Variable environment (name -> value)
 
 	// Track which variables are const (immutable after declaration)
 	Consts map[string]bool
@@ -60,7 +60,7 @@ type Parser struct {
 	LetVars map[string]bool
 
 	// Track the type of let variables for type checking
-	LetTypes map[string]objects.GoMixType
+	LetTypes map[string]std.GoMixType
 
 	// Collect parsing errors instead of panicking
 	// This allows reporting multiple errors in a single parse
@@ -108,10 +108,10 @@ func (par *Parser) init() {
 	// Initialize all maps
 	par.UnaryFuncs = make(map[lexer.TokenType]unaryParseFunction)
 	par.BinaryFuncs = make(map[lexer.TokenType]binaryParseFunction)
-	par.Env = make(map[string]objects.GoMixObject)
+	par.Env = make(map[string]std.GoMixObject)
 	par.Consts = make(map[string]bool)
 	par.LetVars = make(map[string]bool)
-	par.LetTypes = make(map[string]objects.GoMixType)
+	par.LetTypes = make(map[string]std.GoMixType)
 	par.Errors = make([]string, 0)
 
 	// Register unary/prefix parsing functions
@@ -327,11 +327,11 @@ func (par *Parser) Parse() *RootNode {
 		} else if whileLoopNode, ok := lastStmt.(*WhileLoopStatementNode); ok {
 			root.Value = whileLoopNode.Value
 		} else {
-			root.Value = &objects.Nil{}
+			root.Value = &std.Nil{}
 		}
 	} else {
 		// Empty program evaluates to nil
-		root.Value = &objects.Nil{}
+		root.Value = &std.Nil{}
 	}
 
 	return root

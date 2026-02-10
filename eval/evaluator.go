@@ -11,9 +11,9 @@ import (
 	"os"
 
 	"github.com/akashmaji946/go-mix/function"
-	"github.com/akashmaji946/go-mix/objects"
 	"github.com/akashmaji946/go-mix/parser"
 	"github.com/akashmaji946/go-mix/scope"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // Evaluator holds the state for evaluating GoMix AST nodes,
@@ -21,11 +21,11 @@ import (
 // It serves as the main execution engine for the GoMix interpreter,
 // managing the evaluation context and providing access to built-in functions.
 type Evaluator struct {
-	Par      *parser.Parser                  // Parser instance for error reporting with line/column information
-	Scp      *scope.Scope                    // Current scope for variable bindings and lexical scoping
-	Builtins map[string]*objects.Builtin     // Map of builtin functions (e.g., print, len, push, pop)
-	Types    map[string]*objects.GoMixStruct // Map of user-defined struct types (name to struct definition)
-	Writer   io.Writer                       // Output writer for builtin functions (default: os.Stdout)
+	Par      *parser.Parser              // Parser instance for error reporting with line/column information
+	Scp      *scope.Scope                // Current scope for variable bindings and lexical scoping
+	Builtins map[string]*std.Builtin     // Map of builtin functions (e.g., print, len, push, pop)
+	Types    map[string]*std.GoMixStruct // Map of user-defined struct types (name to struct definition)
+	Writer   io.Writer                   // Output writer for builtin functions (default: os.Stdout)
 }
 
 // NewEvaluator creates and initializes a new Evaluator instance with default configuration.
@@ -48,11 +48,11 @@ func NewEvaluator() *Evaluator {
 	ev := &Evaluator{
 		Par:      nil,
 		Scp:      scope.NewScope(nil),
-		Builtins: make(map[string]*objects.Builtin),
-		Types:    make(map[string]*objects.GoMixStruct),
+		Builtins: make(map[string]*std.Builtin),
+		Types:    make(map[string]*std.GoMixStruct),
 		Writer:   os.Stdout, // Default to stdout
 	}
-	for _, builtin := range objects.Builtins {
+	for _, builtin := range std.Builtins {
 		ev.Builtins[builtin.Name] = builtin
 	}
 	return ev
@@ -115,7 +115,7 @@ func (e *Evaluator) SetParser(p *parser.Parser) {
 // Example:
 //
 //	func add(a, b) { return a + b; }  // Creates and registers 'add' function
-func (e *Evaluator) RegisterFunction(n *parser.FunctionStatementNode) objects.GoMixObject {
+func (e *Evaluator) RegisterFunction(n *parser.FunctionStatementNode) std.GoMixObject {
 	function := &function.Function{
 		Name:   n.FuncName.Name,
 		Params: n.FuncParams,
@@ -172,12 +172,12 @@ func (e *Evaluator) IsBuiltin(name string) bool {
 //
 //	result := e.InvokeBuiltin("len", arrayObject)  // Returns Integer with array length
 //	e.InvokeBuiltin("print", stringObject)         // Prints to writer, returns Nil
-func (e *Evaluator) InvokeBuiltin(name string, args ...objects.GoMixObject) objects.GoMixObject {
+func (e *Evaluator) InvokeBuiltin(name string, args ...std.GoMixObject) std.GoMixObject {
 
 	if builtin, ok := e.Builtins[name]; ok {
 		return builtin.Callback(e.Writer, args...)
 	}
-	return &objects.Nil{}
+	return &std.Nil{}
 }
 
 // CreateError creates a new Error object with a formatted message including source position.
@@ -202,15 +202,43 @@ func (e *Evaluator) InvokeBuiltin(name string, args ...objects.GoMixObject) obje
 //
 //	return e.CreateError("ERROR: identifier not found: (%s)", varName)
 //	// Output: "[10:5] ERROR: identifier not found: (myVar)"
-func (e *Evaluator) CreateError(format string, a ...interface{}) *objects.Error {
+func (e *Evaluator) CreateError(format string, a ...interface{}) *std.Error {
 	msg := fmt.Sprintf(format, a...)
 	fullMsg := fmt.Sprintf("[%d:%d] %s", e.Par.Lex.Line, e.Par.Lex.Column, msg)
-	return &objects.Error{Message: fullMsg}
+	return &std.Error{Message: fullMsg}
 }
 
-// NamedParameter represents a named parameter in a function definition,
-// holding the parameter's name and its AST node.
+// NamedParameter represents a parameter passed to a function or method call.
+//
+// It encapsulates both the parameter name (from the function definition) and
+// the evaluated value passed as an argument. This structure is primarily used
+// during method invocation on objects to bind argument values to parameter names
+// in the method's execution scope.
+//
+// Fields:
+//   - Name: The name of the parameter as defined in the function signature.
+//     Used for binding the value in the function's scope.
+//   - Value: The evaluated runtime object passed as an argument.
 type NamedParameter struct {
-	Name  string              // The name of the parameter (e.g., "a", "b")
-	Value objects.GoMixObject //  The value of the parameter, which can be any GoMixObject (e.g., Integer, String, Array)
+	Name  string          // The name of the parameter (e.g., "a", "b")
+	Value std.GoMixObject //  The value of the parameter, which can be any GoMixObject (e.g., Integer, String, Array)
+}
+
+// IndexOfDot finds the index of the first period (.) character in a string.
+//
+// This helper function is used by the evaluator to detect method calls in
+// identifier names (e.g., "obj.method"). It scans the string from left to right.
+//
+// Parameters:
+//   - s: The string to search
+//
+// Returns:
+//   - int: The index of the first dot, or -1 if no dot is found
+func IndexOfDot(s string) int {
+	for i, c := range s {
+		if c == '.' {
+			return i
+		}
+	}
+	return -1
 }

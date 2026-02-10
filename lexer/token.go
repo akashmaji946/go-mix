@@ -13,74 +13,7 @@ import "fmt"
 // such as operators, keywords, literals, or structural symbols.
 type TokenType string
 
-// Token represents a single lexical token in the GoMix source code.
-// It contains the token's type, its literal string representation from the source,
-// and metadata about its position in the source file (line and column numbers).
-//
-// Fields:
-//   - Type: The category of the token (e.g., operator, keyword, literal)
-//   - Literal: The actual string from the source code that this token represents
-//   - Line: The line number where this token appears in the source (1-indexed)
-//   - Column: The column number where this token starts in the source (1-indexed)
-//
-// Example:
-//
-//	For the source code "var x = 123" at line 5, column 10:
-//	Token{Type: VAR_KEY, Literal: "var", Line: 5, Column: 10}
-type Token struct {
-	Type    TokenType // The type/category of this token
-	Literal string    // The actual text from source code
-	Line    int       // Line number in source file (1-indexed)
-	Column  int       // Column number in source file (1-indexed)
-}
-
-// NewToken creates a new Token with the specified type and literal value.
-// This is a basic constructor that does not set line/column metadata.
-// Use NewTokenWithMetadata if position information is needed.
-//
-// Parameters:
-//   - tokenType: The type of token to create
-//   - literal: The string representation of the token from source code
-//
-// Returns:
-//   - Token: A new token with the specified type and literal, but no position info
-//
-// Example:
-//
-//	token := NewToken(PLUS_OP, "+")
-func NewToken(tokenType TokenType, literal string) Token {
-	return Token{
-		Type:    tokenType,
-		Literal: literal,
-	}
-}
-
-// NewTokenWithMetadata creates a new Token with full metadata including position.
-// This constructor should be used during lexical analysis to preserve source location
-// information, which is essential for error reporting and debugging.
-//
-// Parameters:
-//   - tokenType: The type of token to create
-//   - literal: The string representation of the token from source code
-//   - line: The line number where the token appears (1-indexed)
-//   - column: The column number where the token starts (1-indexed)
-//
-// Returns:
-//   - Token: A new token with complete type, literal, and position information
-//
-// Example:
-//
-//	token := NewTokenWithMetadata(INT_LIT, "42", 10, 5)
-func NewTokenWithMetadata(tokenType TokenType, literal string, line int, column int) Token {
-	return Token{
-		Type:    tokenType,
-		Literal: literal,
-		Line:    line,
-		Column:  column,
-	}
-}
-
-// Token Type Constants
+// TokenType Constants:
 // These constants define all possible token types in the GoMix language.
 // They are organized into logical groups for clarity and maintainability.
 const (
@@ -200,18 +133,6 @@ const (
 
 )
 
-// Print outputs a human-readable representation of the token to standard output.
-// The format is "literal:type", which shows both the actual text and its classification.
-// This is primarily used for debugging and development purposes.
-//
-// Example output:
-//
-//	For Token{Type: PLUS_OP, Literal: "+"}:
-//	Output: "+:+"
-func (tok *Token) Print() {
-	fmt.Printf("%s:%v\n", tok.Literal, tok.Type)
-}
-
 // KEYWORDS_MAP is a lookup table that maps keyword strings to their token types.
 // This map is used during lexical analysis to distinguish between keywords
 // (reserved words with special meaning) and regular identifiers (user-defined names).
@@ -247,6 +168,85 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"nil":      NIL_LIT,      // Nil/null value
 	"this":     THIS_KEY,     // 'this' keyword
 	"self":     SELF_KEY,     // 'self' keyword
+}
+
+// Token represents a single lexical token in the GoMix source code.
+// It contains the token's type, its literal string representation from the source,
+// and metadata about its position in the source file (line and column numbers).
+//
+// Fields:
+//   - Type: The category of the token (e.g., operator, keyword, literal)
+//   - Literal: The actual string from the source code that this token represents
+//   - Line: The line number where this token appears in the source (1-indexed)
+//   - Column: The column number where this token starts in the source (1-indexed)
+//
+// Example:
+//
+//	For the source code "var x = 123" at line 5, column 10:
+//	Token{Type: VAR_KEY, Literal: "var", Line: 5, Column: 10}
+type Token struct {
+	Type    TokenType // The type/category of this token
+	Literal string    // The actual text from source code
+	Line    int       // Line number in source file (1-indexed)
+	Column  int       // Column number in source file (1-indexed)
+}
+
+// NewToken creates a new Token with the specified type and literal value.
+// This is a basic constructor that does not set line/column metadata.
+// Use NewTokenWithMetadata if position information is needed.
+//
+// Parameters:
+//   - tokenType: The type of token to create
+//   - literal: The string representation of the token from source code
+//
+// Returns:
+//   - Token: A new token with the specified type and literal, but no position info
+//
+// Example:
+//
+//	token := NewToken(PLUS_OP, "+")
+func NewToken(tokenType TokenType, literal string) Token {
+	return Token{
+		Type:    tokenType,
+		Literal: literal,
+	}
+}
+
+// NewTokenWithMetadata creates a new Token with full metadata including position.
+// This constructor should be used during lexical analysis to preserve source location
+// information, which is essential for error reporting and debugging.
+//
+// Parameters:
+//   - tokenType: The type of token to create
+//   - literal: The string representation of the token from source code
+//   - line: The line number where the token appears (1-indexed)
+//   - column: The column number where the token starts (1-indexed)
+//
+// Returns:
+//   - Token: A new token with complete type, literal, and position information
+//
+// Example:
+//
+//	token := NewTokenWithMetadata(INT_LIT, "42", 10, 5)
+func NewTokenWithMetadata(tokenType TokenType, literal string, line int, column int) Token {
+	return Token{
+		Type:    tokenType,
+		Literal: literal,
+		Line:    line,
+		Column:  column,
+	}
+}
+
+// Print outputs a human-readable representation of the token to standard output.
+// The format is "literal:type", which shows both the actual text and its classification.
+// This is primarily used for debugging and development purposes.
+//
+// Example output:
+//
+//	For Token{Type: PLUS_OP, Literal: "+"}:
+//	Output: "+:+"
+func (tok *Token) Print() {
+	fmt.Printf("%s:%v\n", tok.Literal, tok.Type)
 }
 
 // lookupIdent determines the token type for an identifier string.

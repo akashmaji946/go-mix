@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/akashmaji946/go-mix/objects"
 	"github.com/akashmaji946/go-mix/parser"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // TestEvaluator_Ints verifies integer literal evaluation and arithmetic operations
@@ -42,11 +42,11 @@ func TestEvaluator_Ints(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.IntegerType {
-			t.Errorf("expected %s, got %s", objects.IntegerType, result.GetType())
+		if result.GetType() != std.IntegerType {
+			t.Errorf("expected %s, got %s", std.IntegerType, result.GetType())
 		}
-		if result.(*objects.Integer).Value != tt.expected {
-			t.Errorf("expected %d, got %d", tt.expected, result.(*objects.Integer).Value)
+		if result.(*std.Integer).Value != tt.expected {
+			t.Errorf("expected %d, got %d", tt.expected, result.(*std.Integer).Value)
 		}
 	}
 }
@@ -79,11 +79,11 @@ func TestEvaluator_Floats(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.FloatType {
-			t.Errorf("expected %s, got %s", objects.FloatType, result.GetType())
+		if result.GetType() != std.FloatType {
+			t.Errorf("expected %s, got %s", std.FloatType, result.GetType())
 		}
-		if result.(*objects.Float).Value != tt.expected {
-			t.Errorf("expected %f, got %f", tt.expected, result.(*objects.Float).Value)
+		if result.(*std.Float).Value != tt.expected {
+			t.Errorf("expected %f, got %f", tt.expected, result.(*std.Float).Value)
 		}
 	}
 }
@@ -112,11 +112,11 @@ func TestEvaluator_Bools(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.BooleanType {
-			t.Errorf("expected %s, got %s", objects.BooleanType, result.GetType())
+		if result.GetType() != std.BooleanType {
+			t.Errorf("expected %s, got %s", std.BooleanType, result.GetType())
 		}
-		if result.(*objects.Boolean).Value != tt.expected {
-			t.Errorf("expected %t, got %t", tt.expected, result.(*objects.Boolean).Value)
+		if result.(*std.Boolean).Value != tt.expected {
+			t.Errorf("expected %t, got %t", tt.expected, result.(*std.Boolean).Value)
 		}
 	}
 }
@@ -137,11 +137,11 @@ func TestEvaluator_Nil(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.NilType {
-			t.Errorf("expected %s, got %s", objects.NilType, result.GetType())
+		if result.GetType() != std.NilType {
+			t.Errorf("expected %s, got %s", std.NilType, result.GetType())
 		}
 
-		if val, ok := result.(*objects.Nil); ok {
+		if val, ok := result.(*std.Nil); ok {
 			if val.Value != tt.expected {
 				t.Errorf("expected %v, got %v", tt.expected, val.Value)
 			}
@@ -168,11 +168,11 @@ func TestEvaluator_Strings(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.StringType {
-			t.Errorf("expected %s, got %s", objects.StringType, result.GetType())
+		if result.GetType() != std.StringType {
+			t.Errorf("expected %s, got %s", std.StringType, result.GetType())
 		}
-		if result.(*objects.String).Value != tt.expected {
-			t.Errorf("expected %s, got %s", tt.expected, result.(*objects.String).Value)
+		if result.(*std.String).Value != tt.expected {
+			t.Errorf("expected %s, got %s", tt.expected, result.(*std.String).Value)
 		}
 	}
 }
@@ -219,11 +219,11 @@ func TestEvaluator_IntExpr(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.IntegerType {
-			t.Errorf("expected %s, got %s", objects.IntegerType, result.GetType())
+		if result.GetType() != std.IntegerType {
+			t.Errorf("expected %s, got %s", std.IntegerType, result.GetType())
 		}
-		if result.(*objects.Integer).Value != tt.expected {
-			t.Errorf("expected %d, got %d", tt.expected, result.(*objects.Integer).Value)
+		if result.(*std.Integer).Value != tt.expected {
+			t.Errorf("expected %d, got %d", tt.expected, result.(*std.Integer).Value)
 		}
 	}
 }
@@ -340,11 +340,11 @@ func TestEvaluator_ExprErr(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.ErrorType {
-			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		if result.GetType() != std.ErrorType {
+			t.Errorf("expected %s, got %s", std.ErrorType, result.GetType())
 		}
-		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
-			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*std.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*std.Error).Message)
 		}
 
 	}
@@ -403,11 +403,11 @@ func TestEvaluator_Conds(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.ErrorType {
-			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		if result.GetType() != std.ErrorType {
+			t.Errorf("expected %s, got %s", std.ErrorType, result.GetType())
 		}
-		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
-			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*std.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*std.Error).Message)
 		}
 
 	}
@@ -528,11 +528,11 @@ func TestEvaluator_DeclErr(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.ErrorType {
-			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		if result.GetType() != std.ErrorType {
+			t.Errorf("expected %s, got %s", std.ErrorType, result.GetType())
 		}
-		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
-			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*std.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*std.Error).Message)
 		}
 
 	}
@@ -669,11 +669,11 @@ func TestEvaluator_ConstDeclErr(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.ErrorType {
-			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		if result.GetType() != std.ErrorType {
+			t.Errorf("expected %s, got %s", std.ErrorType, result.GetType())
 		}
-		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
-			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*std.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*std.Error).Message)
 		}
 	}
 }
@@ -704,11 +704,11 @@ func TestEvaluator_ConstReassignErr(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.ErrorType {
-			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		if result.GetType() != std.ErrorType {
+			t.Errorf("expected %s, got %s", std.ErrorType, result.GetType())
 		}
-		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
-			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*std.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*std.Error).Message)
 		}
 	}
 }
@@ -747,11 +747,11 @@ func TestEvaluator_LetDeclErr(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.ErrorType {
-			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		if result.GetType() != std.ErrorType {
+			t.Errorf("expected %s, got %s", std.ErrorType, result.GetType())
 		}
-		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
-			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*std.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*std.Error).Message)
 		}
 	}
 }
@@ -786,11 +786,11 @@ func TestEvaluator_LetReassignErr(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() != objects.ErrorType {
-			t.Errorf("expected %s, got %s", objects.ErrorType, result.GetType())
+		if result.GetType() != std.ErrorType {
+			t.Errorf("expected %s, got %s", std.ErrorType, result.GetType())
 		}
-		if !strings.Contains(result.(*objects.Error).Message, tt.ExpectedErrorMsg) {
-			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*objects.Error).Message)
+		if !strings.Contains(result.(*std.Error).Message, tt.ExpectedErrorMsg) {
+			t.Errorf("expected to contain %s, got %s", tt.ExpectedErrorMsg, result.(*std.Error).Message)
 		}
 	}
 }
@@ -930,11 +930,11 @@ func TestEvaluator_RangeSimple(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.RangeType {
-			t.Errorf("expected %s, got %s", objects.RangeType, result.GetType())
+		if result.GetType() != std.RangeType {
+			t.Errorf("expected %s, got %s", std.RangeType, result.GetType())
 		}
 
-		rangeObj := result.(*objects.Range)
+		rangeObj := result.(*std.Range)
 		if rangeObj.Start != tt.expStart {
 			t.Errorf("expected start %d, got %d", tt.expStart, rangeObj.Start)
 		}
@@ -953,11 +953,11 @@ func TestEvaluator_RangeVar(t *testing.T) {
 	evaluator.SetParser(p)
 	result := evaluator.Eval(rootNode)
 
-	if result.GetType() != objects.RangeType {
-		t.Errorf("expected %s, got %s", objects.RangeType, result.GetType())
+	if result.GetType() != std.RangeType {
+		t.Errorf("expected %s, got %s", std.RangeType, result.GetType())
 	}
 
-	rangeObj := result.(*objects.Range)
+	rangeObj := result.(*std.Range)
 	if rangeObj.Start != 2 || rangeObj.End != 9 {
 		t.Errorf("expected range(2,9), got range(%d,%d)", rangeObj.Start, rangeObj.End)
 	}
@@ -982,11 +982,11 @@ func TestEvaluator_RangeBuiltin(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.RangeType {
-			t.Errorf("expected %s, got %s", objects.RangeType, result.GetType())
+		if result.GetType() != std.RangeType {
+			t.Errorf("expected %s, got %s", std.RangeType, result.GetType())
 		}
 
-		rangeObj := result.(*objects.Range)
+		rangeObj := result.(*std.Range)
 		if rangeObj.Start != tt.expStart {
 			t.Errorf("expected start %d, got %d", tt.expStart, rangeObj.Start)
 		}
@@ -1142,12 +1142,12 @@ func TestEvaluator_MapKeys(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.ArrayType {
+		if result.GetType() != std.ArrayType {
 			t.Errorf("expected array, got %s", result.GetType())
 			continue
 		}
 
-		arr := result.(*objects.Array)
+		arr := result.(*std.Array)
 		if len(arr.Elements) != tt.expectedLen {
 			t.Errorf("expected %d keys, got %d", tt.expectedLen, len(arr.Elements))
 		}
@@ -1163,11 +1163,11 @@ func TestEvaluator_MapInsert(t *testing.T) {
 	evaluator.SetParser(p)
 	result := evaluator.Eval(rootNode)
 
-	if result.GetType() != objects.MapType {
+	if result.GetType() != std.MapType {
 		t.Errorf("expected map, got %s", result.GetType())
 	}
 
-	mapObj := result.(*objects.Map)
+	mapObj := result.(*std.Map)
 	if len(mapObj.Keys) != 2 {
 		t.Errorf("expected 2 keys, got %d", len(mapObj.Keys))
 	}
@@ -1182,11 +1182,11 @@ func TestEvaluator_MapRemove(t *testing.T) {
 	evaluator.SetParser(p)
 	result := evaluator.Eval(rootNode)
 
-	if result.GetType() != objects.MapType {
+	if result.GetType() != std.MapType {
 		t.Errorf("expected map, got %s", result.GetType())
 	}
 
-	mapObj := result.(*objects.Map)
+	mapObj := result.(*std.Map)
 	if len(mapObj.Keys) != 1 {
 		t.Errorf("expected 1 key, got %d", len(mapObj.Keys))
 	}
@@ -1231,23 +1231,23 @@ func TestEvaluator_EnumerateMap(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.ArrayType {
+		if result.GetType() != std.ArrayType {
 			t.Errorf("expected array, got %s", result.GetType())
 			continue
 		}
 
-		arr := result.(*objects.Array)
+		arr := result.(*std.Array)
 		if len(arr.Elements) != tt.expectedLen {
 			t.Errorf("expected %d pairs, got %d", tt.expectedLen, len(arr.Elements))
 		}
 
 		// Verify each element is an array of 2 elements
 		for i, elem := range arr.Elements {
-			if elem.GetType() != objects.ArrayType {
+			if elem.GetType() != std.ArrayType {
 				t.Errorf("pair %d: expected array, got %s", i, elem.GetType())
 				continue
 			}
-			pair := elem.(*objects.Array)
+			pair := elem.(*std.Array)
 			if len(pair.Elements) != 2 {
 				t.Errorf("pair %d: expected 2 elements, got %d", i, len(pair.Elements))
 			}
@@ -1264,11 +1264,11 @@ func TestEvaluator_SetInsert(t *testing.T) {
 	evaluator.SetParser(p)
 	result := evaluator.Eval(rootNode)
 
-	if result.GetType() != objects.SetType {
+	if result.GetType() != std.SetType {
 		t.Errorf("expected set, got %s", result.GetType())
 	}
 
-	setObj := result.(*objects.Set)
+	setObj := result.(*std.Set)
 	if len(setObj.Values) != 3 {
 		t.Errorf("expected 3 values, got %d", len(setObj.Values))
 	}
@@ -1334,12 +1334,12 @@ func TestEvaluator_SetValues(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.ArrayType {
+		if result.GetType() != std.ArrayType {
 			t.Errorf("expected array, got %s", result.GetType())
 			continue
 		}
 
-		arr := result.(*objects.Array)
+		arr := result.(*std.Array)
 		if len(arr.Elements) != tt.expectedLen {
 			t.Errorf("expected %d values, got %d", tt.expectedLen, len(arr.Elements))
 		}
@@ -1624,12 +1624,12 @@ func TestEvaluator_ListCreation(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.ListType {
+		if result.GetType() != std.ListType {
 			t.Errorf("expected list, got %s", result.GetType())
 			continue
 		}
 
-		listObj := result.(*objects.List)
+		listObj := result.(*std.List)
 		if len(listObj.Elements) != tt.expectedLen {
 			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(listObj.Elements))
 		}
@@ -1655,12 +1655,12 @@ func TestEvaluator_TupleCreation(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.TupleType {
+		if result.GetType() != std.TupleType {
 			t.Errorf("expected tuple, got %s", result.GetType())
 			continue
 		}
 
-		tupleObj := result.(*objects.Tuple)
+		tupleObj := result.(*std.Tuple)
 		if len(tupleObj.Elements) != tt.expectedLen {
 			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(tupleObj.Elements))
 		}
@@ -1735,12 +1735,12 @@ func TestEvaluator_ListSlicing(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.ArrayType {
+		if result.GetType() != std.ArrayType {
 			t.Errorf("expected array from slice, got %s", result.GetType())
 			continue
 		}
 
-		arr := result.(*objects.Array)
+		arr := result.(*std.Array)
 		if len(arr.Elements) != tt.expectedLen {
 			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(arr.Elements))
 		}
@@ -1767,12 +1767,12 @@ func TestEvaluator_TupleSlicing(t *testing.T) {
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
 
-		if result.GetType() != objects.ArrayType {
+		if result.GetType() != std.ArrayType {
 			t.Errorf("expected array from slice, got %s", result.GetType())
 			continue
 		}
 
-		arr := result.(*objects.Array)
+		arr := result.(*std.Array)
 		if len(arr.Elements) != tt.expectedLen {
 			t.Errorf("expected %d elements, got %d", tt.expectedLen, len(arr.Elements))
 		}
@@ -2047,11 +2047,11 @@ func TestEvaluator_Structs(t *testing.T) {
 		evaluator := NewEvaluator()
 		evaluator.SetParser(p)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() == objects.ErrorType {
+		if result.GetType() == std.ErrorType {
 			t.Errorf("unexpected error: %s", result.ToString())
 			continue
 		}
-		if result.GetType() != objects.StructType {
+		if result.GetType() != std.StructType {
 			t.Errorf("expected struct, got %s", result.GetType())
 		}
 
@@ -2069,7 +2069,7 @@ func parseOrDie(src string) *parser.RootNode {
 }
 
 // assertFoundType asserts that a struct type was registered in the evaluator
-func assertFoundType(t *testing.T, evaluator *Evaluator, typeName string) *objects.GoMixStruct {
+func assertFoundType(t *testing.T, evaluator *Evaluator, typeName string) *std.GoMixStruct {
 	tp, exists := evaluator.Types[typeName]
 	if !exists {
 		t.Fatalf("expected type '%s' to be registered", typeName)
@@ -2078,7 +2078,7 @@ func assertFoundType(t *testing.T, evaluator *Evaluator, typeName string) *objec
 }
 
 // assertFoundInScope asserts that a variable exists in the current scope
-func assertFoundInScope(t *testing.T, evaluator *Evaluator, varName string, expectedType objects.GoMixType) objects.GoMixObject {
+func assertFoundInScope(t *testing.T, evaluator *Evaluator, varName string, expectedType std.GoMixType) std.GoMixObject {
 	value, exists := evaluator.Scp.LookUp(varName)
 	if !exists {
 		t.Fatalf("expected variable '%s' to exist in scope", varName)
@@ -2103,8 +2103,8 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
             `,
 			AssertFunc: func(evaluator *Evaluator) {
 				tp := assertFoundType(t, evaluator, "A")
-				s := assertFoundInScope(t, evaluator, "a", objects.ObjectType)
-				p, ok := s.(*objects.GoMixObjectInstance)
+				s := assertFoundInScope(t, evaluator, "a", std.ObjectType)
+				p, ok := s.(*std.GoMixObjectInstance)
 				if !ok {
 					t.Fatalf("expected GoMixObjectInstance, got %T", s)
 				}
@@ -2125,10 +2125,10 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
             `,
 			AssertFunc: func(evaluator *Evaluator) {
 				tp := assertFoundType(t, evaluator, "A")
-				sa := assertFoundInScope(t, evaluator, "a", objects.ObjectType)
-				sb := assertFoundInScope(t, evaluator, "b", objects.ObjectType)
-				pa, oka := sa.(*objects.GoMixObjectInstance)
-				pb, okb := sb.(*objects.GoMixObjectInstance)
+				sa := assertFoundInScope(t, evaluator, "a", std.ObjectType)
+				sb := assertFoundInScope(t, evaluator, "b", std.ObjectType)
+				pa, oka := sa.(*std.GoMixObjectInstance)
+				pb, okb := sb.(*std.GoMixObjectInstance)
 				if !oka || !okb {
 					t.Fatalf("expected GoMixObjectInstance, got %T and %T", sa, sb)
 				}
@@ -2152,8 +2152,8 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
             `,
 			AssertFunc: func(evaluator *Evaluator) {
 				tp := assertFoundType(t, evaluator, "Point")
-				p := assertFoundInScope(t, evaluator, "p", objects.ObjectType)
-				inst, ok := p.(*objects.GoMixObjectInstance)
+				p := assertFoundInScope(t, evaluator, "p", std.ObjectType)
+				inst, ok := p.(*std.GoMixObjectInstance)
 				if !ok {
 					t.Fatalf("expected GoMixObjectInstance, got %T", p)
 				}
@@ -2175,10 +2175,10 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
             `,
 			AssertFunc: func(evaluator *Evaluator) {
 				tp := assertFoundType(t, evaluator, "Rectangle")
-				r1 := assertFoundInScope(t, evaluator, "r1", objects.ObjectType)
-				r2 := assertFoundInScope(t, evaluator, "r2", objects.ObjectType)
-				ir1, ok1 := r1.(*objects.GoMixObjectInstance)
-				ir2, ok2 := r2.(*objects.GoMixObjectInstance)
+				r1 := assertFoundInScope(t, evaluator, "r1", std.ObjectType)
+				r2 := assertFoundInScope(t, evaluator, "r2", std.ObjectType)
+				ir1, ok1 := r1.(*std.GoMixObjectInstance)
+				ir2, ok2 := r2.(*std.GoMixObjectInstance)
 				if !ok1 || !ok2 {
 					t.Fatalf("expected GoMixObjectInstance, got %T and %T", r1, r2)
 				}
@@ -2197,7 +2197,7 @@ func TestEvaluator_Eval_EvaluateInstanceCreation(t *testing.T) {
 		evaluator := NewEvaluator()
 		rootNode := parseOrDie(test.Src)
 		result := evaluator.Eval(rootNode)
-		if result.GetType() == objects.ErrorType {
+		if result.GetType() == std.ErrorType {
 			t.Errorf("test %d: unexpected error: %s", i, result.ToString())
 			continue
 		}

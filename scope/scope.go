@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 package scope
 
-import "github.com/akashmaji946/go-mix/objects"
+import "github.com/akashmaji946/go-mix/std"
 
 // Scope defines a lexical scope boundary for variable lifetime and accessibility.
 //
@@ -20,7 +20,7 @@ import "github.com/akashmaji946/go-mix/objects"
 // implementing the standard lexical scoping rules found in most programming languages.
 type Scope struct {
 	// Variables maps variable names to their current values in this scope
-	Variables map[string]objects.GoMixObject
+	Variables map[string]std.GoMixObject
 
 	// Consts tracks which variables are declared as constants (immutable)
 	Consts map[string]bool
@@ -29,7 +29,7 @@ type Scope struct {
 	LetVars map[string]bool
 
 	// LetTypes stores the declared types of 'let' variables for type checking
-	LetTypes map[string]objects.GoMixType
+	LetTypes map[string]std.GoMixType
 
 	// Parent points to the enclosing scope, forming a scope chain
 	// nil indicates this is the global (root) scope
@@ -60,10 +60,10 @@ type Scope struct {
 //	blockScope := NewScope(functionScope)     // Create nested block scope
 func NewScope(parent *Scope) *Scope {
 	return &Scope{
-		Variables: make(map[string]objects.GoMixObject),
+		Variables: make(map[string]std.GoMixObject),
 		Consts:    make(map[string]bool),
 		LetVars:   make(map[string]bool),
-		LetTypes:  make(map[string]objects.GoMixType),
+		LetTypes:  make(map[string]std.GoMixType),
 		Parent:    parent,
 	}
 }
@@ -96,9 +96,9 @@ func NewScope(parent *Scope) *Scope {
 //	    var y = 20;       // Bound in function scope
 //	    return x + y;     // LookUp finds both x (in parent) and y (in current)
 //	}
-func (s *Scope) LookUp(varName string) (objects.GoMixObject, bool) {
+func (s *Scope) LookUp(varName string) (std.GoMixObject, bool) {
 	if s.Variables == nil {
-		s.Variables = make(map[string]objects.GoMixObject)
+		s.Variables = make(map[string]std.GoMixObject)
 	}
 	obj, ok := s.Variables[varName]
 	if !ok && s.Parent != nil {
@@ -133,9 +133,9 @@ func (s *Scope) LookUp(varName string) (objects.GoMixObject, bool) {
 //
 //	scope.Bind("x", &objects.Integer{Value: 10})  // New binding, returns ("x", false)
 //	scope.Bind("x", &objects.Integer{Value: 20})  // Redeclaration, returns ("x", true)
-func (s *Scope) Bind(varName string, obj objects.GoMixObject) (string, bool) {
+func (s *Scope) Bind(varName string, obj std.GoMixObject) (string, bool) {
 	if s.Variables == nil {
-		s.Variables = make(map[string]objects.GoMixObject)
+		s.Variables = make(map[string]std.GoMixObject)
 	}
 	_, has := s.Variables[varName]
 	s.Variables[varName] = obj
@@ -172,9 +172,9 @@ func (s *Scope) Bind(varName string, obj objects.GoMixObject) (string, bool) {
 //	func increment() {
 //	    x = x + 1;        // Assign finds and updates x in outer scope
 //	}
-func (s *Scope) Assign(varName string, obj objects.GoMixObject) (*Scope, bool) {
+func (s *Scope) Assign(varName string, obj std.GoMixObject) (*Scope, bool) {
 	if s.Variables == nil {
-		s.Variables = make(map[string]objects.GoMixObject)
+		s.Variables = make(map[string]std.GoMixObject)
 	}
 	if _, ok := s.Variables[varName]; ok {
 		s.Variables[varName] = obj
@@ -280,9 +280,9 @@ func (s *Scope) IsLetVariable(varName string) bool {
 //	let x = 10;                    // Records type as IntegerType
 //	typ, ok := scope.GetLetType("x")  // Returns (IntegerType, true)
 //	x = 20;                        // Type check: new value must be IntegerType
-func (s *Scope) GetLetType(varName string) (objects.GoMixType, bool) {
+func (s *Scope) GetLetType(varName string) (std.GoMixType, bool) {
 	if s.LetTypes == nil {
-		s.LetTypes = make(map[string]objects.GoMixType)
+		s.LetTypes = make(map[string]std.GoMixType)
 	}
 	if typ, ok := s.LetTypes[varName]; ok {
 		return typ, true
@@ -329,10 +329,10 @@ func (s *Scope) GetLetType(varName string) (objects.GoMixType, bool) {
 //	}
 func (s *Scope) Copy() *Scope {
 	newScope := &Scope{
-		Variables: make(map[string]objects.GoMixObject),
+		Variables: make(map[string]std.GoMixObject),
 		Consts:    make(map[string]bool),
 		LetVars:   make(map[string]bool),
-		LetTypes:  make(map[string]objects.GoMixType),
+		LetTypes:  make(map[string]std.GoMixType),
 		Parent:    s.Parent,
 	}
 	// Copy variables

@@ -10,9 +10,9 @@ import (
 
 	"github.com/akashmaji946/go-mix/function"
 	"github.com/akashmaji946/go-mix/lexer"
-	"github.com/akashmaji946/go-mix/objects"
 	"github.com/akashmaji946/go-mix/parser"
 	"github.com/akashmaji946/go-mix/scope"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // Eval is the main evaluation dispatcher that converts AST nodes into runtime objects.
@@ -41,7 +41,7 @@ import (
 // Example flow:
 //
 //	RootNode -> evalStatements -> Eval(each statement) -> specific eval methods
-func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
+func (e *Evaluator) Eval(n parser.Node) std.GoMixObject {
 	switch n := n.(type) {
 	case *parser.RootNode:
 		result := e.evalStatements(n.Statements)
@@ -55,7 +55,7 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 	case *parser.FloatLiteralExpressionNode:
 		return n.Value
 	case *parser.NilLiteralExpressionNode:
-		return &objects.Nil{}
+		return &std.Nil{}
 	case *parser.BinaryExpressionNode:
 		return e.evalBinaryExpression(n)
 	case *parser.UnaryExpressionNode:
@@ -103,11 +103,11 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 	case *parser.NewCallExpressionNode:
 		return e.evalNewCallExpression(n)
 	case *parser.BreakStatementNode:
-		return &objects.Break{}
+		return &std.Break{}
 	case *parser.ContinueStatementNode:
-		return &objects.Continue{}
+		return &std.Continue{}
 	default:
-		return &objects.Nil{}
+		return &std.Nil{}
 	}
 }
 
@@ -142,7 +142,7 @@ func (e *Evaluator) Eval(n parser.Node) objects.GoMixObject {
 //		y = 10;      // Error: can't assign to constant
 //	 	var z = 15;
 //	 	z += 5;     // Valid compound assignment
-func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode) std.GoMixObject {
 
 	if n.Operation.Type != lexer.ASSIGN_OP {
 		return e.evalCompoundAssignment(n)
@@ -176,7 +176,19 @@ func (e *Evaluator) evalAssignmentExpression(n *parser.AssignmentExpressionNode)
 	return e.CreateError("ERROR: invalid assignment target")
 }
 
-func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) objects.GoMixObject {
+// evalCompoundAssignment handles compound assignment operators (+=, -=, *=, /=, etc.) with type validation.
+//
+// This method evaluates the right-hand side expression, retrieves the current value of the left-hand side,
+// performs the appropriate binary operation based on the compound operator, and then assigns the result back
+// to the left-hand side. It supports identifiers, index expressions, and member access as assignment targets.
+// The method also includes comprehensive error handling for unsupported operators, type mismatches, and invalid assignment targets.
+//
+// Parameters:
+//   - n: The AssignmentExpressionNode representing the compound assignment
+//
+// Returns:
+//   - objects.GoMixObject: The result of the assignment (the new value), or an Error object
+func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) std.GoMixObject {
 	var binOpType lexer.TokenType
 	switch n.Operation.Type {
 	case lexer.PLUS_ASSIGN:
@@ -243,11 +255,11 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 		}
 
 		switch container.GetType() {
-		case objects.ArrayType:
+		case std.ArrayType:
 			return e.evalArrayIndexAssignment(container, index, newVal)
-		case objects.ListType:
+		case std.ListType:
 			return e.evalListIndexAssignment(container, index, newVal)
-		case objects.MapType:
+		case std.MapType:
 			return e.evalMapIndexAssignment(container, index, newVal)
 		default:
 			return e.CreateError("ERROR: index assignment not supported for type '%s'", container.GetType())
@@ -261,8 +273,8 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 			if IsError(leftObj) {
 				return leftObj
 			}
-			if leftObj.GetType() == objects.StructType {
-				s := leftObj.(*objects.GoMixStruct)
+			if leftObj.GetType() == std.StructType {
+				s := leftObj.(*std.GoMixStruct)
 				ident, ok := binNode.Right.(*parser.IdentifierExpressionNode)
 				if !ok {
 					return e.CreateError("ERROR: invalid member assignment target")
@@ -288,10 +300,10 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 				return newVal
 			}
 
-			if leftObj.GetType() != objects.ObjectType {
+			if leftObj.GetType() != std.ObjectType {
 				return e.CreateError("ERROR: member access can only be done on struct instances")
 			}
-			inst := leftObj.(*objects.GoMixObjectInstance)
+			inst := leftObj.(*std.GoMixObjectInstance)
 			ident, ok := binNode.Right.(*parser.IdentifierExpressionNode)
 			if !ok {
 				return e.CreateError("ERROR: invalid member assignment target")
@@ -313,7 +325,19 @@ func (e *Evaluator) evalCompoundAssignment(n *parser.AssignmentExpressionNode) o
 }
 
 // evalIdentifierAssignment handles assignment to an identifier (variable).
-func (e *Evaluator) evalIdentifierAssignment(ident *parser.IdentifierExpressionNode, val objects.GoMixObject) objects.GoMixObject {
+//
+// This method performs the necessary checks to ensure that the variable exists,
+// is not a constant, and if it's a 'let' variable, that the assigned value matches the declared type.
+// It then updates the variable in its defining scope using Scope.Assign(),
+// which is crucial for closures to work correctly.
+//
+// Parameters:
+//   - ident: The identifier node representing the variable to assign to
+//   - val: The value to assign
+//
+// Returns:
+//   - objects.GoMixObject: The assigned value on success, or an Error if validation fails
+func (e *Evaluator) evalIdentifierAssignment(ident *parser.IdentifierExpressionNode, val std.GoMixObject) std.GoMixObject {
 	// Check if the variable exists in the current scope or any parent scope
 	_, exists := e.Scp.LookUp(ident.Name)
 	if !exists {
@@ -344,7 +368,18 @@ func (e *Evaluator) evalIdentifierAssignment(ident *parser.IdentifierExpressionN
 }
 
 // evalIndexAssignment handles assignment to an indexed element (e.g., a[0] = 11, map["key"] = value).
-func (e *Evaluator) evalIndexAssignment(indexNode *parser.IndexExpressionNode, val objects.GoMixObject) objects.GoMixObject {
+//
+// This method evaluates the container and index expressions, retrieves the current value at that index
+// (if needed for validation, though mostly handled by specific implementations), performs the assignment,
+// and updates the container accordingly. It delegates to specific handlers for arrays, lists, and maps.
+//
+// Parameters:
+//   - indexNode: The IndexExpressionNode representing the target (container[index])
+//   - val: The value to assign
+//
+// Returns:
+//   - objects.GoMixObject: The assigned value on success, or an Error if the operation fails
+func (e *Evaluator) evalIndexAssignment(indexNode *parser.IndexExpressionNode, val std.GoMixObject) std.GoMixObject {
 	// Evaluate the container (array, list, map, etc.)
 	container := e.Eval(indexNode.Left)
 	if IsError(container) {
@@ -359,11 +394,11 @@ func (e *Evaluator) evalIndexAssignment(indexNode *parser.IndexExpressionNode, v
 
 	// Handle different container types
 	switch container.GetType() {
-	case objects.ArrayType:
+	case std.ArrayType:
 		return e.evalArrayIndexAssignment(container, index, val)
-	case objects.ListType:
+	case std.ListType:
 		return e.evalListIndexAssignment(container, index, val)
-	case objects.MapType:
+	case std.MapType:
 		return e.evalMapIndexAssignment(container, index, val)
 	default:
 		return e.CreateError("ERROR: index assignment not supported for type '%s'", container.GetType())
@@ -371,15 +406,26 @@ func (e *Evaluator) evalIndexAssignment(indexNode *parser.IndexExpressionNode, v
 }
 
 // evalArrayIndexAssignment handles assignment to an array element.
-func (e *Evaluator) evalArrayIndexAssignment(container, index, val objects.GoMixObject) objects.GoMixObject {
-	arr := container.(*objects.Array)
+//
+// This method checks that the index is an integer, supports negative indexing (Python-style),
+// performs bounds checking, and assigns the value to the specified index in the array.
+//
+// Parameters:
+//   - container: The Array object
+//   - index: The index object (must be Integer)
+//   - val: The value to assign
+//
+// Returns:
+//   - objects.GoMixObject: The assigned value on success, or an Error if index is invalid/out of bounds
+func (e *Evaluator) evalArrayIndexAssignment(container, index, val std.GoMixObject) std.GoMixObject {
+	arr := container.(*std.Array)
 
 	// Check if index is an integer
-	if index.GetType() != objects.IntegerType {
+	if index.GetType() != std.IntegerType {
 		return e.CreateError("ERROR: array index must be an integer, got '%s'", index.GetType())
 	}
 
-	idx := index.(*objects.Integer).Value
+	idx := index.(*std.Integer).Value
 	length := int64(len(arr.Elements))
 
 	// Handle negative indices (Python-style)
@@ -398,15 +444,26 @@ func (e *Evaluator) evalArrayIndexAssignment(container, index, val objects.GoMix
 }
 
 // evalListIndexAssignment handles assignment to a list element.
-func (e *Evaluator) evalListIndexAssignment(container, index, val objects.GoMixObject) objects.GoMixObject {
-	list := container.(*objects.List)
+//
+// This method checks that the index is an integer, supports negative indexing (Python-style),
+// performs bounds checking, and assigns the value to the specified index in the list.
+//
+// Parameters:
+//   - container: The List object
+//   - index: The index object (must be Integer)
+//   - val: The value to assign
+//
+// Returns:
+//   - objects.GoMixObject: The assigned value on success, or an Error if index is invalid/out of bounds
+func (e *Evaluator) evalListIndexAssignment(container, index, val std.GoMixObject) std.GoMixObject {
+	list := container.(*std.List)
 
 	// Check if index is an integer
-	if index.GetType() != objects.IntegerType {
+	if index.GetType() != std.IntegerType {
 		return e.CreateError("ERROR: list index must be an integer, got '%s'", index.GetType())
 	}
 
-	idx := index.(*objects.Integer).Value
+	idx := index.(*std.Integer).Value
 	length := int64(len(list.Elements))
 
 	// Handle negative indices (Python-style)
@@ -425,8 +482,20 @@ func (e *Evaluator) evalListIndexAssignment(container, index, val objects.GoMixO
 }
 
 // evalMapIndexAssignment handles assignment to a map key.
-func (e *Evaluator) evalMapIndexAssignment(container, index, val objects.GoMixObject) objects.GoMixObject {
-	m := container.(*objects.Map)
+//
+// This method assigns a value to a specific key in a map. It converts the index
+// object to a string key, checks if the key exists to maintain insertion order
+// (if it's a new key), and then updates the map's pairs.
+//
+// Parameters:
+//   - container: The Map object to update
+//   - index: The key object (converted to string)
+//   - val: The value to assign
+//
+// Returns:
+//   - objects.GoMixObject: The assigned value
+func (e *Evaluator) evalMapIndexAssignment(container, index, val std.GoMixObject) std.GoMixObject {
+	m := container.(*std.Map)
 
 	// Convert index to string key
 	keyStr := index.ToString()
@@ -444,14 +513,25 @@ func (e *Evaluator) evalMapIndexAssignment(container, index, val objects.GoMixOb
 }
 
 // evalMemberAssignment handles assignment to a struct member (e.g., obj.field = val).
-func (e *Evaluator) evalMemberAssignment(node *parser.BinaryExpressionNode, val objects.GoMixObject) objects.GoMixObject {
+//
+// This method evaluates the left side to get the struct instance or type, validates
+// the target field, checks for const/let constraints, and performs the assignment.
+// It supports assignment to both instance fields (on objects) and static fields (on struct types).
+//
+// Parameters:
+//   - node: The BinaryExpressionNode representing the member access (DOT_OP)
+//   - val: The value to assign
+//
+// Returns:
+//   - objects.GoMixObject: The assigned value, or an Error if the target is invalid or immutable
+func (e *Evaluator) evalMemberAssignment(node *parser.BinaryExpressionNode, val std.GoMixObject) std.GoMixObject {
 	left := e.Eval(node.Left)
 	if IsError(left) {
 		return left
 	}
 
-	if left.GetType() == objects.StructType {
-		s := left.(*objects.GoMixStruct)
+	if left.GetType() == std.StructType {
+		s := left.(*std.GoMixStruct)
 		ident, ok := node.Right.(*parser.IdentifierExpressionNode)
 		if !ok {
 			return e.CreateError("ERROR: invalid member assignment target")
@@ -469,11 +549,11 @@ func (e *Evaluator) evalMemberAssignment(node *parser.BinaryExpressionNode, val 
 		return val
 	}
 
-	if left.GetType() != objects.ObjectType {
+	if left.GetType() != std.ObjectType {
 		return e.CreateError("ERROR: member assignment can only be done on struct instances, got %s", left.GetType())
 	}
 
-	inst := left.(*objects.GoMixObjectInstance)
+	inst := left.(*std.GoMixObjectInstance)
 
 	ident, ok := node.Right.(*parser.IdentifierExpressionNode)
 	if !ok {
@@ -517,12 +597,12 @@ func (e *Evaluator) evalMemberAssignment(node *parser.BinaryExpressionNode, val 
 //	print("Hello");           // Builtin function call
 //	add(5, 3);                // User-defined function call
 //	makeCounter()(10);        // Closure returning a function
-func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) std.GoMixObject {
 
 	funcName := n.FunctionIdentifier.Name
 
 	// Support method calls: obj.method()
-	if dotIdx := indexOfDot(funcName); dotIdx > 0 {
+	if dotIdx := IndexOfDot(funcName); dotIdx > 0 {
 		objName := funcName[:dotIdx]
 		methodName := funcName[dotIdx+1:]
 		// fmt.Printf("DEBUG: Method call detected: obj='%s', method='%s'\n", objName, methodName)
@@ -530,7 +610,7 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 		if !ok {
 			return e.createError(n.FunctionIdentifier.Token, "ERROR: object not found: (%s)", objName)
 		}
-		inst, ok := objVal.(*objects.GoMixObjectInstance)
+		inst, ok := objVal.(*std.GoMixObjectInstance)
 		if !ok {
 			return e.CreateError("ERROR: (%s) is not a struct instance", objName)
 		}
@@ -550,7 +630,7 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 
 	// look for builtin name
 	if ok := e.IsBuiltin(funcName); ok {
-		args := make([]objects.GoMixObject, len(n.Arguments))
+		args := make([]std.GoMixObject, len(n.Arguments))
 		for i, arg := range n.Arguments {
 			args[i] = e.Eval(arg)
 			if IsError(args[i]) {
@@ -566,7 +646,7 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 	if !ok {
 		return e.createError(n.FunctionIdentifier.Token, "ERROR: function not found: (%s)", funcName)
 	}
-	if obj.GetType() != objects.FunctionType {
+	if obj.GetType() != std.FunctionType {
 		return e.createError(n.FunctionIdentifier.Token, "ERROR: not a function: (%s)", funcName)
 	}
 	functionObject := obj.(*function.Function)
@@ -600,7 +680,7 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 	e.Scp = oldScope
 
 	// Unwrap return value if present
-	if retVal, isReturn := result.(*objects.ReturnValue); isReturn {
+	if retVal, isReturn := result.(*std.ReturnValue); isReturn {
 		returnVal := retVal.Value
 		// If returning a function, update its captured scope to the current scope
 		// This is essential for closures to work correctly
@@ -638,7 +718,7 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) objects.GoM
 //	var x = 10;
 //	func inner() { return x; }  // Looks up 'x' in parent scope
 //	inner();  // Returns 10
-func (e *Evaluator) evalIdentifierExpression(n *parser.IdentifierExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalIdentifierExpression(n *parser.IdentifierExpressionNode) std.GoMixObject {
 
 	val, ok := e.Scp.LookUp(n.Name)
 	if !ok {
@@ -671,7 +751,7 @@ func (e *Evaluator) evalIdentifierExpression(n *parser.IdentifierExpressionNode)
 //	    var y = 20;
 //	    x + y;  // Block returns 30
 //	}
-func (e *Evaluator) evalBlockStatement(n *parser.BlockStatementNode) objects.GoMixObject {
+func (e *Evaluator) evalBlockStatement(n *parser.BlockStatementNode) std.GoMixObject {
 	return e.evalStatements(n.Statements)
 }
 
@@ -697,12 +777,12 @@ func (e *Evaluator) evalBlockStatement(n *parser.BlockStatementNode) objects.GoM
 //	func add(a, b) {
 //	    return a + b;  // Evaluates a + b, wraps in ReturnValue
 //	}
-func (e *Evaluator) evalReturnStatement(n *parser.ReturnStatementNode) objects.GoMixObject {
+func (e *Evaluator) evalReturnStatement(n *parser.ReturnStatementNode) std.GoMixObject {
 	val := e.Eval(n.Expr)
 	if IsError(val) {
 		return val
 	}
-	return &objects.ReturnValue{Value: val}
+	return &std.ReturnValue{Value: val}
 }
 
 // evalDeclarativeStatement handles variable declarations with var, const, and let keywords.
@@ -734,7 +814,7 @@ func (e *Evaluator) evalReturnStatement(n *parser.ReturnStatementNode) objects.G
 //	var x = 10;      // Mutable, any type
 //	const PI = 3.14; // Immutable
 //	let name = "Go"; // Type-safe (must remain string)
-func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode) objects.GoMixObject {
+func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode) std.GoMixObject {
 	// fmt.Printf("DEBUG: evalDeclarativeStatement for '%s', expr type=%T\n", n.Identifier.Name, n.Expr)
 	val := e.Eval(n.Expr)
 	// fmt.Printf("DEBUG: evalDeclarativeStatement result type=%s\n", val.GetType())
@@ -784,16 +864,16 @@ func (e *Evaluator) evalDeclarativeStatement(n *parser.DeclarativeStatementNode)
 //	} else {
 //	    return "small";
 //	}
-func (e *Evaluator) evalConditionalExpression(n *parser.IfExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalConditionalExpression(n *parser.IfExpressionNode) std.GoMixObject {
 	condition := e.Eval(n.Condition)
 	if IsError(condition) {
 		return condition
 	}
 
-	if condition.GetType() != objects.BooleanType {
+	if condition.GetType() != std.BooleanType {
 		return e.CreateError("ERROR: conditional expression must be (bool)")
 	}
-	if condition.(*objects.Boolean).Value {
+	if condition.(*std.Boolean).Value {
 		return e.Eval(&n.ThenBlock)
 	}
 	return e.Eval(&n.ElseBlock)
@@ -824,8 +904,8 @@ func (e *Evaluator) evalConditionalExpression(n *parser.IfExpressionNode) object
 //	var y = 20;
 //	return x + y;  // Stops here, returns 30
 //	var z = 30;    // Never executed
-func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixObject {
-	var result objects.GoMixObject = &objects.Nil{}
+func (e *Evaluator) evalStatements(stmts []parser.StatementNode) std.GoMixObject {
+	var result std.GoMixObject = &std.Nil{}
 	for _, stmt := range stmts {
 		result = e.Eval(stmt)
 
@@ -833,11 +913,11 @@ func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixOb
 			return result
 		}
 		// Stop evaluation if we hit a return statement
-		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+		if _, isReturn := result.(*std.ReturnValue); isReturn {
 			return result
 		}
 		// Stop evaluation if we hit break or continue
-		if result.GetType() == objects.BreakType || result.GetType() == objects.ContinueType {
+		if result.GetType() == std.BreakType || result.GetType() == std.ContinueType {
 			return result
 		}
 	}
@@ -882,7 +962,7 @@ func (e *Evaluator) evalStatements(stmts []parser.StatementNode) objects.GoMixOb
 //	5.0 + 3    // Returns Float(8.0)
 //	10 % 3     // Returns Integer(1)
 //	5 & 3      // Returns Integer(1) - bitwise AND
-func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) std.GoMixObject {
 	left := e.Eval(n.Left)
 
 	if IsError(left) {
@@ -892,14 +972,14 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 	// we prioritize the dot (.) member access operator in the parser,
 	if n.Operation.Type == lexer.DOT_OP {
 
-		if left.GetType() == objects.StructType {
-			return e.evalStructMemberAccess(left.(*objects.GoMixStruct), n.Right)
+		if left.GetType() == std.StructType {
+			return e.evalStructMemberAccess(left.(*std.GoMixStruct), n.Right)
 		}
 
-		if left.GetType() != objects.ObjectType {
+		if left.GetType() != std.ObjectType {
 			return e.CreateError("ERROR: member access operator (.) can only be used on struct instances or types, got (%s)", left.GetType())
 		}
-		structInstance := left.(*objects.GoMixObjectInstance)
+		structInstance := left.(*std.GoMixObjectInstance)
 
 		// Handle Index Access on Field/Method (e.g. this.q[0])
 		if indexNode, ok := n.Right.(*parser.IndexExpressionNode); ok {
@@ -925,26 +1005,40 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) objects
 	return e.evaluateBinaryOp(n.Operation, n.Operation.Type, left, right)
 }
 
-func (e *Evaluator) evaluateBinaryOp(token lexer.Token, opType lexer.TokenType, left, right objects.GoMixObject) objects.GoMixObject {
+// evaluateBinaryOp performs the actual computation for binary operations.
+//
+// This helper method handles arithmetic (+, -, *, /, %), bitwise (&, |, ^, <<, >>),
+// and string concatenation operations. It performs type checking and promotion
+// (int vs float) before executing the operation.
+//
+// Parameters:
+//   - token: The operator token (for error reporting)
+//   - opType: The type of binary operator
+//   - left: The left operand
+//   - right: The right operand
+//
+// Returns:
+//   - objects.GoMixObject: The result of the operation, or an Error if types are incompatible
+func (e *Evaluator) evaluateBinaryOp(token lexer.Token, opType lexer.TokenType, left, right std.GoMixObject) std.GoMixObject {
 	err := e.createError(token, "ERROR: operator (%s) not implemented for (%s) and (%s)", token.Literal, left.GetType(), right.GetType())
 
 	if opType == lexer.PLUS_OP {
-		if left.GetType() == objects.StringType || right.GetType() == objects.StringType {
-			return &objects.String{Value: left.ToString() + right.ToString()}
+		if left.GetType() == std.StringType || right.GetType() == std.StringType {
+			return &std.String{Value: left.ToString() + right.ToString()}
 		}
 	}
 
-	if left.GetType() == objects.StringType && right.GetType() == objects.StringType {
+	if left.GetType() == std.StringType && right.GetType() == std.StringType {
 		if opType == lexer.PLUS_OP {
-			return &objects.String{Value: left.(*objects.String).Value + right.(*objects.String).Value}
+			return &std.String{Value: left.(*std.String).Value + right.(*std.String).Value}
 		}
 		return err
 	}
 
-	if left.GetType() != objects.IntegerType && left.GetType() != objects.FloatType {
+	if left.GetType() != std.IntegerType && left.GetType() != std.FloatType {
 		return err
 	}
-	if right.GetType() != objects.IntegerType && right.GetType() != objects.FloatType {
+	if right.GetType() != std.IntegerType && right.GetType() != std.FloatType {
 		return err
 	}
 
@@ -953,60 +1047,76 @@ func (e *Evaluator) evaluateBinaryOp(token lexer.Token, opType lexer.TokenType, 
 
 	switch opType {
 	case lexer.PLUS_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value + right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value + right.(*std.Integer).Value}
 		}
-		return &objects.Float{Value: toFloat64(left) + toFloat64(right)}
+		return &std.Float{Value: toFloat64(left) + toFloat64(right)}
 	case lexer.MINUS_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value - right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value - right.(*std.Integer).Value}
 		}
-		return &objects.Float{Value: toFloat64(left) - toFloat64(right)}
+		return &std.Float{Value: toFloat64(left) - toFloat64(right)}
 	case lexer.MUL_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value * right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value * right.(*std.Integer).Value}
 		}
-		return &objects.Float{Value: toFloat64(left) * toFloat64(right)}
+		return &std.Float{Value: toFloat64(left) * toFloat64(right)}
 	case lexer.DIV_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value / right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value / right.(*std.Integer).Value}
 		}
-		return &objects.Float{Value: toFloat64(left) / toFloat64(right)}
+		return &std.Float{Value: toFloat64(left) / toFloat64(right)}
 	case lexer.MOD_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value % right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value % right.(*std.Integer).Value}
 		}
 		return err
 	case lexer.BIT_AND_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value & right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value & right.(*std.Integer).Value}
 		}
 		return err
 	case lexer.BIT_OR_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value | right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value | right.(*std.Integer).Value}
 		}
 		return err
 	case lexer.BIT_XOR_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value ^ right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value ^ right.(*std.Integer).Value}
 		}
 		return err
 	case lexer.BIT_LEFT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value << right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value << right.(*std.Integer).Value}
 		}
 		return err
 	case lexer.BIT_RIGHT_OP:
-		if leftType == objects.IntegerType && rightType == objects.IntegerType {
-			return &objects.Integer{Value: left.(*objects.Integer).Value >> right.(*objects.Integer).Value}
+		if leftType == std.IntegerType && rightType == std.IntegerType {
+			return &std.Integer{Value: left.(*std.Integer).Value >> right.(*std.Integer).Value}
 		}
 		return err
 	}
 	return err
 }
 
-func (e *Evaluator) callFunctionOnObject(name string, obj *objects.GoMixObjectInstance, args ...NamedParameter) objects.GoMixObject {
+// callFunctionOnObject invokes a method on a struct instance.
+//
+// This method handles the mechanics of method dispatch:
+// 1. Looks up the method in the struct definition
+// 2. Creates a new scope for the method execution
+// 3. Binds 'this' to the instance and 'self' to the struct type
+// 4. Binds arguments to parameters
+// 5. Evaluates the method body
+//
+// Parameters:
+//   - name: The name of the method to call
+//   - obj: The struct instance on which the method is called
+//   - args: The arguments to pass to the method
+//
+// Returns:
+//   - objects.GoMixObject: The return value of the method
+func (e *Evaluator) callFunctionOnObject(name string, obj *std.GoMixObjectInstance, args ...NamedParameter) std.GoMixObject {
 
 	initMethodInterface, exists := obj.Struct.Methods[name]
 	if !exists {
@@ -1033,7 +1143,7 @@ func (e *Evaluator) callFunctionOnObject(name string, obj *objects.GoMixObjectIn
 	e.Scp = methodScope
 	res := e.Eval(initMethod.Body)
 	e.Scp = oldScope
-	if res.GetType() == objects.ErrorType {
+	if res.GetType() == std.ErrorType {
 		return res
 	}
 	return UnwrapReturnValue(res)
@@ -1056,11 +1166,11 @@ func (e *Evaluator) callFunctionOnObject(name string, obj *objects.GoMixObjectIn
 //
 //	toFloat64(&objects.Integer{Value: 5})   // Returns 5.0
 //	toFloat64(&objects.Float{Value: 3.14})  // Returns 3.14
-func toFloat64(obj objects.GoMixObject) float64 {
-	if obj.GetType() == objects.IntegerType {
-		return float64(obj.(*objects.Integer).Value)
+func toFloat64(obj std.GoMixObject) float64 {
+	if obj.GetType() == std.IntegerType {
+		return float64(obj.(*std.Integer).Value)
 	}
-	return obj.(*objects.Float).Value
+	return obj.(*std.Float).Value
 }
 
 // evalUnaryExpression evaluates unary prefix operations on a single operand.
@@ -1095,7 +1205,7 @@ func toFloat64(obj objects.GoMixObject) float64 {
 //	-5         // Returns Integer(-5)
 //	~10        // Returns Integer(-11) - bitwise NOT
 //	+3.14      // Returns Float(3.14)
-func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) std.GoMixObject {
 	right := e.Eval(n.Right)
 	if IsError(right) {
 		return right
@@ -1105,31 +1215,31 @@ func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.G
 
 	switch n.Operation.Type {
 	case lexer.NOT_OP:
-		if right.GetType() != objects.BooleanType {
+		if right.GetType() != std.BooleanType {
 			return err
 		}
-		return &objects.Boolean{Value: !right.(*objects.Boolean).Value}
+		return &std.Boolean{Value: !right.(*std.Boolean).Value}
 	case lexer.BIT_NOT_OP:
-		if right.GetType() == objects.IntegerType {
-			return &objects.Integer{Value: ^right.(*objects.Integer).Value}
+		if right.GetType() == std.IntegerType {
+			return &std.Integer{Value: ^right.(*std.Integer).Value}
 		}
 		return err
 	case lexer.MINUS_OP:
-		if right.GetType() == objects.IntegerType {
-			return &objects.Integer{Value: -right.(*objects.Integer).Value}
-		} else if right.GetType() == objects.FloatType {
-			return &objects.Float{Value: -right.(*objects.Float).Value}
+		if right.GetType() == std.IntegerType {
+			return &std.Integer{Value: -right.(*std.Integer).Value}
+		} else if right.GetType() == std.FloatType {
+			return &std.Float{Value: -right.(*std.Float).Value}
 		}
 		return err
 	case lexer.PLUS_OP:
-		if right.GetType() == objects.IntegerType {
+		if right.GetType() == std.IntegerType {
 			return right
-		} else if right.GetType() == objects.FloatType {
+		} else if right.GetType() == std.FloatType {
 			return right
 		}
 		return err
 	}
-	return &objects.Nil{}
+	return &std.Nil{}
 }
 
 // evalBooleanExpression evaluates comparison and logical operations that produce boolean results.
@@ -1168,25 +1278,25 @@ func (e *Evaluator) evalUnaryExpression(n *parser.UnaryExpressionNode) objects.G
 //	"hi" == "hi"    // Returns Boolean(true)
 //	true && false   // Returns Boolean(false)
 //	10 >= 10.0      // Returns Boolean(true) - mixed types
-func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) std.GoMixObject {
 	// Handle short-circuiting for logical operators
 	if n.Operation.Type == lexer.AND_OP {
 		left := e.Eval(n.Left)
 		if IsError(left) {
 			return left
 		}
-		if left.GetType() != objects.BooleanType {
+		if left.GetType() != std.BooleanType {
 			return e.createError(n.Operation, "ERROR: left operand of '&&' must be a boolean, got %s", left.GetType())
 		}
-		if !left.(*objects.Boolean).Value {
-			return &objects.Boolean{Value: false} // short-circuit
+		if !left.(*std.Boolean).Value {
+			return &std.Boolean{Value: false} // short-circuit
 		}
 		// if left is true, the result is the boolean value of the right side
 		right := e.Eval(n.Right)
 		if IsError(right) {
 			return right
 		}
-		if right.GetType() != objects.BooleanType {
+		if right.GetType() != std.BooleanType {
 			return e.createError(n.Operation, "ERROR: right operand of '&&' must be a boolean, got %s", right.GetType())
 		}
 		return right // it's already a boolean object
@@ -1197,18 +1307,18 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 		if IsError(left) {
 			return left
 		}
-		if left.GetType() != objects.BooleanType {
+		if left.GetType() != std.BooleanType {
 			return e.createError(n.Operation, "ERROR: left operand of '||' must be a boolean, got %s", left.GetType())
 		}
-		if left.(*objects.Boolean).Value {
-			return &objects.Boolean{Value: true} // short-circuit
+		if left.(*std.Boolean).Value {
+			return &std.Boolean{Value: true} // short-circuit
 		}
 		// if left is false, the result is the boolean value of the right side
 		right := e.Eval(n.Right)
 		if IsError(right) {
 			return right
 		}
-		if right.GetType() != objects.BooleanType {
+		if right.GetType() != std.BooleanType {
 			return e.createError(n.Operation, "ERROR: right operand of '||' must be a boolean, got %s", right.GetType())
 		}
 		return right // it's already a boolean object
@@ -1225,31 +1335,31 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 	}
 	switch n.Operation.Type {
 	case lexer.EQ_OP:
-		return &objects.Boolean{Value: left.ToString() == right.ToString()}
+		return &std.Boolean{Value: left.ToString() == right.ToString()}
 	case lexer.NE_OP:
-		return &objects.Boolean{Value: left.ToString() != right.ToString()}
+		return &std.Boolean{Value: left.ToString() != right.ToString()}
 	case lexer.GT_OP:
-		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value > right.(*objects.Integer).Value}
+		if left.GetType() == std.IntegerType && right.GetType() == std.IntegerType {
+			return &std.Boolean{Value: left.(*std.Integer).Value > right.(*std.Integer).Value}
 		}
-		return &objects.Boolean{Value: toFloat64(left) > toFloat64(right)}
+		return &std.Boolean{Value: toFloat64(left) > toFloat64(right)}
 	case lexer.LT_OP:
-		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value < right.(*objects.Integer).Value}
+		if left.GetType() == std.IntegerType && right.GetType() == std.IntegerType {
+			return &std.Boolean{Value: left.(*std.Integer).Value < right.(*std.Integer).Value}
 		}
-		return &objects.Boolean{Value: toFloat64(left) < toFloat64(right)}
+		return &std.Boolean{Value: toFloat64(left) < toFloat64(right)}
 	case lexer.GE_OP:
-		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value >= right.(*objects.Integer).Value}
+		if left.GetType() == std.IntegerType && right.GetType() == std.IntegerType {
+			return &std.Boolean{Value: left.(*std.Integer).Value >= right.(*std.Integer).Value}
 		}
-		return &objects.Boolean{Value: toFloat64(left) >= toFloat64(right)}
+		return &std.Boolean{Value: toFloat64(left) >= toFloat64(right)}
 	case lexer.LE_OP:
-		if left.GetType() == objects.IntegerType && right.GetType() == objects.IntegerType {
-			return &objects.Boolean{Value: left.(*objects.Integer).Value <= right.(*objects.Integer).Value}
+		if left.GetType() == std.IntegerType && right.GetType() == std.IntegerType {
+			return &std.Boolean{Value: left.(*std.Integer).Value <= right.(*std.Integer).Value}
 		}
-		return &objects.Boolean{Value: toFloat64(left) <= toFloat64(right)}
+		return &std.Boolean{Value: toFloat64(left) <= toFloat64(right)}
 	}
-	return &objects.Nil{}
+	return &std.Nil{}
 }
 
 // evalForLoop evaluates for loop statements with comprehensive scope management.
@@ -1284,7 +1394,7 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) objec
 //	for (var i = 0; i < 5; i = i + 1) {
 //	    print(i);  // Prints 0, 1, 2, 3, 4
 //	}
-func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObject {
+func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) std.GoMixObject {
 	// Create a new scope for the entire for loop (for initializers and loop variables)
 	loopScope := scope.NewScope(e.Scp)
 	oldScope := e.Scp
@@ -1300,7 +1410,7 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObj
 	}
 
 	// Loop execution
-	var result objects.GoMixObject = &objects.Nil{}
+	var result std.GoMixObject = &std.Nil{}
 	for {
 		// Evaluate condition if present
 		if n.Condition != nil {
@@ -1311,11 +1421,11 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObj
 			}
 
 			// Check if condition is false
-			if condition.GetType() != objects.BooleanType {
+			if condition.GetType() != std.BooleanType {
 				e.Scp = oldScope
 				return e.CreateError("ERROR: for loop condition must be (bool)")
 			}
-			if !condition.(*objects.Boolean).Value {
+			if !condition.(*std.Boolean).Value {
 				break
 			}
 		}
@@ -1337,18 +1447,18 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObj
 		}
 
 		// Stop if we hit a return statement
-		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+		if _, isReturn := result.(*std.ReturnValue); isReturn {
 			e.Scp = oldScope
 			return result
 		}
 
-		if result.GetType() == objects.BreakType {
-			result = &objects.Nil{}
+		if result.GetType() == std.BreakType {
+			result = &std.Nil{}
 			break
 		}
 
-		if result.GetType() == objects.ContinueType {
-			result = &objects.Nil{}
+		if result.GetType() == std.ContinueType {
+			result = &std.Nil{}
 			// continue to updates
 		}
 
@@ -1360,12 +1470,12 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObj
 				return updateResult
 			}
 
-			if result.GetType() == objects.BreakType {
+			if result.GetType() == std.BreakType {
 				e.Scp = oldScope
-				return &objects.Nil{}
+				return &std.Nil{}
 			}
 
-			if result.GetType() == objects.ContinueType {
+			if result.GetType() == std.ContinueType {
 				continue
 			}
 		}
@@ -1400,8 +1510,8 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) objects.GoMixObj
 //	["a", "b", "c"]        // Array of strings
 //	[1, "two", 3.0, true]  // Mixed-type array
 //	[x + 1, y * 2]         // Array with computed elements
-func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) objects.GoMixObject {
-	elements := make([]objects.GoMixObject, len(n.Elements))
+func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) std.GoMixObject {
+	elements := make([]std.GoMixObject, len(n.Elements))
 	for i, elem := range n.Elements {
 		evaluated := e.Eval(elem)
 		if IsError(evaluated) {
@@ -1409,7 +1519,7 @@ func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) objects.G
 		}
 		elements[i] = evaluated
 	}
-	return &objects.Array{Elements: elements}
+	return &std.Array{Elements: elements}
 }
 
 // evalMapExpression evaluates map literal expressions to create map objects.
@@ -1439,8 +1549,8 @@ func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) objects.G
 //	map{"name": "John", "age": 25}         // String keys
 //	map{1: "one", 2: "two", 3: "three"}    // Mixed content
 //	map{x: y, a+b: c*d}                    // Computed keys and values
-func (e *Evaluator) evalMapExpression(n *parser.MapExpressionNode) objects.GoMixObject {
-	pairs := make(map[string]objects.GoMixObject)
+func (e *Evaluator) evalMapExpression(n *parser.MapExpressionNode) std.GoMixObject {
+	pairs := make(map[string]std.GoMixObject)
 	keys := make([]string, 0, len(n.Keys))
 
 	for i := range n.Keys {
@@ -1468,7 +1578,7 @@ func (e *Evaluator) evalMapExpression(n *parser.MapExpressionNode) objects.GoMix
 		pairs[keyStr] = valueObj
 	}
 
-	return &objects.Map{
+	return &std.Map{
 		Pairs: pairs,
 		Keys:  keys,
 	}
@@ -1501,7 +1611,7 @@ func (e *Evaluator) evalMapExpression(n *parser.MapExpressionNode) objects.GoMix
 //	set{"apple", "banana"}          // String elements
 //	set{1, 2, 2, 3}                 // Duplicates removed -> set{1, 2, 3}
 //	set{x, y, x+y}                  // Computed elements
-func (e *Evaluator) evalSetExpression(n *parser.SetExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalSetExpression(n *parser.SetExpressionNode) std.GoMixObject {
 	elements := make(map[string]bool)
 	values := make([]string, 0)
 
@@ -1522,7 +1632,7 @@ func (e *Evaluator) evalSetExpression(n *parser.SetExpressionNode) objects.GoMix
 		}
 	}
 
-	return &objects.Set{
+	return &std.Set{
 		Elements: elements,
 		Values:   values,
 	}
@@ -1569,7 +1679,7 @@ func (e *Evaluator) evalSetExpression(n *parser.SetExpressionNode) objects.GoMix
 //	var m = map{"name": "John", "age": 25};
 //	m["name"]  // Returns "John"
 //	m["city"]  // Returns nil (key doesn't exist)
-func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) std.GoMixObject {
 	left := e.Eval(n.Left)
 	if IsError(left) {
 		return left
@@ -1581,49 +1691,49 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 	}
 
 	// Handle map indexing
-	if left.GetType() == objects.MapType {
-		mapObj := left.(*objects.Map)
+	if left.GetType() == std.MapType {
+		mapObj := left.(*std.Map)
 		keyStr := index.ToString()
 
 		if value, exists := mapObj.Pairs[keyStr]; exists {
 			return value
 		}
 		// Return nil if key doesn't exist
-		return &objects.Nil{}
+		return &std.Nil{}
 	}
 
 	// Handle range indexing
-	if left.GetType() == objects.RangeType {
+	if left.GetType() == std.RangeType {
 		return e.evalRangeIndexExpression(left, index)
 	}
 
 	// Handle array, list, and tuple indexing
 	leftType := left.GetType()
-	if leftType != objects.ArrayType && leftType != objects.ListType && leftType != objects.TupleType {
+	if leftType != std.ArrayType && leftType != std.ListType && leftType != std.TupleType {
 		return e.CreateError("ERROR: index operator not supported for type '%s'", leftType)
 	}
 
 	// Check if index is an integer
-	if index.GetType() != objects.IntegerType {
+	if index.GetType() != std.IntegerType {
 		return e.CreateError("ERROR: index must be an integer, got '%s'", index.GetType())
 	}
 
-	idx := index.(*objects.Integer).Value
+	idx := index.(*std.Integer).Value
 	var length int64
-	var elements []objects.GoMixObject
+	var elements []std.GoMixObject
 
 	// Get elements based on type
 	switch leftType {
-	case objects.ArrayType:
-		arr := left.(*objects.Array)
+	case std.ArrayType:
+		arr := left.(*std.Array)
 		elements = arr.Elements
 		length = int64(len(arr.Elements))
-	case objects.ListType:
-		list := left.(*objects.List)
+	case std.ListType:
+		list := left.(*std.List)
 		elements = list.Elements
 		length = int64(len(list.Elements))
-	case objects.TupleType:
-		tuple := left.(*objects.Tuple)
+	case std.TupleType:
+		tuple := left.(*std.Tuple)
 		elements = tuple.Elements
 		length = int64(len(tuple.Elements))
 	}
@@ -1642,17 +1752,30 @@ func (e *Evaluator) evalIndexExpression(n *parser.IndexExpressionNode) objects.G
 }
 
 // evalRangeIndexExpression evaluates index access on range objects.
-// Returns the value at the specified index in the range sequence.
-// Example: range(1, 5)[0] returns 1, range(1, 5)[2] returns 3
-func (e *Evaluator) evalRangeIndexExpression(left, index objects.GoMixObject) objects.GoMixObject {
-	r := left.(*objects.Range)
+//
+// This method calculates the value at a specific index within a range sequence without generating
+// the entire sequence. It supports both ascending and descending ranges and negative indexing.
+//
+// Parameters:
+//   - left: The Range object
+//   - index: The index object (must be Integer)
+//
+// Returns:
+//   - objects.GoMixObject: The integer value at the specified index, or an Error if invalid
+//
+// Example:
+//
+//	range(1, 5)[0]  // Returns 1
+//	range(1, 5)[-1] // Returns 5
+func (e *Evaluator) evalRangeIndexExpression(left, index std.GoMixObject) std.GoMixObject {
+	r := left.(*std.Range)
 
 	// Check if index is an integer
-	if index.GetType() != objects.IntegerType {
+	if index.GetType() != std.IntegerType {
 		return e.CreateError("ERROR: range index must be an integer, got '%s'", index.GetType())
 	}
 
-	idx := index.(*objects.Integer).Value
+	idx := index.(*std.Integer).Value
 	start := r.Start
 	end := r.End
 
@@ -1684,7 +1807,7 @@ func (e *Evaluator) evalRangeIndexExpression(left, index objects.GoMixObject) ob
 		value = start - idx
 	}
 
-	return &objects.Integer{Value: value}
+	return &std.Integer{Value: value}
 }
 
 // evalSliceExpression evaluates array, list, and tuple slicing operations to extract sub-sequences.
@@ -1726,7 +1849,7 @@ func (e *Evaluator) evalRangeIndexExpression(left, index objects.GoMixObject) ob
 //
 //	var t = tuple("a", "b", "c", "d");
 //	t[1:-1]     // Returns ["b", "c"] (array, not tuple)
-func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.GoMixObject {
+func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) std.GoMixObject {
 	left := e.Eval(n.Left)
 	if IsError(left) {
 		return left
@@ -1734,25 +1857,25 @@ func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.G
 
 	// Check if left is an array, list, or tuple
 	leftType := left.GetType()
-	if leftType != objects.ArrayType && leftType != objects.ListType && leftType != objects.TupleType {
+	if leftType != std.ArrayType && leftType != std.ListType && leftType != std.TupleType {
 		return e.CreateError("ERROR: slice operator not supported for type '%s'", leftType)
 	}
 
-	var elements []objects.GoMixObject
+	var elements []std.GoMixObject
 	var length int64
 
 	// Get elements based on type
 	switch leftType {
-	case objects.ArrayType:
-		arr := left.(*objects.Array)
+	case std.ArrayType:
+		arr := left.(*std.Array)
 		elements = arr.Elements
 		length = int64(len(arr.Elements))
-	case objects.ListType:
-		list := left.(*objects.List)
+	case std.ListType:
+		list := left.(*std.List)
 		elements = list.Elements
 		length = int64(len(list.Elements))
-	case objects.TupleType:
-		tuple := left.(*objects.Tuple)
+	case std.TupleType:
+		tuple := left.(*std.Tuple)
 		elements = tuple.Elements
 		length = int64(len(tuple.Elements))
 	}
@@ -1764,10 +1887,10 @@ func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.G
 		if IsError(startObj) {
 			return startObj
 		}
-		if startObj.GetType() != objects.IntegerType {
+		if startObj.GetType() != std.IntegerType {
 			return e.CreateError("ERROR: slice start index must be an integer, got '%s'", startObj.GetType())
 		}
-		start = startObj.(*objects.Integer).Value
+		start = startObj.(*std.Integer).Value
 		// Handle negative start index
 		if start < 0 {
 			start = length + start
@@ -1788,10 +1911,10 @@ func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.G
 		if IsError(endObj) {
 			return endObj
 		}
-		if endObj.GetType() != objects.IntegerType {
+		if endObj.GetType() != std.IntegerType {
 			return e.CreateError("ERROR: slice end index must be an integer, got '%s'", endObj.GetType())
 		}
-		end = endObj.(*objects.Integer).Value
+		end = endObj.(*std.Integer).Value
 		// Handle negative end index
 		if end < 0 {
 			end = length + end
@@ -1811,41 +1934,52 @@ func (e *Evaluator) evalSliceExpression(n *parser.SliceExpressionNode) objects.G
 	}
 
 	// Create the sliced array (always returns array, even for lists/tuples)
-	slicedElements := make([]objects.GoMixObject, end-start)
+	slicedElements := make([]std.GoMixObject, end-start)
 	copy(slicedElements, elements[start:end])
 
-	return &objects.Array{Elements: slicedElements}
+	return &std.Array{Elements: slicedElements}
 }
 
-func (e *Evaluator) getIndexValue(container, index objects.GoMixObject) objects.GoMixObject {
-	if container.GetType() == objects.MapType {
-		mapObj := container.(*objects.Map)
+// getIndexValue retrieves a value from a container (array, list, or map) at a given index.
+//
+// This helper method abstracts index access for compound assignment operations.
+// It handles type checking, index validation, and value retrieval.
+//
+// Parameters:
+//   - container: The collection object (Array, List, or Map)
+//   - index: The index or key to access
+//
+// Returns:
+//   - objects.GoMixObject: The value at the index, or an Error if invalid
+func (e *Evaluator) getIndexValue(container, index std.GoMixObject) std.GoMixObject {
+	if container.GetType() == std.MapType {
+		mapObj := container.(*std.Map)
 		keyStr := index.ToString()
 		if value, exists := mapObj.Pairs[keyStr]; exists {
 			return value
 		}
-		return &objects.Nil{}
+		return &std.Nil{}
 	}
 
 	leftType := container.GetType()
-	if leftType != objects.ArrayType && leftType != objects.ListType {
+	if leftType != std.ArrayType && leftType != std.ListType {
 		return e.CreateError("ERROR: index operator not supported for type '%s'", leftType)
 	}
 
-	if index.GetType() != objects.IntegerType {
+	if index.GetType() != std.IntegerType {
 		return e.CreateError("ERROR: index must be an integer, got '%s'", index.GetType())
 	}
 
-	idx := index.(*objects.Integer).Value
+	idx := index.(*std.Integer).Value
 	var length int64
-	var elements []objects.GoMixObject
+	var elements []std.GoMixObject
 
-	if leftType == objects.ArrayType {
-		arr := container.(*objects.Array)
+	if leftType == std.ArrayType {
+		arr := container.(*std.Array)
 		elements = arr.Elements
 		length = int64(len(arr.Elements))
 	} else {
-		list := container.(*objects.List)
+		list := container.(*std.List)
 		elements = list.Elements
 		length = int64(len(list.Elements))
 	}
@@ -1900,13 +2034,13 @@ func (e *Evaluator) getIndexValue(container, index objects.GoMixObject) objects.
 //	while (x > 0, y < 10) {
 //	    // Continues only while both conditions are true
 //	}
-func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMixObject {
+func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) std.GoMixObject {
 	// Create a new scope for the entire while loop
 	loopScope := scope.NewScope(e.Scp)
 	oldScope := e.Scp
 	e.Scp = loopScope
 
-	var result objects.GoMixObject = &objects.Nil{}
+	var result std.GoMixObject = &std.Nil{}
 
 	for {
 		// Evaluate all conditions (they should be AND-ed together)
@@ -1918,12 +2052,12 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMi
 				return condition
 			}
 
-			if condition.GetType() != objects.BooleanType {
+			if condition.GetType() != std.BooleanType {
 				e.Scp = oldScope
 				return e.CreateError("ERROR: while loop condition must be (bool)")
 			}
 
-			if !condition.(*objects.Boolean).Value {
+			if !condition.(*std.Boolean).Value {
 				allTrue = false
 				break
 			}
@@ -1950,18 +2084,18 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMi
 		}
 
 		// Stop if we hit a return statement
-		if _, isReturn := result.(*objects.ReturnValue); isReturn {
+		if _, isReturn := result.(*std.ReturnValue); isReturn {
 			e.Scp = oldScope
 			return result
 		}
 
-		if result.GetType() == objects.BreakType {
-			result = &objects.Nil{}
+		if result.GetType() == std.BreakType {
+			result = &std.Nil{}
 			break
 		}
 
-		if result.GetType() == objects.ContinueType {
-			result = &objects.Nil{}
+		if result.GetType() == std.ContinueType {
+			result = &std.Nil{}
 			continue
 		}
 	}
@@ -1971,16 +2105,339 @@ func (e *Evaluator) evalWhileLoop(n *parser.WhileLoopStatementNode) objects.GoMi
 	return result
 }
 
-func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objects.GoMixObject {
+// evalRangeExpression evaluates range expressions to create Range objects.
+//
+// This method processes range expressions (e.g., 2...5) by:
+// 1. Evaluating the start expression
+// 2. Evaluating the end expression
+// 3. Validating both are integers
+// 4. Creating a Range object with the start and end values
+//
+// Ranges are inclusive on both ends, meaning 2...5 includes 2, 3, 4, and 5.
+//
+// Parameters:
+//   - n: A RangeExpressionNode containing the start and end expressions
+//
+// Returns:
+//   - objects.GoMixObject: A Range object, or an Error if:
+//   - Start expression evaluation fails
+//   - End expression evaluation fails
+//   - Either operand is not an integer
+//
+// Example:
+//
+//	2...5        // Returns Range{Start: 2, End: 5}
+//	var x = 1...10  // Creates a range from 1 to 10
+func (e *Evaluator) evalRangeExpression(n *parser.RangeExpressionNode) std.GoMixObject {
+	// Evaluate start expression
+	start := e.Eval(n.Start)
+	if IsError(start) {
+		return start
+	}
+
+	// Evaluate end expression
+	end := e.Eval(n.End)
+	if IsError(end) {
+		return end
+	}
+
+	// Validate both are integers
+	if start.GetType() != std.IntegerType {
+		return e.CreateError("ERROR: range start must be an integer, got '%s'", start.GetType())
+	}
+	if end.GetType() != std.IntegerType {
+		return e.CreateError("ERROR: range end must be an integer, got '%s'", end.GetType())
+	}
+
+	// Create and return the Range object
+	startVal := start.(*std.Integer).Value
+	endVal := end.(*std.Integer).Value
+
+	return &std.Range{
+		Start: startVal,
+		End:   endVal,
+	}
+}
+
+// evalForeachLoop evaluates foreach loop statements with support for ranges and arrays.
+//
+// This method implements foreach loops with the following features:
+// 1. Supports iteration over Range objects (e.g., foreach i in 2...10)
+// 2. Supports iteration over Array objects (e.g., foreach item in [1,2,3])
+// 3. Creates a loop scope for the entire foreach loop
+// 4. Creates a fresh iteration scope for each loop iteration
+// 5. Binds the iterator variable to the current value in each iteration
+// 6. Stops on error or return statement
+//
+// Scope management:
+// - Loop scope: Created for the entire loop, persists across iterations
+// - Iteration scope: Created fresh for each iteration, contains iterator and body variables
+// - This ensures the iterator variable is fresh each iteration
+//
+// Parameters:
+//   - n: A ForeachLoopStatementNode containing the iterator, iterable, and body
+//
+// Returns:
+//   - objects.GoMixObject: The result of the last iteration's body, a ReturnValue if
+//     a return was encountered, or an Error if evaluation failed
+//
+// Example:
+//
+//	foreach i in 2...5 {
+//	    print(i);  // Prints 2, 3, 4, 5
+//	}
+//
+//	foreach item in [10, 20, 30] {
+//	    print(item);  // Prints 10, 20, 30
+//	}
+func (e *Evaluator) evalForeachLoop(n *parser.ForeachLoopStatementNode) std.GoMixObject {
+	// Evaluate the iterable expression
+	iterable := e.Eval(n.Iterable)
+	if IsError(iterable) {
+		return iterable
+	}
+
+	// Create a new scope for the entire foreach loop
+	loopScope := scope.NewScope(e.Scp)
+	oldScope := e.Scp
+	e.Scp = loopScope
+
+	var result std.GoMixObject = &std.Nil{}
+
+	// Handle different iterable types
+	switch iterable.GetType() {
+	case std.RangeType:
+		// Iterate over a range
+		rangeObj := iterable.(*std.Range)
+		start := rangeObj.Start
+		end := rangeObj.End
+
+		// Handle both ascending and descending ranges
+		if start <= end {
+			// Ascending range: iterate from start to end (inclusive)
+			for i := start; i <= end; i++ {
+				// Create a new scope for each iteration
+				iterationScope := scope.NewScope(loopScope)
+				e.Scp = iterationScope
+
+				// Bind the iterator variable to the current value
+				e.Scp.Bind(n.Iterator.Name, &std.Integer{Value: i})
+
+				// Execute loop body
+				result = e.Eval(&n.Body)
+
+				// Restore to loop scope after body execution
+				e.Scp = loopScope
+
+				if IsError(result) {
+					e.Scp = oldScope
+					return result
+				}
+
+				// Stop if we hit a return statement
+				if _, isReturn := result.(*std.ReturnValue); isReturn {
+					e.Scp = oldScope
+					return result
+				}
+
+				if result.GetType() == std.BreakType {
+					e.Scp = oldScope
+					return &std.Nil{}
+				}
+
+				if result.GetType() == std.ContinueType {
+					continue
+				}
+			}
+		} else {
+			// Descending range: iterate from start down to end (inclusive)
+			for i := start; i >= end; i-- {
+				// Create a new scope for each iteration
+				iterationScope := scope.NewScope(loopScope)
+				e.Scp = iterationScope
+
+				// Bind the iterator variable to the current value
+				e.Scp.Bind(n.Iterator.Name, &std.Integer{Value: i})
+
+				// Execute loop body
+				result = e.Eval(&n.Body)
+
+				// Restore to loop scope after body execution
+				e.Scp = loopScope
+
+				if IsError(result) {
+					e.Scp = oldScope
+					return result
+				}
+
+				// Stop if we hit a return statement
+				if _, isReturn := result.(*std.ReturnValue); isReturn {
+					e.Scp = oldScope
+					return result
+				}
+
+				if result.GetType() == std.BreakType {
+					e.Scp = oldScope
+					return &std.Nil{}
+				}
+
+				if result.GetType() == std.ContinueType {
+					continue
+				}
+			}
+		}
+
+	case std.ArrayType:
+		// Iterate over an array
+		arrayObj := iterable.(*std.Array)
+
+		for _, elem := range arrayObj.Elements {
+			// Create a new scope for each iteration
+			iterationScope := scope.NewScope(loopScope)
+			e.Scp = iterationScope
+
+			// Bind the iterator variable to the current element
+			e.Scp.Bind(n.Iterator.Name, elem)
+
+			// Execute loop body
+			result = e.Eval(&n.Body)
+
+			// Restore to loop scope after body execution
+			e.Scp = loopScope
+
+			if IsError(result) {
+				e.Scp = oldScope
+				return result
+			}
+
+			// Stop if we hit a return statement
+			if _, isReturn := result.(*std.ReturnValue); isReturn {
+				e.Scp = oldScope
+				return result
+			}
+
+			if result.GetType() == std.BreakType {
+				e.Scp = oldScope
+				return &std.Nil{}
+			}
+
+			if result.GetType() == std.ContinueType {
+				continue
+			}
+		}
+
+	case std.ListType:
+		// Iterate over a list
+		listObj := iterable.(*std.List)
+
+		for _, elem := range listObj.Elements {
+			// Create a new scope for each iteration
+			iterationScope := scope.NewScope(loopScope)
+			e.Scp = iterationScope
+
+			// Bind the iterator variable to the current element
+			e.Scp.Bind(n.Iterator.Name, elem)
+
+			// Execute loop body
+			result = e.Eval(&n.Body)
+
+			// Restore to loop scope after body execution
+			e.Scp = loopScope
+
+			if IsError(result) {
+				e.Scp = oldScope
+				return result
+			}
+
+			// Stop if we hit a return statement
+			if _, isReturn := result.(*std.ReturnValue); isReturn {
+				e.Scp = oldScope
+				return result
+			}
+
+			if result.GetType() == std.BreakType {
+				e.Scp = oldScope
+				return &std.Nil{}
+			}
+
+			if result.GetType() == std.ContinueType {
+				continue
+			}
+		}
+
+	case std.TupleType:
+		// Iterate over a tuple
+		tupleObj := iterable.(*std.Tuple)
+
+		for _, elem := range tupleObj.Elements {
+			// Create a new scope for each iteration
+			iterationScope := scope.NewScope(loopScope)
+			e.Scp = iterationScope
+
+			// Bind the iterator variable to the current element
+			e.Scp.Bind(n.Iterator.Name, elem)
+
+			// Execute loop body
+			result = e.Eval(&n.Body)
+
+			// Restore to loop scope after body execution
+			e.Scp = loopScope
+
+			if IsError(result) {
+				e.Scp = oldScope
+				return result
+			}
+
+			// Stop if we hit a return statement
+			if _, isReturn := result.(*std.ReturnValue); isReturn {
+				e.Scp = oldScope
+				return result
+			}
+
+			if result.GetType() == std.BreakType {
+				e.Scp = oldScope
+				return &std.Nil{}
+			}
+
+			if result.GetType() == std.ContinueType {
+				continue
+			}
+		}
+
+	default:
+		e.Scp = oldScope
+		return e.CreateError("ERROR: foreach requires an `iterable`, got `%s`", iterable.GetType())
+	}
+
+	// Restore the original scope
+	e.Scp = oldScope
+	return result
+}
+
+// evalStructDeclaration evaluates a struct declaration statement.
+//
+// This method creates a new GoMixStruct type definition. It processes:
+// - Fields: Evaluates initial values and registers them as static fields
+// - Methods: Creates Function objects and registers them
+// - Const/Let/Var modifiers: Records field properties
+//
+// The resulting struct type is bound to its name in the current scope.
+//
+// Parameters:
+//   - n: The StructDeclarationNode from the AST
+//
+// Returns:
+//   - objects.GoMixObject: The created GoMixStruct object
+func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) std.GoMixObject {
 	// Create a new struct type with the given name and fields
-	s := &objects.GoMixStruct{
+	s := &std.GoMixStruct{
 		Name:        n.StructName.Name,
-		Methods:     make(map[string]objects.FunctionInterface),
+		Methods:     make(map[string]std.FunctionInterface),
 		FieldNodes:  make([]interface{}, len(n.Fields)),
-		ClassFields: make(map[string]objects.GoMixObject),
+		ClassFields: make(map[string]std.GoMixObject),
 		ConstFields: make(map[string]bool),
 		LetFields:   make(map[string]bool),
-		LetTypes:    make(map[string]objects.GoMixType),
+		LetTypes:    make(map[string]std.GoMixType),
 	}
 
 	for i, f := range n.Fields {
@@ -2015,14 +2472,26 @@ func (e *Evaluator) evalStructDeclaration(n *parser.StructDeclarationNode) objec
 	return s
 }
 
-func (e *Evaluator) evalNewCallExpression(n *parser.NewCallExpressionNode) objects.GoMixObject {
+// evalNewCallExpression evaluates a 'new' expression to instantiate a struct.
+//
+// This method handles object creation:
+// 1. Looks up the struct type
+// 2. Creates a new instance
+// 3. Calls the constructor ('init' method) if it exists
+//
+// Parameters:
+//   - n: The NewCallExpressionNode
+//
+// Returns:
+//   - objects.GoMixObject: The new struct instance, or an Error if the struct type is not found
+func (e *Evaluator) evalNewCallExpression(n *parser.NewCallExpressionNode) std.GoMixObject {
 	// Look up the struct type by name
 	s, exists := e.Types[n.StructName.Name]
 	if !exists {
 		return e.CreateError("ERROR: struct type '%s' not defined", n.StructName.Name)
 	}
 
-	inst := objects.NewStructInstance(s)
+	inst := std.NewStructInstance(s)
 
 	// Initialize fields from struct definition
 	initMethod, hasInit := s.GetConstructor()
@@ -2070,14 +2539,38 @@ func (e *Evaluator) evalNewCallExpression(n *parser.NewCallExpressionNode) objec
 	return inst
 }
 
-// createError creates an error object with line and column information from the token
-func (e *Evaluator) createError(token lexer.Token, format string, args ...interface{}) objects.GoMixObject {
-	return &objects.Error{
+// createError creates an error object with line and column information from a token.
+//
+// This helper method formats an error message including the source position
+// derived from the provided token.
+//
+// Parameters:
+//   - token: The token associated with the error (for position info)
+//   - format: The error message format string
+//   - args: Arguments for the format string
+//
+// Returns:
+//   - objects.GoMixObject: An Error object
+func (e *Evaluator) createError(token lexer.Token, format string, args ...interface{}) std.GoMixObject {
+	return &std.Error{
 		Message: fmt.Sprintf("[%d:%d] %s", token.Line, token.Column, fmt.Sprintf(format, args...)),
 	}
 }
 
-func (e *Evaluator) evalMemberAccess(structInstance *objects.GoMixObjectInstance, node parser.ExpressionNode) objects.GoMixObject {
+// evalMemberAccess evaluates member access (dot operator) on a struct instance.
+//
+// This method handles accessing fields or calling methods on an object instance.
+// It distinguishes between:
+// - Method calls: Dispatches to callFunctionOnObject
+// - Field access: Looks up instance fields, then static fields
+//
+// Parameters:
+//   - structInstance: The object instance being accessed
+//   - node: The expression to the right of the dot (Identifier or CallExpression)
+//
+// Returns:
+//   - objects.GoMixObject: The field value or method return value
+func (e *Evaluator) evalMemberAccess(structInstance *std.GoMixObjectInstance, node parser.ExpressionNode) std.GoMixObject {
 	// Handle Method Call
 	if fn, ok := node.(*parser.CallExpressionNode); ok {
 		methodName := fn.FunctionIdentifier.Name
@@ -2104,7 +2597,7 @@ func (e *Evaluator) evalMemberAccess(structInstance *objects.GoMixObjectInstance
 		}
 
 		res := e.callFunctionOnObject(methodName, structInstance, params...)
-		if res.GetType() == objects.ErrorType {
+		if res.GetType() == std.ErrorType {
 			return res
 		}
 		return res
@@ -2128,7 +2621,17 @@ func (e *Evaluator) evalMemberAccess(structInstance *objects.GoMixObjectInstance
 	return e.CreateError("ERROR: member access operator (.) must be followed by a function call or identifier")
 }
 
-func (e *Evaluator) evalStructMemberAccess(s *objects.GoMixStruct, node parser.ExpressionNode) objects.GoMixObject {
+// evalStructMemberAccess evaluates member access on a struct type (static access).
+//
+// This method handles accessing static fields on the struct type itself.
+//
+// Parameters:
+//   - s: The struct type definition
+//   - node: The identifier expression for the field
+//
+// Returns:
+//   - objects.GoMixObject: The static field value
+func (e *Evaluator) evalStructMemberAccess(s *std.GoMixStruct, node parser.ExpressionNode) std.GoMixObject {
 	// Handle Field Access
 	if ident, ok := node.(*parser.IdentifierExpressionNode); ok {
 		fieldName := ident.Name

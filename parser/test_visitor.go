@@ -3,6 +3,11 @@ File    : go-mix/parser/test_visitor.go
 Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */
+
+// Package parser - test_visitor.go
+// This file defines the TestingVisitor type, which is a visitor implementation used for testing the AST traversal of the parser.
+// The TestingVisitor asserts that the nodes visited during traversal match an expected sequence of nodes provided in advance.
+// It uses the testify/assert package to perform assertions and will fail tests if the actual traversal does not match expectations.
 package parser
 
 import (

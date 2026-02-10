@@ -8,9 +8,9 @@ package function
 import (
 	"fmt"
 
-	"github.com/akashmaji946/go-mix/objects"
 	"github.com/akashmaji946/go-mix/parser"
 	"github.com/akashmaji946/go-mix/scope"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // Function represents a user-defined function object in GoMix.
@@ -51,7 +51,7 @@ func (f *Function) GetName() string {
 //
 // Returns:
 //   - objects.GoMixType: The string "func" indicating this is a function object
-func (f *Function) GetType() objects.GoMixType {
+func (f *Function) GetType() std.GoMixType {
 	return "func"
 }
 

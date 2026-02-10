@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/akashmaji946/go-mix/lexer"
-	"github.com/akashmaji946/go-mix/objects"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // parseStatement parses a single statement.
@@ -144,13 +144,9 @@ func (par *Parser) parseParenthesizedExpression() ExpressionNode {
 //	42, -17, 0, 9223372036854775807
 func (par *Parser) parseNumberLiteral() ExpressionNode {
 	token := par.CurrToken
-	val, err := strconv.ParseInt(token.Literal, 10, 64)
+	val, err := strconv.ParseInt(token.Literal, 0, 64)
 	if err != nil {
-		// try unsigned int for the edge case of -9223372036854775808
-		// which is 9223372036854775808 in unsigned int
-		// strconv.ParseInt fails for this value, but ParseUint succeeds
-		// and we can cast it to int64
-		uVal, uErr := strconv.ParseUint(token.Literal, 10, 64)
+		uVal, uErr := strconv.ParseUint(token.Literal, 0, 64)
 		if uErr == nil {
 			val = int64(uVal)
 		} else {
@@ -162,7 +158,7 @@ func (par *Parser) parseNumberLiteral() ExpressionNode {
 	}
 	return &IntegerLiteralExpressionNode{
 		Token: token,
-		Value: &objects.Integer{Value: val},
+		Value: &std.Integer{Value: val},
 	}
 }
 
@@ -186,7 +182,7 @@ func (par *Parser) parseFloatLiteral() ExpressionNode {
 	}
 	return &FloatLiteralExpressionNode{
 		Token: token,
-		Value: &objects.Float{Value: val},
+		Value: &std.Float{Value: val},
 	}
 }
 
@@ -203,7 +199,7 @@ func (par *Parser) parseBooleanLiteral() ExpressionNode {
 	token := par.CurrToken
 	return &BooleanLiteralExpressionNode{
 		Token: token,
-		Value: &objects.Boolean{Value: token.Type == lexer.TRUE_KEY},
+		Value: &std.Boolean{Value: token.Type == lexer.TRUE_KEY},
 	}
 }
 
@@ -219,7 +215,7 @@ func (par *Parser) parseBooleanLiteral() ExpressionNode {
 func (par *Parser) parseStringLiteral() ExpressionNode {
 	return &StringLiteralExpressionNode{
 		Token: par.CurrToken,
-		Value: &objects.String{Value: par.CurrToken.Literal},
+		Value: &std.String{Value: par.CurrToken.Literal},
 	}
 }
 
@@ -236,7 +232,7 @@ func (par *Parser) parseStringLiteral() ExpressionNode {
 func (par *Parser) parseNilLiteral() ExpressionNode {
 	return &NilLiteralExpressionNode{
 		Token: par.CurrToken,
-		Value: &objects.Nil{},
+		Value: &std.Nil{},
 	}
 }
 
@@ -250,11 +246,11 @@ func (par *Parser) parseNilLiteral() ExpressionNode {
 // Returns:
 //
 //	The float64 representation of the value, or 0 if not a number
-func toFloat64(obj objects.GoMixObject) float64 {
-	if obj.GetType() == objects.IntegerType {
-		return float64(obj.(*objects.Integer).Value)
-	} else if obj.GetType() == objects.FloatType {
-		return obj.(*objects.Float).Value
+func toFloat64(obj std.GoMixObject) float64 {
+	if obj.GetType() == std.IntegerType {
+		return float64(obj.(*std.Integer).Value)
+	} else if obj.GetType() == std.FloatType {
+		return obj.(*std.Float).Value
 	}
 	return 0
 }
@@ -328,55 +324,55 @@ func (par *Parser) parseCompoundAssignment(left ExpressionNode, ident *Identifie
 //
 //	For "a += 5", this computes a + 5
 //	For "x *= 2", this computes x * 2
-func evaluateCompoundBinaryOp(lVal, rVal objects.GoMixObject, binaryOp lexer.TokenType) objects.GoMixObject {
-	if lVal.GetType() == objects.IntegerType && rVal.GetType() == objects.IntegerType {
-		l := lVal.(*objects.Integer).Value
-		r := rVal.(*objects.Integer).Value
+func evaluateCompoundBinaryOp(lVal, rVal std.GoMixObject, binaryOp lexer.TokenType) std.GoMixObject {
+	if lVal.GetType() == std.IntegerType && rVal.GetType() == std.IntegerType {
+		l := lVal.(*std.Integer).Value
+		r := rVal.(*std.Integer).Value
 		switch binaryOp {
 		case lexer.PLUS_OP:
-			return &objects.Integer{Value: l + r}
+			return &std.Integer{Value: l + r}
 		case lexer.MINUS_OP:
-			return &objects.Integer{Value: l - r}
+			return &std.Integer{Value: l - r}
 		case lexer.MUL_OP:
-			return &objects.Integer{Value: l * r}
+			return &std.Integer{Value: l * r}
 		case lexer.DIV_OP:
 			if r != 0 {
-				return &objects.Integer{Value: l / r}
+				return &std.Integer{Value: l / r}
 			}
 		case lexer.MOD_OP:
 			if r != 0 {
-				return &objects.Integer{Value: l % r}
+				return &std.Integer{Value: l % r}
 			}
 		case lexer.BIT_AND_OP:
-			return &objects.Integer{Value: l & r}
+			return &std.Integer{Value: l & r}
 		case lexer.BIT_OR_OP:
-			return &objects.Integer{Value: l | r}
+			return &std.Integer{Value: l | r}
 		case lexer.BIT_XOR_OP:
-			return &objects.Integer{Value: l ^ r}
+			return &std.Integer{Value: l ^ r}
 		case lexer.BIT_LEFT_OP:
-			return &objects.Integer{Value: l << r}
+			return &std.Integer{Value: l << r}
 		case lexer.BIT_RIGHT_OP:
-			return &objects.Integer{Value: l >> r}
+			return &std.Integer{Value: l >> r}
 		}
-	} else if (lVal.GetType() == objects.IntegerType || lVal.GetType() == objects.FloatType) &&
-		(rVal.GetType() == objects.IntegerType || rVal.GetType() == objects.FloatType) {
+	} else if (lVal.GetType() == std.IntegerType || lVal.GetType() == std.FloatType) &&
+		(rVal.GetType() == std.IntegerType || rVal.GetType() == std.FloatType) {
 		// Mixed arithmetic
 		l := toFloat64(lVal)
 		r := toFloat64(rVal)
 		switch binaryOp {
 		case lexer.PLUS_OP:
-			return &objects.Float{Value: l + r}
+			return &std.Float{Value: l + r}
 		case lexer.MINUS_OP:
-			return &objects.Float{Value: l - r}
+			return &std.Float{Value: l - r}
 		case lexer.MUL_OP:
-			return &objects.Float{Value: l * r}
+			return &std.Float{Value: l * r}
 		case lexer.DIV_OP:
 			if r != 0 {
-				return &objects.Float{Value: l / r}
+				return &std.Float{Value: l / r}
 			}
 		}
 	}
-	return &objects.Nil{}
+	return &std.Nil{}
 }
 
 // getCompoundBinaryOp returns the corresponding binary operator for a compound assignment operator.
@@ -454,52 +450,52 @@ func (par *Parser) parseBinaryExpression(left ExpressionNode) ExpressionNode {
 	lVal := eval(par, left)
 	rVal := eval(par, right)
 
-	var val objects.GoMixObject = &objects.Nil{}
+	var val std.GoMixObject = &std.Nil{}
 
-	if lVal.GetType() == objects.IntegerType && rVal.GetType() == objects.IntegerType {
-		l := lVal.(*objects.Integer).Value
-		r := rVal.(*objects.Integer).Value
+	if lVal.GetType() == std.IntegerType && rVal.GetType() == std.IntegerType {
+		l := lVal.(*std.Integer).Value
+		r := rVal.(*std.Integer).Value
 		switch op.Type {
 		case lexer.PLUS_OP:
-			val = &objects.Integer{Value: l + r}
+			val = &std.Integer{Value: l + r}
 		case lexer.MINUS_OP:
-			val = &objects.Integer{Value: l - r}
+			val = &std.Integer{Value: l - r}
 		case lexer.MUL_OP:
-			val = &objects.Integer{Value: l * r}
+			val = &std.Integer{Value: l * r}
 		case lexer.DIV_OP:
 			if r != 0 {
-				val = &objects.Integer{Value: l / r}
+				val = &std.Integer{Value: l / r}
 			}
 		case lexer.MOD_OP:
 			if r != 0 {
-				val = &objects.Integer{Value: l % r}
+				val = &std.Integer{Value: l % r}
 			}
 		case lexer.BIT_AND_OP:
-			val = &objects.Integer{Value: l & r}
+			val = &std.Integer{Value: l & r}
 		case lexer.BIT_OR_OP:
-			val = &objects.Integer{Value: l | r}
+			val = &std.Integer{Value: l | r}
 		case lexer.BIT_XOR_OP:
-			val = &objects.Integer{Value: l ^ r}
+			val = &std.Integer{Value: l ^ r}
 		case lexer.BIT_LEFT_OP:
-			val = &objects.Integer{Value: l << r}
+			val = &std.Integer{Value: l << r}
 		case lexer.BIT_RIGHT_OP:
-			val = &objects.Integer{Value: l >> r}
+			val = &std.Integer{Value: l >> r}
 		}
-	} else if (lVal.GetType() == objects.IntegerType || lVal.GetType() == objects.FloatType) &&
-		(rVal.GetType() == objects.IntegerType || rVal.GetType() == objects.FloatType) {
+	} else if (lVal.GetType() == std.IntegerType || lVal.GetType() == std.FloatType) &&
+		(rVal.GetType() == std.IntegerType || rVal.GetType() == std.FloatType) {
 		// Mixed arithmetic
 		l := toFloat64(lVal)
 		r := toFloat64(rVal)
 		switch op.Type {
 		case lexer.PLUS_OP:
-			val = &objects.Float{Value: l + r}
+			val = &std.Float{Value: l + r}
 		case lexer.MINUS_OP:
-			val = &objects.Float{Value: l - r}
+			val = &std.Float{Value: l - r}
 		case lexer.MUL_OP:
-			val = &objects.Float{Value: l * r}
+			val = &std.Float{Value: l * r}
 		case lexer.DIV_OP:
 			if r != 0 {
-				val = &objects.Float{Value: l / r}
+				val = &std.Float{Value: l / r}
 			}
 		}
 	}
@@ -541,7 +537,7 @@ func (par *Parser) parseMemberAccess(left ExpressionNode) ExpressionNode {
 		right = &IdentifierExpressionNode{
 			Token: par.CurrToken,
 			Name:  par.CurrToken.Literal,
-			Value: &objects.Nil{},
+			Value: &std.Nil{},
 		}
 	}
 
@@ -549,7 +545,7 @@ func (par *Parser) parseMemberAccess(left ExpressionNode) ExpressionNode {
 		Left:      left,
 		Operation: op,
 		Right:     right,
-		Value:     &objects.Nil{},
+		Value:     &std.Nil{},
 	}
 }
 
@@ -579,31 +575,31 @@ func (par *Parser) parseUnaryExpression() ExpressionNode {
 	}
 
 	rVal := eval(par, right)
-	var val objects.GoMixObject = &objects.Nil{}
+	var val std.GoMixObject = &std.Nil{}
 
 	switch op.Type {
 	case lexer.NOT_OP:
 		// Logical NOT
 		// Truthiness check
 		isTrue := false
-		if rVal.GetType() == objects.BooleanType {
-			isTrue = rVal.(*objects.Boolean).Value
-		} else if rVal.GetType() == objects.IntegerType {
-			isTrue = rVal.(*objects.Integer).Value != 0
+		if rVal.GetType() == std.BooleanType {
+			isTrue = rVal.(*std.Boolean).Value
+		} else if rVal.GetType() == std.IntegerType {
+			isTrue = rVal.(*std.Integer).Value != 0
 		}
-		val = &objects.Boolean{Value: !isTrue}
+		val = &std.Boolean{Value: !isTrue}
 
 	case lexer.MINUS_OP:
-		if rVal.GetType() == objects.IntegerType {
-			val = &objects.Integer{Value: -rVal.(*objects.Integer).Value}
-		} else if rVal.GetType() == objects.FloatType {
-			val = &objects.Float{Value: -rVal.(*objects.Float).Value}
+		if rVal.GetType() == std.IntegerType {
+			val = &std.Integer{Value: -rVal.(*std.Integer).Value}
+		} else if rVal.GetType() == std.FloatType {
+			val = &std.Float{Value: -rVal.(*std.Float).Value}
 		}
 	case lexer.PLUS_OP:
 		val = rVal
 	case lexer.BIT_NOT_OP:
-		if rVal.GetType() == objects.IntegerType {
-			val = &objects.Integer{Value: ^rVal.(*objects.Integer).Value}
+		if rVal.GetType() == std.IntegerType {
+			val = &std.Integer{Value: ^rVal.(*std.Integer).Value}
 		}
 	}
 
@@ -707,7 +703,7 @@ func (par *Parser) parseIdentifierExpression() ExpressionNode {
 	// get the value from the environment
 	val := par.Env[varToken.Literal]
 	if val == nil {
-		val = &objects.Nil{}
+		val = &std.Nil{}
 	}
 
 	// Determine if this is a const or let or var
@@ -757,8 +753,8 @@ func (par *Parser) parseReturnStatement() ExpressionNode {
 	if par.CurrToken.Type == lexer.SEMICOLON_DELIM {
 		return &ReturnStatementNode{
 			ReturnToken: returnToken,
-			Expr:        &NilLiteralExpressionNode{Token: lexer.Token{Type: lexer.NIL_LIT, Literal: "nil"}, Value: &objects.Nil{}},
-			Value:       &objects.Nil{},
+			Expr:        &NilLiteralExpressionNode{Token: lexer.Token{Type: lexer.NIL_LIT, Literal: "nil"}, Value: &std.Nil{}},
+			Value:       &std.Nil{},
 		}
 	}
 
@@ -810,9 +806,9 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 	val := false
 
 	// Comparison logic
-	if lVal.GetType() == objects.IntegerType && rVal.GetType() == objects.IntegerType {
-		l := lVal.(*objects.Integer).Value
-		r := rVal.(*objects.Integer).Value
+	if lVal.GetType() == std.IntegerType && rVal.GetType() == std.IntegerType {
+		l := lVal.(*std.Integer).Value
+		r := rVal.(*std.Integer).Value
 		switch op.Type {
 		case lexer.GT_OP:
 			val = l > r
@@ -831,9 +827,9 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 		case lexer.OR_OP:
 			val = (l != 0) || (r != 0)
 		}
-	} else if lVal.GetType() == objects.BooleanType && rVal.GetType() == objects.BooleanType {
-		l := lVal.(*objects.Boolean).Value
-		r := rVal.(*objects.Boolean).Value
+	} else if lVal.GetType() == std.BooleanType && rVal.GetType() == std.BooleanType {
+		l := lVal.(*std.Boolean).Value
+		r := rVal.(*std.Boolean).Value
 		switch op.Type {
 		case lexer.AND_OP:
 			val = l && r
@@ -844,8 +840,8 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 		case lexer.NE_OP:
 			val = l != r
 		}
-	} else if (lVal.GetType() == objects.FloatType || lVal.GetType() == objects.IntegerType) &&
-		(rVal.GetType() == objects.FloatType || rVal.GetType() == objects.IntegerType) {
+	} else if (lVal.GetType() == std.FloatType || lVal.GetType() == std.IntegerType) &&
+		(rVal.GetType() == std.FloatType || rVal.GetType() == std.IntegerType) {
 		// Mixed float/integer comparison
 		l := toFloat64(lVal)
 		r := toFloat64(rVal)
@@ -871,12 +867,12 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 		case lexer.NE_OP:
 			val = lVal.ToString() != rVal.ToString()
 		case lexer.AND_OP: // Treat as truthy/falsy
-			isLTrue := (lVal.GetType() == objects.BooleanType && lVal.(*objects.Boolean).Value) || (lVal.GetType() == objects.IntegerType && lVal.(*objects.Integer).Value != 0)
-			isRTrue := (rVal.GetType() == objects.BooleanType && rVal.(*objects.Boolean).Value) || (rVal.GetType() == objects.IntegerType && rVal.(*objects.Integer).Value != 0)
+			isLTrue := (lVal.GetType() == std.BooleanType && lVal.(*std.Boolean).Value) || (lVal.GetType() == std.IntegerType && lVal.(*std.Integer).Value != 0)
+			isRTrue := (rVal.GetType() == std.BooleanType && rVal.(*std.Boolean).Value) || (rVal.GetType() == std.IntegerType && rVal.(*std.Integer).Value != 0)
 			val = isLTrue && isRTrue
 		case lexer.OR_OP: // Treat as truthy/falsy
-			isLTrue := (lVal.GetType() == objects.BooleanType && lVal.(*objects.Boolean).Value) || (lVal.GetType() == objects.IntegerType && lVal.(*objects.Integer).Value != 0)
-			isRTrue := (rVal.GetType() == objects.BooleanType && rVal.(*objects.Boolean).Value) || (rVal.GetType() == objects.IntegerType && rVal.(*objects.Integer).Value != 0)
+			isLTrue := (lVal.GetType() == std.BooleanType && lVal.(*std.Boolean).Value) || (lVal.GetType() == std.IntegerType && lVal.(*std.Integer).Value != 0)
+			isRTrue := (rVal.GetType() == std.BooleanType && rVal.(*std.Boolean).Value) || (rVal.GetType() == std.IntegerType && rVal.(*std.Integer).Value != 0)
 			val = isLTrue || isRTrue
 		}
 	}
@@ -885,7 +881,7 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 		Operation: op,
 		Left:      left,
 		Right:     right,
-		Value:     &objects.Boolean{Value: val},
+		Value:     &std.Boolean{Value: val},
 	}
 }
 
@@ -938,10 +934,10 @@ func (par *Parser) parseBlockStatement() *BlockStatementNode {
 		} else if whileLoopNode, ok := lastStmt.(*WhileLoopStatementNode); ok {
 			block.Value = whileLoopNode.Value
 		} else {
-			block.Value = &objects.Nil{}
+			block.Value = &std.Nil{}
 		}
 	} else {
-		block.Value = &objects.Nil{} // Default value for an empty block
+		block.Value = &std.Nil{} // Default value for an empty block
 	}
 
 	return block
@@ -1022,7 +1018,7 @@ func (par *Parser) parseAssignmentExpression(left ExpressionNode) ExpressionNode
 		Operation: op,
 		Left:      left,
 		Right:     right,
-		Value:     &objects.Nil{},
+		Value:     &std.Nil{},
 	}
 }
 
@@ -1056,7 +1052,7 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 	funcNode.FuncName = IdentifierExpressionNode{
 		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
-		Value: &objects.Nil{}, // Default value for identifier
+		Value: &std.Nil{}, // Default value for identifier
 	}
 	if !par.expectAdvance(lexer.LEFT_PAREN) {
 		return nil
@@ -1071,7 +1067,7 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 			Token: par.CurrToken,
 			Name:  par.CurrToken.Literal,
-			Value: &objects.Nil{}, // Default value for identifier
+			Value: &std.Nil{}, // Default value for identifier
 		})
 
 		// Subsequent parameters
@@ -1083,7 +1079,7 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 				Token: par.CurrToken,
 				Name:  par.CurrToken.Literal,
-				Value: &objects.Nil{}, // Default value for identifier
+				Value: &std.Nil{}, // Default value for identifier
 			})
 		}
 	}
@@ -1117,12 +1113,12 @@ func (par *Parser) parseFunctionStatement() StatementNode {
 //	factorial(10)
 func (par *Parser) parseCallExpression() ExpressionNode {
 	callNode := &CallExpressionNode{
-		Value: &objects.Nil{},
+		Value: &std.Nil{},
 	}
 	callNode.FunctionIdentifier = IdentifierExpressionNode{
 		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
-		Value: &objects.Nil{}, // Default value for identifier
+		Value: &std.Nil{}, // Default value for identifier
 	}
 
 	if !par.expectAdvance(lexer.LEFT_PAREN) {
@@ -1183,7 +1179,7 @@ func (par *Parser) parseFunctionAssignment() ExpressionNode {
 		funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 			Token: par.CurrToken,
 			Name:  par.CurrToken.Literal,
-			Value: &objects.Nil{}, // Default value for identifier
+			Value: &std.Nil{}, // Default value for identifier
 		})
 
 		// Subsequent parameters
@@ -1195,7 +1191,7 @@ func (par *Parser) parseFunctionAssignment() ExpressionNode {
 			funcNode.FuncParams = append(funcNode.FuncParams, &IdentifierExpressionNode{
 				Token: par.CurrToken,
 				Name:  par.CurrToken.Literal,
-				Value: &objects.Nil{}, // Default value for identifier
+				Value: &std.Nil{}, // Default value for identifier
 			})
 		}
 	}
@@ -1271,17 +1267,17 @@ func (par *Parser) parseIfStatement() ExpressionNode {
 				} else if funcNode, ok := stmtNode.(*FunctionStatementNode); ok {
 					elseBlock.Value = funcNode.Value
 				} else {
-					elseBlock.Value = &objects.Nil{}
+					elseBlock.Value = &std.Nil{}
 				}
 			} else {
-				elseBlock.Value = &objects.Nil{}
+				elseBlock.Value = &std.Nil{}
 			}
 			ifNode.ElseBlock = *elseBlock
 		} else {
 			ifNode.ElseBlock = *par.parseBlockStatement()
 		}
 	} else {
-		ifNode.ElseBlock = BlockStatementNode{Value: &objects.Nil{}} // Default empty else block value
+		ifNode.ElseBlock = BlockStatementNode{Value: &std.Nil{}} // Default empty else block value
 	}
 	return ifNode
 }
@@ -1332,7 +1328,7 @@ func (par *Parser) parseIfExpression() ExpressionNode {
 		Condition:      condition,
 		ThenBlock:      *thenBlock,
 		ElseBlock:      *elseBlock,
-		ConditionValue: &objects.Nil{},
+		ConditionValue: &std.Nil{},
 	}
 }
 
@@ -1540,7 +1536,7 @@ func (par *Parser) parseForLoop() StatementNode {
 		Condition:    condition,
 		Updates:      updates,
 		Body:         *body,
-		Value:        &objects.Nil{},
+		Value:        &std.Nil{},
 	}
 }
 
@@ -1604,7 +1600,7 @@ func (par *Parser) parseWhileLoop() StatementNode {
 		WhileToken: whileToken,
 		Conditions: conditions,
 		Body:       *body,
-		Value:      &objects.Nil{},
+		Value:      &std.Nil{},
 	}
 }
 
@@ -1846,13 +1842,13 @@ func (par *Parser) parseRangeExpression(left ExpressionNode) ExpressionNode {
 	endVal := eval(par, right)
 
 	// Create the range value (will be nil if not both integers)
-	var rangeVal objects.GoMixObject = &objects.Nil{}
+	var rangeVal std.GoMixObject = &std.Nil{}
 
 	// Check if both are integers
-	if startVal.GetType() == objects.IntegerType && endVal.GetType() == objects.IntegerType {
-		start := startVal.(*objects.Integer).Value
-		end := endVal.(*objects.Integer).Value
-		rangeVal = &objects.Range{Start: start, End: end}
+	if startVal.GetType() == std.IntegerType && endVal.GetType() == std.IntegerType {
+		start := startVal.(*std.Integer).Value
+		end := endVal.(*std.Integer).Value
+		rangeVal = &std.Range{Start: start, End: end}
 	}
 
 	return &RangeExpressionNode{
@@ -2037,7 +2033,7 @@ func (par *Parser) parseForeachLoop() StatementNode {
 	iterator := IdentifierExpressionNode{
 		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
-		Value: &objects.Nil{},
+		Value: &std.Nil{},
 	}
 
 	// Expect 'in' keyword
@@ -2065,7 +2061,7 @@ func (par *Parser) parseForeachLoop() StatementNode {
 		Iterator:     iterator,
 		Iterable:     iterable,
 		Body:         *body,
-		Value:        &objects.Nil{},
+		Value:        &std.Nil{},
 	}
 }
 
@@ -2082,7 +2078,7 @@ func (par *Parser) parseStructDeclaration() StatementNode {
 	structName := IdentifierExpressionNode{
 		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
-		Value: &objects.Nil{},
+		Value: &std.Nil{},
 	}
 
 	// Expect opening brace for struct body
@@ -2129,7 +2125,7 @@ func (par *Parser) parseStructDeclaration() StatementNode {
 		StructName:  structName,
 		Methods:     methods,
 		Fields:      fields,
-		Value:       &objects.Nil{},
+		Value:       &std.Nil{},
 	}
 }
 
@@ -2152,7 +2148,7 @@ func (par *Parser) parseNewCallExpression() ExpressionNode {
 
 	newCallNode := &NewCallExpressionNode{
 		NewToken: par.CurrToken,
-		Value:    &objects.Nil{},
+		Value:    &std.Nil{},
 	}
 	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
 		return nil
@@ -2160,7 +2156,7 @@ func (par *Parser) parseNewCallExpression() ExpressionNode {
 	newCallNode.StructName = IdentifierExpressionNode{
 		Token: par.CurrToken,
 		Name:  par.CurrToken.Literal,
-		Value: &objects.Nil{}, // Default value for identifier
+		Value: &std.Nil{}, // Default value for identifier
 	}
 
 	if !par.expectAdvance(lexer.LEFT_PAREN) {
@@ -2216,7 +2212,7 @@ func (par *Parser) parseContinueStatement() StatementNode {
 //
 // Note: This is a simplified evaluator used during parsing.
 // The full evaluator in the eval package handles more complex cases.
-func eval(par *Parser, node ExpressionNode) objects.GoMixObject {
+func eval(par *Parser, node ExpressionNode) std.GoMixObject {
 	switch n := node.(type) {
 	case *IntegerLiteralExpressionNode:
 		return n.Value
@@ -2232,13 +2228,13 @@ func eval(par *Parser, node ExpressionNode) objects.GoMixObject {
 		if val, ok := par.Env[n.Name]; ok {
 			return val
 		}
-		return &objects.Nil{}
+		return &std.Nil{}
 	case *ReturnStatementNode:
 		return eval(par, n.Expr)
 	case *BooleanExpressionNode:
 		return n.Value
 	case *BlockStatementNode:
-		var result objects.GoMixObject = &objects.Nil{}
+		var result std.GoMixObject = &std.Nil{}
 		for _, stmt := range n.Statements {
 			if expr, ok := stmt.(ExpressionNode); ok {
 				val := eval(par, expr)
@@ -2256,10 +2252,10 @@ func eval(par *Parser, node ExpressionNode) objects.GoMixObject {
 		n.ConditionValue = cond
 		// Check truthiness
 		var isTrue bool
-		if cond.GetType() == objects.BooleanType {
-			isTrue = cond.(*objects.Boolean).Value
-		} else if cond.GetType() == objects.IntegerType {
-			isTrue = cond.(*objects.Integer).Value != 0
+		if cond.GetType() == std.BooleanType {
+			isTrue = cond.(*std.Boolean).Value
+		} else if cond.GetType() == std.IntegerType {
+			isTrue = cond.(*std.Integer).Value != 0
 		} else {
 			isTrue = false
 		}
@@ -2277,5 +2273,5 @@ func eval(par *Parser, node ExpressionNode) objects.GoMixObject {
 	case *FloatLiteralExpressionNode:
 		return n.Value
 	}
-	return &objects.Nil{}
+	return &std.Nil{}
 }

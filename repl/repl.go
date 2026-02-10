@@ -2,7 +2,9 @@
 File    : go-mix/repl/repl.go
 Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
+*/
 
+/*
 Package repl implements the Read-Eval-Print Loop (REPL) for the Go-Mix interpreter.
 The REPL provides an interactive environment where users can:
 - Enter Go-Mix code line by line

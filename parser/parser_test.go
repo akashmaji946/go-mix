@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/akashmaji946/go-mix/lexer"
-	"github.com/akashmaji946/go-mix/objects"
+	"github.com/akashmaji946/go-mix/std"
 )
 
 // TestParser_OneNum verifies parsing of a single integer literal
@@ -31,10 +31,53 @@ func TestParser_OneNum(t *testing.T) {
 	assert.True(t, can)
 	assert.Equal(t, "12", exp.Literal())
 	const expectedVal int64 = 12
-	if intObj, ok := exp.Value.(*objects.Integer); ok {
+	if intObj, ok := exp.Value.(*std.Integer); ok {
 		assert.Equal(t, expectedVal, intObj.Value)
 	} else {
 		t.Errorf("Expected objects.Integer, got %T", exp.Value)
+	}
+}
+
+func TestParser_HexIntLiteral(t *testing.T) {
+	src := `0x16`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 1, len(root.Statements))
+
+	exp, ok := root.Statements[0].(*IntegerLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "0x16", exp.Literal())
+	assert.Equal(t, &std.Integer{Value: 22}, exp.Value)
+}
+
+func TestParser_OctalIntLiteral(t *testing.T) {
+	src := `0777`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 1, len(root.Statements))
+
+	exp, ok := root.Statements[0].(*IntegerLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "0777", exp.Literal())
+	assert.Equal(t, &std.Integer{Value: 511}, exp.Value)
+}
+
+func TestParser_ScientificFloatLiteral(t *testing.T) {
+	src := `1.4e3`
+	par := NewParser(src)
+	root := par.Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 1, len(root.Statements))
+
+	exp, ok := root.Statements[0].(*FloatLiteralExpressionNode)
+	assert.True(t, ok)
+	assert.Equal(t, "1.4e3", exp.Literal())
+	if floatObj, ok := exp.Value.(*std.Float); ok {
+		assert.InDelta(t, 1400.0, floatObj.Value, 1e-9)
+	} else {
+		t.Errorf("Expected objects.Float, got %T", exp.Value)
 	}
 }
 
@@ -59,13 +102,13 @@ func TestParser_Add(t *testing.T) {
 	assert.True(t, can)
 
 	assert.Equal(t, "12", left.Literal())
-	assert.Equal(t, &objects.Integer{Value: 12}, left.Value)
+	assert.Equal(t, &std.Integer{Value: 12}, left.Value)
 	assert.Equal(t, "13", right.Literal())
-	assert.Equal(t, &objects.Integer{Value: 13}, right.Value)
+	assert.Equal(t, &std.Integer{Value: 13}, right.Value)
 	assert.Equal(t, "12+13", exp.Literal())
 
 	const expectedVal int64 = 25
-	if intObj, ok := exp.Value.(*objects.Integer); ok {
+	if intObj, ok := exp.Value.(*std.Integer); ok {
 		assert.Equal(t, expectedVal, intObj.Value)
 	} else {
 		t.Errorf("Expected objects.Integer, got %T", exp.Value)
@@ -97,15 +140,15 @@ func TestParser_Sub(t *testing.T) {
 	assert.True(t, can)
 
 	assert.Equal(t, "28", left.Literal())
-	assert.Equal(t, &objects.Integer{Value: 28}, left.Value)
+	assert.Equal(t, &std.Integer{Value: 28}, left.Value)
 	assert.Equal(t, "13", rightLeft.Literal())
-	assert.Equal(t, &objects.Integer{Value: 13}, rightLeft.Value)
+	assert.Equal(t, &std.Integer{Value: 13}, rightLeft.Value)
 	assert.Equal(t, "2", rightRight.Literal())
-	assert.Equal(t, &objects.Integer{Value: 2}, rightRight.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, rightRight.Value)
 	assert.Equal(t, "13*2", right.Literal())
-	assert.Equal(t, &objects.Integer{Value: 26}, right.Value)
+	assert.Equal(t, &std.Integer{Value: 26}, right.Value)
 	assert.Equal(t, "28-13*2", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 2}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, exp.Value)
 }
 
 // TestParser_Mul verifies parsing of multiplication expressions
@@ -129,11 +172,11 @@ func TestParser_Mul(t *testing.T) {
 	assert.True(t, can)
 
 	assert.Equal(t, "12", left.Literal())
-	assert.Equal(t, &objects.Integer{Value: 12}, left.Value)
+	assert.Equal(t, &std.Integer{Value: 12}, left.Value)
 	assert.Equal(t, "13", right.Literal())
-	assert.Equal(t, &objects.Integer{Value: 13}, right.Value)
+	assert.Equal(t, &std.Integer{Value: 13}, right.Value)
 	assert.Equal(t, "12*13", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 156}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 156}, exp.Value)
 }
 
 // TestParser_Div verifies parsing of division expressions
@@ -157,11 +200,11 @@ func TestParser_Div(t *testing.T) {
 	assert.True(t, can)
 
 	assert.Equal(t, "26", left.Literal())
-	assert.Equal(t, &objects.Integer{Value: 26}, left.Value)
+	assert.Equal(t, &std.Integer{Value: 26}, left.Value)
 	assert.Equal(t, "13", right.Literal())
-	assert.Equal(t, &objects.Integer{Value: 13}, right.Value)
+	assert.Equal(t, &std.Integer{Value: 13}, right.Value)
 	assert.Equal(t, "26/13", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 2}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, exp.Value)
 }
 
 // TestParser_FullExpr verifies parsing of complex expressions with multiple operators
@@ -182,7 +225,7 @@ func TestParser_FullExpr(t *testing.T) {
 
 	right9, ok := exp1.Right.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 9}, right9.Value)
+	assert.Equal(t, &std.Integer{Value: 9}, right9.Value)
 
 	// level 2: + 100
 	exp2, ok := exp1.Left.(*BinaryExpressionNode)
@@ -191,7 +234,7 @@ func TestParser_FullExpr(t *testing.T) {
 
 	right100, ok := exp2.Right.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 100}, right100.Value)
+	assert.Equal(t, &std.Integer{Value: 100}, right100.Value)
 
 	// level 3: - (4*2)
 	exp3, ok := exp2.Left.(*BinaryExpressionNode)
@@ -204,11 +247,11 @@ func TestParser_FullExpr(t *testing.T) {
 
 	n4, ok := mul4x2.Left.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 4}, n4.Value)
+	assert.Equal(t, &std.Integer{Value: 4}, n4.Value)
 
 	n2, ok := mul4x2.Right.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 2}, n2.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, n2.Value)
 
 	// level 4: + 6
 	exp4, ok := exp3.Left.(*BinaryExpressionNode)
@@ -217,7 +260,7 @@ func TestParser_FullExpr(t *testing.T) {
 
 	right6b, ok := exp4.Right.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 6}, right6b.Value)
+	assert.Equal(t, &std.Integer{Value: 6}, right6b.Value)
 
 	// level 5: - 6
 	exp5, ok := exp4.Left.(*BinaryExpressionNode)
@@ -226,7 +269,7 @@ func TestParser_FullExpr(t *testing.T) {
 
 	right6a, ok := exp5.Right.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 6}, right6a.Value)
+	assert.Equal(t, &std.Integer{Value: 6}, right6a.Value)
 
 	// level 6: - (12/2)
 	exp6, ok := exp5.Left.(*BinaryExpressionNode)
@@ -239,11 +282,11 @@ func TestParser_FullExpr(t *testing.T) {
 
 	n12, ok := div12by2.Left.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 12}, n12.Value)
+	assert.Equal(t, &std.Integer{Value: 12}, n12.Value)
 
 	n2b, ok := div12by2.Right.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 2}, n2b.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, n2b.Value)
 
 	// level 7: + (13*2)
 	exp7, ok := exp6.Left.(*BinaryExpressionNode)
@@ -256,20 +299,20 @@ func TestParser_FullExpr(t *testing.T) {
 
 	n13, ok := mul13x2.Left.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 13}, n13.Value)
+	assert.Equal(t, &std.Integer{Value: 13}, n13.Value)
 
 	n2c, ok := mul13x2.Right.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 2}, n2c.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, n2c.Value)
 
 	// level 8: 26
 	n26, ok := exp7.Left.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 26}, n26.Value)
+	assert.Equal(t, &std.Integer{Value: 26}, n26.Value)
 
 	// final sanity checks
 	assert.Equal(t, "26+13*2-12/2-6+6-4*2+100-9", exp1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 129}, exp1.Value)
+	assert.Equal(t, &std.Integer{Value: 129}, exp1.Value)
 }
 
 // TestParser_Unary1 verifies parsing of boolean negation unary operator
@@ -284,7 +327,7 @@ func TestParser_Unary1(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, lexer.NOT_OP, exp.Operation.Type)
 	assert.Equal(t, "!true", exp.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, exp.Value)
 }
 
 // TestParser_Unary2 verifies parsing of numeric negation unary operator
@@ -299,7 +342,7 @@ func TestParser_Unary2(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, lexer.MINUS_OP, exp.Operation.Type)
 	assert.Equal(t, "-12", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: -12}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: -12}, exp.Value)
 }
 
 // TestParser_Bool1 verifies parsing of true boolean literal
@@ -313,7 +356,7 @@ func TestParser_Bool1(t *testing.T) {
 	exp, ok := root.Statements[0].(*BooleanLiteralExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "true", exp.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, exp.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, exp.Value)
 }
 
 // TestParser_Bool2 verifies parsing of false boolean literal
@@ -327,7 +370,7 @@ func TestParser_Bool2(t *testing.T) {
 	exp, ok := root.Statements[0].(*BooleanLiteralExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "false", exp.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, exp.Value)
 }
 
 // TestParser_BoolSimple verifies parsing of simple boolean AND expression
@@ -342,7 +385,7 @@ func TestParser_BoolSimple(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, lexer.AND_OP, exp.Operation.Type)
 	assert.Equal(t, "false&&true", exp.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, exp.Value)
 }
 
 // TestParser_BoolComplex verifies parsing of complex boolean expressions with AND/OR
@@ -354,11 +397,11 @@ func TestParser_BoolComplex(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -371,7 +414,7 @@ func TestParser_BoolComplex(t *testing.T) {
 	exp, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "false&&true||false", exp.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, exp.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, exp.Value)
 }
 
 // TestParser_BoolComplex2 verifies parsing of boolean expressions with parentheses
@@ -383,13 +426,13 @@ func TestParser_BoolComplex2(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&ParenthesizedExpressionNode{Expr: &BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}}},
 		},
 		Ptr: 0,
@@ -403,7 +446,7 @@ func TestParser_BoolComplex2(t *testing.T) {
 	exp, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "false&&true||(false||true)", exp.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, exp.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, exp.Value)
 }
 
 // TestParser_Arith verifies parsing of arithmetic expressions with precedence
@@ -415,13 +458,13 @@ func TestParser_Arith(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 4}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 4}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -437,8 +480,8 @@ func TestParser_Arith(t *testing.T) {
 	assert.Equal(t, lexer.MINUS_OP, exp.Operation.Type)
 	assert.Equal(t, "1+2*3-4", exp.Literal())
 
-	if intObj, ok := exp.Value.(*objects.Integer); ok {
-		assert.Equal(t, &objects.Integer{Value: 3}, intObj)
+	if intObj, ok := exp.Value.(*std.Integer); ok {
+		assert.Equal(t, &std.Integer{Value: 3}, intObj)
 	} else {
 		t.Errorf("Expected objects.Integer, got %T", exp.Value)
 	}
@@ -453,15 +496,15 @@ func TestParser_ArithComplex1(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 4}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 4}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "/"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -471,7 +514,7 @@ func TestParser_ArithComplex1(t *testing.T) {
 
 	exp := root.Statements[0].(*BinaryExpressionNode)
 	assert.Equal(t, lexer.MINUS_OP, exp.Operation.Type)
-	assert.Equal(t, &objects.Integer{Value: 5}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 5}, exp.Value)
 }
 
 // TestParser_ArithComplex2 verifies parsing of left-associative subtraction
@@ -483,11 +526,11 @@ func TestParser_ArithComplex2(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 20}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 20}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -496,7 +539,7 @@ func TestParser_ArithComplex2(t *testing.T) {
 	root.Accept(testingVisitor)
 
 	exp := root.Statements[0].(*BinaryExpressionNode)
-	assert.Equal(t, &objects.Integer{Value: 10}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 10}, exp.Value)
 }
 
 // TestParser_Paren verifies parsing of parenthesized expressions
@@ -508,8 +551,8 @@ func TestParser_Paren(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
-			&ParenthesizedExpressionNode{Expr: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
+			&ParenthesizedExpressionNode{Expr: &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -532,14 +575,14 @@ func TestParser_ParenComplex(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -550,7 +593,7 @@ func TestParser_ParenComplex(t *testing.T) {
 	exp, ok := root.Statements[0].(*BinaryExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "(10-5)+5*1", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 10}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 10}, exp.Value)
 
 }
 
@@ -563,15 +606,15 @@ func TestParser_ParenNested(t *testing.T) {
 
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "-"}}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -582,7 +625,7 @@ func TestParser_ParenNested(t *testing.T) {
 	exp, ok := root.Statements[0].(*BinaryExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "((10-5)+5)*1", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 10}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 10}, exp.Value)
 
 }
 
@@ -599,7 +642,7 @@ func TestParser_DeclStmt(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -611,7 +654,7 @@ func TestParser_DeclStmt(t *testing.T) {
 	exp, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 1", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 1}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, exp.Value)
 
 }
 
@@ -628,11 +671,11 @@ func TestParser_DeclComplex(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -644,7 +687,7 @@ func TestParser_DeclComplex(t *testing.T) {
 	exp, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 1+2*3", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 7}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 7}, exp.Value)
 
 }
 
@@ -661,12 +704,12 @@ func TestParser_DeclComplex2(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -678,7 +721,7 @@ func TestParser_DeclComplex2(t *testing.T) {
 	exp, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = (1+2)*3", exp.Literal())
-	assert.Equal(t, &objects.Integer{Value: 9}, exp.Value)
+	assert.Equal(t, &std.Integer{Value: 9}, exp.Value)
 
 }
 
@@ -696,14 +739,14 @@ func TestParser_DeclIdent(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
-			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 1}},
+			&IdentifierExpressionNode{Name: "a", Value: &std.Integer{Value: 1}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -717,13 +760,13 @@ func TestParser_DeclIdent(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 1", stmt1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 1}, stmt1.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, stmt1.Value)
 
 	// check second statement: var b = a + 10
 	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var b = a+10", stmt2.Literal())
-	assert.Equal(t, &objects.Integer{Value: 11}, stmt2.Value)
+	assert.Equal(t, &std.Integer{Value: 11}, stmt2.Value)
 
 	assert.Equal(t, "var a = 1;var b = a+10;", root.Literal())
 }
@@ -741,16 +784,16 @@ func TestParser_DeclIdentParen(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 11}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 11}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
-			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 11}},
+			&IdentifierExpressionNode{Name: "a", Value: &std.Integer{Value: 11}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 		},
 		Ptr: 0,
@@ -765,13 +808,13 @@ func TestParser_DeclIdentParen(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 11", stmt1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 11}, stmt1.Value)
+	assert.Equal(t, &std.Integer{Value: 11}, stmt1.Value)
 
 	// check second statement: var b = (a + 10 * 2)
 	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var b = (a+10*2)", stmt2.Literal())
-	assert.Equal(t, &objects.Integer{Value: 31}, stmt2.Value)
+	assert.Equal(t, &std.Integer{Value: 31}, stmt2.Value)
 
 	assert.Equal(t, "var a = 11;var b = (a+10*2);", root.Literal())
 }
@@ -788,26 +831,26 @@ func TestParser_DeclMulti(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 11}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 11}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
-			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 11}},
+			&IdentifierExpressionNode{Name: "a", Value: &std.Integer{Value: 11}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "c"},
 			},
-			&IdentifierExpressionNode{Name: "b", Value: &objects.Integer{Value: 31}},
+			&IdentifierExpressionNode{Name: "b", Value: &std.Integer{Value: 31}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 			&ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
 		},
 		Ptr: 0,
@@ -822,19 +865,19 @@ func TestParser_DeclMulti(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 11", stmt1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 11}, stmt1.Value)
+	assert.Equal(t, &std.Integer{Value: 11}, stmt1.Value)
 
 	// check second statement: var b = (a + 10 * 2)
 	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var b = (a+10*2)", stmt2.Literal())
-	assert.Equal(t, &objects.Integer{Value: 31}, stmt2.Value)
+	assert.Equal(t, &std.Integer{Value: 31}, stmt2.Value)
 
 	// check third statement: var c = (b + 10 * 3	)
 	stmt3, ok := root.Statements[2].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var c = (b+10*3)", stmt3.Literal())
-	assert.Equal(t, &objects.Integer{Value: 61}, stmt3.Value)
+	assert.Equal(t, &std.Integer{Value: 61}, stmt3.Value)
 
 	assert.Equal(t, "var a = 11;var b = (a+10*2);var c = (b+10*3);", root.Literal())
 }
@@ -850,10 +893,10 @@ func TestParser_DeclReturn(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ReturnStatementNode{
 				ReturnToken: lexer.Token{Literal: "return"},
-				Expr:        &IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 1}},
+				Expr:        &IdentifierExpressionNode{Name: "a", Value: &std.Integer{Value: 1}},
 			},
 		},
 		Ptr: 0,
@@ -868,13 +911,13 @@ func TestParser_DeclReturn(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 1", stmt1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 1}, stmt1.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, stmt1.Value)
 
 	// check second statement: return a
 	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "return a", stmt2.Literal())
-	assert.Equal(t, &objects.Integer{Value: 1}, stmt2.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, stmt2.Value)
 
 	assert.Equal(t, "var a = 1;return a;", root.Literal())
 }
@@ -890,7 +933,7 @@ func TestParser_DeclReturnParen(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ReturnStatementNode{
 				ReturnToken: lexer.Token{Literal: "return"},
 				Expr:        &ParenthesizedExpressionNode{Expr: &BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}}},
@@ -908,13 +951,13 @@ func TestParser_DeclReturnParen(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 1", stmt1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 1}, stmt1.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, stmt1.Value)
 
 	// check second statement: return (a + 10 * 2)
 	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "return (a+10*2)", stmt2.Literal())
-	assert.Equal(t, &objects.Integer{Value: 21}, stmt2.Value)
+	assert.Equal(t, &std.Integer{Value: 21}, stmt2.Value)
 
 	assert.Equal(t, "var a = 1;return (a+10*2);", root.Literal())
 }
@@ -927,9 +970,9 @@ func TestParser_BoolExpr(t *testing.T) {
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
 
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -943,10 +986,10 @@ func TestParser_BoolExpr(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "true&&false", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, stmt1.Value)
 
 	assert.Equal(t, "true&&false;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, root.Value)
 }
 
 // TestParser_BoolParenExpr verifies parsing of parenthesized boolean expressions
@@ -956,11 +999,11 @@ func TestParser_BoolParenExpr(t *testing.T) {
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&ParenthesizedExpressionNode{
 				Expr: &BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
 			},
@@ -977,10 +1020,10 @@ func TestParser_BoolParenExpr(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*ParenthesizedExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "(false||true&&false)", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, stmt1.Value)
 
 	assert.Equal(t, "(false||true&&false);", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, root.Value)
 }
 
 // TestParser_DeclBoolReturn verifies parsing of boolean declarations and returns
@@ -995,14 +1038,14 @@ func TestParser_DeclBoolReturn(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
-			&IdentifierExpressionNode{Name: "a", Value: &objects.Integer{Value: 1}},
+			&IdentifierExpressionNode{Name: "a", Value: &std.Integer{Value: 1}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&ReturnStatementNode{
 				ReturnToken: lexer.Token{Literal: "return"},
 				Expr:        &BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
@@ -1020,22 +1063,22 @@ func TestParser_DeclBoolReturn(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = true", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt1.Value)
 
 	// check second statement: var b = a && false
 	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var b = a&&false", stmt2.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, stmt2.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, stmt2.Value)
 
 	// check third statement: return b || true
 	stmt3, ok := root.Statements[2].(*ReturnStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "return b||true", stmt3.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt3.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt3.Value)
 
 	assert.Equal(t, "var a = true;var b = a&&false;return b||true;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 
 }
 
@@ -1046,9 +1089,9 @@ func TestParser_RelOp(t *testing.T) {
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1062,10 +1105,10 @@ func TestParser_RelOp(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "1<2", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt1.Value)
 
 	assert.Equal(t, "1<2;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 }
 
 // TestParser_RelOpSimple verifies parsing of relational operators with boolean expressions
@@ -1075,11 +1118,11 @@ func TestParser_RelOpSimple(t *testing.T) {
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1093,10 +1136,10 @@ func TestParser_RelOpSimple(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "false||1<2", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt1.Value)
 
 	assert.Equal(t, "false||1<2;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 }
 
 // TestParser_RelOpComplex verifies parsing of complex relational and boolean combinations
@@ -1106,13 +1149,13 @@ func TestParser_RelOpComplex(t *testing.T) {
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<="}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 20}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 20}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1126,10 +1169,10 @@ func TestParser_RelOpComplex(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "false||10<=20&&true", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt1.Value)
 
 	assert.Equal(t, "false||10<=20&&true;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 }
 
 // TestParser_RelOpParen verifies parsing of relational operators with parentheses
@@ -1139,13 +1182,13 @@ func TestParser_RelOpParen(t *testing.T) {
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "||"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "<="}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 20}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 20}},
 			&BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&ParenthesizedExpressionNode{
 				Expr: &BooleanExpressionNode{Operation: lexer.Token{Literal: "&&"}},
 			},
@@ -1162,10 +1205,10 @@ func TestParser_RelOpParen(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "false||(10<=20&&true)", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt1.Value)
 
 	assert.Equal(t, "false||(10<=20&&true);", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 }
 
 // TestParser_RelOpVar verifies parsing of relational operators with variables
@@ -1180,7 +1223,7 @@ func TestParser_RelOpVar(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 			&ReturnStatementNode{
 				ReturnToken: lexer.Token{Literal: "return"},
 				Expr: &BooleanExpressionNode{
@@ -1190,10 +1233,10 @@ func TestParser_RelOpVar(t *testing.T) {
 						Operation: lexer.Token{Literal: "&&"},
 						Left: &BooleanExpressionNode{
 							Operation: lexer.Token{Literal: "<="},
-							Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
-							Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 20}},
+							Left:      &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
+							Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 20}},
 						},
-						Right: &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+						Right: &BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 					},
 				},
 			},
@@ -1210,16 +1253,16 @@ func TestParser_RelOpVar(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = false", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: false}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: false}, stmt1.Value)
 
 	// check second statement: return a || (10 <= 20 && true)
 	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "return a||(10<=20&&true)", stmt2.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt2.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt2.Value)
 
 	assert.Equal(t, "var a = false;return a||(10<=20&&true);", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 
 }
 
@@ -1233,14 +1276,14 @@ func TestParser_BitOp(t *testing.T) {
 	assert.NotNil(t, root)
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "&"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
 			&ParenthesizedExpressionNode{},
 			&BooleanExpressionNode{
 				Operation: lexer.Token{Literal: "=="},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1254,10 +1297,10 @@ func TestParser_BitOp(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*BooleanExpressionNode)
 	assert.True(t, ok)
 	assert.Equal(t, "(3&7)==3", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt1.Value)
 
 	assert.Equal(t, "(3&7)==3;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 }
 
 // TestParser_RelBitComplex verifies parsing of complex relational and bitwise combinations
@@ -1278,18 +1321,18 @@ func TestParser_RelBitComplex(t *testing.T) {
 							Left: &ParenthesizedExpressionNode{
 								Expr: &BooleanExpressionNode{
 									Operation: lexer.Token{Literal: "&"},
-									Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
-									Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+									Left:      &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
+									Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
 								},
 							},
-							Right: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+							Right: &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 						},
-						Right: &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+						Right: &BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 					},
 					Right: &BooleanExpressionNode{
 						Operation: lexer.Token{Literal: "&&"},
-						Left:      &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
-						Right:     &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+						Left:      &BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+						Right:     &BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 					},
 				},
 				// Right: &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
@@ -1307,10 +1350,10 @@ func TestParser_RelBitComplex(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*ReturnStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "return ((3&7)!=3&&true||false&&true)||true", stmt1.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt1.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt1.Value)
 
 	assert.Equal(t, "return ((3&7)!=3&&true||false&&true)||true;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 }
 
 // TestParser_BitOpParen verifies parsing of bitwise operators with parentheses and variables
@@ -1324,18 +1367,18 @@ func TestParser_BitOpParen(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 			&BinaryExpressionNode{
 				Operation: lexer.Token{Literal: "&"},
-				Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
-				Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+				Left:      &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
+				Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
 			&ParenthesizedExpressionNode{
 				Expr: &BooleanExpressionNode{
 					Operation: lexer.Token{Literal: "&"},
-					Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
-					Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+					Left:      &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
+					Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
 				},
 			},
 			&ReturnStatementNode{
@@ -1349,18 +1392,18 @@ func TestParser_BitOpParen(t *testing.T) {
 							Left: &ParenthesizedExpressionNode{
 								Expr: &BooleanExpressionNode{
 									Operation: lexer.Token{Literal: "&"},
-									Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
-									Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+									Left:      &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
+									Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
 								},
 							},
-							Right: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+							Right: &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 						},
-						Right: &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+						Right: &BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 					},
 					Right: &BooleanExpressionNode{
 						Operation: lexer.Token{Literal: "&&"},
-						Left:      &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
-						Right:     &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+						Left:      &BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+						Right:     &BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 					},
 				},
 				// Right: &BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
@@ -1378,16 +1421,16 @@ func TestParser_BitOpParen(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = (3&7)", stmt1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 3}, stmt1.Value)
+	assert.Equal(t, &std.Integer{Value: 3}, stmt1.Value)
 
 	// check second statement: return (a==3) && true
 	stmt2, ok := root.Statements[1].(*ReturnStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "return (a==3)&&true", stmt2.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt2.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt2.Value)
 
 	assert.Equal(t, "var a = (3&7);return (a==3)&&true;", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 
 }
 
@@ -1402,22 +1445,22 @@ func TestParser_RelReturn(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "c"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "d"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ReturnStatementNode{
 				ReturnToken: lexer.Token{Literal: "return"},
 				Expr: &BooleanExpressionNode{
@@ -1425,15 +1468,15 @@ func TestParser_RelReturn(t *testing.T) {
 					Left: &ParenthesizedExpressionNode{
 						Expr: &BooleanExpressionNode{
 							Operation: lexer.Token{Literal: "-"},
-							Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 7}},
-							Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+							Left:      &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 7}},
+							Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 						},
 					},
 					Right: &ParenthesizedExpressionNode{
 						Expr: &BooleanExpressionNode{
 							Operation: lexer.Token{Literal: "+"},
-							Left:      &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
-							Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+							Left:      &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
+							Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 						},
 					},
 				},
@@ -1451,34 +1494,34 @@ func TestParser_RelReturn(t *testing.T) {
 	stmt1, ok := root.Statements[0].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var a = 7", stmt1.Literal())
-	assert.Equal(t, &objects.Integer{Value: 7}, stmt1.Value)
+	assert.Equal(t, &std.Integer{Value: 7}, stmt1.Value)
 
 	// check second statement: var b = 1
 	stmt2, ok := root.Statements[1].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var b = 1", stmt2.Literal())
-	assert.Equal(t, &objects.Integer{Value: 1}, stmt2.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, stmt2.Value)
 
 	// check third statement: var c = 2
 	stmt3, ok := root.Statements[2].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var c = 2", stmt3.Literal())
-	assert.Equal(t, &objects.Integer{Value: 2}, stmt3.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, stmt3.Value)
 
 	// check fourth statement: var d = 1
 	stmt4, ok := root.Statements[3].(*DeclarativeStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "var d = 1", stmt4.Literal())
-	assert.Equal(t, &objects.Integer{Value: 1}, stmt4.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, stmt4.Value)
 
 	// check fifth statement: return ((a-b)>(c+d))
 	stmt5, ok := root.Statements[4].(*ReturnStatementNode)
 	assert.True(t, ok)
 	assert.Equal(t, "return ((a-b)>(c+d))", stmt5.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, stmt5.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, stmt5.Value)
 
 	assert.Equal(t, "var a = 7;var b = 1;var c = 2;var d = 1;return ((a-b)>(c+d));", root.Literal())
-	assert.Equal(t, &objects.Boolean{Value: true}, root.Value)
+	assert.Equal(t, &std.Boolean{Value: true}, root.Value)
 
 }
 
@@ -1490,11 +1533,11 @@ func TestParser_BlockSimple(t *testing.T) {
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
 			&BlockStatementNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&BinaryExpressionNode{Operation: lexer.Token{Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 100}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 100}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1522,7 +1565,7 @@ func TestParser_Block(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
@@ -1532,7 +1575,7 @@ func TestParser_Block(t *testing.T) {
 			&BinaryExpressionNode{
 				Operation: lexer.Token{Literal: "+"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
@@ -1542,15 +1585,15 @@ func TestParser_Block(t *testing.T) {
 			&BinaryExpressionNode{
 				Operation: lexer.Token{Literal: "*"},
 				Left:      &IdentifierExpressionNode{Name: "b"},
-				Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 100}},
+				Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 100}},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 100}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 100}},
 
 			&ReturnStatementNode{
 				ReturnToken: lexer.Token{Literal: "return"},
-				Expr:        &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1000}},
+				Expr:        &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1000}},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1000}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1000}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1558,7 +1601,7 @@ func TestParser_Block(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Integer{Value: 1000}, root.Value)
+	assert.Equal(t, &std.Integer{Value: 1000}, root.Value)
 	assert.Equal(t, `{var a = 10;var b = a+10;var c = b*100;return 1000;};`, root.Literal())
 
 }
@@ -1582,7 +1625,7 @@ func TestParser_BlockReturn(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "b"},
@@ -1591,7 +1634,7 @@ func TestParser_BlockReturn(t *testing.T) {
 			&BinaryExpressionNode{
 				Operation: lexer.Token{Literal: "+"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "c"},
@@ -1600,14 +1643,14 @@ func TestParser_BlockReturn(t *testing.T) {
 			&BinaryExpressionNode{
 				Operation: lexer.Token{Literal: "*"},
 				Left:      &IdentifierExpressionNode{Name: "b"},
-				Right:     &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 100}},
+				Right:     &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 100}},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 100}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 100}},
 			&ReturnStatementNode{
 				ReturnToken: lexer.Token{Literal: "return"},
-				Expr:        &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1000}},
+				Expr:        &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1000}},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1000}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1000}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1628,9 +1671,9 @@ func TestParser_If(t *testing.T) {
 			&IfExpressionNode{
 				IfToken: lexer.Token{Literal: "if"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ParenthesizedExpressionNode{
-				Expr: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+				Expr: &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			},
 			&BlockStatementNode{},
 		},
@@ -1640,7 +1683,7 @@ func TestParser_If(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 	assert.Equal(t, `if (1) {};`, root.Literal())
 }
 
@@ -1655,14 +1698,14 @@ func TestParser_IfElse(t *testing.T) {
 			&IfExpressionNode{
 				IfToken: lexer.Token{Literal: "if"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ParenthesizedExpressionNode{
-				Expr: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+				Expr: &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			},
 			&BlockStatementNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&BlockStatementNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1670,7 +1713,7 @@ func TestParser_IfElse(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Integer{Value: 1}, root.Value) // Condition is true, ThenBlock returns 1
+	assert.Equal(t, &std.Integer{Value: 1}, root.Value) // Condition is true, ThenBlock returns 1
 	assert.Equal(t, `if (1) {1;} else {2;};`, root.Literal())
 }
 
@@ -1696,12 +1739,12 @@ func TestParser_ElseIf(t *testing.T) {
 			&IfExpressionNode{
 				IfToken: lexer.Token{Literal: "if"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ParenthesizedExpressionNode{
-				Expr: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+				Expr: &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			},
 			&BlockStatementNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 
 			// Implicit block for the else if
 			&BlockStatementNode{},
@@ -1709,14 +1752,14 @@ func TestParser_ElseIf(t *testing.T) {
 			&IfExpressionNode{
 				IfToken: lexer.Token{Literal: "if"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&ParenthesizedExpressionNode{
-				Expr: &IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+				Expr: &IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			},
 			&BlockStatementNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&BlockStatementNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1724,7 +1767,7 @@ func TestParser_ElseIf(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Integer{Value: 1}, root.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, root.Value)
 	// Note: Literal reconstruction might differ slightly depending on implementation details of nested if block wrapping
 	// but purely based on AST node traversal above, we are good.
 }
@@ -1736,7 +1779,7 @@ func TestParser_ElseIfEval(t *testing.T) {
 	assert.NotNil(t, root)
 
 	// Result should be 2 because the else-if condition is true.
-	assert.Equal(t, &objects.Integer{Value: 3}, root.Value)
+	assert.Equal(t, &std.Integer{Value: 3}, root.Value)
 	assert.Equal(t, `if (1==2) {1;} else if (2!=2) {2;} else {3;};`, root.Literal())
 }
 
@@ -1753,7 +1796,7 @@ func TestParser_ElseIfEval2(t *testing.T) {
 	assert.NotNil(t, root)
 
 	// Result should be 2 because the else-if condition is true.
-	assert.Equal(t, &objects.Integer{Value: 2}, root.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, root.Value)
 	assert.Equal(t, `if (1==2) {1;} else if (2==2) {2;} else {3;};`, root.Literal())
 }
 
@@ -1774,7 +1817,7 @@ func TestParser_ElseIfComplex(t *testing.T) {
 	assert.NotNil(t, root)
 
 	// why 311111? return b; last b value is b=311111
-	assert.Equal(t, &objects.Integer{Value: 311111}, root.Value)
+	assert.Equal(t, &std.Integer{Value: 311111}, root.Value)
 	assert.Equal(t, `var a = 100;var b = 0;if (2*a==200) {b = 1;} else if (2*a!=200) {b = 2;} else {b = 311111;};return b;`, root.Literal())
 }
 
@@ -1798,7 +1841,7 @@ func TestParser_ElseIfNested(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "x"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 
 			&BlockStatementNode{},
 			&IfExpressionNode{
@@ -1808,7 +1851,7 @@ func TestParser_ElseIfNested(t *testing.T) {
 			&BooleanExpressionNode{
 				Operation: lexer.Token{Literal: "=="},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ParenthesizedExpressionNode{
 				Expr: &BooleanExpressionNode{
 					Operation: lexer.Token{Literal: "=="},
@@ -1835,7 +1878,7 @@ func TestParser_StrSimple(t *testing.T) {
 		ExpectedNodes: []Node{
 			&StringLiteralExpressionNode{
 				Token: lexer.Token{Literal: "hello"},
-				Value: &objects.String{Value: "hello"},
+				Value: &std.String{Value: "hello"},
 			},
 		},
 		Ptr: 0,
@@ -1844,7 +1887,7 @@ func TestParser_StrSimple(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.String{Value: "hello"}, root.Value)
+	assert.Equal(t, &std.String{Value: "hello"}, root.Value)
 	assert.Equal(t, `hello;`, root.Literal())
 }
 
@@ -1858,14 +1901,14 @@ func TestParser_Str(t *testing.T) {
 		ExpectedNodes: []Node{
 			&StringLiteralExpressionNode{
 				Token: lexer.Token{Literal: "hello"},
-				Value: &objects.String{Value: "hello"},
+				Value: &std.String{Value: "hello"},
 			},
 			&StringLiteralExpressionNode{
 				Token: lexer.Token{Literal: "there"},
-				Value: &objects.String{Value: "there"},
+				Value: &std.String{Value: "there"},
 			},
 			&IdentifierExpressionNode{Name: "boy"},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 123}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 123}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -1873,7 +1916,7 @@ func TestParser_Str(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 4, len(root.Statements))
-	assert.Equal(t, &objects.Integer{Value: 123}, root.Value)
+	assert.Equal(t, &std.Integer{Value: 123}, root.Value)
 	assert.Equal(t, `hello;there;boy;123;`, root.Literal())
 }
 
@@ -1896,7 +1939,7 @@ func TestParser_Func(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 	assert.Equal(t, `func foo () {};`, root.Literal())
 }
 
@@ -1933,7 +1976,7 @@ func TestParser_FuncReturn(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 	assert.Equal(t, `func foo (a,b) {return a+b;};`, root.Literal())
 }
 
@@ -2000,7 +2043,7 @@ func TestParser_FuncComplex(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 	assert.Equal(t, `func foo (a,b) {if (a==b) {return a+b;} else {return a-b;};};`, root.Literal())
 }
 
@@ -2015,9 +2058,9 @@ func TestParser_FuncCallArgs(t *testing.T) {
 			&CallExpressionNode{
 				FunctionIdentifier: IdentifierExpressionNode{Name: "foo"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -2025,7 +2068,7 @@ func TestParser_FuncCallArgs(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 	assert.Equal(t, `foo(1,2,3);`, root.Literal())
 }
 
@@ -2045,12 +2088,12 @@ func TestParser_FuncCallSimple(t *testing.T) {
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "a"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "b"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&CallExpressionNode{
 				FunctionIdentifier: IdentifierExpressionNode{Name: "foo"},
 			},
@@ -2063,7 +2106,7 @@ func TestParser_FuncCallSimple(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 3, len(root.Statements))
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 	assert.Equal(t, `var a = 1;var b = 2;foo(a,b);`, root.Literal())
 }
 
@@ -2082,9 +2125,9 @@ func TestParser_FuncCallExpr(t *testing.T) {
 			&CallExpressionNode{
 				FunctionIdentifier: IdentifierExpressionNode{Name: "foo"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -2092,7 +2135,7 @@ func TestParser_FuncCallExpr(t *testing.T) {
 
 	root.Accept(testingVisitor)
 	assert.Equal(t, 1, len(root.Statements))
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 	assert.Equal(t, `var a = foo(1,2,3);`, root.Literal())
 }
 
@@ -2231,7 +2274,7 @@ func TestParser_WhileValue(t *testing.T) {
 
 	// Root value should not be nil - it should be &objects.Nil{}
 	assert.NotNil(t, root.Value)
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 }
 
 // TestParser_WhileCondType verifies parsing of while loop condition types
@@ -2247,7 +2290,7 @@ func TestParser_WhileCondType(t *testing.T) {
 	// Check condition is a boolean literal
 	boolCond, ok := whileStmt.Conditions[0].(*BooleanLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, true, boolCond.Value.(*objects.Boolean).Value)
+	assert.Equal(t, true, boolCond.Value.(*std.Boolean).Value)
 }
 
 // TestParser_WhileMultiOps verifies parsing of while loops with different operators
@@ -2372,7 +2415,7 @@ func TestParser_WhileValueField(t *testing.T) {
 
 	// Value field should be initialized to &objects.Nil{}
 	assert.NotNil(t, whileStmt.Value)
-	assert.Equal(t, &objects.Nil{}, whileStmt.Value)
+	assert.Equal(t, &std.Nil{}, whileStmt.Value)
 }
 
 // TestParser_ForValue verifies for loop root value initialization
@@ -2383,7 +2426,7 @@ func TestParser_ForValue(t *testing.T) {
 
 	// Root value should not be nil - it should be &objects.Nil{}
 	assert.NotNil(t, root.Value)
-	assert.Equal(t, &objects.Nil{}, root.Value)
+	assert.Equal(t, &std.Nil{}, root.Value)
 }
 
 // TestParser_ForSingle verifies parsing of for loops with single initializer
@@ -2560,7 +2603,7 @@ func TestParser_ForValueField(t *testing.T) {
 
 	// Value field should be initialized to &objects.Nil{}
 	assert.NotNil(t, forStmt.Value)
-	assert.Equal(t, &objects.Nil{}, forStmt.Value)
+	assert.Equal(t, &std.Nil{}, forStmt.Value)
 }
 
 // TestParser_ForEmpty verifies parsing of empty for loops
@@ -2908,7 +2951,7 @@ func TestParser_CompoundChained(t *testing.T) {
 
 	// Value should be the result of the compound assignment: a -= 10
 	// After: var a = 10 (a=10), a += 5 (a=15), a *= 2 (a=30), a -= 10 (a=20)
-	assert.Equal(t, assignStmt3.Value, &objects.Integer{Value: 20})
+	assert.Equal(t, assignStmt3.Value, &std.Integer{Value: 20})
 }
 
 // TestParser_ArrayLiteral verifies parsing of array literal expressions
@@ -2931,9 +2974,9 @@ func TestParser_ArrayLiteral(t *testing.T) {
 		 `,
 			Expected: []Node{
 				&ArrayExpressionNode{},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 			},
 		},
 		{
@@ -2942,7 +2985,7 @@ func TestParser_ArrayLiteral(t *testing.T) {
 		`,
 			Expected: []Node{
 				&ArrayExpressionNode{},
-				&StringLiteralExpressionNode{Value: &objects.String{Value: "comet"}},
+				&StringLiteralExpressionNode{Value: &std.String{Value: "comet"}},
 			},
 		},
 		{
@@ -2952,17 +2995,17 @@ func TestParser_ArrayLiteral(t *testing.T) {
 			Expected: []Node{
 				&ArrayExpressionNode{},
 				&ArrayExpressionNode{},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 
 				&ArrayExpressionNode{},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 42}},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 43}},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 44}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 42}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 43}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 44}},
 
 				&ArrayExpressionNode{},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			},
 		},
 	}
@@ -2993,9 +3036,9 @@ func TestParser_ArrayBool(t *testing.T) {
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
 			&ArrayExpressionNode{},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -3014,10 +3057,10 @@ func TestParser_ArrayMixed(t *testing.T) {
 	testingVisitor := &TestingVisitor{
 		ExpectedNodes: []Node{
 			&ArrayExpressionNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
-			&StringLiteralExpressionNode{Value: &objects.String{Value: "hello"}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 42}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
+			&StringLiteralExpressionNode{Value: &std.String{Value: "hello"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 42}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -3091,12 +3134,12 @@ func TestParser_ArrayFunc(t *testing.T) {
 	// Check first element is integer 1
 	intElem1, ok := arrayExpr.Elements[0].(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 1}, intElem1.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, intElem1.Value)
 
 	// Check second element is integer 2
 	intElem2, ok := arrayExpr.Elements[1].(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 2}, intElem2.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, intElem2.Value)
 
 	// Check third element is a function
 	funcElem, ok := arrayExpr.Elements[2].(*FunctionStatementNode)
@@ -3148,7 +3191,7 @@ func TestParser_ArrayIndex(t *testing.T) {
 		// Check index is integer
 		indexInt, ok := indexExpr.Index.(*IntegerLiteralExpressionNode)
 		assert.True(t, ok)
-		assert.Equal(t, &objects.Integer{Value: int64(i - 1)}, indexInt.Value)
+		assert.Equal(t, &std.Integer{Value: int64(i - 1)}, indexInt.Value)
 	}
 }
 
@@ -3202,15 +3245,15 @@ func TestParser_RangeSimple(t *testing.T) {
 	// Check start is integer 2
 	startInt, ok := rangeExpr.Start.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 2}, startInt.Value)
+	assert.Equal(t, &std.Integer{Value: 2}, startInt.Value)
 
 	// Check end is integer 5
 	endInt, ok := rangeExpr.End.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 5}, endInt.Value)
+	assert.Equal(t, &std.Integer{Value: 5}, endInt.Value)
 
 	// Check value is a Range object
-	rangeObj, ok := rangeExpr.Value.(*objects.Range)
+	rangeObj, ok := rangeExpr.Value.(*std.Range)
 	assert.True(t, ok)
 	assert.Equal(t, int64(2), rangeObj.Start)
 	assert.Equal(t, int64(5), rangeObj.End)
@@ -3531,7 +3574,7 @@ func TestParser_ListIndexAccess(t *testing.T) {
 	// Check index is integer 0
 	indexInt, ok := indexExpr.Index.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 0}, indexInt.Value)
+	assert.Equal(t, &std.Integer{Value: 0}, indexInt.Value)
 }
 
 // TestParser_TupleIndexAccess verifies parsing of tuple index access
@@ -3553,7 +3596,7 @@ func TestParser_TupleIndexAccess(t *testing.T) {
 	// Check index is integer 1
 	indexInt, ok := indexExpr.Index.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 1}, indexInt.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, indexInt.Value)
 }
 
 // TestParser_ListSlice verifies parsing of list slicing
@@ -3575,12 +3618,12 @@ func TestParser_ListSlice(t *testing.T) {
 	// Check start index
 	startInt, ok := sliceExpr.Start.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 1}, startInt.Value)
+	assert.Equal(t, &std.Integer{Value: 1}, startInt.Value)
 
 	// Check end index
 	endInt, ok := sliceExpr.End.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, &objects.Integer{Value: 3}, endInt.Value)
+	assert.Equal(t, &std.Integer{Value: 3}, endInt.Value)
 }
 
 // TestParser_TupleSlice verifies parsing of tuple slicing
@@ -3930,8 +3973,8 @@ func TestParser_ParseNewCall(t *testing.T) {
 				&NewCallExpressionNode{
 					StructName: IdentifierExpressionNode{Name: "Data"},
 				},
-				&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
-				&StringLiteralExpressionNode{Value: &objects.String{Value: "foo"}},
+				&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
+				&StringLiteralExpressionNode{Value: &std.String{Value: "foo"}},
 			},
 		},
 	}
@@ -3996,7 +4039,7 @@ func TestParser_MemberIndexAccess(t *testing.T) {
 
 	indexVal, ok := indexExpr.Index.(*IntegerLiteralExpressionNode)
 	assert.True(t, ok)
-	assert.Equal(t, int64(1), indexVal.Value.(*objects.Integer).Value)
+	assert.Equal(t, int64(1), indexVal.Value.(*std.Integer).Value)
 
 	assert.Equal(t, "this.m[1];", root.Literal())
 }
@@ -4058,17 +4101,17 @@ func TestParser_StructFields(t *testing.T) {
 				VarToken:   lexer.Token{Type: lexer.CONST_KEY, Literal: "const"},
 				Identifier: IdentifierExpressionNode{Name: "MAX"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 100}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 100}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Type: lexer.LET_KEY, Literal: "let"},
 				Identifier: IdentifierExpressionNode{Name: "retries"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 			&DeclarativeStatementNode{
 				VarToken:   lexer.Token{Type: lexer.VAR_KEY, Literal: "var"},
 				Identifier: IdentifierExpressionNode{Name: "debug"},
 			},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -4086,11 +4129,11 @@ func TestParser_StructConstLetVar(t *testing.T) {
 		ExpectedNodes: []Node{
 			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
 			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.CONST_KEY, Literal: "const"}, Identifier: IdentifierExpressionNode{Name: "C"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.LET_KEY, Literal: "let"}, Identifier: IdentifierExpressionNode{Name: "L"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.VAR_KEY, Literal: "var"}, Identifier: IdentifierExpressionNode{Name: "V"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -4108,7 +4151,7 @@ func TestParser_StructMethodAccessStatic(t *testing.T) {
 		ExpectedNodes: []Node{
 			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
 			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.VAR_KEY, Literal: "var"}, Identifier: IdentifierExpressionNode{Name: "x"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 0}},
 			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "f"}},
 			&BlockStatementNode{},
 			&ReturnStatementNode{},
@@ -4132,7 +4175,7 @@ func TestParser_StructMethodAccessSelf(t *testing.T) {
 		ExpectedNodes: []Node{
 			&StructDeclarationNode{StructName: IdentifierExpressionNode{Name: "S"}},
 			&DeclarativeStatementNode{VarToken: lexer.Token{Type: lexer.VAR_KEY, Literal: "var"}, Identifier: IdentifierExpressionNode{Name: "x"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 0}},
 			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "f"}},
 			&BlockStatementNode{},
 			&ReturnStatementNode{},
@@ -4202,7 +4245,7 @@ func TestParser_StructStaticAssignmentExternal(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
 			&IdentifierExpressionNode{Name: "x"},
 			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -4222,7 +4265,7 @@ func TestParser_StructInstanceAssignmentExternal(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
 			&IdentifierExpressionNode{Name: "x"},
 			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 5}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 5}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -4242,7 +4285,7 @@ func TestParser_StructComplexMethodLogic(t *testing.T) {
 			&FunctionStatementNode{FuncName: IdentifierExpressionNode{Name: "f"}},
 			&BlockStatementNode{},
 			&WhileLoopStatementNode{},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 			&BlockStatementNode{},
 			&BreakStatementNode{},
 		},
@@ -4329,7 +4372,7 @@ func TestParser_StaticAssignment(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
 			&IdentifierExpressionNode{Name: "retries"},
 			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: false}, Token: lexer.Token{Type: lexer.FALSE_KEY, Literal: "false"}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -4390,19 +4433,19 @@ func TestParser_StructNestedLogic(t *testing.T) {
 			&IfExpressionNode{IfToken: lexer.Token{Type: lexer.IF_KEY, Literal: "if"}},
 			&IdentifierExpressionNode{Name: "x"},
 			&BooleanExpressionNode{Operation: lexer.Token{Type: lexer.GT_OP, Literal: ">"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 0}},
 			&ParenthesizedExpressionNode{},
 			&BlockStatementNode{},
 			&WhileLoopStatementNode{WhileToken: lexer.Token{Type: lexer.WHILE_KEY, Literal: "while"}},
 			&IdentifierExpressionNode{Name: "x"},
 			&BooleanExpressionNode{Operation: lexer.Token{Type: lexer.GT_OP, Literal: ">"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 0}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 0}},
 			&BlockStatementNode{},
 			&IdentifierExpressionNode{Name: "x"},
 			&AssignmentExpressionNode{Operation: lexer.Token{Type: lexer.ASSIGN_OP, Literal: "="}},
 			&IdentifierExpressionNode{Name: "x"},
 			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.MINUS_OP, Literal: "-"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
 			&ReturnStatementNode{ReturnToken: lexer.Token{Type: lexer.RETURN_KEY, Literal: "return"}},
 			&IdentifierExpressionNode{Name: "x"},
 		},
@@ -4428,9 +4471,9 @@ func TestParser_StructStaticComplex(t *testing.T) {
 			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.DOT_OP, Literal: "."}},
 			&IdentifierExpressionNode{Name: "min"},
 			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.PLUS_OP, Literal: "+"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 10}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 10}},
 			&BinaryExpressionNode{Operation: lexer.Token{Type: lexer.MUL_OP, Literal: "*"}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -4452,9 +4495,9 @@ func TestParser_StructArrayFieldInit(t *testing.T) {
 				Identifier: IdentifierExpressionNode{Name: "items"},
 			},
 			&ArrayExpressionNode{},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 2}},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 3}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 2}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 3}},
 		},
 		Ptr: 0,
 		T:   t,
@@ -4527,8 +4570,8 @@ func TestParser_NewCallArgs(t *testing.T) {
 			&NewCallExpressionNode{
 				StructName: IdentifierExpressionNode{Name: "A"},
 			},
-			&IntegerLiteralExpressionNode{Value: &objects.Integer{Value: 1}},
-			&BooleanLiteralExpressionNode{Value: &objects.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
+			&IntegerLiteralExpressionNode{Value: &std.Integer{Value: 1}},
+			&BooleanLiteralExpressionNode{Value: &std.Boolean{Value: true}, Token: lexer.Token{Type: lexer.TRUE_KEY, Literal: "true"}},
 		},
 		Ptr: 0,
 		T:   t,
