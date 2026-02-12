@@ -98,6 +98,16 @@ go test ./lexer -v      # Verbose
 go test -coverage       # With coverage report
 ```
 
+#### Option 3: Docker installation
+
+**Manual Installation:**
+Refer `DOCKER.MD` for detailed instructions.
+
+**DockerHub Installation**
+```bash
+docker pull akashmaji946/go-mix:latest
+```
+
 ---
 
 ## 📚 Core Architecture
