@@ -101,7 +101,7 @@ func (r *Repl) PrintBannerInfo(writer io.Writer) {
 	blueColor.Fprintf(writer, "%s\n", r.Line)
 
 	// Print version, author, and license information in yellow
-	yellowColor.Fprintln(writer, "Version: "+r.Version+" | Author: "+r.Author+" | Lincense: "+r.License)
+	yellowColor.Fprintln(writer, "Version: "+r.Version+" | Author: "+r.Author+" | License: "+r.License)
 
 	// Print separator line
 	blueColor.Fprintf(writer, "%s\n", r.Line)

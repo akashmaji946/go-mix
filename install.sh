@@ -326,6 +326,16 @@ EOF
     print_info "Starting go-mix service..."
     systemctl restart go-mix
     
+    # Configure firewall (UFW) if available
+    if command -v ufw >/dev/null; then
+        print_info "Configuring firewall (UFW)..."
+        if ufw allow "$port/tcp"; then
+            print_success "Allowed port $port/tcp in UFW"
+        else
+            print_warning "Failed to update UFW rules"
+        fi
+    fi
+    
     print_success "Service installed and started!"
     print_info "Check status with: systemctl status go-mix"
     print_info "View logs with: journalctl -u go-mix -f"
