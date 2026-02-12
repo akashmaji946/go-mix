@@ -12,6 +12,7 @@ Contact : akashmaji(@iisc.ac.in)
 package std
 
 import (
+	"bufio"
 	"io" // io.Writer is used for output operations in builtin functions
 )
 
@@ -19,6 +20,7 @@ import (
 // to call back into Go-Mix functions (e.g., for custom sorting).
 type Runtime interface {
 	CallFunction(fn GoMixObject, args ...GoMixObject) GoMixObject
+	GetInputReader() *bufio.Reader
 }
 
 // CallbackFunc is the function signature for builtin functions.

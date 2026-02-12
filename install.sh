@@ -285,6 +285,52 @@ install_vscode_extension() {
     fi
 }
 
+# Install systemd service
+install_service() {
+    print_header "Installing Systemd Service"
+    
+    local port="${2:-8080}"
+    local service_path="/etc/systemd/system/go-mix.service"
+    local binary_path="/usr/local/bin/go-mix"
+    
+    # Ensure the latest binary is built and installed
+    check_go
+    build_gomix
+    install_gomix
+    
+    print_info "Creating service file at $service_path"
+    print_info "Port: $port"
+    
+    cat <<EOF > "$service_path"
+[Unit]
+Description=Go-Mix REPL Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=$binary_path server $port
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    print_info "Reloading systemd daemon..."
+    systemctl daemon-reload
+    
+    print_info "Enabling go-mix service..."
+    systemctl enable go-mix
+    
+    print_info "Starting go-mix service..."
+    systemctl restart go-mix
+    
+    print_success "Service installed and started!"
+    print_info "Check status with: systemctl status go-mix"
+    print_info "View logs with: journalctl -u go-mix -f"
+}
+
 # Uninstall function
 uninstall_gomix() {
     print_header "Uninstalling Go-Mix"
@@ -332,6 +378,10 @@ main() {
                 echo "Try restarting your terminal and running: go-mix"
             fi
             ;;
+        install-service)
+            check_root
+            install_service "$@"
+            ;;
         install-extension)
             # Install VS Code extension without requiring root
             install_vscode_extension
@@ -357,6 +407,7 @@ main() {
             echo "Commands:"
             echo "  install              Build and install go-mix to /usr/local/bin (default)"
             echo "  install-extension    Install GoMix VS Code extension"
+            echo "  install-service      Install systemd service (usage: install-service [port])"
             echo "  uninstall            Remove go-mix from /usr/local/bin"
             echo "  rebuild              Build go-mix to current directory (no installation)"
             echo "  clean                Remove build artifacts"

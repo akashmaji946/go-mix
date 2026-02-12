@@ -6,6 +6,7 @@ Contact : akashmaji(@iisc.ac.in)
 package eval
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -26,6 +27,7 @@ type Evaluator struct {
 	Builtins map[string]*std.Builtin     // Map of builtin functions (e.g., print, len, push, pop)
 	Types    map[string]*std.GoMixStruct // Map of user-defined struct types (name to struct definition)
 	Writer   io.Writer                   // Output writer for builtin functions (default: os.Stdout)
+	Reader   *bufio.Reader               // Input reader for builtin functions (default: os.Stdin)
 }
 
 // NewEvaluator creates and initializes a new Evaluator instance with default configuration.
@@ -51,6 +53,7 @@ func NewEvaluator() *Evaluator {
 		Builtins: make(map[string]*std.Builtin),
 		Types:    make(map[string]*std.GoMixStruct),
 		Writer:   os.Stdout, // Default to stdout
+		Reader:   bufio.NewReader(os.Stdin),
 	}
 	for _, builtin := range std.Builtins {
 		ev.Builtins[builtin.Name] = builtin
@@ -75,6 +78,17 @@ func NewEvaluator() *Evaluator {
 //	ev.SetWriter(&buf)  // Redirect output to buffer for testing
 func (e *Evaluator) SetWriter(w io.Writer) {
 	e.Writer = w
+}
+
+// SetReader configures the input source for the evaluator's builtin functions.
+func (e *Evaluator) SetReader(r io.Reader) {
+	e.Reader = bufio.NewReader(r)
+}
+
+// GetInputReader returns the buffered input reader.
+// This implements the std.Runtime interface.
+func (e *Evaluator) GetInputReader() *bufio.Reader {
+	return e.Reader
 }
 
 // SetParser assigns a parser instance to the evaluator for enhanced error reporting.

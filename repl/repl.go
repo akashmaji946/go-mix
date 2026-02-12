@@ -18,8 +18,10 @@ and integrates with the parser and evaluator to execute user input.
 package repl
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/akashmaji946/go-mix/eval"
@@ -143,17 +145,50 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 	// Print the welcome banner and usage instructions
 	r.PrintBannerInfo(writer)
 
+	// Create a new evaluator instance for executing Go-Mix code
+	evaluator := eval.NewEvaluator()
+	evaluator.SetWriter(writer) // Set output writer for print statements
+
+	// Check if input is a file (terminal) or socket
+	// If it's not a file (e.g. net.Conn), use bufio.Reader to avoid double echoing
+	if _, isFile := reader.(*os.File); !isFile {
+		bufReader := bufio.NewReader(reader)
+		evaluator.SetReader(bufReader) // Set input reader for input statements
+
+		fmt.Fprint(writer, r.Prompt)
+		for {
+			line, err := bufReader.ReadString('\n')
+			if err != nil {
+				break
+			}
+			if !r.processLine(writer, evaluator, line) {
+				break
+			}
+			fmt.Fprint(writer, r.Prompt)
+		}
+		return
+	}
+
+	evaluator.SetReader(reader) // Set input reader for input statements
+
+	var rc io.ReadCloser
+	if r, ok := reader.(io.ReadCloser); ok {
+		rc = r
+	} else {
+		rc = io.NopCloser(reader)
+	}
+
 	// Create a new readline instance for enhanced line editing
 	// This provides features like command history, cursor movement, etc.
-	rl, err := readline.New(r.Prompt)
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt: r.Prompt,
+		Stdin:  rc,
+		Stdout: writer,
+	})
 	if err != nil {
 		panic(err)
 	}
 	defer rl.Close() // Ensure readline is properly closed on exit
-
-	// Create a new evaluator instance for executing Go-Mix code
-	evaluator := eval.NewEvaluator()
-	evaluator.SetWriter(writer) // Set output writer for print statements
 
 	// Main REPL loop - continues until user exits or error occurs
 	for {
@@ -166,41 +201,48 @@ func (r *Repl) Start(reader io.Reader, writer io.Writer) {
 			break
 		}
 
-		// Trim whitespace from the input
-		line = strings.Trim(line, " \n\t\r")
-
-		// Skip empty lines
-		if line == "" {
-			continue
-		}
-
-		// Check for exit command
-		if line == "/exit" {
-			writer.Write([]byte("Good Bye!\n"))
-			break
-		}
-
-		// Check for scope command
-		if line == "/scope" {
-			printScope(writer, evaluator)
-			continue
-		}
-
-		// Check for clear command
-		if line == "/clear" {
-			clearScreen(writer)
-			continue
-		}
-
 		// Save the command to history for up/down arrow navigation
 		rl.SaveHistory(line)
 
-		// Echo input in blue (currently commented out)
-		// blueColor.Fprintf(writer, ">> %s\n", line)
-
-		// Execute the input with panic recovery to prevent crashes
-		r.executeWithRecovery(writer, line, evaluator)
+		if !r.processLine(writer, evaluator, line) {
+			break
+		}
 	}
+}
+
+// processLine handles a single line of input in the REPL.
+// It processes commands like /exit, /scope, /clear, and executes code.
+// Returns false if the REPL should exit, true otherwise.
+func (r *Repl) processLine(writer io.Writer, evaluator *eval.Evaluator, line string) bool {
+	// Trim whitespace from the input
+	line = strings.Trim(line, " \n\t\r")
+
+	// Skip empty lines
+	if line == "" {
+		return true
+	}
+
+	// Check for exit command
+	if line == "/exit" {
+		writer.Write([]byte("Good Bye!\n"))
+		return false
+	}
+
+	// Check for scope command
+	if line == "/scope" {
+		printScope(writer, evaluator)
+		return true
+	}
+
+	// Check for clear command
+	if line == "/clear" {
+		clearScreen(writer)
+		return true
+	}
+
+	// Execute the input with panic recovery to prevent crashes
+	r.executeWithRecovery(writer, line, evaluator)
+	return true
 }
 
 // executeWithRecovery handles parsing and evaluation with panic recovery.
@@ -263,17 +305,18 @@ func (r *Repl) executeWithRecovery(writer io.Writer, line string, evaluator *eva
 	if result != nil {
 		if result.GetType() == "error" {
 			// Evaluation produced an error - display in red
-			redColor.Fprintf(writer, "%s\n", result.ToString())
+			fmt.Fprintf(writer, "%s\n", redColor.Sprintf("%s", result.ToString()))
 		} else {
 			// Successful evaluation - display result in yellow
 			// Note: nil results are still printed (unlike file mode)
 			if result.GetType() == "string" {
-				yellowColor.Fprintf(writer, "%q\n", result.ToString())
+				fmt.Fprintf(writer, "%s\n", yellowColor.Sprintf("%q", result.ToString()))
 			} else if result.GetType() == "char" {
-				yellowColor.Fprintf(writer, "'%s'\n", result.ToString())
+				fmt.Fprintf(writer, "%s\n", yellowColor.Sprintf("'%s'", result.ToString()))
 				// yellowColor.Fprintf(writer, "%s\n", result.ToString())
 			} else {
-				yellowColor.Fprintf(writer, "%s\n", result.ToString())
+				// yellowColor.Fprintf(writer, "%s\n", result.ToString())
+				fmt.Fprintf(writer, "%s\n", yellowColor.Sprintf("%s", result.ToString()))
 			}
 		}
 	}

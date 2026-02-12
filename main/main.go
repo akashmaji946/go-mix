@@ -14,6 +14,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/akashmaji946/go-mix/eval"
@@ -94,6 +95,16 @@ func main() {
 			os.Exit(0)
 		}
 
+		// Server mode: Start a REPL server
+		if arg == "server" {
+			if len(os.Args) < 3 {
+				redColor.Fprintf(os.Stderr, "[USAGE ERROR] Missing port for server mode. Usage: go-mix server <port>\n")
+				os.Exit(1)
+			}
+			port := os.Args[2]
+			startServer(port)
+			return // Exit after starting the server
+		}
 		// File mode: read and run a file
 		fileName := arg
 		runFile(fileName)
@@ -113,6 +124,7 @@ func showHelp() {
 	cyanColor.Println("USAGE:")
 	yellowColor.Println("  go-mix                    Start interactive REPL mode")
 	yellowColor.Println("  go-mix <path-to-file>     Execute a Go-Mix file (.gm)")
+	yellowColor.Println("  go-mix server <port>      Start REPL server on specified port")
 	yellowColor.Println("  go-mix --help             Display this help message")
 	yellowColor.Println("  go-mix --version          Display version information")
 	cyanColor.Println("")
@@ -123,6 +135,7 @@ func showHelp() {
 	cyanColor.Println("EXAMPLES:")
 	yellowColor.Println("  go-mix                    # Start REPL")
 	yellowColor.Println("  go-mix samples/algo/05_factorial.gm")
+	yellowColor.Println("  go-mix server 8080        # Start REPL server on port 8080")
 	cyanColor.Println("")
 	cyanColor.Println("For more information, visit: https://github.com/akashmaji946/go-mix")
 }
@@ -166,6 +179,43 @@ func runFile(fileName string) {
 
 	// Execute the source code with panic recovery to handle runtime errors gracefully
 	executeFileWithRecovery(source)
+}
+
+// startServer initializes and runs the Go-Mix REPL server.
+// It listens on the specified port for incoming TCP connections.
+// Each connection is handled in a separate goroutine, providing a dedicated REPL session.
+//
+// Parameters:
+//
+//	port - The network port to listen on (e.g., "8080")
+func startServer(port string) {
+	listener, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		redColor.Fprintf(os.Stderr, "[SERVER ERROR] Failed to start server on port %s: %v\n", port, err)
+		os.Exit(1)
+	}
+	cyanColor.Printf("Go-Mix REPL server listening on :%s\n", port)
+	defer listener.Close()
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			redColor.Fprintf(os.Stderr, "[SERVER ERROR] Failed to accept connection: %v\n", err)
+			continue
+		}
+		go handleClient(conn)
+	}
+}
+
+// handleClient manages a single client connection for the REPL server.
+// It creates a new REPL instance and starts it, using the network connection
+// as both the input reader and output writer.
+func handleClient(conn net.Conn) {
+	defer conn.Close()
+	cyanColor.Printf("New client connected from %s\n", conn.RemoteAddr())
+	repler := repl.NewRepl(BANNER, VERSION, AUTHOR, LINE, LICENCE, PROMPT)
+	repler.Start(conn, conn) // Use the network connection as stdin/stdout
+	cyanColor.Printf("Client disconnected from %s\n", conn.RemoteAddr())
 }
 
 // executeFileWithRecovery handles parsing and evaluation with panic recovery.

@@ -11,16 +11,11 @@ Contact : akashmaji(@iisc.ac.in)
 package std
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 )
-
-// stdinReader is a persistent buffered reader to ensure sequential I/O calls
-// do not lose data between buffer swaps.
-var stdinReader = bufio.NewReader(os.Stdin)
 
 var ioMethods = []*Builtin{
 	{Name: "scanln", Callback: scanln},     // Reads a line of text from stdin
@@ -61,7 +56,7 @@ func scanln(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 		return createError("ERROR: scanln expects 0 arguments, got %d", len(args))
 	}
 
-	text, err := stdinReader.ReadString('\n')
+	text, err := rt.GetInputReader().ReadString('\n')
 	if err != nil && err != io.EOF {
 		return createError("ERROR: failed to read from stdin: %v", err)
 	}
@@ -144,7 +139,7 @@ func scanf(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 		return &Array{Elements: []GoMixObject{}}
 	}
 
-	n, err := fmt.Fscanf(stdinReader, format, ptrs...)
+	n, err := fmt.Fscanf(rt.GetInputReader(), format, ptrs...)
 	if err != nil && err != io.EOF {
 		return createError("ERROR: scanf failed: %v", err)
 	}
@@ -206,13 +201,13 @@ func scan(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	var builder strings.Builder
 	for {
 		// Peek to see if the next sequence matches the delimiter
-		peeked, err := stdinReader.Peek(len(delim))
+		peeked, err := rt.GetInputReader().Peek(len(delim))
 		if err == nil && string(peeked) == delim {
 			break
 		}
 
 		// If not, read one byte and continue
-		b, err := stdinReader.ReadByte()
+		b, err := rt.GetInputReader().ReadByte()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -233,7 +228,7 @@ func getchar(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 		return createError("ERROR: getchar expects 0 arguments, got %d", len(args))
 	}
 
-	b, err := stdinReader.ReadByte()
+	b, err := rt.GetInputReader().ReadByte()
 	if err != nil {
 		if err == io.EOF {
 			return &Nil{}
@@ -351,7 +346,7 @@ func flush(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	}
 
 	// Clear the input buffer
-	stdinReader.Discard(stdinReader.Buffered())
+	rt.GetInputReader().Discard(rt.GetInputReader().Buffered())
 
 	// Flush the output writer
 	if flusher, ok := writer.(interface{ Flush() error }); ok {
