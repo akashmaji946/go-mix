@@ -1495,7 +1495,7 @@ func (e *Evaluator) evalForLoop(n *parser.ForLoopStatementNode) std.GoMixObject 
 // 2. Collecting the results into a slice
 // 3. Creating an Array object containing all evaluated elements
 //
-// Arrays in GoMix are heterogeneous - they can contain elements of different types.
+// Arrays in Go-Mix are heterogeneous - they can contain elements of different types.
 // If any element evaluation produces an error, the error is returned immediately
 // and array creation is aborted.
 //
@@ -1532,7 +1532,7 @@ func (e *Evaluator) evalArrayExpression(n *parser.ArrayExpressionNode) std.GoMix
 // 3. Converting keys to strings for storage (Go maps require hashable keys)
 // 4. Creating a Map object with the key-value pairs
 //
-// Maps in GoMix:
+// Maps in Go-Mix:
 // - Keys are converted to strings using ToString() for consistent hashing
 // - Values can be of any type
 // - Duplicate keys: Later values overwrite earlier ones
@@ -1594,7 +1594,7 @@ func (e *Evaluator) evalMapExpression(n *parser.MapExpressionNode) std.GoMixObje
 // 3. Automatically removing duplicates
 // 4. Creating a Set object with unique values
 //
-// Sets in GoMix:
+// Sets in Go-Mix:
 // - Elements are converted to strings using ToString() for uniqueness
 // - Duplicates are automatically removed
 // - Order of first occurrence is preserved

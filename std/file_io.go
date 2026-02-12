@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - file_io.go
-// This file defines the file system builtin functions for the GoMix language.
+// This file defines the file system builtin functions for the Go-Mix language.
 // It provides functions for reading, writing, and manipulating files and directories.
 package std
 
@@ -189,7 +189,7 @@ func truncateFile(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject
 }
 
 // removeAll removes path and any children it contains.
-// It is the GoMix equivalent of 'rm -rf'.
+// It is the Go-Mix equivalent of 'rm -rf'.
 //
 // Syntax: remove_all(path)
 func removeAll(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {

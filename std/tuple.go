@@ -4,7 +4,7 @@ Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */
 
-// This file implements built-in tuple manipulation methods for the GoMix language.
+// This file implements built-in tuple manipulation methods for the Go-Mix language.
 // It defines methods for creating and querying immutable tuple objects.
 // These methods are registered as global builtins during package initialization.
 package std

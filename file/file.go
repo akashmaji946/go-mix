@@ -4,7 +4,7 @@ Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */
 
-// Package file implements stateful file I/O for the GoMix language.
+// Package file implements stateful file I/O for the Go-Mix language.
 // It provides a File object that wraps a native OS file handle and
 // exposes methods for reading, writing, seeking, and closing files.
 package file
@@ -17,7 +17,7 @@ import (
 	"github.com/akashmaji946/go-mix/std"
 )
 
-// FileObject represents an open file handle in GoMix.
+// FileObject represents an open file handle in Go-Mix.
 type FileObject struct {
 	Handle *os.File
 	Path   string
@@ -46,7 +46,7 @@ func init() {
 	std.Builtins = append(std.Builtins, fileMethods...)
 }
 
-// createError is a local helper to create GoMix error objects.
+// createError is a local helper to create Go-Mix error objects.
 func createError(format string, a ...interface{}) *std.Error {
 	return &std.Error{Message: fmt.Sprintf(format, a...)}
 }

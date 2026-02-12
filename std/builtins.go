@@ -5,10 +5,10 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - builtins.go
-// This file defines the builtin functions available in the GoMix language.
+// This file defines the builtin functions available in the Go-Mix language.
 // It includes common functions like print, println, printf, length, and tostring,
 // as well as utility functions for error creation and type conversion.
-// These builtins are registered globally and can be called from GoMix code.
+// These builtins are registered globally and can be called from Go-Mix code.
 package std
 
 import (
@@ -16,7 +16,7 @@ import (
 )
 
 // Runtime defines the interface for the evaluator to allow builtins
-// to call back into GoMix functions (e.g., for custom sorting).
+// to call back into Go-Mix functions (e.g., for custom sorting).
 type Runtime interface {
 	CallFunction(fn GoMixObject, args ...GoMixObject) GoMixObject
 }
@@ -34,6 +34,6 @@ type Builtin struct {
 }
 
 // Builtins is a global slice of pointers to Builtin structs.
-// It holds all the builtin functions available in the GoMix language.
+// It holds all the builtin functions available in the Go-Mix language.
 // Functions are added to this slice during package initialization.
 var Builtins = make([]*Builtin, 0)

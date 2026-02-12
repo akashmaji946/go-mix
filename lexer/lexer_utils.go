@@ -85,7 +85,7 @@ func isEscape(curr byte) bool {
 		curr == '\n' || curr == '\t' || curr == '\r' || curr == '\f' || curr == '\v'
 }
 
-// isSpecial checks if a character is a special symbol that is not valid in GoMix.
+// isSpecial checks if a character is a special symbol that is not valid in Go-Mix.
 // This includes characters that are not part of the defined token set and are not alphanumeric or whitespace.
 func isSpecial(c byte) bool {
 	return !isAlphanumeric(c) && !isWhitespace(c) && !strings.ContainsRune("=+-*/%&|^~!<>.,;:(){}[]\"", rune(c))

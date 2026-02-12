@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - time.go
-// This file defines the date and time builtin functions for the GoMix language.
+// This file defines the date and time builtin functions for the Go-Mix language.
 // It provides functions for retrieving current time, formatting, parsing,
 // and handling timezones.
 package std

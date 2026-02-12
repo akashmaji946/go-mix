@@ -1,6 +1,5 @@
 #! /bin/bash
-# test.sh: runs all test files, builds project, and runs executable
-
+# build.sh: runs all test files, builds project, and runs executable
 
 # test
 go test ./main/...

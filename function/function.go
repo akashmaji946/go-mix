@@ -13,7 +13,7 @@ import (
 	"github.com/akashmaji946/go-mix/std"
 )
 
-// Function represents a user-defined function object in GoMix.
+// Function represents a user-defined function object in Go-Mix.
 // It captures the function's name, parameters, body, and the scope
 // in which it was defined (for closure support).
 //
@@ -47,7 +47,7 @@ func (f *Function) GetName() string {
 
 // GetType returns the type identifier for this Function object.
 // This implements the objects.GoMixObject interface.
-// The function type is represented as "func" in the GoMix type system.
+// The function type is represented as "func" in the Go-Mix type system.
 //
 // Returns:
 //   - objects.GoMixType: The string "func" indicating this is a function object

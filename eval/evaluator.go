@@ -16,9 +16,9 @@ import (
 	"github.com/akashmaji946/go-mix/std"
 )
 
-// Evaluator holds the state for evaluating GoMix AST nodes,
+// Evaluator holds the state for evaluating Go-Mix AST nodes,
 // including parser, scope, builtins, and output writer.
-// It serves as the main execution engine for the GoMix interpreter,
+// It serves as the main execution engine for the Go-Mix interpreter,
 // managing the evaluation context and providing access to built-in functions.
 type Evaluator struct {
 	Par      *parser.Parser              // Parser instance for error reporting with line/column information
@@ -37,7 +37,7 @@ type Evaluator struct {
 // - Registers all available builtin functions from the objects package
 //
 // Returns:
-//   - *Evaluator: A fully initialized evaluator ready to execute GoMix code
+//   - *Evaluator: A fully initialized evaluator ready to execute Go-Mix code
 //
 // Example usage:
 //
@@ -180,7 +180,7 @@ func (e *Evaluator) InvokeBuiltin(name string, args ...std.GoMixObject) std.GoMi
 	return &std.Nil{}
 }
 
-// CallFunction executes a GoMix function object with the provided arguments.
+// CallFunction executes a Go-Mix function object with the provided arguments.
 // This implements the std.Runtime interface.
 func (e *Evaluator) CallFunction(fn std.GoMixObject, args ...std.GoMixObject) std.GoMixObject {
 	if fn.GetType() != std.FunctionType {

@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - format.go
-// This file defines the type conversion builtin functions for the GoMix language.
+// This file defines the type conversion builtin functions for the Go-Mix language.
 // It provides functions for converting between integers, floats, booleans, and strings.
 package std
 

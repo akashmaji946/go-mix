@@ -7,14 +7,14 @@ package lexer
 
 import "fmt"
 
-// TokenType represents the type of a lexical token in the GoMix language.
+// TokenType represents the type of a lexical token in the Go-Mix language.
 // It is defined as a string to allow for easy comparison and debugging.
 // Each token type corresponds to a specific syntactic element in the language,
 // such as operators, keywords, literals, or structural symbols.
 type TokenType string
 
 // TokenType Constants:
-// These constants define all possible token types in the GoMix language.
+// These constants define all possible token types in the Go-Mix language.
 // They are organized into logical groups for clarity and maintainability.
 const (
 	// Special Types
@@ -171,7 +171,7 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"self":     SELF_KEY,     // 'self' keyword
 }
 
-// Token represents a single lexical token in the GoMix source code.
+// Token represents a single lexical token in the Go-Mix source code.
 // It contains the token's type, its literal string representation from the source,
 // and metadata about its position in the source file (line and column numbers).
 //

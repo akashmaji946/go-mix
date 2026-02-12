@@ -4,7 +4,7 @@ Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */
 
-// This file implements built-in list manipulation methods for the GoMix language.
+// This file implements built-in list manipulation methods for the Go-Mix language.
 // It defines methods for creating, modifying, and querying mutable list objects.
 // These methods are registered as global builtins during package initialization.
 package std

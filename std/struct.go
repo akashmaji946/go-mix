@@ -19,7 +19,7 @@ type FunctionInterface interface {
 	ToString() string
 }
 
-// GoMixStruct represents a user-defined struct type in GoMix.
+// GoMixStruct represents a user-defined struct type in Go-Mix.
 // It stores the struct name and a list of methods associated with it.
 type GoMixStruct struct {
 	Name        string                       // Name of the struct type

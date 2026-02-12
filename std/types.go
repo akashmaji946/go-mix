@@ -11,7 +11,7 @@ import (
 	"fmt" // fmt is used for string formatting in ToString and ToObject methods
 )
 
-// GoMixType represents the type of a GoMix object as a string constant.
+// GoMixType represents the type of a Go-Mix object as a string constant.
 // These constants are used to identify the type of objects in the language,
 // enabling type checking and polymorphic behavior across different object types.
 type GoMixType string
@@ -34,7 +34,7 @@ const (
 
 	// FunctionType represents function objects (defined elsewhere)
 	FunctionType GoMixType = "func"
-	// ArrayType represents arrays of GoMix objects
+	// ArrayType represents arrays of Go-Mix objects
 	ArrayType GoMixType = "array"
 	// RangeType represents range objects (inclusive ranges)
 	RangeType GoMixType = "range"
@@ -59,7 +59,7 @@ const (
 	ContinueType GoMixType = "continue"
 )
 
-// GoMixObject is the core interface that all GoMix objects must implement.
+// GoMixObject is the core interface that all Go-Mix objects must implement.
 // It provides methods for type identification, string representation for display,
 // and object inspection for debugging or serialization purposes.
 type GoMixObject interface {
@@ -109,9 +109,9 @@ func ExtractValue(obj GoMixObject) (interface{}, error) {
 }
 
 // The following section defines the concrete implementations of GoMixObject for each type.
-// Each struct represents a GoMix data type and implements the GoMixObject interface.
+// Each struct represents a Go-Mix data type and implements the GoMixObject interface.
 
-// Integer represents a 64-bit signed integer value in GoMix.
+// Integer represents a 64-bit signed integer value in Go-Mix.
 // It wraps an int64 and provides methods for type identification and string conversion.
 type Integer struct {
 	Value int64 // The underlying integer value
@@ -132,7 +132,7 @@ func (i *Integer) ToObject() string {
 	return fmt.Sprintf("<int(%d)>", i.Value)
 }
 
-// Float represents a 64-bit floating-point value in GoMix.
+// Float represents a 64-bit floating-point value in Go-Mix.
 // It wraps a float64 and provides methods for type identification and string conversion.
 type Float struct {
 	Value float64 // The underlying floating-point value
@@ -153,7 +153,7 @@ func (f *Float) ToObject() string {
 	return fmt.Sprintf("<float(%f)>", f.Value)
 }
 
-// Char represents a single character value in GoMix.
+// Char represents a single character value in Go-Mix.
 type Char struct {
 	Value rune // The underlying character value
 }
@@ -173,7 +173,7 @@ func (c *Char) ToObject() string {
 	return fmt.Sprintf("<char('%c')>", c.Value)
 }
 
-// String represents a string value in GoMix.
+// String represents a string value in Go-Mix.
 // It wraps a Go string and provides methods for type identification and string conversion.
 type String struct {
 	Value string // The underlying string value
@@ -194,7 +194,7 @@ func (s *String) ToObject() string {
 	return fmt.Sprintf("<string(%s)>", s.Value)
 }
 
-// Boolean represents a boolean value in GoMix.
+// Boolean represents a boolean value in Go-Mix.
 // It wraps a Go bool and provides methods for type identification and string conversion.
 type Boolean struct {
 	Value bool // The underlying boolean value
@@ -215,7 +215,7 @@ func (b *Boolean) ToObject() string {
 	return fmt.Sprintf("<bool(%t)>", b.Value)
 }
 
-// Nil represents a null or undefined value in GoMix.
+// Nil represents a null or undefined value in Go-Mix.
 // It wraps an interface{} (which is typically nil) and provides methods for type identification.
 type Nil struct {
 	Value interface{} // The underlying value, usually nil
@@ -236,7 +236,7 @@ func (n *Nil) ToObject() string {
 	return "<nil()>"
 }
 
-// Error represents an error object in GoMix.
+// Error represents an error object in Go-Mix.
 // It wraps an error message as a string and provides methods for type identification and display.
 type Error struct {
 	Message string // The error message
@@ -257,11 +257,11 @@ func (e *Error) ToObject() string {
 	return fmt.Sprintf("<error(%s)>", e.Message)
 }
 
-// ReturnValue wraps a value returned from a function in GoMix.
+// ReturnValue wraps a value returned from a function in Go-Mix.
 // It holds a GoMixObject and delegates type and string methods to the wrapped value.
 // This is used to distinguish return values from regular expressions in the evaluator.
 type ReturnValue struct {
-	Value GoMixObject // The wrapped GoMix object returned from a function
+	Value GoMixObject // The wrapped Go-Mix object returned from a function
 }
 
 // GetType returns the type of the wrapped value
@@ -279,11 +279,11 @@ func (r *ReturnValue) ToObject() string {
 	return r.Value.ToObject()
 }
 
-// Array represents an array of GoMix objects in GoMix.
+// Array represents an array of Go-Mix objects in Go-Mix.
 // It holds a slice of GoMixObject elements and provides methods for type identification,
 // string representation (as a comma-separated list), and object inspection.
 type Array struct {
-	Elements []GoMixObject // The slice of GoMix objects in the array
+	Elements []GoMixObject // The slice of Go-Mix objects in the array
 }
 
 // GetType returns the type of the Array object
@@ -319,7 +319,7 @@ func (a *Array) ToObject() string {
 	return result
 }
 
-// Range represents an inclusive range of integers in GoMix.
+// Range represents an inclusive range of integers in Go-Mix.
 // It holds start and end values and provides methods for type identification
 // and string representation. Ranges are used for iteration in foreach loops
 // and can be created using the ... operator (e.g., 2...5).
@@ -343,8 +343,8 @@ func (r *Range) ToObject() string {
 	return fmt.Sprintf("<range(%d,%d)>", r.Start, r.End)
 }
 
-// Map represents a key-value map in GoMix.
-// It uses a Go map internally with string keys (converted from int/string GoMix objects)
+// Map represents a key-value map in Go-Mix.
+// It uses a Go map internally with string keys (converted from int/string Go-Mix objects)
 // and GoMixObject values. Maps are mutable and can be modified after creation.
 type Map struct {
 	Pairs map[string]GoMixObject // Internal Go map storing key-value pairs
@@ -388,8 +388,8 @@ func (m *Map) ToObject() string {
 	return result
 }
 
-// Set represents a collection of unique values in GoMix.
-// It uses a Go map internally with string keys (converted from GoMix objects)
+// Set represents a collection of unique values in Go-Mix.
+// It uses a Go map internally with string keys (converted from Go-Mix objects)
 // to ensure uniqueness. Sets are mutable and can be modified after creation.
 type Set struct {
 	Elements map[string]bool // Internal Go map for O(1) membership testing
@@ -433,11 +433,11 @@ func (s *Set) ToObject() string {
 	return result
 }
 
-// List represents a mutable, heterogeneous list in GoMix.
+// List represents a mutable, heterogeneous list in Go-Mix.
 // Lists can contain elements of different types and support in-place modifications.
 // They are created using the list() builtin function and support indexing and slicing.
 type List struct {
-	Elements []GoMixObject // The slice of GoMix objects in the list (mutable)
+	Elements []GoMixObject // The slice of Go-Mix objects in the list (mutable)
 }
 
 // GetType returns the type of the List object
@@ -497,11 +497,11 @@ func (c *Continue) ToString() string { return "continue" }
 // ToObject returns "<continue>"
 func (c *Continue) ToObject() string { return "<continue>" }
 
-// Tuple represents an immutable, heterogeneous tuple in GoMix.
+// Tuple represents an immutable, heterogeneous tuple in Go-Mix.
 // Tuples can contain elements of different types but cannot be modified after creation.
 // They are created using the tuple() builtin function and support indexing and slicing.
 type Tuple struct {
-	Elements []GoMixObject // The slice of GoMix objects in the tuple (immutable)
+	Elements []GoMixObject // The slice of Go-Mix objects in the tuple (immutable)
 }
 
 // GetType returns the type of the Tuple object

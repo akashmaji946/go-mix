@@ -28,7 +28,7 @@ import (
 var MODE = "repl"
 
 // VERSION represents the current version of the Go-Mix interpreter
-var VERSION = "v0.1"
+var VERSION = "v1.0.0"
 
 // AUTHOR contains the contact information of the interpreter's author
 var AUTHOR = "akashmaji(@iisc.ac.in)"
@@ -72,15 +72,30 @@ var (
 //
 //	go-mix              - Start in REPL (interactive) mode
 //	go-mix <filename>   - Execute the specified Go-Mix source file
+//	go-mix --help       - Display help information
+//	go-mix --version    - Display version information
 //
 // The function delegates to either runFile() for file execution
 // or starts the REPL for interactive programming.
 func main() {
-	// Check if a file argument is provided
-	// os.Args[0] is the program name, os.Args[1] would be the first argument
+	// Check if a flag argument is provided
 	if len(os.Args) > 1 {
+		arg := os.Args[1]
+
+		// Handle --help flag
+		if arg == "--help" || arg == "-h" {
+			showHelp()
+			os.Exit(0)
+		}
+
+		// Handle --version flag
+		if arg == "--version" || arg == "-v" {
+			showVersion()
+			os.Exit(0)
+		}
+
 		// File mode: read and run a file
-		fileName := os.Args[1]
+		fileName := arg
 		runFile(fileName)
 	} else {
 		// REPL mode: Start interactive interpreter
@@ -89,6 +104,35 @@ func main() {
 		// Start the REPL loop, reading from stdin and writing to stdout
 		repler.Start(os.Stdin, os.Stdout)
 	}
+}
+
+// showHelp displays the help information for the Go-Mix interpreter
+func showHelp() {
+	cyanColor.Println("Go-Mix - An Interpreted Programming Language")
+	cyanColor.Println("")
+	cyanColor.Println("USAGE:")
+	yellowColor.Println("  go-mix                    Start interactive REPL mode")
+	yellowColor.Println("  go-mix <path-to-file>     Execute a Go-Mix file (.gm)")
+	yellowColor.Println("  go-mix --help             Display this help message")
+	yellowColor.Println("  go-mix --version          Display version information")
+	cyanColor.Println("")
+	cyanColor.Println("REPL COMMANDS:")
+	yellowColor.Println("  /exit                     Exit the REPL")
+	yellowColor.Println("  /scope                    Show current scope and variables")
+	cyanColor.Println("")
+	cyanColor.Println("EXAMPLES:")
+	yellowColor.Println("  go-mix                    # Start REPL")
+	yellowColor.Println("  go-mix samples/algo/05_factorial.gm")
+	cyanColor.Println("")
+	cyanColor.Println("For more information, visit: https://github.com/akashmaji946/go-mix")
+}
+
+// showVersion displays the version information for the Go-Mix interpreter
+func showVersion() {
+	cyanColor.Println("Go-Mix - An Interpreted Programming Language")
+	cyanColor.Printf("Version: %s\n", VERSION)
+	cyanColor.Printf("License: %s\n", LICENCE)
+	cyanColor.Printf("Author : %s\n", AUTHOR)
 }
 
 // runFile reads and executes a Go-Mix source file.

@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 package lexer
 
-// Lexer performs lexical analysis (tokenization) of GoMix source code.
+// Lexer performs lexical analysis (tokenization) of Go-Mix source code.
 // It scans through the source text character by character, identifying and
 // creating tokens that represent the syntactic elements of the language.
 //

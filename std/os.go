@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - os.go
-// This file defines the operating system interaction builtin functions for the GoMix language.
+// This file defines the operating system interaction builtin functions for the Go-Mix language.
 // It provides functions for environment variables and command execution.
 package std
 

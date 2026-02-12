@@ -207,7 +207,7 @@ func AssertFloat(t *testing.T, obj std.GoMixObject, expected float64) {
 //
 // This function checks that the provided object is nil, which is useful for
 // testing statements that don't produce a value or for verifying cleanup
-// operations. Note that this checks for Go nil, not the GoMix Nil object type.
+// operations. Note that this checks for Go nil, not the Go-Mix Nil object type.
 //
 // If the object is not nil, the test is marked as failed with a descriptive
 // message showing the actual type and value received.
@@ -222,7 +222,7 @@ func AssertFloat(t *testing.T, obj std.GoMixObject, expected float64) {
 //	AssertNil(t, result)
 //	// Passes if result is nil (not a Nil object, but actual Go nil)
 //
-// Note: To check for GoMix Nil objects (the language's nil value), compare
+// Note: To check for Go-Mix Nil objects (the language's nil value), compare
 // the type instead: obj.GetType() == objects.NilType
 func AssertNil(t *testing.T, obj std.GoMixObject) {
 	if obj != nil {

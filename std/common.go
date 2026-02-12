@@ -6,7 +6,7 @@ Contact : akashmaji(@iisc.ac.in)
 package std
 
 // This file defines common types and utility functions used across
-// multiple object types in the GoMix interpreter.
+// multiple object types in the Go-Mix interpreter.
 // It includes the definition of the Range type,
 // which represents a sequence of integers defined by a start and end value.
 // The file also contains helper functions for error handling and
@@ -26,7 +26,7 @@ var commonMethods = []*Builtin{
 	{Name: "length", Callback: length},                // Returns the length of strings or arrays
 	{Name: "tostring", Callback: tostring},            // Converts an object to its string representation
 	{Name: "range", Callback: rangeFunc},              // Creates an inclusive range from start to end
-	{Name: "typeof", Callback: typeofFunc},            // Returns the type of a GoMix object as a string
+	{Name: "typeof", Callback: typeofFunc},            // Returns the type of a Go-Mix object as a string
 	{Name: "size", Callback: length},                  // Alias for length - returns the size of strings, arrays, maps, or sets
 	{Name: "array", Callback: arrayFunc},              // Converts any iterable to a new array
 	{Name: "sorted", Callback: sortedArray},           // Returns a new sorted array
@@ -230,7 +230,7 @@ func rangeFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	}
 }
 
-// typeofFunc returns the type of a GoMix object as a string.
+// typeofFunc returns the type of a Go-Mix object as a string.
 // It takes one argument: the object whose type should be determined.
 // Returns a String object containing the type name (e.g., "int", "string", "array", "func", etc.).
 // This is useful for runtime type checking and debugging.

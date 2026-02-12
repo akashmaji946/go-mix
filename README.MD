@@ -1,12 +1,12 @@
-# 🚀 GoMix Programming Language
+# 🚀 Go-Mix Programming Language
 
-![GoMix Logo](logo.PNG)
+![Go-Mix Logo](logo.PNG)
 
 [![Go Version](https://img.shields.io/badge/Go-1.18+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square)](https://github.com/akashmaji946/go-mix)
 
-**GoMix** is a high-performance, interpreted programming language implemented in Go. It combines dynamic typing with static safety features, lexical closures, and a comprehensive standard library—perfect for prototyping, education, and embedding as a scripting layer in Go applications.
+**Go-Mix** is a high-performance, interpreted programming language implemented in Go. It combines dynamic typing with static safety features, lexical closures, and a comprehensive standard library—perfect for prototyping, education, and embedding as a scripting layer in Go applications.
 
 ---
 
@@ -33,34 +33,62 @@
 
 **Prerequisites**: Go 1.18 or higher
 
-**Clone & Build:**
+#### Option 1: Automated Installation (Recommended)
 ```bash
 git clone https://github.com/akashmaji946/go-mix.git
 cd go-mix
-./build.sh
+sudo ./install.sh
 ```
 
-This generates the `go-mix` executable in the current directory.
+This builds and installs `go-mix` to `/usr/local/bin`, making it accessible from anywhere on your system. See [INSTALL.md](INSTALL.md) for detailed instructions.
+
+This generates the `go-mix` executable in the current directory (local use only).
 
 ### Usage
 
-**Interactive REPL (Read-Eval-Print Loop):**
+**Display Version:**
 ```bash
-./go-mix
+go-mix --version    # or go-mix -v
 ```
 
-This launches an interactive session where you can type GoMix code line-by-line:
+```
+Go-Mix version v1.0.0
+License: MIT
+Author: akashmaji(@iisc.ac.in)
+```
+
+**Display Help:**
+```bash
+go-mix --help       # or go-mix -h
+```
+
+**Interactive REPL (Read-Eval-Print Loop):**
+```bash
+go-mix
+```
+
+This launches an interactive session where you can type Go-Mix code line-by-line:
 ```
 Go-Mix >>> var x = 42
 Go-Mix >>> println(x)
 42
+Go-Mix >>> /help
+/exit    - Exit the REPL
+/scope   - Show current scope and variables
 Go-Mix >>> 
 ```
 
 **Run a Program File:**
 ```bash
-./go-mix samples/algo/05_factorial.gm
-./go-mix path/to/your/script.gm
+go-mix samples/algo/05_factorial.gm
+go-mix path/to/your/script.gm
+```
+
+#### Option 2: Manual Build
+```bash
+git clone https://github.com/akashmaji946/go-mix.git
+cd go-mix
+./build.sh
 ```
 
 **Run Tests:**
@@ -76,7 +104,7 @@ go test -coverage       # With coverage report
 
 ### 1. **Pratt Parser (Top-Down Operator Precedence)**
 
-GoMix uses a sophisticated Pratt Parser for expression parsing. Rather than relying on traditional recursive descent, the algorithm associates parsing logic directly with tokens and their precedence levels. This approach enables elegant handling of:
+Go-Mix uses a sophisticated Pratt Parser for expression parsing. Rather than relying on traditional recursive descent, the algorithm associates parsing logic directly with tokens and their precedence levels. This approach enables elegant handling of:
 
 - **Complex operator hierarchies** — bitwise vs. arithmetic operators
 - **Member access** — nested object property access (`obj.field.nested`)
@@ -85,9 +113,9 @@ GoMix uses a sophisticated Pratt Parser for expression parsing. Rather than rely
 
 ### 2. **Hybrid Type System**
 
-GoMix implements three distinct variable kinds, each with different semantics:
+Go-Mix implements three distinct variable kinds, each with different semantics:
 
-```gomix
+```go-mix
 var x = 42;          // Dynamic: type can change at runtime
 let y = 3.14;        // Static: type-locked after first assignment
 const PI = 3.14159;  // Immutable: cannot be reassigned
@@ -112,7 +140,7 @@ const PI = 3.14159;  // Immutable: cannot be reassigned
 
 Functions are first-class citizens with full support for lexical closures:
 
-```gomix
+```go-mix
 fn makeCounter(start) {
     var count = start;
     fn increment() { 
@@ -140,7 +168,7 @@ Variables are captured by reference in closures, allowing stateful function obje
 
 ### Data Types
 
-GoMix supports six primitive types plus `nil`:
+Go-Mix supports six primitive types plus `nil`:
 
 | Type | Example | Size | Notes |
 |:-----|:--------|:-----|:------|
@@ -152,7 +180,7 @@ GoMix supports six primitive types plus `nil`:
 | `nil` | `nil` | Pointer-size | Represents absence of value |
 
 **Type Conversion Examples:**
-```gomix
+```go-mix
 var s = "42";
 var n = tostring(123);      // "123"
 var i = 42;
@@ -170,7 +198,7 @@ typeof(nil);               // "nil"
 
 #### Declaration & Assignment
 
-```gomix
+```go-mix
 // Variable declaration
 var x = 10;
 var y = "hello";
@@ -192,9 +220,9 @@ var a = 1, b = 2, c = 3;
 
 #### Scoping Rules
 
-GoMix implements lexical (static) scoping with proper block-level scope:
+Go-Mix implements lexical (static) scoping with proper block-level scope:
 
-```gomix
+```go-mix
 var x = "global";
 
 fn testScope() {
@@ -220,7 +248,7 @@ println(x);                 // "global"
 
 #### If-Else Statements
 
-```gomix
+```go-mix
 if (age >= 18) {
     println("Adult");
 } else if (age >= 13) {
@@ -235,7 +263,7 @@ var status = if (x > 0) { "positive"; } else { "non-positive"; };
 
 #### Boolean Logic (Short-Circuit Evaluation)
 
-```gomix
+```go-mix
 var x = 5;
 
 // AND operator (&&) - short circuits if first operand is false
@@ -263,7 +291,7 @@ if ((x > 0 && x < 10) || (x > 100 && x < 110)) {
 
 #### C-Style For Loop
 
-```gomix
+```go-mix
 // Standard for loop
 for (var i = 0; i < 5; i = i + 1) {
     println(i);  // 0, 1, 2, 3, 4
@@ -286,7 +314,7 @@ for (var i = 0; i < 3; i = i + 1) {
 
 #### While Loop
 
-```gomix
+```go-mix
 var count = 0;
 while (count < 5) {
     println(count);
@@ -310,7 +338,7 @@ while (true) {
 
 #### Range Iteration (Foreach)
 
-```gomix
+```go-mix
 // Range iteration (inclusive)
 foreach i in 1...5 {      // 1, 2, 3, 4, 5
     println(i);
@@ -339,7 +367,7 @@ foreach idx, val in arr {
 
 ### Arrays (Mutable Sequences)
 
-```gomix
+```go-mix
 // Array literals
 var empty = [];
 var numbers = [1, 2, 3, 4, 5];
@@ -372,7 +400,7 @@ shift(arr);                // Remove from start: [10, 25, 30, 40, 55]
 
 ### Maps (Dictionaries)
 
-```gomix
+```go-mix
 // Map literals (string keys only)
 var user = map{
     "name": "Alice",
@@ -397,7 +425,7 @@ println(length(user));     // Number of key-value pairs
 
 ### Lists (Heterogeneous)
 
-```gomix
+```go-mix
 // Lists are explicitly mutable sequences
 var list = list(1, "two", 3.0, true, nil);
 
@@ -412,7 +440,7 @@ var mixed_list = list(1, "2", 3.0);  // Heterogeneous
 
 ### Tuples (Immutable Sequences)
 
-```gomix
+```go-mix
 // Tuples are fixed-size, immutable
 var coords = tuple(10, 20);
 var rgb = tuple(255, 128, 64);
@@ -428,7 +456,7 @@ coords[0] = 15;            // ERROR
 
 ### Sets (Unique Values)
 
-```gomix
+```go-mix
 // Sets contain unique values
 var primes = set{2, 3, 5, 7, 11};
 var colors = set{"red", "green", "blue"};
@@ -446,7 +474,7 @@ println(length(primes));   // 5
 
 ### Function Definitions
 
-```gomix
+```go-mix
 // Basic function
 fn greet(name) {
     return "Hello, " + name;
@@ -477,7 +505,7 @@ println(factorial(5));     // 120
 
 ### Function Expressions (Lambda)
 
-```gomix
+```go-mix
 // Anonymous functions assigned to variables
 var double = fn(x) { return x * 2; };
 println(double(5));        // 10
@@ -499,7 +527,7 @@ println(times5(7));        // 35
 
 #### Map
 
-```gomix
+```go-mix
 // Apply function to each element
 var nums = [1, 2, 3, 4, 5];
 var doubled = map(nums, fn(x) { return x * 2; });
@@ -511,7 +539,7 @@ println(squared);          // [1, 4, 9, 16, 25]
 
 #### Filter
 
-```gomix
+```go-mix
 // Keep elements that satisfy predicate
 var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var evens = filter(numbers, fn(x) { return x % 2 == 0; });
@@ -523,7 +551,7 @@ println(bigNums);          // [6, 7, 8, 9, 10]
 
 #### Reduce
 
-```gomix
+```go-mix
 // Accumulate value across array
 var nums = [1, 2, 3, 4, 5];
 
@@ -542,7 +570,7 @@ println(str);              // "12345"
 
 #### Find, Some, Every
 
-```gomix
+```go-mix
 var nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // Find first matching element
@@ -566,7 +594,7 @@ println(all_even);         // false
 
 #### Sorting with Custom Comparators
 
-```gomix
+```go-mix
 var nums = [3, 1, 4, 1, 5, 9, 2, 6];
 
 // In-place sort with default ordering
@@ -599,7 +627,7 @@ csort(words, fn(a, b) {
 
 ### Struct Definition & Methods
 
-```gomix
+```go-mix
 struct Circle {
     var radius = 0;
 
@@ -638,7 +666,7 @@ c.scale(2).scale(2);       // radius becomes 20
 
 ### Complex OOP Example
 
-```gomix
+```go-mix
 struct BankAccount {
     var balance = 0;
     var owner = "Unknown";
@@ -723,7 +751,7 @@ println(account.getInfo()); // Alice has $1300
 | `is_alpha(str)` | string | bool | `is_alpha("abc")` → `true` |
 
 **String Examples:**
-```gomix
+```go-mix
 var text = "  Hello, World!  ";
 println(upper(text));           // "  HELLO, WORLD!  "
 println(trim(text));            // "Hello, World!"
@@ -747,7 +775,7 @@ println(substring(text, 2, 7)); // "Hello"
 | `array(iterable)` | any | array | Convert to array |
 
 **Array Examples:**
-```gomix
+```go-mix
 var arr = [3, 1, 4, 1, 5, 9];
 
 push(arr, 2);               // [3, 1, 4, 1, 5, 9, 2]
@@ -782,7 +810,7 @@ clone_array(arr);           // Copy of arr
 | `rand_int(min, max)` | int, int | int | Random in range |
 
 **Math Examples:**
-```gomix
+```go-mix
 println(abs(-42));          // 42
 println(min(5, 3, 9, 1));   // 1
 println(max(5, 3, 9, 1));   // 9
@@ -797,7 +825,7 @@ var dice = rand_int(1, 6);  // 1 to 6
 
 ### File I/O
 
-```gomix
+```go-mix
 // Writing to file
 var file = fopen("output.txt", "w");  // Write mode
 fwrite(file, "Hello, ");
@@ -826,7 +854,7 @@ var size = file_size("data.txt");
 
 ### System & Environment
 
-```gomix
+```go-mix
 // Environment variables
 var home = getenv("HOME");
 var path = getenv("PATH");
@@ -856,7 +884,7 @@ println(formatted);         // "2024-02-11 10:30:45"
 
 ### JSON Handling
 
-```gomix
+```go-mix
 // Create data structure
 var user = map{
     "id": 123,
@@ -891,7 +919,7 @@ var parsed = json_string_decode_map(json);
 
 ### Type & Debugging Functions
 
-```gomix
+```go-mix
 var x = 42;
 var arr = [1, 2, 3];
 var user = map{"name": "Alice"};
@@ -921,7 +949,7 @@ is_same_ref(arr, z);        // false (different reference)
 
 ### Panic & Recovery
 
-```gomix
+```go-mix
 // Panic terminates execution with error message
 fn divide(a, b) {
     if (b == 0) {
@@ -937,7 +965,7 @@ println(divide(10, 0));     // Panics with error
 
 ### Type Safety
 
-```gomix
+```go-mix
 // Static variables prevent type errors
 let count = 0;
 count = count + 1;          // OK
@@ -951,7 +979,7 @@ data = [1, 2, 3];          // OK - type changed again
 
 ### Error Objects
 
-```gomix
+```go-mix
 // Some functions return error objects
 var result = someOperation();
 if (result.GetType() == "error") {
@@ -963,7 +991,7 @@ if (result.GetType() == "error") {
 
 ## 🎓 Sample Programs
 
-The `samples/` directory contains 50+ example programs organized by topic:
+The `samples/` directory contains 200+ example programs organized by topic:
 
 ### Algorithms (`samples/algo/`)
 
@@ -977,14 +1005,6 @@ The `samples/` directory contains 50+ example programs organized by topic:
 - **08_prime_check.gm** — Prime number checking
 - **09_bubble_sort.gm** — Bubble sort implementation
 - **10_heap_sort.gm** — Heap sort algorithm
-- **20_bst.gm** — Binary search tree operations
-- **21_bfs.gm** — Breadth-first search on graphs
-- **22_dfs.gm** — Depth-first search on graphs
-- **23_dijkstra.gm** — Dijkstra's shortest path
-- **24_knapsack.gm** — 0/1 Knapsack problem
-- **25_lcs.gm** — Longest common subsequence
-- **26_matrix_mult.gm** — Matrix multiplication
-- **27_sieve.gm** — Sieve of Eratosthenes
 
 **Run any sample:**
 ```bash
@@ -1144,7 +1164,7 @@ go-mix/
 ├── go.mod                 # Go module definition (github.com/akashmaji946/go-mix)
 ├── go.sum                 # Go dependencies lock file
 ├── build.sh              # Build script (runs tests + compiles binary)
-├── test.sh               # Test runner script
+├── run.sh                # Test + Executable runner script
 ├── LICENSE               # MIT License
 ├── logo.PNG              # Project logo
 ├── README.md             # This comprehensive documentation
@@ -1199,7 +1219,57 @@ go-mix/
 
 ---
 
-## 📝 License & Attribution
+## �️ Installation & Tools
+
+### System-Wide Installation
+
+To install Go-Mix globally on your system:
+
+```bash
+sudo ./install.sh
+```
+
+This script:
+- ✅ Verifies Go is installed (v1.18+)
+- ✅ Builds the executable from source
+- ✅ Installs to `/usr/local/bin`
+- ✅ Makes `go-mix` accessible from anywhere
+
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
+
+#### Install Commands
+```bash
+sudo ./install.sh         # Install system-wide (recommended)
+./install.sh rebuild      # Just build, don't install
+sudo ./install.sh uninstall  # Remove installation
+./install.sh clean        # Remove build artifacts
+```
+
+### VS Code Extension
+
+A professional VS Code extension is available for Go-Mix development:
+
+**Features:**
+- 🎨 Syntax highlighting for `.gm` files
+- ⚡ Run code with `Ctrl+Shift+G`
+- 📝 15+ code snippets
+- 🔌 REPL integration
+- 💡 Keyword hover information
+- 🔄 Smart indentation & formatting
+
+**Installation:**
+1. Open VS Code
+2. Go to Extensions (Ctrl+Shift+X)
+3. Search for "GoMix"
+4. Click Install
+
+Or install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=akashmaji946.go-mix)
+
+For extension development, see [vscode-ext/README.md](vscode-ext/README.md)
+
+---
+
+## �📝 License & Attribution
 
 **License**: MIT
 
@@ -1207,7 +1277,7 @@ go-mix/
 **Contact**: akashmaji@iisc.ac.in  
 **Repository**: [github.com/akashmaji946/go-mix](https://github.com/akashmaji946/go-mix)
 
-GoMix is designed for:
+Go-Mix is designed for:
 - **Education** — Learning language design and interpreter implementation
 - **Prototyping** — Rapid algorithm and idea development
 - **Embedding** — Adding scripting capabilities to JS like applications
@@ -1219,7 +1289,7 @@ Contributions, issues, and feedback are welcome!
 
 ## Quick Reference Card
 
-```gomix
+```go-mix
 // Variables
 var x = 10;      let y = 3.14;    const Z = 42;
 
@@ -1262,5 +1332,5 @@ getenv(), setenv(), exec(), getpid(), sleep(), now()
 
 ---
 
-**Happy Coding with GoMix!** 🚀
+**Happy Coding with Go-Mix!** 🚀
 ---

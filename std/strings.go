@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - strings.go
-// This file defines the string and character builtin functions for the GoMix language.
+// This file defines the string and character builtin functions for the Go-Mix language.
 // It provides functions for case conversion, searching, splitting, joining,
 // and character code manipulation.
 package std

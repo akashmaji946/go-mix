@@ -4,7 +4,7 @@ Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */
 
-// This file implements built-in array manipulation methods for the GoMix language.
+// This file implements built-in array manipulation methods for the Go-Mix language.
 // It defines methods like push, pop, shift, and unshift that can be called on array objects.
 // These methods are registered as global builtins during package initialization.
 package std
@@ -205,7 +205,7 @@ func csort(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 		if sortErr != nil {
 			return false
 		}
-		// Call the GoMix comparator function
+		// Call the Go-Mix comparator function
 		res := rt.CallFunction(cmp, arr.Elements[i], arr.Elements[j])
 		if res.GetType() == ErrorType {
 			sortErr = res
@@ -250,7 +250,7 @@ func csorted(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 		if sortErr != nil {
 			return false
 		}
-		// Call the GoMix comparator function
+		// Call the Go-Mix comparator function
 		res := rt.CallFunction(cmp, newElements[i], newElements[j])
 		if res.GetType() == ErrorType {
 			sortErr = res

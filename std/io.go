@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - io.go
-// This file defines the I/O builtin functions for the GoMix language.
+// This file defines the I/O builtin functions for the Go-Mix language.
 // It provides functions for reading input from the standard input stream,
 // including line-based reading and formatted scanning.
 package std
@@ -77,7 +77,7 @@ func scanln(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 // Usage:
 //
 //	Reads from stdin according to the provided format string.
-//	Since GoMix does not support pointers for arguments, this function
+//	Since Go-Mix does not support pointers for arguments, this function
 //	returns an Array containing the values successfully scanned.
 //
 // Example:
@@ -149,7 +149,7 @@ func scanf(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 		return createError("ERROR: scanf failed: %v", err)
 	}
 
-	// Convert scanned values to GoMix objects
+	// Convert scanned values to Go-Mix objects
 	elements := make([]GoMixObject, n)
 	for i := 0; i < n; i++ {
 		switch types[i] {

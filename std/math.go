@@ -5,7 +5,7 @@ Contact : akashmaji(@iisc.ac.in)
 */
 
 // Package std - math.go
-// This file defines the math builtin functions available in the GoMix language.
+// This file defines the math builtin functions available in the Go-Mix language.
 //	It includes functions for absolute value, min/max, rounding, square root, power, and trigonometric functions.
 
 package std

@@ -4,7 +4,7 @@ Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */
 
-// This file implements built-in set manipulation methods for the GoMix language.
+// This file implements built-in set manipulation methods for the Go-Mix language.
 // It defines methods like insert_set, remove_set, contains_set, and values_set
 // that can be called on set objects.
 // These methods are registered as global builtins during package initialization.

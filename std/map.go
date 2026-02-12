@@ -4,7 +4,7 @@ Author  : Akash Maji
 Contact : akashmaji(@iisc.ac.in)
 */
 
-// This file implements built-in map manipulation methods for the GoMix language.
+// This file implements built-in map manipulation methods for the Go-Mix language.
 // It defines methods like keys_map, insert_map, remove_map, contain_map, and enumerate_map
 // that can be called on map objects.
 // These methods are registered as global builtins during package initialization.
@@ -25,7 +25,7 @@ var mapMethods = []*Builtin{
 	{Name: "contain_map", Callback: mapContain},                  // Checks if a map contains a key
 	{Name: "enumerate_map", Callback: mapEnumerate},              // Returns array of [key, value] pairs
 	{Name: "json_string_decode_map", Callback: jsonStringDecode}, // Decodes a JSON string into a map
-	{Name: "json_string_encode_map", Callback: jsonStringEncode}, // Encodes a GoMix object to JSON string
+	{Name: "json_string_encode_map", Callback: jsonStringEncode}, // Encodes a Go-Mix object to JSON string
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -222,7 +222,7 @@ func mapEnumerate(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject
 	return &Array{Elements: pairs}
 }
 
-// jsonStringDecode parses a JSON string into a GoMix Map.
+// jsonStringDecode parses a JSON string into a Go-Mix Map.
 //
 // Parameters:
 //   - args[0]: The JSON string to decode
@@ -252,7 +252,7 @@ func jsonStringDecode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixOb
 	return convertToGoMix(data)
 }
 
-// jsonStringEncode converts a GoMix object into a JSON string.
+// jsonStringEncode converts a Go-Mix object into a JSON string.
 func jsonStringEncode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: json_string_encode expects 1 argument")
@@ -299,7 +299,7 @@ func convertFromGoMix(obj GoMixObject) interface{} {
 }
 
 // convertToGoMix recursively converts Go native types from json.Unmarshal
-// into GoMix internal objects.
+// into Go-Mix internal objects.
 func convertToGoMix(val interface{}) GoMixObject {
 	switch v := val.(type) {
 	case map[string]interface{}:
