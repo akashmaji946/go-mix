@@ -39,3 +39,40 @@ type Builtin struct {
 // It holds all the builtin functions available in the Go-Mix language.
 // Functions are added to this slice during package initialization.
 var Builtins = make([]*Builtin, 0)
+
+// Package represents an imported package with its functions.
+// It provides a way to organize builtins into namespaces.
+type Package struct {
+	Name      string              // The package name (e.g., "math")
+	Functions map[string]*Builtin // Map of function name to builtin function
+}
+
+// GetType returns the type of the Package object
+func (p *Package) GetType() GoMixType {
+	return PackageType
+}
+
+// ToString returns the string representation of the package
+func (p *Package) ToString() string {
+	return "package:" + p.Name
+}
+
+// ToObject returns a detailed representation including type info
+func (p *Package) ToObject() string {
+	return "<package(" + p.Name + ")>"
+}
+
+// Packages is a global map of registered packages.
+// Package registration happens during package initialization.
+var Packages = make(map[string]*Package)
+
+// RegisterPackage registers a package with the std package system.
+// This allows packages to be imported and accessed via namespace (e.g., math.abs())
+func RegisterPackage(pkg *Package) {
+	Packages[pkg.Name] = pkg
+}
+
+// GetPackage returns a package by name, or nil if not found.
+func GetPackage(name string) *Package {
+	return Packages[name]
+}

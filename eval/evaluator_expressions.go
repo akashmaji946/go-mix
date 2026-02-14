@@ -108,6 +108,8 @@ func (e *Evaluator) Eval(n parser.Node) std.GoMixObject {
 		return &std.Break{}
 	case *parser.ContinueStatementNode:
 		return &std.Continue{}
+	case *parser.ImportStatementNode:
+		return e.evalImportStatement(n)
 	default:
 		return &std.Nil{}
 	}
@@ -603,18 +605,39 @@ func (e *Evaluator) evalCallExpression(n *parser.CallExpressionNode) std.GoMixOb
 
 	funcName := n.FunctionIdentifier.Name
 
-	// Support method calls: obj.method()
+	// Support package function calls: package.function()
 	if dotIdx := IndexOfDot(funcName); dotIdx > 0 {
 		objName := funcName[:dotIdx]
 		methodName := funcName[dotIdx+1:]
-		// fmt.Printf("DEBUG: Method call detected: obj='%s', method='%s'\n", objName, methodName)
+
 		objVal, ok := e.Scp.LookUp(objName)
 		if !ok {
 			return e.createError(n.FunctionIdentifier.Token, "ERROR: object not found: (%s)", objName)
 		}
+
+		// Check if it's a package (imported module)
+		if pkg, isPkg := objVal.(*std.Package); isPkg {
+			// Look up the function in the package
+			fn, exists := pkg.Functions[methodName]
+			if !exists {
+				return e.createError(n.FunctionIdentifier.Token, "ERROR: function '%s' not found in package '%s'", methodName, objName)
+			}
+			// Evaluate arguments
+			args := make([]std.GoMixObject, len(n.Arguments))
+			for i, arg := range n.Arguments {
+				args[i] = e.Eval(arg)
+				if IsError(args[i]) {
+					return args[i]
+				}
+			}
+			// Call the package function
+			return fn.Callback(e, e.Writer, args...)
+		}
+
+		// Handle struct instance method calls
 		inst, ok := objVal.(*std.GoMixObjectInstance)
 		if !ok {
-			return e.CreateError("ERROR: (%s) is not a struct instance", objName)
+			return e.CreateError("ERROR: (%s) is not a struct instance or package", objName)
 		}
 		// Prepare named parameters for method call
 		params := make([]NamedParameter, len(n.Arguments))
@@ -978,8 +1001,37 @@ func (e *Evaluator) evalBinaryExpression(n *parser.BinaryExpressionNode) std.GoM
 			return e.evalStructMemberAccess(left.(*std.GoMixStruct), n.Right)
 		}
 
+		// Handle package member access (e.g., math.abs or math.abs(...))
+		if left.GetType() == std.PackageType {
+			pkg := left.(*std.Package)
+
+			// If the right side is a call expression, invoke the package function
+			if callNode, ok := n.Right.(*parser.CallExpressionNode); ok {
+				funcName := callNode.FunctionIdentifier.Name
+				fn, exists := pkg.Functions[funcName]
+				if !exists {
+					return e.createError(callNode.FunctionIdentifier.Token, "ERROR: function '%s' not found in package '%s'", funcName, pkg.Name)
+				}
+
+				// Evaluate arguments
+				args := make([]std.GoMixObject, len(callNode.Arguments))
+				for i, arg := range callNode.Arguments {
+					args[i] = e.Eval(arg)
+					if IsError(args[i]) {
+						return args[i]
+					}
+				}
+
+				// Call the package function
+				return fn.Callback(e, e.Writer, args...)
+			}
+
+			// For non-call access, just validate the function exists
+			return e.evalPackageMemberAccess(pkg, n.Right)
+		}
+
 		if left.GetType() != std.ObjectType {
-			return e.CreateError("ERROR: member access operator (.) can only be used on struct instances or types, got (%s)", left.GetType())
+			return e.CreateError("ERROR: member access operator (.) can only be used on struct instances, packages, or types, got (%s)", left.GetType())
 		}
 		structInstance := left.(*std.GoMixObjectInstance)
 
@@ -2643,4 +2695,67 @@ func (e *Evaluator) evalStructMemberAccess(s *std.GoMixStruct, node parser.Expre
 		return e.CreateError("ERROR: class field (%s) not found in struct (%s)", fieldName, s.Name)
 	}
 	return e.CreateError("ERROR: invalid member access on struct")
+}
+
+// evalPackageMemberAccess evaluates member access on a package (e.g., math.abs).
+//
+// This method handles accessing functions from an imported package. Note that this
+// is primarily used for direct access (e.g., getting a reference to the function).
+// Actual function calls are handled through evalCallExpression which has special
+// logic for package.function() calls.
+//
+// Parameters:
+//   - pkg: The package object
+//   - node: The identifier expression for the function name
+//
+// Returns:
+//   - objects.GoMixObject: An error if the function is not found, or nil otherwise
+//     (The actual return value is handled through CallExpression evaluation)
+func (e *Evaluator) evalPackageMemberAccess(pkg *std.Package, node parser.ExpressionNode) std.GoMixObject {
+	// Handle Function Access
+	if ident, ok := node.(*parser.IdentifierExpressionNode); ok {
+		funcName := ident.Name
+		if _, ok := pkg.Functions[funcName]; ok {
+			// Function exists - the actual call will be handled in evalCallExpression
+			// We return nil here since this path is only hit for non-call accesses
+			return &std.Nil{}
+		}
+		return e.CreateError("ERROR: function '%s' not found in package '%s'", funcName, pkg.Name)
+	}
+	return e.CreateError("ERROR: invalid member access on package")
+}
+
+// evalImportStatement evaluates an import statement to make a package available.
+//
+// This method processes import statements (e.g., import math;) by:
+// 1. Looking up the package in the std.Packages registry
+// 2. Binding the package name to a special Package object in the current scope
+//
+// Once imported, package functions can be called using the dot notation
+// (e.g., math.abs(), strings.upper(), etc.)
+//
+// Parameters:
+//   - n: An ImportStatementNode containing the package name to import
+//
+// Returns:
+//   - objects.GoMixObject: The imported Package object, or an Error if the package is not found
+//
+// Example:
+//
+//	import math;           // Imports the math package
+//	math.abs(-5);          // Calls the abs function from the math package
+//	import strings;
+//	strings.upper("hello"); // Calls the upper function from the strings package
+func (e *Evaluator) evalImportStatement(n *parser.ImportStatementNode) std.GoMixObject {
+	// Look up the package by name
+	pkg, exists := e.Imports[n.Name]
+	if !exists {
+		return e.CreateError("ERROR: package '%s' not found", n.Name)
+	}
+
+	// Bind the package name to the package object in the current scope
+	// This allows access to the package via the dot operator
+	e.Scp.Bind(n.Name, pkg)
+
+	return pkg
 }

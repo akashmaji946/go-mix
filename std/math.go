@@ -42,8 +42,21 @@ var mathMethods = []*Builtin{
 }
 
 // init registers the math methods as global builtins by appending them to the Builtins slice.
+// It also registers the math package for import functionality.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, mathMethods...)
+
+	// Register as a package (for import functionality)
+	mathPackage := &Package{
+		Name:      "math",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range mathMethods {
+		mathPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(mathPackage)
+
 	rand.Seed(time.Now().UnixNano())
 }
 

@@ -1,0 +1,49 @@
+// ============================================
+// Math Package - Advanced Examples
+// ============================================
+
+import math;
+
+println("=== Math Package - Advanced Operations ===");
+
+// Trigonometric functions (in radians)
+var angle = 0;  // radians
+println("sin(0) = " + math.sin(angle));
+println("cos(0) = " + math.cos(angle));
+
+// Logarithmic functions
+var value = 10;
+println("log(10) = " + math.log(value));
+println("log10(100) = " + math.log10(100));
+println("exp(1) = " + math.exp(1));
+
+// Calculate quadratic formula discriminant
+var qa = 1;
+var qb = -5;
+var qc = 6;
+var discriminant = qb * qb - 4 * qa * qc;
+var sqrt_disc = math.sqrt(discriminant);
+println("Quadratic discriminant sqrt: " + sqrt_disc);
+
+// Find hypotenuse using Pythagorean theorem
+var side_a = 3;
+var side_b = 4;
+var hypotenuse = math.sqrt(side_a * side_a + side_b * side_b);
+println("Hypotenuse of 3-4-5 triangle: " + hypotenuse);
+
+// Random number generation
+var rand_val = math.rand();
+println("Random value [0,1): " + rand_val);
+
+var rand_int = math.rand_int(1, 100);
+println("Random integer [1,100): " + rand_int);
+
+// Finding min/max of multiple values
+var values = [42, 17, 89, 3, 55];
+var min_val = math.min(values[0], values[1]);
+min_val = math.min(min_val, values[2]);
+min_val = math.min(min_val, values[3]);
+min_val = math.min(min_val, values[4]);
+println("Minimum of array (manual): " + min_val);
+
+println("Done!");

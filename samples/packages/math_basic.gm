@@ -1,0 +1,31 @@
+// ============================================
+// Math Package - Basic Examples
+// ============================================
+
+import math;
+
+println("=== Math Package - Basic Operations ===");
+
+// Absolute value
+var x = -42;
+var abs_x = math.abs(x);
+println("abs(" + x + ") = " + abs_x);
+
+// Min and Max
+var a = 15;
+var b = 8;
+println("min(" + a + ", " + b + ") = " + math.min(a, b));
+println("max(" + a + ", " + b + ") = " + math.max(a, b));
+
+// Rounding functions
+var decimal = 3.7;
+println("floor(" + decimal + ") = " + math.floor(decimal));
+println("ceil(" + decimal + ") = " + math.ceil(decimal));
+println("round(" + decimal + ") = " + math.round(decimal));
+
+// Square root and power
+var num = 16;
+println("sqrt(" + num + ") = " + math.sqrt(num));
+println("pow(2, 3) = " + math.pow(2, 3));
+
+println("Done!");

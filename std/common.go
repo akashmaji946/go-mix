@@ -48,8 +48,20 @@ var commonMethods = []*Builtin{
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
 // This function runs automatically when the package is initialized.
+// It also registers the common package for import functionality.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, commonMethods...)
+
+	// Register as a package (for import functionality)
+	commonPackage := &Package{
+		Name:      "common",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range commonMethods {
+		commonPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(commonPackage)
 }
 
 // createError is a utility function to create an Error object with a formatted message.

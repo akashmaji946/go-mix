@@ -1,0 +1,67 @@
+// ============================================
+// Format Package - Advanced Examples
+// ============================================
+
+import format;
+import io;
+
+println("=== Format Package - Advanced Operations ===");
+
+// Type conversion pipeline
+var user_input = "42";
+var number = format.to_int(user_input);
+var incremented = number + 1;
+var result_str = format.to_string(incremented);
+println("Conversion pipeline: " + user_input + " -> " + number + " -> " + incremented + " -> " + result_str);
+
+// Build dynamic output with conversions
+var values = [10, 20, 30, 40, 50];
+var idx = 0;
+var sum = 0;
+for (idx = 0; idx < 5; idx = idx + 1) {
+    sum = sum + values[idx];
+}
+var avg = sum / 5;
+println("Average: " + format.to_string(avg));
+
+// Safe parsing with type checking
+var str_age = "25";
+var age = format.to_int(str_age);
+var is_adult = age >= 18;
+println("Age: " + format.to_string(age) + ", Is adult: " + format.to_string(is_adult));
+
+// Float precision handling
+var pi = 3.14159265359;
+var pi_str = format.to_string(pi);
+println("Pi: " + pi_str);
+
+// Character operations
+var code_a = 65;
+var code_z = 90;
+var char_a = format.to_char(code_a);
+var char_z = format.to_char(code_z);
+println("Chars: " + char_a + " to " + char_z);
+
+// Boolean logic with conversions
+var flag1 = format.to_bool(1);
+var flag2 = format.to_bool(0);
+var both = flag1 && flag2;
+println("Logic: " + format.to_string(flag1) + " AND " + format.to_string(flag2) + " = " + format.to_string(both));
+
+// Build configuration strings
+var host = "localhost";
+var port = format.to_int("8080");
+var port_str = format.to_string(port);
+var config = "Server: " + host + ":" + port_str;
+println(config);
+
+// Convert collection elements
+var numbers = [100, 200, 300];
+var idx2 = 0;
+for (idx2 = 0; idx2 < 3; idx2 = idx2 + 1) {
+    var num_str = format.to_string(numbers[idx2]);
+    var msg = io.sprintf("Item %d: %s", idx2, num_str);
+    println(msg);
+}
+
+println("Done!");

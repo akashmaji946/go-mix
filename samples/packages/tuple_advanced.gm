@@ -1,0 +1,73 @@
+// ============================================
+// Tuple Package - Advanced Examples
+// ============================================
+
+import tuple;
+
+println("=== Tuple Package - Advanced Operations ===");
+
+// Use tuple as function return value representation
+var point = tuple.tuple(10, 20, "location");
+println("Point tuple: " + typeof(point));
+
+// Extract tuple components
+var x = tuple.peekfront_tuple(point);
+var y = tuple.peekback_tuple(point);
+println("Coordinates - X: " + x + ", Y: " + y);
+
+// Tuple representing database record
+var user = tuple.tuple(
+    1001,                    // ID
+    "John Doe",              // Name
+    "john@example.com",      // Email
+    true                     // Active
+);
+println("User tuple size: " + tuple.size_tuple(user));
+
+// Tuple for configuration
+var config = tuple.tuple(
+    "localhost",             // Host
+    8080,                    // Port
+    true,                    // Debug
+    "production"             // Environment
+);
+var config_first = tuple.peekfront_tuple(config);
+println("Config first element: " + config_first);
+
+// Tuple as return value container
+func get_status() {
+    return tuple.tuple(200, "OK", "Request successful");
+}
+
+var status = get_status();
+var status_code = tuple.peekfront_tuple(status);
+println("Status code: " + status_code);
+
+// Work with tuples in arrays
+var points = [
+    tuple.tuple(0, 0),
+    tuple.tuple(5, 5),
+    tuple.tuple(10, 0)
+];
+println("Points array: " + typeof(points));
+
+// Immutability - tuples cannot be modified
+var immutable = tuple.tuple("fixed", 42, true);
+var first_val = tuple.peekfront_tuple(immutable);
+var last_val = tuple.peekback_tuple(immutable);
+println("Immutable tuple first: " + first_val);
+println("Immutable tuple last: " + last_val);
+
+// Search in tuple
+var data = tuple.tuple("apple", "banana", "cherry", "apple");
+var found_apple = tuple.contains_tuple(data, "apple");
+var found_grape = tuple.contains_tuple(data, "grape");
+println("Found apple: " + found_apple);
+println("Found grape: " + found_grape);
+
+// Use tuple for multiple values
+var result = tuple.tuple(true, "operation completed", 100);
+var success = tuple.peekfront_tuple(result);
+println("Operation success: " + success);
+
+println("Done!");

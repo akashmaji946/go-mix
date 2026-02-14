@@ -38,8 +38,20 @@ var arrayMethods = []*Builtin{
 
 // init is a special Go function that runs when the package is initialized.
 // It registers the array methods as global builtins by appending them to the Builtins slice.
+// It also registers the arrays package for import functionality.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, arrayMethods...)
+
+	// Register as a package (for import functionality)
+	arraysPackage := &Package{
+		Name:      "arrays",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range arrayMethods {
+		arraysPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(arraysPackage)
 }
 
 // push adds an element to the end of an array and returns the modified array.

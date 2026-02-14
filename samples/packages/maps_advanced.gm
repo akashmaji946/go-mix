@@ -1,0 +1,58 @@
+// ============================================
+// Maps Package - Advanced Examples
+// ============================================
+
+import maps;
+
+println("=== Maps Package - Advanced Operations ===");
+
+// Create complex map structure
+var user = map{
+    "id": 1001,
+    "name": "Bob",
+    "contacts": map{
+        "email": "bob@example.com",
+        "phone": "555-1234"
+    },
+    "active": true
+};
+
+// Access nested data
+var user_name = user["name"];
+println("User name: " + user_name);
+
+// Get all keys
+var user_keys = maps.keys_map(user);
+println("User keys count: " + typeof(user_keys));
+
+// Update nested values
+var updated_user = maps.insert_map(user, "phone", "555-5678");
+println("After phone update: " + typeof(updated_user));
+
+// Build configuration map
+var config = map{};
+config = maps.insert_map(config, "host", "localhost");
+config = maps.insert_map(config, "port", 8080);
+config = maps.insert_map(config, "debug", true);
+println("Config created: " + typeof(config));
+
+// Enumerate all entries
+var items = maps.enumerate_map(config);
+println("Config items: " + typeof(items));
+
+// Chain operations
+var data = map{"x": 10, "y": 20};
+data = maps.insert_map(data, "z", 30);
+data = maps.remove_map(data, "y");
+var final_keys = maps.keys_map(data);
+println("Final keys: " + typeof(final_keys));
+
+// JSON encoding/decoding
+var obj = map{"name": "Charlie", "score": 95};
+var json_str = maps.json_string_encode_map(obj);
+println("JSON encoded: " + typeof(json_str));
+
+var decoded = maps.json_string_decode_map(json_str);
+println("JSON decoded: " + typeof(decoded));
+
+println("Done!");

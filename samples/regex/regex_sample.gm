@@ -1,0 +1,28 @@
+println("--- Regex Examples ---");
+
+var text = "The quick brown fox jumps over the lazy dog. Contact: test@example.com";
+
+// 1. Match
+var is_match = match_regex("quick", text);
+println("Contains 'quick': " + is_match); // true
+
+var is_match_start = match_regex("^The", text);
+println("Starts with 'The': " + is_match_start); // true
+
+// 2. Find (First match)
+var email = find_regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}", text);
+println("Found email: " + email);
+
+// 3. Find All
+var text_nums = "Items: 12, 45, 99, 100";
+var numbers = findall_regex("\\d+", text_nums);
+println("Found numbers: " + numbers); // [12, 45, 99, 100]
+
+// 4. Replace
+var redacted = replace_regex("\\d+", text_nums, "XX");
+println("Redacted: " + redacted); // Items: XX, XX, XX, XX
+
+// 5. Split
+var csv = "apple,banana,cherry,date";
+var fruits = split_regex(",", csv);
+println("Fruits: " + fruits); // [apple, banana, cherry, date]

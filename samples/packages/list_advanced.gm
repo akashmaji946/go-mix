@@ -1,0 +1,64 @@
+// ============================================
+// List Package - Advanced Examples
+// ============================================
+
+import list;
+
+println("=== List Package - Advanced Operations ===");
+
+// Build a list incrementally
+var queue = list.list();
+println("Empty list created: " + typeof(queue));
+
+// Add items to back (queue behavior)
+queue = list.pushback_list(queue, "first");
+queue = list.pushback_list(queue, "second");
+queue = list.pushback_list(queue, "third");
+println("After 3 pushbacks: " + list.size_list(queue));
+
+// Remove from front (FIFO)
+var dequeued = list.popfront_list(queue);
+println("Dequeued: " + dequeued);
+
+// Build a stack
+var stack = list.list();
+stack = list.pushback_list(stack, "a");
+stack = list.pushback_list(stack, "b");
+stack = list.pushback_list(stack, "c");
+println("Stack size: " + list.size_list(stack));
+
+// Pop from back (LIFO)
+var popped = list.popback_list(stack);
+println("Popped from stack: " + popped);
+
+// Insert at specific position
+var data = list.list(1, 2, 4, 5);
+var inserted = list.insert_list(data, 2, 3);
+println("After insert at index 2: " + typeof(inserted));
+
+// Remove at specific position
+var removed = list.remove_list(inserted, 3);
+println("After remove at index 3: " + typeof(removed));
+
+// Search operations
+var items = list.list("apple", "banana", "cherry", "apple");
+var has_banana = list.contains_list(items, "banana");
+var has_grape = list.contains_list(items, "grape");
+println("Contains 'banana': " + has_banana);
+println("Contains 'grape': " + has_grape);
+
+// Build a double-ended queue (deque)
+var deque = list.list();
+deque = list.pushback_list(deque, 1);
+deque = list.pushfront_list(deque, 0);
+deque = list.pushback_list(deque, 2);
+deque = list.pushfront_list(deque, -1);
+println("Deque size: " + list.size_list(deque));
+
+// Peek operations without removing
+var first = list.peekfront_list(deque);
+var last = list.peekback_list(deque);
+println("First element: " + first);
+println("Last element: " + last);
+
+println("Done!");

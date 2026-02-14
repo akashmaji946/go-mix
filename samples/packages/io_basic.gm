@@ -1,0 +1,32 @@
+// ============================================
+// IO Package - Basic Examples
+// ============================================
+
+import io;
+
+println("=== IO Package - Basic Operations ===");
+
+// Formatted output using sprintf
+var name = "Alice";
+var age = 25;
+var message = io.sprintf("Name: %s, Age: %d", name, age);
+println("Formatted: " + message);
+
+// Multiple formatted strings
+var num = 42;
+var formatted1 = io.sprintf("Decimal: %d", num);
+println(formatted1);
+
+var flt = 3.14;
+var formatted2 = io.sprintf("Float: %f", flt);
+println(formatted2);
+
+// Boolean formatting
+var flag = true;
+var formatted3 = io.sprintf("Flag: %v", flag);
+println(formatted3);
+
+// Flush output (ensures visible)
+io.flush();
+
+println("Done!");

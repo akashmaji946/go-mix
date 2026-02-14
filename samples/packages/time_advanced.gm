@@ -1,0 +1,55 @@
+// ============================================
+// Time Package - Advanced Examples
+// ============================================
+
+import time;
+
+println("=== Time Package - Advanced Operations ===");
+
+// Get current time
+var start = time.now();
+println("Start time: " + start);
+
+// Perform some operations
+var sum = 0;
+var i = 0;
+for (i = 0; i < 100; i = i + 1) {
+    sum = sum + i;
+}
+
+// Get end time and calculate elapsed
+var end = time.now();
+var elapsed = end - start;
+println("Elapsed milliseconds: " + elapsed);
+println("Sum calculated: " + sum);
+
+// Format different time formats
+var timestamp = time.now();
+var iso = time.format(timestamp, "2006-01-02T15:04:05Z07:00");
+println("ISO format: " + typeof(iso));
+
+var us_date = time.format(timestamp, "01/02/2006");
+println("US date format: " + typeof(us_date));
+
+// Extract time components
+var hour = time.hour(timestamp);
+var minute = time.minute(timestamp);
+var second = time.second(timestamp);
+println("Time components: " + hour + ":" + minute + ":" + second);
+
+// Weekday information
+var weekday = time.weekday(timestamp);
+var yearday = time.yearday(timestamp);
+println("Weekday: " + typeof(weekday));
+println("Day of year: " + typeof(yearday));
+
+// Time arithmetic
+var future = timestamp + 86400000;  // Add 1 day in milliseconds
+println("Future timestamp: " + future);
+
+// Parse and format dates
+var date_str = "2025-12-25";
+var christmas = time.parse(date_str, "2006-01-02");
+println("Christmas parsed: " + typeof(christmas));
+
+println("Done!");

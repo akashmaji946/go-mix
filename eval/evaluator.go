@@ -28,6 +28,7 @@ type Evaluator struct {
 	Types    map[string]*std.GoMixStruct // Map of user-defined struct types (name to struct definition)
 	Writer   io.Writer                   // Output writer for builtin functions (default: os.Stdout)
 	Reader   *bufio.Reader               // Input reader for builtin functions (default: os.Stdin)
+	Imports  map[string]*std.Package     // Map of imported packages (e.g., "math" -> Package)
 }
 
 // NewEvaluator creates and initializes a new Evaluator instance with default configuration.
@@ -54,9 +55,14 @@ func NewEvaluator() *Evaluator {
 		Types:    make(map[string]*std.GoMixStruct),
 		Writer:   os.Stdout, // Default to stdout
 		Reader:   bufio.NewReader(os.Stdin),
+		Imports:  make(map[string]*std.Package),
 	}
 	for _, builtin := range std.Builtins {
 		ev.Builtins[builtin.Name] = builtin
+	}
+	// Register all packages from std.Packages
+	for name, pkg := range std.Packages {
+		ev.Imports[name] = pkg
 	}
 	return ev
 }

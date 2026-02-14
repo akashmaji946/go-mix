@@ -1,0 +1,62 @@
+// ============================================
+// OS Package - Advanced Examples
+// ============================================
+
+import os;
+
+println("=== OS Package - Advanced Operations ===");
+
+// Process command line arguments
+var args = os.args();
+println("Argument count: " + typeof(args));
+
+// Check for specific arguments
+var has_debug = false;
+var i = 0;
+for (i = 0; i < 100; i = i + 1) {
+    if (args[i] == "--debug") {
+        has_debug = true;
+    }
+}
+println("Debug mode: " + has_debug);
+
+// Environment variables for configuration
+var db_host = os.getenv("DB_HOST");
+var db_port = os.getenv("DB_PORT");
+var db_user = os.getenv("DB_USER");
+println("DB config available: " + (db_host != "" || db_port != ""));
+
+// Get user info
+var current_user = os.user();
+println("User info type: " + typeof(current_user));
+
+// Get system info
+var hostname = os.hostname();
+var os_type = os.goos();
+var cpu_arch = os.goarch();
+println("System: " + typeof(hostname));
+println("OS: " + typeof(os_type));
+println("Arch: " + typeof(cpu_arch));
+
+// Build configuration from environment
+var config = map{};
+config = map{
+    "debug": (os.getenv("DEBUG") == "true"),
+    "verbose": (os.getenv("VERBOSE") == "true"),
+    "host": os.getenv("HOST"),
+    "port": os.getenv("PORT")
+};
+println("Config map created: " + typeof(config));
+
+// Check multiple environment variables
+var required_vars = ["HOME", "PATH", "USER"];
+var all_set = true;
+var idx = 0;
+for (idx = 0; idx < 3; idx = idx + 1) {
+    if (os.getenv(required_vars[idx]) == "") {
+        all_set = false;
+    }
+}
+println("All required vars set: " + all_set);
+
+println("Done!");

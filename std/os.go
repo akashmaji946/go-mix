@@ -30,9 +30,20 @@ var osMethods = []*Builtin{
 	{Name: "user", Callback: userFunc},     // Returns the current username
 }
 
-// init registers the OS methods as global builtins.
+// init registers the OS methods as global builtins and as a package for import.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, osMethods...)
+
+	// Register as a package (for import functionality)
+	osPackage := &Package{
+		Name:      "os",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range osMethods {
+		osPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(osPackage)
 }
 
 // getenv retrieves the value of the environment variable named by the key.

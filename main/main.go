@@ -284,7 +284,9 @@ func executeFileWithRecovery(source string) {
 			os.Exit(1)
 		} else {
 			// Successful evaluation - display result in yellow
-			yellowColor.Fprintf(os.Stdout, "%s\n", result.ToString())
+			if result.GetType() != "nil" { // Skip printing null results for cleaner output
+				yellowColor.Fprintf(os.Stdout, "%s\n", result.ToString())
+			}
 		}
 	}
 }

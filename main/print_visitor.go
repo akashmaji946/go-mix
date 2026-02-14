@@ -388,6 +388,11 @@ func (p *PrintingVisitor) VisitContinueStatementNode(node parser.ContinueStateme
 	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s]\n", "Continue", node.Literal()))
 }
 
+func (p *PrintingVisitor) VisitImportStatementNode(node parser.ImportStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s]\n", "Import", node.Literal()))
+}
+
 // String returns the accumulated formatted output as a string
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()

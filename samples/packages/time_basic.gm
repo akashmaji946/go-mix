@@ -1,0 +1,34 @@
+// ============================================
+// Time Package - Basic Examples
+// ============================================
+
+import time;
+
+println("=== Time Package - Basic Operations ===");
+
+// Get current time (Unix timestamp)
+var now = time.now();
+println("Current timestamp: " + now);
+
+// Sleep for a duration
+println("Sleeping for 0.1 seconds...");
+time.sleep(100);  // 100 milliseconds
+println("Awake!");
+
+// Format timestamp
+var formatted = time.format(now, "2006-01-02 15:04:05");
+println("Formatted time: " + typeof(formatted));
+
+// Parse time string
+var parsed = time.parse("2025-02-14", "2006-01-02");
+println("Parsed time: " + typeof(parsed));
+
+// Time components
+var year = time.year(now);
+var month = time.month(now);
+var day = time.day(now);
+println("Year: " + year);
+println("Month: " + month);
+println("Day: " + day);
+
+println("Done!");

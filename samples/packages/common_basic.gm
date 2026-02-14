@@ -1,0 +1,40 @@
+// ============================================
+// Common Package - Basic Examples
+// ============================================
+
+import common;
+
+println("=== Common Package - Basic Operations ===");
+
+// Length function
+var str = "hello";
+var arr = [1, 2, 3];
+var mp = map{"a": 1, "b": 2};
+println("String length: " + common.len(str));
+println("Array length: " + common.len(arr));
+println("Map length: " + common.len(mp));
+
+// Convert to array
+var converted = common.array([1, 2, 3]);
+println("Array conversion: " + typeof(converted));
+
+// Sorting
+var unsorted = [3, 1, 4, 1, 5, 9];
+var sorted = common.sorted(unsorted);
+println("Sorted array: " + typeof(sorted));
+
+// Reverse
+var reversed = common.reverse([1, 2, 3]);
+println("Reversed: " + typeof(reversed));
+
+// String representation
+var num = 42;
+var str_rep = common.str(num);
+println("String representation: " + str_rep);
+
+// Type checking
+var val = [1, 2, 3];
+var type_name = common.typeof(val);
+println("Type: " + type_name);
+
+println("Done!");

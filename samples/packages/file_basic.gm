@@ -1,0 +1,42 @@
+// ============================================
+// File Package - Basic Examples
+// ============================================
+
+import file;
+
+println("=== File Package - Basic Operations ===");
+
+// Check if file exists
+var exec_exists = file.file_exists("./go-mix");
+println("go-mix executable exists: " + exec_exists);
+
+// Check if path is a directory
+var is_samples_dir = file.is_dir("./samples");
+println("samples is directory: " + is_samples_dir);
+
+// Check if path is a regular file
+var is_file = file.is_file("./README.MD");
+println("README.MD is file: " + is_file);
+
+// Get current directory
+var current = file.pwd();
+println("Current directory: " + typeof(current));
+
+// Get home directory
+var home_dir = file.home();
+println("Home directory: " + typeof(home_dir));
+
+// List directory contents
+var contents = file.list_dir("./samples");
+println("Samples directory listing: " + typeof(contents));
+
+// Create a temporary file
+var test_file = "/tmp/go-mix-test.txt";
+file.touch(test_file);
+println("Created test file: " + test_file);
+
+// Check if it exists
+var test_exists = file.file_exists(test_file);
+println("Test file exists: " + test_exists);
+
+println("Done!");

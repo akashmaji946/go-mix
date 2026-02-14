@@ -1,0 +1,39 @@
+// ============================================
+// Tuple Package - Basic Examples
+// ============================================
+
+import tuple;
+
+println("=== Tuple Package - Basic Operations ===");
+
+// Create a tuple
+var person = tuple.tuple("Alice", 30, true);
+println("Tuple created: " + typeof(person));
+
+// Get tuple size
+var size = tuple.size_tuple(person);
+println("Tuple size: " + size);
+
+// Access front (first) element
+var first = tuple.peekfront_tuple(person);
+println("First element: " + first);
+
+// Access back (last) element
+var last = tuple.peekback_tuple(person);
+println("Last element: " + last);
+
+// Check if contains value
+var has_30 = tuple.contains_tuple(person, 30);
+var has_40 = tuple.contains_tuple(person, 40);
+println("Contains 30: " + has_30);
+println("Contains 40: " + has_40);
+
+// Create tuple with different types
+var mixed = tuple.tuple(42, "hello", 3.14, true);
+println("Mixed tuple size: " + tuple.size_tuple(mixed));
+
+// Create empty tuple
+var empty = tuple.tuple();
+println("Empty tuple size: " + tuple.size_tuple(empty));
+
+println("Done!");

@@ -1,0 +1,41 @@
+// ============================================
+// Format Package - Basic Examples
+// ============================================
+
+import format;
+
+println("=== Format Package - Basic Operations ===");
+
+// String to integer
+var int_val = format.to_int("42");
+println("Parsed int: " + int_val);
+
+// String to float
+var float_val = format.to_float("3.14");
+println("Parsed float: " + float_val);
+
+// Integer to string
+var str_from_int = format.to_string(100);
+println("Int to string: " + str_from_int);
+
+// Float to string
+var str_from_float = format.to_string(2.71);
+println("Float to string: " + str_from_float);
+
+// Value to string (general)
+var str = format.to_string("hello");
+println("String to string: " + str);
+
+// Boolean to string
+var bool_str = format.to_string(true);
+println("Bool to string: " + bool_str);
+
+// Boolean conversion
+var bool_val = format.to_bool(1);
+println("1 to bool: " + bool_val);
+
+// Single character conversion
+var char_val = format.to_char(65);
+println("Char from 65: " + char_val);
+
+println("Done!");

@@ -1,0 +1,39 @@
+// ============================================
+// Sets Package - Basic Examples
+// ============================================
+
+import sets;
+
+println("=== Sets Package - Basic Operations ===");
+
+// Create an empty set
+var empty_set = set();
+println("Empty set type: " + typeof(empty_set));
+
+// Insert values
+var colors = set();
+colors = sets.insert_set(colors, "red");
+colors = sets.insert_set(colors, "blue");
+colors = sets.insert_set(colors, "green");
+println("Set with 3 colors: " + typeof(colors));
+
+// Get size
+var size = sets.size_set(colors);
+println("Set size: " + size);
+
+// Check if contains value
+var has_red = sets.contains_set(colors, "red");
+println("Contains 'red': " + has_red);
+
+var has_yellow = sets.contains_set(colors, "yellow");
+println("Contains 'yellow': " + has_yellow);
+
+// Get all values
+var values = sets.values_set(colors);
+println("Values as array: " + typeof(values));
+
+// Remove value
+var removed = sets.remove_set(colors, "blue");
+println("After removing 'blue': " + typeof(removed));
+
+println("Done!");

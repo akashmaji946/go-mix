@@ -1,0 +1,36 @@
+// ============================================
+// OS Package - Basic Examples
+// ============================================
+
+import os;
+
+println("=== OS Package - Basic Operations ===");
+
+// Get command line arguments
+var args = os.args();
+println("Arguments type: " + typeof(args));
+
+// Get environment variable
+var path = os.getenv("PATH");
+println("PATH set: " + (path != ""));
+
+var home = os.getenv("HOME");
+println("HOME set: " + (home != ""));
+
+// Get current user
+var user = os.user();
+println("Current user type: " + typeof(user));
+
+// Get hostname
+var hostname = os.hostname();
+println("Hostname type: " + typeof(hostname));
+
+// Check if running in specific OS
+var os_name = os.goos();
+println("OS name type: " + typeof(os_name));
+
+// Get architecture
+var arch = os.goarch();
+println("Architecture type: " + typeof(arch));
+
+println("Done!");

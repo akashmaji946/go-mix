@@ -33,9 +33,20 @@ var ioMethods = []*Builtin{
 	// {Name: "exit", Callback: exitFunc},     // Terminates the program
 }
 
-// init registers the I/O methods as global builtins.
+// init registers the I/O methods as global builtins and as a package for import.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, ioMethods...)
+
+	// Register as a package (for import functionality)
+	ioPackage := &Package{
+		Name:      "io",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range ioMethods {
+		ioPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(ioPackage)
 }
 
 // scanln reads a single line of text from standard input.

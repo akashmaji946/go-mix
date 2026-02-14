@@ -57,6 +57,10 @@ const (
 	BreakType GoMixType = "break"
 	// ContinueType represents a continue statement signal
 	ContinueType GoMixType = "continue"
+	// PackageType represents an imported package module
+	PackageType GoMixType = "package"
+	// ServerType represents an HTTP server instance
+	ServerType GoMixType = "server"
 )
 
 // GoMixObject is the core interface that all Go-Mix objects must implement.

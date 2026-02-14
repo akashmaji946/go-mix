@@ -1,0 +1,52 @@
+// ============================================
+// Strings Package - Advanced Examples
+// ============================================
+
+import strings;
+
+println("=== Strings Package - Advanced Operations ===");
+
+// String splitting and joining
+var csv_line = "apple,banana,cherry,date";
+var fruits = strings.split(csv_line, ",");
+println("Split CSV: " + typeof(fruits));
+
+var joined = strings.join(fruits, " | ");
+println("Rejoined: " + joined);
+
+// Prefix and suffix checking
+var url = "https://example.com";
+println("Starts with 'https': " + strings.starts_with(url, "https"));
+println("Ends with '.com': " + strings.ends_with(url, ".com"));
+
+// String comparison
+var str1 = "apple";
+var str2 = "apple";
+var str3 = "banana";
+println("Compare apple to apple: " + strings.strcmp(str1, str2));
+println("Compare apple to banana: " + strings.strcmp(str1, str3));
+
+// Reverse string
+var word = "hello";
+println("Reversed: " + strings.reverse(word));
+
+// Substring extraction
+var text = "Hello, World!";
+println("Substring [0,5): " + strings.substring(text, 0, 5));
+println("Substring [7,12): " + strings.substring(text, 7, 12));
+
+// Count occurrences
+var str = "mississippi";
+println("Count 'ss' in " + str + ": " + strings.count(str, "ss"));
+
+// Character code conversion
+println("Ord of 'A': " + strings.ord("A"));
+println("Char from 65: " + strings.chr(65));
+
+// Type checking
+var numeric = "12345";
+var alpha = "hello";
+println("'12345' is digit: " + strings.is_digit(numeric));
+println("'hello' is alpha: " + strings.is_alpha(alpha));
+
+println("Done!");

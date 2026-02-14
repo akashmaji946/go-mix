@@ -1,0 +1,35 @@
+// Test import system with multiple packages and more complex examples
+import math;
+
+// Test multiple imports (if they exist)
+println("=== Math Package Tests ===");
+
+// Basic operations
+var x = -15;
+var result = math.abs(x);
+println("abs(-15) = " + tostring(result));
+
+var a = 10;
+var b = 20;
+var min_val = math.min(a, b);
+var max_val = math.max(a, b);
+println("min(10, 20) = " + tostring(min_val));
+println("max(10, 20) = " + tostring(max_val));
+
+// Chained operations
+var final = math.sqrt(math.pow(3, 2) + math.pow(4, 2));
+println("sqrt(3^2 + 4^2) = " + tostring(final));  // Should be 5
+
+// Using imported functions in control flow
+if (math.abs(-42) > 40) {
+    println("abs(-42) is greater than 40");
+}
+
+// Using in loops
+println("=== Loop with Math ===");
+for (var i = 1; i <= 5; i = i + 1) {
+    var squared = math.pow(i, 2);
+    println("" + tostring(i) + "^2 = " + tostring(squared));
+}
+
+println("=== Import System Test Complete ===");

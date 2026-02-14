@@ -22,9 +22,20 @@ var formatMethods = []*Builtin{
 	{Name: "to_char", Callback: toChar},     // Converts a value to a character
 }
 
-// init registers the format methods as global builtins.
+// init registers the format methods as global builtins and as a package for import.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, formatMethods...)
+
+	// Register as a package (for import functionality)
+	formatPackage := &Package{
+		Name:      "format",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range formatMethods {
+		formatPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(formatPackage)
 }
 
 // toInt converts a value to an integer.

@@ -1,0 +1,39 @@
+// ============================================
+// Maps Package - Basic Examples
+// ============================================
+
+import maps;
+
+println("=== Maps Package - Basic Operations ===");
+
+// Create a map
+var person = map{
+    "name": "Alice",
+    "age": 30,
+    "city": "Portland"
+};
+
+// Get keys
+var keys = maps.keys_map(person);
+println("Keys type: " + typeof(keys));
+
+// Insert new key-value
+var updated = maps.insert_map(person, "job", "Engineer");
+println("After insert: " + typeof(updated));
+
+// Check if contains key
+var has_name = maps.contain_map(person, "name");
+println("Contains 'name': " + has_name);
+
+var has_email = maps.contain_map(person, "email");
+println("Contains 'email': " + has_email);
+
+// Remove key
+var removed = maps.remove_map(person, "age");
+println("After remove 'age': " + typeof(removed));
+
+// Enumerate (get key-value pairs)
+var entries = maps.enumerate_map(person);
+println("Entries type: " + typeof(entries));
+
+println("Done!");

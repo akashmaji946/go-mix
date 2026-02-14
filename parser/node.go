@@ -64,6 +64,9 @@ type NodeVisitor interface {
 	VisitBreakStatementNode(node BreakStatementNode)       // break
 	VisitContinueStatementNode(node ContinueStatementNode) // continue
 
+	// Import statement
+	VisitImportStatementNode(node ImportStatementNode) // import package
+
 	// Range and foreach visitors
 	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
 	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
@@ -1064,6 +1067,26 @@ func (node *ContinueStatementNode) Accept(visitor NodeVisitor) {
 }
 
 func (node *ContinueStatementNode) Statement() {}
+
+// ImportStatementNode: represents an import statement
+// Example: import math;
+type ImportStatementNode struct {
+	Token lexer.Token // The 'import' keyword token
+	Name  string      // The package name being imported
+}
+
+// ImportStatementNode.Literal()
+func (node *ImportStatementNode) Literal() string {
+	return "import " + node.Name
+}
+
+// ImportStatementNode.Accept()
+func (node *ImportStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitImportStatementNode(*node)
+}
+
+// ImportStatementNode.Statement()
+func (node *ImportStatementNode) Statement() {}
 
 // CharLiteralExpressionNode: represents a character literal
 type CharLiteralExpressionNode struct {

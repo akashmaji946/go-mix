@@ -87,6 +87,7 @@ const (
 	IN_KEY       TokenType = "in"       // In keyword for foreach loops
 	BREAK_KEY    TokenType = "break"    // Loop break keyword
 	CONTINUE_KEY TokenType = "continue" // Loop continue keyword
+	IMPORT_KEY   TokenType = "import"   // Import package keyword
 
 	// Data Structure Literals
 	ARRAY_KEY  TokenType = "array"  // Array literal keyword
@@ -169,6 +170,7 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"nil":      NIL_LIT,      // Nil/null value
 	"this":     THIS_KEY,     // 'this' keyword
 	"self":     SELF_KEY,     // 'self' keyword
+	"import":   IMPORT_KEY,   // Import package keyword
 }
 
 // Token represents a single lexical token in the Go-Mix source code.

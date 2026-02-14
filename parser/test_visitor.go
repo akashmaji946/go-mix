@@ -560,6 +560,21 @@ func (v *TestingVisitor) VisitContinueStatementNode(node ContinueStatementNode) 
 	// No specific assertions for continue node other than type which is handled by Accept
 }
 
+// VisitImportStatementNode visits an import statement node
+func (v *TestingVisitor) VisitImportStatementNode(node ImportStatementNode) {
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*ImportStatementNode)
+	assert.True(v.T, ok)
+	if ok {
+		assert.Equal(v.T, node.Name, curr.(*ImportStatementNode).Name)
+	}
+	v.Ptr++
+}
+
 // String returns the string representation of the visitor (empty string)
 func (v *TestingVisitor) String() string {
 	return ""

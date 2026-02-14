@@ -1,0 +1,60 @@
+// ============================================
+// IO Package - Advanced Examples
+// ============================================
+
+import io;
+
+println("=== IO Package - Advanced Operations ===");
+
+// Complex formatted output
+var product = "Laptop";
+var price = 999.99;
+var quantity = 2;
+var total = price * quantity;
+
+var order = io.sprintf(
+    "Product: %s | Price: %.2f | Qty: %d | Total: %.2f",
+    product,
+    price,
+    quantity,
+    total
+);
+println(order);
+
+// Table-like formatting
+var row1 = io.sprintf("%-15s %-10s %-8s", "Name", "Score", "Grade");
+println(row1);
+var row2 = io.sprintf("%-15s %-10s %-8s", "John", "95", "A");
+println(row2);
+var row3 = io.sprintf("%-15s %-10s %-8s", "Jane", "88", "B");
+println(row3);
+
+// Numeric formatting variations
+var num = 1234567;
+var float_val = 123.456789;
+
+println(io.sprintf("Integer: %d", num));
+println(io.sprintf("Hex: %x", num));
+println(io.sprintf("Float (2 decimals): %.2f", float_val));
+println(io.sprintf("Scientific: %e", float_val));
+
+// Building structured output
+var config_output = "";
+config_output = config_output + io.sprintf("=== Configuration ===\n");
+config_output = config_output + io.sprintf("Host: %s\n", "localhost");
+config_output = config_output + io.sprintf("Port: %d\n", 8080);
+config_output = config_output + io.sprintf("Debug: %v\n", true);
+println(config_output);
+
+// Escape sequences in formatted strings
+var escaped = io.sprintf("Line1%sLine2%sLine3", "\n", "\n");
+println(escaped);
+
+// Error-like formatting
+var error_msg = io.sprintf("[ERROR] Code: %d, Message: %s", 500, "Internal Server Error");
+println(error_msg);
+
+// Flush to ensure output
+io.flush();
+
+println("Done!");

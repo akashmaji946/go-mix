@@ -77,6 +77,9 @@ func (par *Parser) parseStatement() StatementNode {
 	case lexer.CONTINUE_KEY:
 		return par.parseContinueStatement()
 
+	case lexer.IMPORT_KEY:
+		return par.parseImportStatement()
+
 	default:
 		return par.parseExpression()
 	}
@@ -2227,6 +2230,28 @@ func (par *Parser) parseBreakStatement() StatementNode {
 func (par *Parser) parseContinueStatement() StatementNode {
 	stmt := &ContinueStatementNode{Token: par.CurrToken}
 	return stmt
+}
+
+// parseImportStatement parses an import statement.
+// Syntax: import packageName;
+func (par *Parser) parseImportStatement() StatementNode {
+	importToken := par.CurrToken
+
+	// Expect the package name (identifier)
+	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+		return nil
+	}
+	packageName := par.CurrToken.Literal
+
+	// Expect semicolon
+	if !par.expectAdvance(lexer.SEMICOLON_DELIM) {
+		return nil
+	}
+
+	return &ImportStatementNode{
+		Token: importToken,
+		Name:  packageName,
+	}
 }
 
 // eval evaluates an expression node during parsing.

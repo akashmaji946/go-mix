@@ -1,0 +1,95 @@
+// ============================================
+// Common Package - Advanced Examples
+// ============================================
+
+import common;
+
+println("=== Common Package - Advanced Operations ===");
+
+// Array operations
+var nums = [3, 1, 4, 1, 5, 9, 2, 6];
+var sorted_nums = common.sorted(nums);
+println("Sorted length: " + common.len(sorted_nums));
+
+// Map operations
+var data = map{"z": 26, "a": 1, "m": 13};
+println("Map length: " + common.len(data));
+
+// Type introspection
+var types_to_check = [
+    42,
+    "string",
+    [1, 2, 3],
+    map{"key": "value"},
+    set{1, 2, 3},
+    true
+];
+var idx = 0;
+for (idx = 0; idx < 6; idx = idx + 1) {
+    var t = common.typeof(types_to_check[idx]);
+    println("Type: " + t);
+}
+
+// Filter array
+func is_even(x) {
+    return x % 2 == 0;
+}
+var numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+var evens = common.filter(numbers, is_even);
+println("Evens: " + typeof(evens));
+
+// Map array (transform)
+func square(x) {
+    return x * x;
+}
+var values = [1, 2, 3, 4];
+var squared = common.map(values, square);
+println("Squared: " + typeof(squared));
+
+// Reduce array
+func add(acc, val) {
+    return acc + val;
+}
+var sum = common.reduce(values, add, 0);
+println("Sum: " + sum);
+
+// Find element
+func greater_than_3(x) {
+    return x > 3;
+}
+var first_gt_3 = common.find(values, greater_than_3);
+println("First > 3: " + first_gt_3);
+
+// Some check
+var has_even = common.some(values, is_even);
+println("Has even: " + has_even);
+
+// Every check
+func all_positive(x) {
+    return x > 0;
+}
+var all_pos = common.every(values, all_positive);
+println("All positive: " + all_pos);
+
+// Sort with custom comparator
+var words = ["banana", "apple", "cherry", "date"];
+func compare_lengths(a, b) {
+    var la = a;
+    var lb = b;
+    if (la < lb) return -1;
+    if (la > lb) return 1;
+    return 0;
+}
+var by_length = common.csorted(words, compare_lengths);
+println("By length: " + typeof(by_length));
+
+// Address/reference operations
+var obj = [1, 2, 3];
+var addr = common.addr(obj);
+println("Address: " + typeof(addr));
+
+var obj2 = obj;
+var is_same = common.is_same_ref(obj, obj2);
+println("Same reference: " + is_same);
+
+println("Done!");

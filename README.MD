@@ -953,6 +953,194 @@ is_same_ref(arr, y);        // true (same reference)
 is_same_ref(arr, z);        // false (different reference)
 ```
 
+### HTTP Client & Server
+
+The `http` package provides comprehensive HTTP client and server functionality for web requests and building HTTP servers.
+
+#### Importing
+
+```go-mix
+import http;
+```
+
+#### HTTP Client Functions
+
+**GET Request**
+```go-mix
+import http;
+
+var response = http.get_http("https://httpbin.org/get");
+println(response);
+```
+
+**Generic HTTP Request**
+```go-mix
+// request_http(method, url, [headers], [body])
+var headers = map{
+    "Content-Type": "application/json",
+    "Authorization": "Bearer token123"
+};
+var body = "{\"data\": \"example\"}";
+
+var response = http.request_http("POST", "https://api.example.com/endpoint", headers, body);
+println(response["status"]);     // Status code
+println(response["body"]);       // Response body
+println(response["headers"]);    // Response headers
+```
+
+**Other HTTP Methods**
+```go-mix
+var get_resp = http.get_http(url);
+var post_resp = http.post_http(url, body);
+var put_resp = http.put_http(url, body);
+var delete_resp = http.delete_http(url);
+```
+
+**URL Encoding/Decoding**
+```go-mix
+var encoded = http.url_encode("Hello World!");  // "Hello%20World%21"
+var decoded = http.url_decode("Hello%20World%21");  // "Hello World!"
+```
+
+**Download Files**
+```go-mix
+http.download_file("https://example.com/file.zip", "./downloads/file.zip");
+```
+
+#### HTTP Server Functions
+
+**Basic Server Setup**
+```go-mix
+import http;
+
+// Create a new HTTP server
+var srv = http.create_server();
+
+// Register a route handler
+http.handle_server(srv, "/", fn(req) {
+    println("Request: " + req["method"] + " " + req["url"]);
+    return "Welcome to Go-Mix!";
+});
+
+// JSON API endpoint
+http.handle_server(srv, "/api/data", fn(req) {
+    return map{
+        "status": 200,
+        "headers": map{"Content-Type": "application/json"},
+        "body": "{\"message\": \"Hello from API\", \"timestamp\": " + now() + "}"
+    };
+});
+
+// Start server on port 8080
+http.start_server(srv, ":8080");
+```
+
+**Serving Static Files**
+```go-mix
+http.serve_static(srv, "/public/", "./static/");
+```
+
+**HTTP Server Functions Reference**
+
+| Function | Purpose |
+|:---------|:--------|
+| `create_server()` | Creates a new HTTP server instance |
+| `handle_server(server, path, handler)` | Registers a handler function for a route |
+| `start_server(server, address)` | Starts the server on specified address |
+| `serve_static(server, prefix, root_dir)` | Serves static files from a directory |
+
+### Regular Expressions (Regex)
+
+The `regex` package provides powerful pattern matching and text manipulation using regular expressions.
+
+#### Importing
+
+```go-mix
+import regex;
+```
+
+#### Functions
+
+**Check if Pattern Matches**
+```go-mix
+import regex;
+
+var text = "The quick brown fox";
+var has_quick = regex.match_regex("quick", text);
+println(has_quick);  // true
+
+var starts_with_the = regex.match_regex("^The", text);
+println(starts_with_the);  // true
+```
+
+**Find First Match**
+```go-mix
+var text = "Contact: test@example.com";
+var email = regex.find_regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}", text);
+println(email);  // "test@example.com"
+```
+
+**Find All Matches**
+```go-mix
+var numbers_text = "Items: 12, 45, 99, 100";
+var numbers = regex.findall_regex("\\d+", numbers_text);
+println(numbers);  // [12, 45, 99, 100]
+
+// With limit parameter
+var first_two = regex.findall_regex("\\d+", numbers_text, 2);
+println(first_two);  // [12, 45]
+```
+
+**Replace Matches**
+```go-mix
+var text = "Items: 12, 45, 99";
+var redacted = regex.replace_regex("\\d+", text, "X");
+println(redacted);  // "Items: X, X, X"
+```
+
+**Split by Pattern**
+```go-mix
+var csv = "apple,banana,cherry,date";
+var fruits = regex.split_regex(",", csv);
+println(fruits);  // [apple, banana, cherry, date]
+
+// With limit
+var parts = regex.split_regex(",", csv, 2);
+println(parts);  // [apple, banana,cherry,date]
+```
+
+#### Regex Functions Reference
+
+| Function | Parameters | Returns | Purpose |
+|:---------|:-----------|:--------|:--------|
+| `match_regex(pattern, str)` | string, string | boolean | Check if pattern matches string |
+| `find_regex(pattern, str)` | string, string | string | Find first match (empty if none) |
+| `findall_regex(pattern, str, [n])` | string, string, [int] | array | Find all matches (limit optional) |
+| `replace_regex(pattern, str, repl)` | string, string, string | string | Replace all matches |
+| `split_regex(pattern, str, [n])` | string, string, [int] | array | Split string by pattern (limit optional) |
+
+#### Common Regex Patterns
+
+```go-mix
+// Email validation
+"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+
+// Phone number (US format)
+"\\d{3}-\\d{3}-\\d{4}"
+
+// URL validation
+"https?://[^\\s]+"
+
+// IP Address
+"\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"
+
+// Word boundary
+"\\bword\\b"
+
+// Digits and dots
+"\\d+\\.\\d+"
+```
+
 ---
 
 ## Error Handling

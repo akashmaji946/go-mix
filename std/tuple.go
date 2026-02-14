@@ -41,8 +41,20 @@ var tupleMethods = []*Builtin{
 
 // init registers the tuple methods by appending them to the global Builtins slice.
 // This function runs automatically when the package is initialized.
+// It also registers the tuple package for import functionality.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, tupleMethods...)
+
+	// Register as a package (for import functionality)
+	tuplePackage := &Package{
+		Name:      "tuple",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range tupleMethods {
+		tuplePackage.Functions[method.Name] = method
+	}
+	RegisterPackage(tuplePackage)
 }
 
 // tupleFunc creates a new immutable tuple from the provided arguments.

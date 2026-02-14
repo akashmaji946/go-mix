@@ -1,0 +1,40 @@
+// Test the import system with the math package
+import math;
+
+import strings;
+
+var t = "Testing math functions";
+println(strings.upper(t));  // Should print: TESTING MATH FUNCTIONS
+
+// Test abs function
+var result1 = math.abs(-5);
+println(result1);  // Should print: 5
+
+var result2 = math.abs(10);
+println(result2);  // Should print: 10
+
+// Test min function
+var result3 = math.min(5, 3);
+println(result3);  // Should print: 3
+
+// Test max function
+var result4 = math.max(5, 3);
+println(result4);  // Should print: 5
+
+// Test sqrt function
+var result5 = math.sqrt(16);
+println(result5);  // Should print: 4
+
+// Test pow function
+var result6 = math.pow(2, 3);
+println(result6);  // Should print: 8
+
+// Test floor function
+var result7 = math.floor(3.7);
+println(result7);  // Should print: 3
+
+// Test ceil function
+var result8 = math.ceil(3.2);
+println(result8);  // Should print: 4
+
+println("All math functions working!");

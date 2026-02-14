@@ -24,9 +24,20 @@ var timeMethods = []*Builtin{
 	{Name: "timezone", Callback: timezone},      // Returns current timezone name
 }
 
-// init registers the time methods as global builtins.
+// init registers the time methods as global builtins and as a package for import.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, timeMethods...)
+
+	// Register as a package (for import functionality)
+	timePackage := &Package{
+		Name:      "time",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range timeMethods {
+		timePackage.Functions[method.Name] = method
+	}
+	RegisterPackage(timePackage)
 }
 
 // now returns the current local Unix timestamp in seconds.

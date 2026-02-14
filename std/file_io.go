@@ -36,9 +36,20 @@ var fileIOMethods = []*Builtin{
 	{Name: "cat", Callback: cat},                    // Prints file content to output
 }
 
-// init registers the file I/O methods as global builtins.
+// init registers the file I/O methods as global builtins and as a package for import.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, fileIOMethods...)
+
+	// Register as a package (for import functionality)
+	filePackage := &Package{
+		Name:      "file",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range fileIOMethods {
+		filePackage.Functions[method.Name] = method
+	}
+	RegisterPackage(filePackage)
 }
 
 // readFile reads the entire contents of a file into a string.

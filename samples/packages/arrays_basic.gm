@@ -1,0 +1,42 @@
+// ============================================
+// Arrays Package - Basic Examples
+// ============================================
+
+import arrays;
+
+println("=== Arrays Package - Basic Operations ===");
+
+// Create and manipulate arrays
+var arr = [1, 2, 3];
+println("Original array: " + typeof(arr));
+
+// Push and pop
+var arr2 = arrays.push_array(arr, 4);
+println("After push(4): " + typeof(arr2));
+
+var popped = arrays.pop_array(arr2);
+println("Popped value: " + popped);
+
+// Shift and unshift
+var arr3 = [10, 20, 30];
+var shifted = arrays.shift_array(arr3);
+println("Shifted value: " + shifted);
+
+var arr4 = arrays.unshift_array(arr3, 5);
+println("After unshift(5): " + typeof(arr4));
+
+// Sorting
+var unsorted = [3, 1, 4, 1, 5, 9, 2, 6];
+var sorted = arrays.sorted_array(unsorted);
+println("Sorted array (new): " + typeof(sorted));
+
+// Clone array
+var original = [1, 2, 3];
+var cloned = arrays.clone_array(original);
+println("Cloned array: " + typeof(cloned));
+
+// Reverse
+var reversed = arrays.reverse_array([1, 2, 3, 4, 5]);
+println("Reversed array: " + typeof(reversed));
+
+println("Done!");

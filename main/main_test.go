@@ -1304,4 +1304,47 @@ func TestMain_Main(t *testing.T) {
 	root120.Accept(visitor120)
 	fmt.Println(visitor120)
 
+	// Test 121: import statement basic
+	src121 := `
+	import math;
+	`
+	root121 := parser.NewParser(src121).Parse()
+	visitor121 := &PrintingVisitor{}
+	root121.Accept(visitor121)
+	fmt.Println(visitor121)
+
+	// Test 122: import with package function call
+	src122 := `
+	import math;
+	math.abs(-5);
+	`
+	root122 := parser.NewParser(src122).Parse()
+	visitor122 := &PrintingVisitor{}
+	root122.Accept(visitor122)
+	fmt.Println(visitor122)
+
+	// Test 123: import with variable assignment from package function
+	src123 := `
+	import math;
+	var result = math.abs(-10);
+	println(result);
+	`
+	root123 := parser.NewParser(src123).Parse()
+	visitor123 := &PrintingVisitor{}
+	root123.Accept(visitor123)
+	fmt.Println(visitor123)
+
+	// Test 124: import with multiple package function calls
+	src124 := `
+	import math;
+	var x = math.pow(2, 3);
+	var y = math.sqrt(16);
+	var z = math.min(x, y);
+	println(z);
+	`
+	root124 := parser.NewParser(src124).Parse()
+	visitor124 := &PrintingVisitor{}
+	root124.Accept(visitor124)
+	fmt.Println(visitor124)
+
 }

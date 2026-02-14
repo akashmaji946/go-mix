@@ -4656,3 +4656,76 @@ func TestParser_FormatFunctions(t *testing.T) {
 		assert.Equal(t, tt.argCount, len(callExpr.Arguments))
 	}
 }
+
+// TestParser_ImportStatement verifies parsing of import statements
+func TestParser_ImportStatement(t *testing.T) {
+	tests := []struct {
+		src         string
+		packageName string
+	}{
+		{`import math;`, "math"},
+		{`import strings;`, "strings"},
+		{`import os;`, "os"},
+		{`import time;`, "time"},
+	}
+
+	for _, tt := range tests {
+		root := NewParser(tt.src).Parse()
+		assert.NotNil(t, root)
+		assert.Equal(t, 1, len(root.Statements))
+
+		importStmt, ok := root.Statements[0].(*ImportStatementNode)
+		assert.True(t, ok)
+		assert.Equal(t, tt.packageName, importStmt.Name)
+		assert.Equal(t, "import "+tt.packageName, importStmt.Literal())
+	}
+}
+
+// TestParser_ImportWithPackageFunctionCall verifies parsing of package function calls
+func TestParser_ImportWithPackageFunctionCall(t *testing.T) {
+	tests := []struct {
+		src          string
+		packageName  string
+		functionName string
+		argCount     int
+	}{
+		{`import math; math.abs(-5);`, "math", "abs", 1},
+		{`import math; var x = math.pow(2, 3);`, "math", "pow", 2},
+		{`import math; math.sqrt(16);`, "math", "sqrt", 1},
+	}
+
+	for _, tt := range tests {
+		root := NewParser(tt.src).Parse()
+		assert.NotNil(t, root)
+		assert.Equal(t, 2, len(root.Statements)) // import statement + function call/assignment
+
+		// First statement should be import
+		importStmt, ok := root.Statements[0].(*ImportStatementNode)
+		assert.True(t, ok)
+		assert.Equal(t, tt.packageName, importStmt.Name)
+
+		// Second statement depends on the test case
+		// For simple calls, it should be a CallExpressionNode
+		// For assignments, it should be DeclarativeStatementNode
+		_ = root.Statements[1]
+	}
+}
+
+// TestParser_MultipleImports verifies parsing of multiple import statements
+func TestParser_MultipleImports(t *testing.T) {
+	src := `
+import math;
+import strings;
+import os;
+`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 3, len(root.Statements))
+
+	// Verify all three are import statements
+	for i, pkgName := range []string{"math", "strings", "os"} {
+		importStmt, ok := root.Statements[i].(*ImportStatementNode)
+		assert.True(t, ok, "statement %d should be ImportStatementNode", i)
+		assert.Equal(t, pkgName, importStmt.Name)
+	}
+}

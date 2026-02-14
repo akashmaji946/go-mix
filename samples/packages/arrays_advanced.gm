@@ -1,0 +1,59 @@
+// ============================================
+// Arrays Package - Advanced Examples
+// ============================================
+
+import arrays;
+
+println("=== Arrays Package - Advanced Operations ===");
+
+// Map function: apply transformation
+var numbers = [1, 2, 3, 4, 5];
+func double(x) {
+    return x * 2;
+}
+var doubled = arrays.map_array(numbers, double);
+println("Doubled numbers: " + typeof(doubled));
+
+// Filter function: keep elements matching condition
+func is_even(x) {
+    return x % 2 == 0;
+}
+var evens = arrays.filter_array(numbers, is_even);
+println("Even numbers: " + typeof(evens));
+
+// Reduce function: accumulate values
+func sum(acc, val) {
+    return acc + val;
+}
+var total = arrays.reduce_array(numbers, sum, 0);
+println("Sum of [1..5]: " + total);
+
+// Find function: locate first matching element
+func greater_than_3(x) {
+    return x > 3;
+}
+var found = arrays.find_array(numbers, greater_than_3);
+println("First number > 3: " + found);
+
+// Some/Every checks
+func all_positive(x) {
+    return x > 0;
+}
+println("All positive: " + arrays.every_array(numbers, all_positive));
+
+var mixed = [1, -2, 3];
+println("Some negative: " + arrays.some_array(mixed, all_positive));
+
+// Custom sort with comparator
+var words = ["banana", "apple", "cherry"];
+func compare_length(a, b) {
+    var len_a = a;
+    var len_b = b;
+    if (len_a < len_b) return -1;
+    if (len_a > len_b) return 1;
+    return 0;
+}
+var by_length = arrays.csorted(words, compare_length);
+println("Sorted by length: " + typeof(by_length));
+
+println("Done!");

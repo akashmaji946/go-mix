@@ -1,0 +1,40 @@
+// HTTP Client Example
+println("--- HTTP Client ---");
+// Note: This requires an internet connection and a valid URL
+// var response = get_http("https://httpbin.org/get");
+// println("GET Response: " + response);
+
+// HTTP Server Example
+println("\n--- HTTP Server ---");
+println("Creating server...");
+var srv = create_server();
+
+// Simple handler returning a string
+handle_server(srv, "/", func(req) {
+    println("Received request: " + req["method"] + " " + req["url"]);
+    return "Welcome to Go-Mix HTTP Server!";
+});
+
+// Handler returning a structured response (JSON)
+handle_server(srv, "/api/json", func(req) {
+    println("API request received");
+    return map{
+        "status": 200,
+        "headers": map{
+            "Content-Type": "application/json"
+        },
+        "body": "{\"message\": \"Hello from JSON API\", \"success\": true}"
+    };
+});
+
+// Handler demonstrating 404
+handle_server(srv, "/not-found", func(req) {
+    return map{
+        "status": 404,
+        "body": "Custom 404 Page"
+    };
+});
+
+println("Server configured. To start it, uncomment the line below.");
+println("Listening on http://localhost:8080");
+// start_server(srv, ":8080");

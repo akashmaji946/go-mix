@@ -1257,7 +1257,7 @@ func TestEvaluator_EnumerateMap(t *testing.T) {
 
 // TestEvaluator_SetInsert verifies insert_set() builtin function
 func TestEvaluator_SetInsert(t *testing.T) {
-	src := `var s = set{1, 2}; insert_set(s, 3); s`
+	src := `import sets; var s = set{1, 2}; sets.insert_set(s, 3); s`
 	p := parser.NewParser(src)
 	rootNode := p.Parse()
 	evaluator := NewEvaluator()
@@ -2715,9 +2715,9 @@ func TestEvaluator_JSONFunctions(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`var m = json_string_decode_map("{\"name\": \"John\", \"age\": 25}"); m["name"]`, "John"},
-		{`var m = json_string_decode_map("{\"name\": \"John\", \"age\": 25}"); m["age"]`, int64(25)},
-		{`var a = json_string_decode_map("[1, 2, 3]"); a[1]`, int64(2)},
+		{`var m = json_string_to_map("{\"name\": \"John\", \"age\": 25}"); m["name"]`, "John"},
+		{`var m = json_string_to_map("{\"name\": \"John\", \"age\": 25}"); m["age"]`, int64(25)},
+		{`var a = json_string_to_map("[1, 2, 3]"); a[1]`, int64(2)},
 	}
 
 	for _, tt := range tests {
@@ -2928,5 +2928,568 @@ func TestEvaluator_JSONEncode(t *testing.T) {
 	expected := `{"a":1,"b":[true,null]}`
 	if result.ToString() != expected {
 		t.Errorf("expected %s, got %s", expected, result.ToString())
+	}
+}
+
+// TestEvaluator_ImportStatement verifies the import statement evaluation
+func TestEvaluator_ImportStatement(t *testing.T) {
+	input := `import math;`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	// Import should return the package object
+	if result.GetType() != std.PackageType {
+		t.Errorf("expected PackageType, got %s", result.GetType())
+	}
+	if pkg, ok := result.(*std.Package); ok {
+		if pkg.Name != "math" {
+			t.Errorf("expected package name 'math', got '%s'", pkg.Name)
+		}
+	} else {
+		t.Errorf("expected *Package, got %T", result)
+	}
+}
+
+// TestEvaluator_PackageFunctionCall verifies package function calls
+func TestEvaluator_PackageFunctionCall(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+		checkInt bool
+	}{
+		{`import math; math.abs(-5)`, int64(5), true},
+		{`import math; math.abs(10)`, int64(10), true},
+		{`import math; math.min(5, 3)`, int64(3), true},
+		{`import math; math.max(5, 3)`, int64(5), true},
+		{`import math; math.floor(3.7)`, int64(3), true},
+		{`import math; math.ceil(3.2)`, int64(4), true},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if tt.checkInt {
+			if result.GetType() != std.IntegerType {
+				t.Errorf("for input '%s': expected IntegerType, got %s", tt.input, result.GetType())
+			}
+			intResult := result.(*std.Integer).Value
+			if intResult != tt.expected.(int64) {
+				t.Errorf("for input '%s': expected %d, got %d", tt.input, tt.expected.(int64), intResult)
+			}
+		}
+	}
+}
+
+// TestEvaluator_PackageFunctionCallWithFloat verifies package function calls with float results
+func TestEvaluator_PackageFunctionCallWithFloat(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+		delta    float64
+	}{
+		{`import math; math.sqrt(16)`, 4.0, 1e-9},
+		{`import math; math.pow(2, 3)`, 8.0, 1e-9},
+		{`import math; math.sqrt(2)`, 1.41421356, 1e-5},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if result.GetType() != std.FloatType {
+			t.Errorf("for input '%s': expected FloatType, got %s", tt.input, result.GetType())
+		}
+		floatResult := result.(*std.Float).Value
+		if floatResult < tt.expected-tt.delta || floatResult > tt.expected+tt.delta {
+			t.Errorf("for input '%s': expected %f (±%f), got %f", tt.input, tt.expected, tt.delta, floatResult)
+		}
+	}
+}
+
+// TestEvaluator_MultiplePackageImports verifies multiple package imports
+func TestEvaluator_MultiplePackageImports(t *testing.T) {
+	input := `
+		import math;
+		var x = math.abs(-10);
+		var y = math.pow(2, 3);
+		x + y
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.FloatType {
+		t.Errorf("expected FloatType, got %s", result.GetType())
+	}
+	// 10 + 8.0 = 18.0
+	expected := 18.0
+	actual := result.(*std.Float).Value
+	if actual < expected-1e-9 || actual > expected+1e-9 {
+		t.Errorf("expected %f, got %f", expected, actual)
+	}
+}
+
+// TestEvaluator_PackageFunctionInLoop verifies package functions work in loops
+func TestEvaluator_PackageFunctionInLoop(t *testing.T) {
+	input := `
+		import math;
+		var sum = 0;
+		for (var i = 1; i <= 3; i = i + 1) {
+			sum = sum + math.pow(i, 2);
+		}
+		sum
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	// math.pow returns float, so sum becomes float
+	if result.GetType() != std.FloatType {
+		t.Errorf("expected FloatType, got %s", result.GetType())
+	}
+	// 1 + 4 + 9 = 14
+	expected := 14.0
+	actual := result.(*std.Float).Value
+	if actual < expected-1e-9 || actual > expected+1e-9 {
+		t.Errorf("expected %f, got %f", expected, actual)
+	}
+}
+
+// TestEvaluator_PackageFunctionInConditional verifies package functions work in conditionals
+func TestEvaluator_PackageFunctionInConditional(t *testing.T) {
+	input := `
+		import math;
+		var x = -5;
+		if (math.abs(x) > 3) {
+			"big"
+		} else {
+			"small"
+		}
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	if result.(*std.String).Value != "big" {
+		t.Errorf("expected 'big', got '%s'", result.(*std.String).Value)
+	}
+}
+
+// TestEvaluator_PackageFunctionInFunctionCall verifies package functions work in function calls
+func TestEvaluator_PackageFunctionInFunctionCall(t *testing.T) {
+	input := `
+		import math;
+		func square(x) {
+			return math.pow(x, 2);
+		}
+		square(5)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	// math.pow returns float
+	if result.GetType() != std.FloatType {
+		t.Errorf("expected FloatType, got %s", result.GetType())
+	}
+	// 5^2 = 25
+	expected := 25.0
+	actual := result.(*std.Float).Value
+	if actual < expected-1e-9 || actual > expected+1e-9 {
+		t.Errorf("expected %f, got %f", expected, actual)
+	}
+}
+
+// TestEvaluator_PackageNotFound verifies error handling for non-existent packages
+func TestEvaluator_PackageNotFound(t *testing.T) {
+	input := `import nonexistent;`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.ErrorType {
+		t.Errorf("expected ErrorType, got %s", result.GetType())
+	}
+	if !strings.Contains(result.(*std.Error).Message, "package") {
+		t.Errorf("expected error message to contain 'package', got '%s'", result.(*std.Error).Message)
+	}
+}
+
+// TestEvaluator_PackageFunctionNotFound verifies error handling for non-existent package functions
+func TestEvaluator_PackageFunctionNotFound(t *testing.T) {
+	input := `import math; math.nonexistent(5);`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.ErrorType {
+		t.Errorf("expected ErrorType, got %s", result.GetType())
+	}
+	if !strings.Contains(result.(*std.Error).Message, "function") {
+		t.Errorf("expected error message to contain 'function', got '%s'", result.(*std.Error).Message)
+	}
+}
+
+// ==================== PACKAGE IMPORT TESTS ====================
+
+// TestPackageImport_Strings tests importing and using the strings package
+func TestPackageImport_Strings(t *testing.T) {
+	input := `
+		import strings;
+		strings.upper("hello")
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	if result.(*std.String).Value != "HELLO" {
+		t.Errorf("expected 'HELLO', got '%s'", result.(*std.String).Value)
+	}
+}
+
+// TestPackageImport_StringsMultiple tests multiple string functions
+func TestPackageImport_StringsMultiple(t *testing.T) {
+	input := `
+		import strings;
+		var s = "hello world";
+		var upper = strings.upper(s);
+		var lower = strings.lower("HELLO");
+		upper + " " + lower
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	expected := "HELLO WORLD hello"
+	if result.(*std.String).Value != expected {
+		t.Errorf("expected '%s', got '%s'", expected, result.(*std.String).Value)
+	}
+}
+
+// TestPackageImport_Time tests importing and using the time package
+func TestPackageImport_Time(t *testing.T) {
+	input := `
+		import time;
+		var ts = time.now();
+		ts > 0
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.BooleanType {
+		t.Errorf("expected BooleanType, got %s", result.GetType())
+	}
+	if !result.(*std.Boolean).Value {
+		t.Errorf("expected true, got false")
+	}
+}
+
+// TestPackageImport_Arrays tests importing and using the arrays package
+func TestPackageImport_Arrays(t *testing.T) {
+	input := `
+		import arrays;
+		var a = [1, 2, 3];
+		arrays.pop_array(a)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() == std.ErrorType {
+		t.Errorf("got error: %s", result.(*std.Error).Message)
+		return
+	}
+
+	if result.GetType() != std.IntegerType {
+		t.Errorf("expected IntegerType, got %s", result.GetType())
+	}
+	if result.(*std.Integer).Value != 3 {
+		t.Errorf("expected 3, got %d", result.(*std.Integer).Value)
+	}
+}
+
+// TestPackageImport_Os tests importing and using the os package
+func TestPackageImport_Os(t *testing.T) {
+	input := `
+		import os;
+		var args = os.args();
+		typeof(args)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	if result.(*std.String).Value != "array" {
+		t.Errorf("expected 'array', got '%s'", result.(*std.String).Value)
+	}
+}
+
+// TestPackageImport_Io tests importing and using the io package
+func TestPackageImport_Io(t *testing.T) {
+	input := `
+		import io;
+		var formatted = io.sprintf("Number: %d", 42);
+		formatted
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	expected := "Number: 42"
+	if result.(*std.String).Value != expected {
+		t.Errorf("expected '%s', got '%s'", expected, result.(*std.String).Value)
+	}
+}
+
+// TestPackageImport_List tests importing and using the list package
+func TestPackageImport_List(t *testing.T) {
+	input := `
+		import list;
+		var l = list.list(1, 2, 3);
+		list.size_list(l)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.IntegerType {
+		t.Errorf("expected IntegerType, got %s", result.GetType())
+	}
+	if result.(*std.Integer).Value != 3 {
+		t.Errorf("expected 3, got %d", result.(*std.Integer).Value)
+	}
+}
+
+// TestPackageImport_Map tests importing and using the map package
+func TestPackageImport_Map(t *testing.T) {
+	input := `
+		import maps;
+		var m = map{"name": "John", "age": 30};
+		var keys = maps.keys_map(m);
+		1
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.IntegerType {
+		t.Errorf("expected IntegerType, got %s", result.GetType())
+	}
+	if result.(*std.Integer).Value != 1 {
+		t.Errorf("expected 1, got %d", result.(*std.Integer).Value)
+	}
+}
+
+// TestPackageImport_Set tests importing and using the set package
+func TestPackageImport_Set(t *testing.T) {
+	input := `
+		import sets;
+		var s = set{1, 2, 3}
+		var values = sets.values_set(s);
+		typeof(values)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() == std.ErrorType {
+		t.Errorf("got error: %s", result.(*std.Error).Message)
+		return
+	}
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	if result.(*std.String).Value != "array" {
+		t.Errorf("expected 'array', got '%s'", result.(*std.String).Value)
+	}
+}
+
+// TestPackageImport_Format tests importing and using the format package
+func TestPackageImport_Format(t *testing.T) {
+	input := `
+		import format;
+		var num = format.to_int("42");
+		num + 8
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.IntegerType {
+		t.Errorf("expected IntegerType, got %s", result.GetType())
+	}
+	if result.(*std.Integer).Value != 50 {
+		t.Errorf("expected 50, got %d", result.(*std.Integer).Value)
+	}
+}
+
+// TestPackageImport_File tests importing and using the file package
+func TestPackageImport_File(t *testing.T) {
+	input := `
+		import file;
+		var exists = file.file_exists("./go-mix");
+		typeof(exists)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	if result.(*std.String).Value != "bool" {
+		t.Errorf("expected 'bool', got '%s'", result.(*std.String).Value)
+	}
+}
+
+// TestPackageImport_Tuple tests importing and using the tuple package
+func TestPackageImport_Tuple(t *testing.T) {
+	input := `
+		import tuple;
+		var t = tuple.tuple(1, "hello", true);
+		tuple.size_tuple(t)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.IntegerType {
+		t.Errorf("expected IntegerType, got %s", result.GetType())
+	}
+	if result.(*std.Integer).Value != 3 {
+		t.Errorf("expected 3, got %d", result.(*std.Integer).Value)
+	}
+}
+
+// TestPackageImport_Common tests importing and using the common package
+func TestPackageImport_Common(t *testing.T) {
+	input := `
+		import common;
+		var arr = [3, 1, 4, 1, 5, 9];
+		var sorted = common.sorted(arr);
+		typeof(sorted)
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	if result.(*std.String).Value != "array" {
+		t.Errorf("expected 'array', got '%s'", result.(*std.String).Value)
+	}
+}
+
+// TestPackageImport_MultiplePackages tests importing multiple packages in one program
+func TestPackageImport_MultiplePackages(t *testing.T) {
+	input := `
+		import math;
+		import strings;
+		var x = math.abs(-5);
+		var s = strings.upper("hi");
+		x + 2
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.IntegerType {
+		t.Errorf("expected IntegerType, got %s", result.GetType())
+	}
+	// 5 + 2 = 7
+	if result.(*std.Integer).Value != 7 {
+		t.Errorf("expected 7, got %d", result.(*std.Integer).Value)
+	}
+}
+
+// TestPackageImport_PackageInFunction tests using imported packages inside functions
+func TestPackageImport_PackageInFunction(t *testing.T) {
+	input := `
+		import strings;
+		func process(str) {
+			return strings.upper(str) + strings.lower("WORLD");
+		}
+		process("hello ")
+	`
+	p := parser.NewParser(input)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if result.GetType() != std.StringType {
+		t.Errorf("expected StringType, got %s", result.GetType())
+	}
+	expected := "HELLO world"
+	if result.(*std.String).Value != expected {
+		t.Errorf("expected '%s', got '%s'", expected, result.(*std.String).Value)
 	}
 }

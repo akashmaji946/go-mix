@@ -28,12 +28,26 @@ var listMethods = []*Builtin{
 	{Name: "insert_list", Callback: insertList},       // Inserts an element at a specific index
 	{Name: "remove_list", Callback: removeList},       // Removes an element at a specific index
 	{Name: "contains_list", Callback: containsList},   // Checks if a value exists in the list
+	{Name: "map_list", Callback: mapList},             // Applies a function to each element
+	{Name: "filter_list", Callback: filterList},       // Filters elements based on a predicate
 }
 
 // init registers the list methods by appending them to the global Builtins slice.
 // This function runs automatically when the package is initialized.
+// It also registers the list package for import functionality.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, listMethods...)
+
+	// Register as a package (for import functionality)
+	listPackage := &Package{
+		Name:      "list",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range listMethods {
+		listPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(listPackage)
 }
 
 // normalizeIndex converts a potentially negative index to a positive index.
@@ -360,4 +374,70 @@ func containsList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject
 	}
 
 	return &Boolean{Value: false}
+}
+
+// mapList applies a function to each element of a list and returns a new list.
+// Syntax: map_list(list, function)
+func mapList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: map_list expects 2 arguments (list, function)")
+	}
+	if args[0].GetType() != ListType {
+		return createError("ERROR: first argument to `map_list` must be a list, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `map_list` must be a function, got '%s'", fn.GetType())
+	}
+
+	list := args[0].(*List)
+	newElements := make([]GoMixObject, len(list.Elements))
+
+	for i, elem := range list.Elements {
+		res := rt.CallFunction(fn, elem)
+		if res.GetType() == ErrorType {
+			return res
+		}
+		newElements[i] = res
+	}
+
+	return &List{Elements: newElements}
+}
+
+// filterList returns a new list containing elements that satisfy a predicate.
+// Syntax: filter_list(list, function)
+func filterList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: filter_list expects 2 arguments (list, function)")
+	}
+	if args[0].GetType() != ListType {
+		return createError("ERROR: first argument to `filter_list` must be a list, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `filter_list` must be a function, got '%s'", fn.GetType())
+	}
+
+	list := args[0].(*List)
+	newElements := []GoMixObject{}
+
+	for _, elem := range list.Elements {
+		res := rt.CallFunction(fn, elem)
+		if res.GetType() == ErrorType {
+			return res
+		}
+		// Check if result is truthy (boolean true or non-zero integer)
+		isMatch := false
+		if b, ok := res.(*Boolean); ok {
+			isMatch = b.Value
+		} else if i, ok := res.(*Integer); ok {
+			isMatch = i.Value != 0
+		}
+
+		if isMatch {
+			newElements = append(newElements, elem)
+		}
+	}
+
+	return &List{Elements: newElements}
 }

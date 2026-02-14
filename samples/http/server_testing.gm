@@ -1,0 +1,36 @@
+// Create a new server instance
+var srv = create_server();
+
+// Register a handler for the "/api/data" path
+handle_server(srv, "/found", func(req) {
+    // You can access request details from 'req'
+    // req["method"], req["url"], req["body"], req["headers"]
+
+    var data = map{
+        "message": "Success",
+        "id": 123
+    };
+
+    // Return a sophisticated response map
+    return map{
+        "status": 201, // Created
+        "headers": map{
+            "Content-Type": "application/json",
+            "X-Server-Type": "Go-Mix"
+        },
+        "body": map_to_json_string(data) // Convert data map to JSON string
+    };
+});
+
+// Register a handler for 404 cases or other paths
+handle_server(srv, "/not-found", func(req) {
+    return map{
+        "status": 404,
+        "body": "Resource not found"
+    };
+});
+
+// Start the server on port 8086
+println("Starting server on :8086...");
+start_server(srv, ":8086");
+

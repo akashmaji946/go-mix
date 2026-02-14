@@ -1,0 +1,66 @@
+// ============================================
+// Sets Package - Advanced Examples
+// ============================================
+
+import sets;
+
+println("=== Sets Package - Advanced Operations ===");
+
+// Create multiple sets for set operations
+var vowels = set();
+vowels = sets.insert_set(vowels, "a");
+vowels = sets.insert_set(vowels, "e");
+vowels = sets.insert_set(vowels, "i");
+vowels = sets.insert_set(vowels, "o");
+vowels = sets.insert_set(vowels, "u");
+println("Vowels created: " + sets.size_set(vowels));
+
+var common_vowels = set();
+common_vowels = sets.insert_set(common_vowels, "a");
+common_vowels = sets.insert_set(common_vowels, "e");
+common_vowels = sets.insert_set(common_vowels, "i");
+println("Common vowels created: " + sets.size_set(common_vowels));
+
+// Check membership
+var is_vowel_a = sets.contains_set(vowels, "a");
+var is_vowel_z = sets.contains_set(vowels, "z");
+println("'a' is vowel: " + is_vowel_a);
+println("'z' is vowel: " + is_vowel_z);
+
+// Duplicate handling - sets only store unique values
+var numbers = set();
+numbers = sets.insert_set(numbers, 1);
+numbers = sets.insert_set(numbers, 2);
+numbers = sets.insert_set(numbers, 1);  // Duplicate
+numbers = sets.insert_set(numbers, 3);
+println("Numbers (with duplicate 1): " + sets.size_set(numbers));
+
+// Get all values and iterate
+var fruit_set = set();
+fruit_set = sets.insert_set(fruit_set, "apple");
+fruit_set = sets.insert_set(fruit_set, "banana");
+fruit_set = sets.insert_set(fruit_set, "cherry");
+
+var fruits = sets.values_set(fruit_set);
+println("Fruits in set: " + typeof(fruits));
+
+// Building a set from array
+var unique_nums = set();
+var arr = [1, 2, 2, 3, 3, 3, 4];
+var idx = 0;
+for (idx = 0; idx < 7; idx = idx + 1) {
+    unique_nums = sets.insert_set(unique_nums, arr[idx]);
+}
+println("Unique numbers from array: " + sets.size_set(unique_nums));
+
+// Remove and check operations
+var tags = set();
+tags = sets.insert_set(tags, "go");
+tags = sets.insert_set(tags, "rust");
+tags = sets.insert_set(tags, "python");
+
+println("Before removal: " + sets.size_set(tags));
+tags = sets.remove_set(tags, "rust");
+println("After removing 'rust': " + sets.size_set(tags));
+
+println("Done!");

@@ -1,0 +1,43 @@
+// ============================================
+// List Package - Basic Examples
+// ============================================
+
+import list;
+
+println("=== List Package - Basic Operations ===");
+
+// Create a list
+var lst = list.list(10, 20, 30);
+println("List created type: " + typeof(lst));
+
+// Get size
+var size = list.size_list(lst);
+println("List size: " + size);
+
+// Access front and back
+var front = list.peekfront_list(lst);
+var back = list.peekback_list(lst);
+println("Front value: " + front);
+println("Back value: " + back);
+
+// Push back
+var with_push = list.pushback_list(lst, 40);
+println("After pushback: " + typeof(with_push));
+
+// Pop back
+var after_pop = list.popback_list(lst);
+println("Popped value: " + after_pop);
+
+// Push front
+var with_unshift = list.pushfront_list(lst, 5);
+println("After pushfront: " + typeof(with_unshift));
+
+// Pop front
+var front_pop = list.popfront_list(lst);
+println("Popped from front: " + front_pop);
+
+// Check if contains
+var contains = list.contains_list(lst, 20);
+println("Contains 20: " + contains);
+
+println("Done!");

@@ -40,9 +40,20 @@ var stringMethods = []*Builtin{
 	{Name: "is_alpha", Callback: isAlphaFunc},   // Checks if string contains only letters
 }
 
-// init registers the string methods as global builtins.
+// init registers the string methods as global builtins and as a package for import.
 func init() {
+	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, stringMethods...)
+
+	// Register as a package (for import functionality)
+	stringsPackage := &Package{
+		Name:      "strings",
+		Functions: make(map[string]*Builtin),
+	}
+	for _, method := range stringMethods {
+		stringsPackage.Functions[method.Name] = method
+	}
+	RegisterPackage(stringsPackage)
 }
 
 // upper converts a string to uppercase.

@@ -1,0 +1,78 @@
+// ============================================
+// File Package - Advanced Examples
+// ============================================
+
+import file;
+import io;
+
+println("=== File Package - Advanced Operations ===");
+
+// Create test directory
+var test_dir = "/tmp/go-mix-test-dir";
+file.mkdir(test_dir);
+println("Created directory: " + test_dir);
+
+// Write to file
+var test_file = test_dir + "/data.txt";
+var content = "Hello, Go-Mix!\nLine 2\nLine 3";
+file.write_file(test_file, content);
+println("Written to file: " + test_file);
+
+// Read from file
+var read_content = file.read_file(test_file);
+println("File content length: " + typeof(read_content));
+
+// Append to file
+var append_content = "\nAppended line";
+file.append_file(test_file, append_content);
+println("Appended to file");
+
+// Create multiple files
+var file1 = test_dir + "/file1.txt";
+var file2 = test_dir + "/file2.txt";
+file.write_file(file1, "Content 1");
+file.write_file(file2, "Content 2");
+println("Created multiple files");
+
+// List directory to see created files
+var files = file.list_dir(test_dir);
+println("Directory contents: " + typeof(files));
+
+// Check file types
+var is_data_file = file.is_file(test_file);
+var is_test_dir = file.is_dir(test_dir);
+println("data.txt is file: " + is_data_file);
+println("test_dir is directory: " + is_test_dir);
+
+// Get file size by reading
+var data = file.read_file(test_file);
+var msg = io.sprintf("File size: %d bytes (approx)", 50);
+println(msg);
+
+// Rename/move file
+var new_name = test_dir + "/data_renamed.txt";
+file.rename_file(test_file, new_name);
+println("Renamed file to: " + new_name);
+
+// Check original is gone
+var original_exists = file.file_exists(test_file);
+println("Original path exists: " + original_exists);
+
+// Truncate file (resize)
+file.truncate_file(new_name, 15);
+println("Truncated file to 15 bytes");
+
+// Clean up
+file.remove_file(file1);
+file.remove_file(file2);
+println("Removed individual files");
+
+// Remove entire directory
+file.remove_all(test_dir);
+println("Removed test directory");
+
+// Verify cleanup
+var dir_exists = file.file_exists(test_dir);
+println("Test directory still exists: " + dir_exists);
+
+println("Done!");

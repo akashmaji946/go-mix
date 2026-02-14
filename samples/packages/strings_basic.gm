@@ -1,0 +1,35 @@
+// ============================================
+// Strings Package - Basic Examples
+// ============================================
+
+import strings;
+
+println("=== Strings Package - Basic Operations ===");
+
+// Case conversion
+var text = "Hello World";
+println("Original: " + text);
+println("Upper: " + strings.upper(text));
+println("Lower: " + strings.lower(text));
+
+// Trimming whitespace
+var padded = "  spaces  ";
+println("Trimmed: [" + strings.trim(padded) + "]");
+println("Left trim: [" + strings.ltrim(padded) + "]");
+println("Right trim: [" + strings.rtrim(padded) + "]");
+
+// String searching
+var sentence = "The quick brown fox";
+println("Contains 'quick': " + strings.contains(sentence, "quick"));
+println("Index of 'brown': " + strings.index(sentence, "brown"));
+
+// String replacement
+var original = "cat dog cat";
+var replaced = strings.replace(original, "cat", "bird");
+println("Replace 'cat' with 'bird': " + replaced);
+
+// Capitalize
+var word = "hello";
+println("Capitalize: " + strings.capitalize(word));
+
+println("Done!");
