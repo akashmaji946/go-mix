@@ -28,8 +28,15 @@ var listMethods = []*Builtin{
 	{Name: "insert_list", Callback: insertList},       // Inserts an element at a specific index
 	{Name: "remove_list", Callback: removeList},       // Removes an element at a specific index
 	{Name: "contains_list", Callback: containsList},   // Checks if a value exists in the list
-	{Name: "map_list", Callback: mapList},             // Applies a function to each element
-	{Name: "filter_list", Callback: filterList},       // Filters elements based on a predicate
+
+	{Name: "map_list", Callback: mapList},       // Applies a function to each element
+	{Name: "filter_list", Callback: filterList}, // Filters elements based on a predicate
+	{Name: "reduce_list", Callback: reduceList}, // Reduces the list to a single value using a binary function
+	{Name: "find_list", Callback: findList},     // Finds the first element matching a predicate
+	{Name: "some_list", Callback: someList},     // Checks if at least one element matches
+	{Name: "every_list", Callback: everyList},   // Checks if all elements match
+
+	{Name: "to_list", Callback: toList}, // Converts array/tuple to list
 }
 
 // init registers the list methods by appending them to the global Builtins slice.
@@ -404,6 +411,31 @@ func mapList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &List{Elements: newElements}
 }
 
+// toList converts an array or tuple to a list.
+// Syntax: to_list(iterable)
+func toList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: to_list expects 1 argument")
+	}
+	arg := args[0]
+	switch arg.GetType() {
+	case ListType:
+		return arg
+	case ArrayType:
+		a := arg.(*Array)
+		newElements := make([]GoMixObject, len(a.Elements))
+		copy(newElements, a.Elements)
+		return &List{Elements: newElements}
+	case TupleType:
+		t := arg.(*Tuple)
+		newElements := make([]GoMixObject, len(t.Elements))
+		copy(newElements, t.Elements)
+		return &List{Elements: newElements}
+	default:
+		return createError("ERROR: argument to `to_list` must be an array or tuple, got '%s'", arg.GetType())
+	}
+}
+
 // filterList returns a new list containing elements that satisfy a predicate.
 // Syntax: filter_list(list, function)
 func filterList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
@@ -440,4 +472,117 @@ func filterList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	}
 
 	return &List{Elements: newElements}
+}
+
+// reduceList reduces a list to a single value using a binary function.
+// Syntax: reduce_list(list, function, [initial])
+func reduceList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) < 2 || len(args) > 3 {
+		return createError("ERROR: reduce_list expects 2 or 3 arguments (list, function, [initial])")
+	}
+	if args[0].GetType() != ListType {
+		return createError("ERROR: first argument to `reduce_list` must be a list, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `reduce_list` must be a function, got '%s'", fn.GetType())
+	}
+
+	list := args[0].(*List)
+	if len(list.Elements) == 0 {
+		return createError("ERROR: cannot reduce an empty list without an initial value")
+	}
+
+	var accumulator GoMixObject
+	startIndex := 0
+
+	if len(args) == 3 {
+		accumulator = args[2]
+	} else {
+		accumulator = list.Elements[0]
+		startIndex = 1
+	}
+
+	for i := startIndex; i < len(list.Elements); i++ {
+		elem := list.Elements[i]
+		res := rt.CallFunction(fn, accumulator, elem)
+		if res.GetType() == ErrorType {
+			return res
+		}
+		accumulator = res
+	}
+
+	return accumulator
+}
+
+// findList returns the first element that satisfies the provided testing function.
+// Syntax: find_list(list, function)
+func findList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: find_list expects 2 arguments (list, function)")
+	}
+	if args[0].GetType() != ListType {
+		return createError("ERROR: first argument to `find_list` must be a list, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `find_list` must be a function, got '%s'", fn.GetType())
+	}
+
+	list := args[0].(*List)
+	for _, elem := range list.Elements {
+		res := rt.CallFunction(fn, elem)
+		if IsTruthy(res) {
+			return elem
+		}
+	}
+	return &Nil{}
+}
+
+// someList tests whether at least one element in the list passes the test.
+// Syntax: some_list(list, function)
+func someList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: some_list expects 2 arguments (list, function)")
+	}
+	if args[0].GetType() != ListType {
+		return createError("ERROR: first argument to `some_list` must be a list, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `some_list` must be a function, got '%s'", fn.GetType())
+	}
+
+	list := args[0].(*List)
+	for _, elem := range list.Elements {
+		res := rt.CallFunction(fn, elem)
+		if IsTruthy(res) {
+			return &Boolean{Value: true}
+		}
+	}
+	return &Boolean{Value: false}
+}
+
+// everyList tests whether all elements in the list pass the test.
+// Syntax: every_list(list, function)
+func everyList(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: every_list expects 2 arguments (list, function)")
+	}
+	if args[0].GetType() != ListType {
+		return createError("ERROR: first argument to `every_list` must be a list, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `every_list` must be a function, got '%s'", fn.GetType())
+	}
+
+	list := args[0].(*List)
+	for _, elem := range list.Elements {
+		res := rt.CallFunction(fn, elem)
+		if !IsTruthy(res) {
+			return &Boolean{Value: false}
+		}
+	}
+	return &Boolean{Value: true}
 }

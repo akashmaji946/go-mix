@@ -4729,3 +4729,28 @@ import os;
 		assert.Equal(t, pkgName, importStmt.Name)
 	}
 }
+
+func TestImportStatement(t *testing.T) {
+	input := `
+	import math;
+	import strings;
+	`
+	root := NewParser(input).Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 2, len(root.Statements))
+
+	if len(root.Statements) != 2 {
+		t.Fatalf("program.Statements does not contain 2 statements. got=%d",
+			len(root.Statements))
+	}
+
+	stmt, ok := root.Statements[0].(*ImportStatementNode)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ImportStatementNode. got=%T",
+			root.Statements[0])
+	}
+
+	if stmt.Name != "math" {
+		t.Errorf("stmt.Name not 'math'. got=%q", stmt.Name)
+	}
+}

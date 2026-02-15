@@ -3493,3 +3493,81 @@ func TestPackageImport_PackageInFunction(t *testing.T) {
 		t.Errorf("expected '%s', got '%s'", expected, result.(*std.String).Value)
 	}
 }
+
+func TestListAndTupleSearchFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		// List Search Tests
+		{`var l = list(1, 2, 3, 4); find_list(l, func(x) { return x == 3; });`, 3},
+		{`var l = list(1, 2, 3, 4); find_list(l, func(x) { return x == 99; });`, nil},
+		{`var l = list(1, 2, 3); some_list(l, func(x) { return x > 2; });`, true},
+		{`var l = list(1, 2, 3); some_list(l, func(x) { return x > 5; });`, false},
+		{`var l = list(1, 2, 3); every_list(l, func(x) { return x > 0; });`, true},
+		{`var l = list(1, 2, 3); every_list(l, func(x) { return x > 1; });`, false},
+
+		// Tuple Search Tests
+		{`var t = tuple(1, 2, 3, 4); find_tuple(t, func(x) { return x == 3; });`, 3},
+		{`var t = tuple(1, 2, 3, 4); find_tuple(t, func(x) { return x == 99; });`, nil},
+		{`var t = tuple(1, 2, 3); some_tuple(t, func(x) { return x > 2; });`, true},
+		{`var t = tuple(1, 2, 3); some_tuple(t, func(x) { return x > 5; });`, false},
+		{`var t = tuple(1, 2, 3); every_tuple(t, func(x) { return x > 0; });`, true},
+		{`var t = tuple(1, 2, 3); every_tuple(t, func(x) { return x > 1; });`, false},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		switch exp := tt.expected.(type) {
+		case int:
+			AssertInteger(t, result, int64(exp))
+		case bool:
+			AssertBoolean(t, result, exp)
+		case nil:
+			if result.GetType() != std.NilType {
+				t.Errorf("expected NilType, got %s", result.GetType())
+			}
+		}
+	}
+}
+func TestTypeConversionFunctions(t *testing.T) {
+	input := `
+	var arr = [1, 2, 3];
+	var l = to_list(arr);
+	var t = to_tuple(l);
+	var arr2 = to_array(t);
+	return [typeof(l), typeof(t), typeof(arr2)];
+	`
+	root := parser.NewParser(input).Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(parser.NewParser(input))
+	evaluated := evaluator.Eval(root)
+
+	if evaluated.GetType() != std.ArrayType {
+		t.Fatalf("expected array, got %s", evaluated.GetType())
+	}
+
+	arr, ok := evaluated.(*std.Array)
+	if !ok {
+		t.Fatalf("expected array, got %T", evaluated)
+	}
+
+	if len(arr.Elements) != 3 {
+		t.Fatalf("expected 3 elements, got %d", len(arr.Elements))
+	}
+
+	if arr.Elements[0].ToString() != "list" {
+		t.Errorf("expected list, got %s", arr.Elements[0].ToString())
+	}
+	if arr.Elements[1].ToString() != "tuple" {
+		t.Errorf("expected tuple, got %s", arr.Elements[1].ToString())
+	}
+	if arr.Elements[2].ToString() != "array" {
+		t.Errorf("expected array, got %s", arr.Elements[2].ToString())
+	}
+}

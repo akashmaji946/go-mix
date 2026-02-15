@@ -17,26 +17,21 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var tupleMethods = []*Builtin{
-	{
-		Name:     "tuple", // Creates a new immutable tuple from arguments
-		Callback: tupleFunc,
-	},
-	{
-		Name:     "size_tuple", // Returns the number of elements in a tuple
-		Callback: sizeTuple,
-	},
-	{
-		Name:     "peekback_tuple", // Returns the last element of a tuple
-		Callback: peekbackTuple,
-	},
-	{
-		Name:     "peekfront_tuple", // Returns the first element of a tuple
-		Callback: peekfrontTuple,
-	},
-	{
-		Name:     "contains_tuple", // Checks if a value exists in the tuple
-		Callback: containsTuple,
-	},
+
+	{Name: "tuple", Callback: tupleFunc},                // Creates a new immutable tuple from arguments
+	{Name: "size_tuple", Callback: sizeTuple},           // Returns the number of elements in a tuple
+	{Name: "peekback_tuple", Callback: peekbackTuple},   // Returns the last element of a tuple
+	{Name: "peekfront_tuple", Callback: peekfrontTuple}, // Returns the first element of a tuple
+	{Name: "contains_tuple", Callback: containsTuple},   // Checks if a value exists in the tuple
+
+	{Name: "to_tuple", Callback: toTuple}, // Converts array/list to tuple
+
+	{Name: "map_tuple", Callback: mapList},       // Applies a function to each element
+	{Name: "filter_tuple", Callback: filterList}, // Filters elements based on a predicate
+	{Name: "reduce_tuple", Callback: reduceList}, // Reduces the list to a single value using a binary function
+	{Name: "find_tuple", Callback: findTuple},    // Finds the first element matching a predicate
+	{Name: "some_tuple", Callback: someTuple},    // Checks if at least one element matches
+	{Name: "every_tuple", Callback: everyTuple},  // Checks if all elements match
 }
 
 // init registers the tuple methods by appending them to the global Builtins slice.
@@ -171,4 +166,101 @@ func containsTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObjec
 	}
 
 	return &Boolean{Value: false}
+}
+
+// toTuple converts an array or list to a tuple.
+// Syntax: to_tuple(iterable)
+func toTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: to_tuple expects 1 argument")
+	}
+	arg := args[0]
+	switch arg.GetType() {
+	case TupleType:
+		return arg
+	case ArrayType:
+		a := arg.(*Array)
+		newElements := make([]GoMixObject, len(a.Elements))
+		copy(newElements, a.Elements)
+		return &Tuple{Elements: newElements}
+	case ListType:
+		l := arg.(*List)
+		newElements := make([]GoMixObject, len(l.Elements))
+		copy(newElements, l.Elements)
+		return &Tuple{Elements: newElements}
+	default:
+		return createError("ERROR: argument to `to_tuple` must be an array or list, got '%s'", arg.GetType())
+	}
+}
+
+// findTuple returns the first element that satisfies the provided testing function.
+// Syntax: find_tuple(tuple, function)
+func findTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: find_tuple expects 2 arguments (tuple, function)")
+	}
+	if args[0].GetType() != TupleType {
+		return createError("ERROR: first argument to `find_tuple` must be a tuple, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `find_tuple` must be a function, got '%s'", fn.GetType())
+	}
+
+	tuple := args[0].(*Tuple)
+	for _, elem := range tuple.Elements {
+		res := rt.CallFunction(fn, elem)
+		if IsTruthy(res) {
+			return elem
+		}
+	}
+	return &Nil{}
+}
+
+// someTuple tests whether at least one element in the tuple passes the test.
+// Syntax: some_tuple(tuple, function)
+func someTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: some_tuple expects 2 arguments (tuple, function)")
+	}
+	if args[0].GetType() != TupleType {
+		return createError("ERROR: first argument to `some_tuple` must be a tuple, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `some_tuple` must be a function, got '%s'", fn.GetType())
+	}
+
+	tuple := args[0].(*Tuple)
+	for _, elem := range tuple.Elements {
+		res := rt.CallFunction(fn, elem)
+		if IsTruthy(res) {
+			return &Boolean{Value: true}
+		}
+	}
+	return &Boolean{Value: false}
+}
+
+// everyTuple tests whether all elements in the tuple pass the test.
+// Syntax: every_tuple(tuple, function)
+func everyTuple(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: every_tuple expects 2 arguments (tuple, function)")
+	}
+	if args[0].GetType() != TupleType {
+		return createError("ERROR: first argument to `every_tuple` must be a tuple, got '%s'", args[0].GetType())
+	}
+	fn := args[1]
+	if fn.GetType() != FunctionType {
+		return createError("ERROR: second argument to `every_tuple` must be a function, got '%s'", fn.GetType())
+	}
+
+	tuple := args[0].(*Tuple)
+	for _, elem := range tuple.Elements {
+		res := rt.CallFunction(fn, elem)
+		if !IsTruthy(res) {
+			return &Boolean{Value: false}
+		}
+	}
+	return &Boolean{Value: true}
 }

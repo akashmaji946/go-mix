@@ -1347,4 +1347,90 @@ func TestMain_Main(t *testing.T) {
 	root124.Accept(visitor124)
 	fmt.Println(visitor124)
 
+	// Test 125: import with nested package function calls
+	src125 := `
+	import math;
+	var a = math.pow(2, 3);
+	var b = math.sqrt(a);
+	var c = math.abs(-b);
+	println(c);
+	`
+	root125 := parser.NewParser(src125).Parse()
+	visitor125 := &PrintingVisitor{}
+	root125.Accept(visitor125)
+	fmt.Println(visitor125)
+
+	// Test 126: import with package function calls in expressions
+	src126 := `
+	import math;
+	var result = math.pow(2, 3) + math.sqrt(16) - math.abs(-5);
+	println(result);
+	`
+	root126 := parser.NewParser(src126).Parse()
+	visitor126 := &PrintingVisitor{}
+	root126.Accept(visitor126)
+	fmt.Println(visitor126)
+
+	// Test 127: import with package function calls in loops
+	src127 := `
+	import math;
+	var sum = 0;
+	for(i = 1; i <= 5; i = i + 1) {
+		sum = sum + math.pow(i, 2);
+	}
+	println(sum);
+	`
+	root127 := parser.NewParser(src127).Parse()
+	visitor127 := &PrintingVisitor{}
+	root127.Accept(visitor127)
+	fmt.Println(visitor127)
+
+	// Test 128: import with package function calls in conditionals
+	src128 := `
+	import math;
+	var x = -10;
+	if (math.abs(x) > 5) {
+		println("Large");
+	} else {
+		println("Small");
+	}
+	`
+	root128 := parser.NewParser(src128).Parse()
+	visitor128 := &PrintingVisitor{}
+	root128.Accept(visitor128)
+	fmt.Println(visitor128)
+
+	// Test 129: import with package function calls in functions
+	src129 := `
+	import math;
+	func calculate(a, b) {
+		return math.pow(a, 2) + math.pow(b, 2);
+	}
+	var result = calculate(3, 4);
+	println(result);
+	`
+	root129 := parser.NewParser(src129).Parse()
+	visitor129 := &PrintingVisitor{}
+	root129.Accept(visitor129)
+	fmt.Println(visitor129)
+
+	// Test 130: import with package function calls in struct methods
+	src130 := `
+	import math;
+	struct Circle {
+		func init(radius) {
+			this.radius = radius;
+		}
+		func area() {
+			return math.PI * math.pow(this.radius, 2);
+		}
+	}
+	var c = new Circle(5);
+	println(c.area());
+	`
+	root130 := parser.NewParser(src130).Parse()
+	visitor130 := &PrintingVisitor{}
+	root130.Accept(visitor130)
+	fmt.Println(visitor130)
+
 }

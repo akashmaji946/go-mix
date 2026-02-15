@@ -18,22 +18,26 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var arrayMethods = []*Builtin{
-	{Name: "push_array", Callback: push},            // Adds an element to the end of the array
-	{Name: "pop_array", Callback: pop},              // Removes and returns the last element of the array
-	{Name: "shift_array", Callback: shift},          // Removes and returns the first element of the array
-	{Name: "unshift_array", Callback: unshift},      // Adds an element to the beginning of the array
-	{Name: "sort_array", Callback: sortArray},       // Sorts the elements of the array in-place
-	{Name: "sorted_array", Callback: sortedArray},   // Returns a new sorted array
-	{Name: "clone_array", Callback: cloneArray},     // Returns a shallow copy of the array
-	{Name: "csort", Callback: csort},                // Custom sort for an array using a comparator
-	{Name: "csorted", Callback: csorted},            // Returns a new sorted array using a comparator
-	{Name: "map_array", Callback: mapArray},         // Applies a function to each element
-	{Name: "filter_array", Callback: filterArray},   // Filters elements based on a predicate
-	{Name: "reduce_array", Callback: reduceArray},   // Accumulates a value across an array
-	{Name: "find_array", Callback: findArray},       // Finds the first element matching a predicate
-	{Name: "some_array", Callback: someArray},       // Checks if at least one element matches
-	{Name: "every_array", Callback: everyArray},     // Checks if all elements match
+	{Name: "push_array", Callback: push},          // Adds an element to the end of the array
+	{Name: "pop_array", Callback: pop},            // Removes and returns the last element of the array
+	{Name: "shift_array", Callback: shift},        // Removes and returns the first element of the array
+	{Name: "unshift_array", Callback: unshift},    // Adds an element to the beginning of the array
+	{Name: "sort_array", Callback: sortArray},     // Sorts the elements of the array in-place
+	{Name: "sorted_array", Callback: sortedArray}, // Returns a new sorted array
+	{Name: "clone_array", Callback: cloneArray},   // Returns a shallow copy of the array
+	{Name: "csort_array", Callback: csort},        // Custom sort for an array using a comparator
+	{Name: "csorted_array", Callback: csorted},    // Returns a new sorted array using a comparator
+
+	{Name: "find_array", Callback: findArray},   // Finds the first element matching a predicate
+	{Name: "some_array", Callback: someArray},   // Checks if at least one element matches
+	{Name: "every_array", Callback: everyArray}, // Checks if all elements match
+
 	{Name: "reverse_array", Callback: reverseArray}, // Returns a new reversed array
+
+	{Name: "to_array", Callback: toArray},         // Converts list/tuple to array
+	{Name: "map_array", Callback: mapArray},       // Applies a function to each element
+	{Name: "filter_array", Callback: filterArray}, // Filters elements based on a predicate
+	{Name: "reduce_array", Callback: reduceArray}, // Accumulates a value across an array
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -86,6 +90,31 @@ func push(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 
 	// Return the modified array
 	return arr
+}
+
+// toArray converts a list or tuple to an array.
+// Syntax: to_array(iterable)
+func toArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: to_array expects 1 argument")
+	}
+	arg := args[0]
+	switch arg.GetType() {
+	case ArrayType:
+		return arg
+	case ListType:
+		l := arg.(*List)
+		newElements := make([]GoMixObject, len(l.Elements))
+		copy(newElements, l.Elements)
+		return &Array{Elements: newElements}
+	case TupleType:
+		t := arg.(*Tuple)
+		newElements := make([]GoMixObject, len(t.Elements))
+		copy(newElements, t.Elements)
+		return &Array{Elements: newElements}
+	default:
+		return createError("ERROR: argument to `to_array` must be a list or tuple, got '%s'", arg.GetType())
+	}
 }
 
 // sortArray sorts the elements of an array in-place.

@@ -179,41 +179,41 @@ func TestNewLexer_ConsumeTokens(t *testing.T) {
 				NewToken(RIGHT_BRACE, "}"),
 				NewToken(RIGHT_BRACE, "}"),
 			},
-			},
+		},
 
-			{
-				Input: `1 1.23 true "hello" nil`,
-				ExpectedTokens: []Token{
-					NewToken(INT_LIT, "1"),
-					NewToken(FLOAT_LIT, "1.23"),
-					NewToken(TRUE_KEY, "true"),
-					NewToken(STRING_LIT, "hello"),
-					NewToken(NIL_LIT, "nil"),
-				},
+		{
+			Input: `1 1.23 true "hello" nil`,
+			ExpectedTokens: []Token{
+				NewToken(INT_LIT, "1"),
+				NewToken(FLOAT_LIT, "1.23"),
+				NewToken(TRUE_KEY, "true"),
+				NewToken(STRING_LIT, "hello"),
+				NewToken(NIL_LIT, "nil"),
 			},
-			{
-				Input: `0x16 0777 1e9 1.4e9 12E-2`,
-				ExpectedTokens: []Token{
-					NewToken(INT_LIT, "0x16"),
-					NewToken(INT_LIT, "0777"),
-					NewToken(FLOAT_LIT, "1e9"),
-					NewToken(FLOAT_LIT, "1.4e9"),
-					NewToken(FLOAT_LIT, "12E-2"),
-				},
+		},
+		{
+			Input: `0x16 0777 1e9 1.4e9 12E-2`,
+			ExpectedTokens: []Token{
+				NewToken(INT_LIT, "0x16"),
+				NewToken(INT_LIT, "0777"),
+				NewToken(FLOAT_LIT, "1e9"),
+				NewToken(FLOAT_LIT, "1.4e9"),
+				NewToken(FLOAT_LIT, "12E-2"),
 			},
-			// Test escape sequences in string literals
-			{
-				Input: `"hello\nworld"`,
-				ExpectedTokens: []Token{
-					NewToken(STRING_LIT, "hello\nworld"),
-				},
+		},
+		// Test escape sequences in string literals
+		{
+			Input: `"hello\nworld"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "hello\nworld"),
 			},
-			{
-				Input: `"tab\there"`,
-				ExpectedTokens: []Token{
-					NewToken(STRING_LIT, "tab\there"),
-				},
+		},
+		{
+			Input: `"tab\there"`,
+			ExpectedTokens: []Token{
+				NewToken(STRING_LIT, "tab\there"),
 			},
+		},
 		{
 			Input: `"escaped\\backslash"`,
 			ExpectedTokens: []Token{
@@ -269,4 +269,33 @@ func TestNewLexer_ConsumeTokens(t *testing.T) {
 		}
 	}
 
+}
+
+// import tests
+func TestNewLexer_Import(t *testing.T) {
+	tests := []TestConsumeToken{
+		{
+			Input: `import "math"`,
+			ExpectedTokens: []Token{
+				NewToken(IMPORT_KEY, "import"),
+				NewToken(STRING_LIT, "math"),
+			},
+		},
+		{
+			Input: `import "sets"`,
+			ExpectedTokens: []Token{
+				NewToken(IMPORT_KEY, "import"),
+				NewToken(STRING_LIT, "sets"),
+			},
+		},
+	}
+	for _, test := range tests {
+		lex := NewLexer(test.Input)
+		gotTokens := lex.ConsumeTokens()
+		assert.Equal(t, len(test.ExpectedTokens), len(gotTokens))
+		for i, token := range test.ExpectedTokens {
+			assert.Equal(t, token.Type, gotTokens[i].Type)
+			assert.Equal(t, token.Literal, gotTokens[i].Literal)
+		}
+	}
 }
