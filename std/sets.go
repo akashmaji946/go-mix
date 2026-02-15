@@ -18,11 +18,15 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var setMethods = []*Builtin{
+	{Name: "make_set", Callback: setMake},         // Creates a new set
 	{Name: "insert_set", Callback: setInsert},     // Inserts a value into a set
 	{Name: "remove_set", Callback: setRemove},     // Removes a value from a set
 	{Name: "contains_set", Callback: setContains}, // Checks if a set contains a value
 	{Name: "values_set", Callback: setValues},     // Returns an array of all values in a set
-	{Name: "size_set", Callback: setSize},         // Returns the number of elements in a set
+
+	{Name: "size_set", Callback: setSize},   // Returns the number of elements in a set
+	{Name: "length_set", Callback: setSize}, // Applies a function to each element, returning a new set
+
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -41,6 +45,37 @@ func init() {
 		setsPackage.Functions[method.Name] = method
 	}
 	RegisterPackage(setsPackage)
+}
+
+// setMake creates a new set from the provided arguments.
+// It takes zero or more arguments of any type and returns a Set object.
+// Sets are mutable collections of unique values, implemented using a map for O(1) lookups.
+//
+// Parameters:
+//   - args: Zero or more values to include in the set (will be converted to strings)
+//
+// Returns:
+//   - A new Set object containing the unique values
+//
+// Example:
+//
+//	var s = make_set(1, 2, 3, 2);
+//	// s is now set{1, 2, 3} (duplicate '2' is ignored)
+func setMake(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	setObj := &Set{
+		Elements: make(map[string]bool),
+		Values:   []string{},
+	}
+
+	for _, arg := range args {
+		valueStr := arg.ToString()
+		if !setObj.Elements[valueStr] {
+			setObj.Elements[valueStr] = true
+			setObj.Values = append(setObj.Values, valueStr)
+		}
+	}
+
+	return setObj
 }
 
 // setInsert adds a value to a set.

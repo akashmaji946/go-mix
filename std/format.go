@@ -15,11 +15,11 @@ import (
 )
 
 var formatMethods = []*Builtin{
-	{Name: "to_int", Callback: toInt},       // Converts a value to an integer
-	{Name: "to_float", Callback: toFloat},   // Converts a value to a float
-	{Name: "to_bool", Callback: toBool},     // Converts a value to a boolean
-	{Name: "to_string", Callback: toString}, // Converts a value to a string
-	{Name: "to_char", Callback: toChar},     // Converts a value to a character
+	{Name: "to_int", Callback: toInt},     // Converts a value to an integer
+	{Name: "to_float", Callback: toFloat}, // Converts a value to a float
+	{Name: "to_bool", Callback: toBool},   // Converts a value to a boolean
+	{Name: "to_str", Callback: toString},  // Converts a value to a string
+	{Name: "to_char", Callback: toChar},   // Converts a value to a character
 }
 
 // init registers the format methods as global builtins and as a package for import.

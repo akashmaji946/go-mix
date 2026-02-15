@@ -4754,3 +4754,46 @@ func TestImportStatement(t *testing.T) {
 		t.Errorf("stmt.Name not 'math'. got=%q", stmt.Name)
 	}
 }
+
+// TestParser_ImportWithAlias verifies parsing of import statements with aliases
+func TestParser_ImportWithAlias(t *testing.T) {
+	tests := []struct {
+		src         string
+		packageName string
+		alias       string
+	}{
+		{`import math as m;`, "math", "m"},
+		{`import strings as str;`, "strings", "str"},
+		{`import arrays as arr;`, "arrays", "arr"},
+		{`import lists as lst;`, "lists", "lst"},
+	}
+
+	for _, tt := range tests {
+		root := NewParser(tt.src).Parse()
+		assert.NotNil(t, root)
+		assert.Equal(t, 1, len(root.Statements), "should have one import statement")
+
+		// Verify the import statement has the correct package name and alias
+		importStmt, ok := root.Statements[0].(*ImportStatementNode)
+		assert.True(t, ok)
+		assert.Equal(t, tt.packageName, importStmt.Name, "package name mismatch")
+		assert.Equal(t, tt.alias, importStmt.Alias, "alias mismatch")
+	}
+}
+
+// TestParser_ImportWithAliasAndFunctionCall verifies parsing of import with alias and subsequent function calls
+func TestParser_ImportWithAliasAndFunctionCall(t *testing.T) {
+	src := `import math as m; m.abs(-5);`
+	root := NewParser(src).Parse()
+	assert.NotNil(t, root)
+	assert.Equal(t, 2, len(root.Statements))
+
+	// First statement should be import with alias
+	importStmt, ok := root.Statements[0].(*ImportStatementNode)
+	assert.True(t, ok)
+	assert.Equal(t, "math", importStmt.Name)
+	assert.Equal(t, "m", importStmt.Alias)
+
+	// Second statement should be the function call
+	_ = root.Statements[1]
+}

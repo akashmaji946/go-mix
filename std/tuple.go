@@ -18,13 +18,11 @@ import (
 // These are appended to the global Builtins slice during package initialization.
 var tupleMethods = []*Builtin{
 
-	{Name: "tuple", Callback: tupleFunc},                // Creates a new immutable tuple from arguments
-	{Name: "size_tuple", Callback: sizeTuple},           // Returns the number of elements in a tuple
+	{Name: "make_tuple", Callback: tupleFunc}, // Creates a new immutable tuple from arguments
+
 	{Name: "peekback_tuple", Callback: peekbackTuple},   // Returns the last element of a tuple
 	{Name: "peekfront_tuple", Callback: peekfrontTuple}, // Returns the first element of a tuple
 	{Name: "contains_tuple", Callback: containsTuple},   // Checks if a value exists in the tuple
-
-	{Name: "to_tuple", Callback: toTuple}, // Converts array/list to tuple
 
 	{Name: "map_tuple", Callback: mapList},       // Applies a function to each element
 	{Name: "filter_tuple", Callback: filterList}, // Filters elements based on a predicate
@@ -32,6 +30,11 @@ var tupleMethods = []*Builtin{
 	{Name: "find_tuple", Callback: findTuple},    // Finds the first element matching a predicate
 	{Name: "some_tuple", Callback: someTuple},    // Checks if at least one element matches
 	{Name: "every_tuple", Callback: everyTuple},  // Checks if all elements match
+
+	{Name: "to_tuple", Callback: toTuple}, // Converts array/list to tuple
+
+	{Name: "size_tuple", Callback: sizeTuple},   // Returns the number of elements in a tuple
+	{Name: "length_tuple", Callback: sizeTuple}, // Returns the number of elements in a tuple (alias)
 }
 
 // init registers the tuple methods by appending them to the global Builtins slice.

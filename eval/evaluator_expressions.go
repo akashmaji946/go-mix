@@ -2737,15 +2737,6 @@ func (e *Evaluator) evalPackageMemberAccess(pkg *std.Package, node parser.Expres
 // Parameters:
 //   - n: An ImportStatementNode containing the package name to import
 //
-// Returns:
-//   - objects.GoMixObject: The imported Package object, or an Error if the package is not found
-//
-// Example:
-//
-//	import math;           // Imports the math package
-//	math.abs(-5);          // Calls the abs function from the math package
-//	import strings;
-//	strings.upper("hello"); // Calls the upper function from the strings package
 func (e *Evaluator) evalImportStatement(n *parser.ImportStatementNode) std.GoMixObject {
 	// Look up the package by name
 	pkg, exists := e.Imports[n.Name]
@@ -2753,9 +2744,14 @@ func (e *Evaluator) evalImportStatement(n *parser.ImportStatementNode) std.GoMix
 		return e.CreateError("ERROR: package '%s' not found", n.Name)
 	}
 
-	// Bind the package name to the package object in the current scope
+	// Bind the package to the scope using alias if provided, otherwise use package name
 	// This allows access to the package via the dot operator
-	e.Scp.Bind(n.Name, pkg)
+	bindName := n.Name
+	if n.Alias != "" {
+		bindName = n.Alias
+	}
+	e.Scp.Bind(bindName, pkg)
 
 	return pkg
 }
+

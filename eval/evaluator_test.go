@@ -2834,7 +2834,7 @@ func TestEvaluator_CustomSort(t *testing.T) {
 		var cmp = func(x, y) { return length(x) < length(y); };
 		var b = csorted(a, cmp);
 		csort(a, cmp);
-		tostring(a) + " " + tostring(b)
+		to_string(a) + " " + to_string(b)
 	`
 	p := parser.NewParser(input)
 	rootNode := p.Parse()
@@ -2852,7 +2852,7 @@ func TestEvaluator_MapArray(t *testing.T) {
 	input := `
 		var a = [1, 2, 3];
 		var b = map_array(a, func(x) { return x * x; });
-		tostring(b)
+		to_string(b)
 	`
 	p := parser.NewParser(input)
 	rootNode := p.Parse()
@@ -2870,7 +2870,7 @@ func TestEvaluator_FilterArray(t *testing.T) {
 	input := `
 		var a = [1, 2, 3, 4, 5, 6];
 		var b = filter_array(a, func(x) { return x % 2 == 0; });
-		tostring(b)
+		to_string(b)
 	`
 	p := parser.NewParser(input)
 	rootNode := p.Parse()
@@ -3569,5 +3569,126 @@ func TestTypeConversionFunctions(t *testing.T) {
 	}
 	if arr.Elements[2].ToString() != "array" {
 		t.Errorf("expected array, got %s", arr.Elements[2].ToString())
+	}
+}
+
+// TestEvaluator_ImportWithAlias verifies package import with alias works correctly
+func TestEvaluator_ImportWithAlias(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`import math as m; m.abs(-5)`, int64(5)},
+		{`import math as m; m.max(3, 7)`, int64(7)},
+		{`import math as m; m.min(10, 4)`, int64(4)},
+		{`import math as m; var x = m.abs(-10); x`, int64(10)},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		// Check for error
+		if IsError(result) {
+			t.Errorf("for input '%s': got error '%s'", tt.input, result.ToString())
+			continue
+		}
+
+		// Check result type
+		if result.GetType() != std.IntegerType {
+			t.Errorf("for input '%s': expected IntegerType, got %s", tt.input, result.GetType())
+			continue
+		}
+
+		// Check result value
+		actual := result.(*std.Integer).Value
+		expected := tt.expected.(int64)
+		if actual != expected {
+			t.Errorf("for input '%s': expected %d, got %d", tt.input, expected, actual)
+		}
+	}
+}
+
+// TestEvaluator_ImportAliasRejectsOriginalName verifies that original package name is not accessible with alias
+func TestEvaluator_ImportAliasRejectsOriginalName(t *testing.T) {
+	src := `import math as m; math.abs(-5);`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	// This should fail because 'math' is not bound when we use alias 'm'
+	if !IsError(result) {
+		t.Errorf("expected error for accessing 'math' after importing 'math as m', but got result: %v", result)
+	}
+}
+
+// TestEvaluator_ImportWithoutAlias verifies regular imports still work
+func TestEvaluator_ImportWithoutAlias(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`import math; math.abs(-5)`, int64(5)},
+		{`import math; math.min(3, 7)`, int64(3)},
+		{`import math; math.max(8, 2)`, int64(8)},
+	}
+
+	for _, tt := range tests {
+		p := parser.NewParser(tt.input)
+		rootNode := p.Parse()
+		evaluator := NewEvaluator()
+		evaluator.SetParser(p)
+		result := evaluator.Eval(rootNode)
+
+		if IsError(result) {
+			t.Errorf("for input '%s': got error '%s'", tt.input, result.ToString())
+			continue
+		}
+
+		if result.GetType() != std.IntegerType {
+			t.Errorf("for input '%s': expected IntegerType, got %s", tt.input, result.GetType())
+			continue
+		}
+
+		actual := result.(*std.Integer).Value
+		expected := tt.expected.(int64)
+		if actual != expected {
+			t.Errorf("for input '%s': expected %d, got %d", tt.input, expected, actual)
+		}
+	}
+}
+
+// TestEvaluator_MultipleImportsWithAlias verifies multiple imports with different aliases work correctly
+func TestEvaluator_MultipleImportsWithAlias(t *testing.T) {
+	src := `
+import math as m;
+import math as math2;
+var x = m.abs(-5);
+var y = math2.abs(-3);
+x + y;
+`
+	p := parser.NewParser(src)
+	rootNode := p.Parse()
+	evaluator := NewEvaluator()
+	evaluator.SetParser(p)
+	result := evaluator.Eval(rootNode)
+
+	if IsError(result) {
+		t.Fatalf("got error: %s", result.ToString())
+	}
+
+	if result.GetType() != std.IntegerType {
+		t.Fatalf("expected IntegerType, got %s", result.GetType())
+	}
+
+	actual := result.(*std.Integer).Value
+	expected := int64(8) // 5 + 3
+	if actual != expected {
+		t.Errorf("expected %d, got %d", expected, actual)
 	}
 }

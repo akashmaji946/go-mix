@@ -1073,10 +1073,14 @@ func (node *ContinueStatementNode) Statement() {}
 type ImportStatementNode struct {
 	Token lexer.Token // The 'import' keyword token
 	Name  string      // The package name being imported
+	Alias string      // Optional alias for the package (e.g., "import math as m;")
 }
 
 // ImportStatementNode.Literal()
 func (node *ImportStatementNode) Literal() string {
+	if node.Alias != "" {
+		return "import " + node.Name + " as " + node.Alias
+	}
 	return "import " + node.Name
 }
 

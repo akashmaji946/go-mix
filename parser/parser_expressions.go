@@ -2242,6 +2242,20 @@ func (par *Parser) parseImportStatement() StatementNode {
 		return nil
 	}
 	packageName := par.CurrToken.Literal
+	alias := "" // Default: no alias
+
+	// Check for optional "as" keyword for aliasing
+	if par.NextToken.Type == lexer.IDENTIFIER_ID && par.NextToken.Literal == "as" {
+		par.advance() // Move to "as"
+		par.advance() // Move to alias identifier
+
+		// Expect the alias name (identifier)
+		if par.CurrToken.Type != lexer.IDENTIFIER_ID {
+			par.addError(fmt.Sprintf("expected identifier for alias, got %s", par.CurrToken.Literal))
+			return nil
+		}
+		alias = par.CurrToken.Literal
+	}
 
 	// Expect semicolon
 	if !par.expectAdvance(lexer.SEMICOLON_DELIM) {
@@ -2251,6 +2265,7 @@ func (par *Parser) parseImportStatement() StatementNode {
 	return &ImportStatementNode{
 		Token: importToken,
 		Name:  packageName,
+		Alias: alias,
 	}
 }
 

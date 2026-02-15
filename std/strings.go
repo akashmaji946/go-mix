@@ -17,27 +17,34 @@ import (
 )
 
 var stringMethods = []*Builtin{
-	{Name: "upper", Callback: upper},            // Converts string to uppercase
-	{Name: "lower", Callback: lower},            // Converts string to lowercase
-	{Name: "trim", Callback: trim},              // Trims whitespace from both ends
-	{Name: "ltrim", Callback: ltrim},            // Trims whitespace from the left
-	{Name: "rtrim", Callback: rtrim},            // Trims whitespace from the right
-	{Name: "split", Callback: split},            // Splits string into an array by separator
-	{Name: "join", Callback: join},              // Joins an array into a string with separator
-	{Name: "replace", Callback: replace},        // Replaces occurrences of a substring
-	{Name: "contains", Callback: contains},      // Checks if string contains a substring
-	{Name: "index", Callback: index},            // Returns index of first occurrence of substring
-	{Name: "ord", Callback: ord},                // Returns integer value of a character
-	{Name: "chr", Callback: chr},                // Returns character from integer value
-	{Name: "starts_with", Callback: startsWith}, // Checks if string starts with prefix
-	{Name: "ends_with", Callback: endsWith},     // Checks if string ends with suffix
-	{Name: "strcmp", Callback: strcmp},          // Compares two strings (-1, 0, 1)
-	{Name: "reverse", Callback: reverse},        // Reverses a string
-	{Name: "substring", Callback: substring},    // Extracts a part of a string
-	{Name: "capitalize", Callback: capitalize},  // Capitalizes the first letter
-	{Name: "count", Callback: count},            // Counts occurrences of a substring
-	{Name: "is_digit", Callback: isDigitFunc},   // Checks if string contains only digits
-	{Name: "is_alpha", Callback: isAlphaFunc},   // Checks if string contains only letters
+
+	{Name: "upper", Callback: upperString}, // Converts string to uppercase
+	{Name: "lower", Callback: lowerString}, // Converts string to lowercase
+	{Name: "trim", Callback: trimString},   // Trims whitespace from both ends
+	{Name: "ltrim", Callback: ltrimString}, // Trims whitespace from the left
+	{Name: "rtrim", Callback: rtrimString}, // Trims whitespace from the right
+	{Name: "split", Callback: splitString}, // Splits string into an array by separator
+	{Name: "join", Callback: joinString},   // Joins an array into a string with separator
+
+	{Name: "contains_string", Callback: containsString}, // Checks if string contains a substring
+	{Name: "reverse_string", Callback: reverseString},   // Reverses a string
+	{Name: "replace_string", Callback: replaceString},   // Replaces occurrences of a substring
+	{Name: "index_string", Callback: indexString},       // Returns index of first occurrence of substring
+
+	{Name: "ord", Callback: ordString},                // Returns integer value of a character
+	{Name: "chr", Callback: chrString},                // Returns character from integer value
+	{Name: "starts_with", Callback: startsWithString}, // Checks if string starts with prefix
+	{Name: "ends_with", Callback: endsWithString},     // Checks if string ends with suffix
+	{Name: "strcmp", Callback: strcmpString},          // Compares two strings (-1, 0, 1)
+
+	{Name: "substring", Callback: substringString},   // Extracts a part of a string
+	{Name: "capitalize", Callback: capitalizeString}, // Capitalizes the first letter
+	{Name: "count", Callback: countString},           // Counts occurrences of a substring
+	{Name: "is_digit", Callback: isDigitFuncString},  // Checks if string contains only digits
+	{Name: "is_alpha", Callback: isAlphaFuncString},  // Checks if string contains only letters
+
+	{Name: "size_string", Callback: stringLengthString},   // Returns the length of a string
+	{Name: "length_string", Callback: stringLengthString}, // Returns the length of a string (alias)
 }
 
 // init registers the string methods as global builtins and as a package for import.
@@ -56,45 +63,63 @@ func init() {
 	RegisterPackage(stringsPackage)
 }
 
-// upper converts a string to uppercase.
+// stringLengthString returns the length of a string.
 //
-// Syntax: upper(str)
+// Syntax: length(str)
 //
 // Usage:
 //
-//	Returns a copy of the string with all Unicode letters mapped to their upper case.
+//	Returns the number of characters in the string.
 //
 // Example:
 //
-//	upper("hello"); // Returns "HELLO"
-func upper(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	length("hello"); // Returns 5
+func stringLengthString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: length expects 1 argument, got %d", len(args))
+	}
+	return &Integer{Value: int64(len([]rune(args[0].ToString())))}
+}
+
+// upperString converts a string to uppercase.
+//
+// Syntax: upperString(str)
+//
+// Usage:
+//
+//	Returns a copy of the string with all Unicode letters mapped to their upperString case.
+//
+// Example:
+//
+//	upperString("hello"); // Returns "HELLO"
+func upperString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: upper expects 1 argument, got %d", len(args))
 	}
 	return &String{Value: strings.ToUpper(args[0].ToString())}
 }
 
-// lower converts a string to lowercase.
+// lowerString converts a string to lowercase.
 //
-// Syntax: lower(str)
+// Syntax: lowerString(str)
 //
 // Usage:
 //
-//	Returns a copy of the string with all Unicode letters mapped to their lower case.
+//	Returns a copy of the string with all Unicode letters mapped to their lowerString case.
 //
 // Example:
 //
-//	lower("HELLO"); // Returns "hello"
-func lower(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	lowerString("HELLO"); // Returns "hello"
+func lowerString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: lower expects 1 argument, got %d", len(args))
 	}
 	return &String{Value: strings.ToLower(args[0].ToString())}
 }
 
-// trim removes whitespace from both ends of a string.
+// trimString removes whitespace from both ends of a string.
 //
-// Syntax: trim(str)
+// Syntax: trimString(str)
 //
 // Usage:
 //
@@ -102,17 +127,17 @@ func lower(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	trim("  hello  "); // Returns "hello"
-func trim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	trimString("  hello  "); // Returns "hello"
+func trimString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: trim expects 1 argument, got %d", len(args))
 	}
 	return &String{Value: strings.TrimSpace(args[0].ToString())}
 }
 
-// ltrim removes whitespace from the left side of a string.
+// ltrimString removes whitespace from the left side of a string.
 //
-// Syntax: ltrim(str)
+// Syntax: ltrimString(str)
 //
 // Usage:
 //
@@ -120,17 +145,17 @@ func trim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	ltrim("  hello  "); // Returns "hello  "
-func ltrim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	ltrimString("  hello  "); // Returns "hello  "
+func ltrimString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: ltrim expects 1 argument, got %d", len(args))
 	}
 	return &String{Value: strings.TrimLeftFunc(args[0].ToString(), unicode.IsSpace)}
 }
 
-// rtrim removes whitespace from the right side of a string.
+// rtrimString removes whitespace from the right side of a string.
 //
-// Syntax: rtrim(str)
+// Syntax: rtrimString(str)
 //
 // Usage:
 //
@@ -138,17 +163,17 @@ func ltrim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	rtrim("  hello  "); // Returns "  hello"
-func rtrim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	rtrimString("  hello  "); // Returns "  hello"
+func rtrimString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: rtrim expects 1 argument, got %d", len(args))
 	}
 	return &String{Value: strings.TrimRightFunc(args[0].ToString(), unicode.IsSpace)}
 }
 
-// split divides a string into an array of substrings based on a separator.
+// splitString divides a string into an array of substrings based on a separator.
 //
-// Syntax: split(str, separator)
+// Syntax: splitString(str, separator)
 //
 // Usage:
 //
@@ -156,8 +181,8 @@ func rtrim(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	split("a,b,c", ","); // Returns ["a", "b", "c"]
-func split(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	splitString("a,b,c", ","); // Returns ["a", "b", "c"]
+func splitString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: split expects 2 arguments (str, sep), got %d", len(args))
 	}
@@ -171,9 +196,9 @@ func split(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Array{Elements: elements}
 }
 
-// join concatenates elements of an array into a single string using a separator.
+// joinString concatenates elements of an array into a single string using a separator.
 //
-// Syntax: join(array, separator)
+// Syntax: joinString(array, separator)
 //
 // Usage:
 //
@@ -182,8 +207,8 @@ func split(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	join(["Go", "Mix"], "-"); // Returns "Go-Mix"
-func join(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	joinString(["Go", "Mix"], "-"); // Returns "Go-Mix"
+func joinString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: join expects 2 arguments (array, sep), got %d", len(args))
 	}
@@ -199,9 +224,9 @@ func join(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &String{Value: strings.Join(parts, sep)}
 }
 
-// replace returns a copy of the string with all occurrences of 'old' replaced by 'new'.
+// replaceString returns a copy of the string with all occurrences of 'old' replaced by 'new'.
 //
-// Syntax: replace(str, old, new)
+// Syntax: replaceString(str, old, new)
 //
 // Usage:
 //
@@ -209,8 +234,8 @@ func join(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	replace("banana", "a", "o"); // Returns "bonono"
-func replace(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	replaceString("banana", "a", "o"); // Returns "bonono"
+func replaceString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 3 {
 		return createError("ERROR: replace expects 3 arguments (str, old, new), got %d", len(args))
 	}
@@ -220,9 +245,9 @@ func replace(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &String{Value: strings.ReplaceAll(s, old, newSub)}
 }
 
-// contains reports whether substring is within str.
+// containsString reports whether substring is within str.
 //
-// Syntax: contains(str, substring)
+// Syntax: containsString(str, substring)
 //
 // Usage:
 //
@@ -230,36 +255,36 @@ func replace(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	contains("hello", "ell"); // Returns true
-func contains(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	containsString("hello", "ell"); // Returns true
+func containsString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: contains expects 2 arguments, got %d", len(args))
 	}
 	return &Boolean{Value: strings.Contains(args[0].ToString(), args[1].ToString())}
 }
 
-// index returns the index of the first instance of substring in str, or -1 if not present.
+// indexString returns the indexString of the first instance of substring in str, or -1 if not present.
 //
-// Syntax: index(str, substring)
+// Syntax: indexString(str, substring)
 //
 // Usage:
 //
-//	Returns the index of the first instance of the substring in the string, or -1 if the substring is not present.
+//	Returns the indexString of the first instance of the substring in the string, or -1 if the substring is not present.
 //
 // Example:
 //
-//	index("hello", "e"); // Returns 1
-func index(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	indexString("hello", "e"); // Returns 1
+func indexString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: index expects 2 arguments, got %d", len(args))
 	}
 	return &Integer{Value: int64(strings.Index(args[0].ToString(), args[1].ToString()))}
 }
 
-// ord returns the integer Unicode code point of a character.
+// ordString returns the integer Unicode code point of a character.
 // If a string is provided, it returns the code point of the first character.
 //
-// Syntax: ord(char_or_string)
+// Syntax: ordString(char_or_string)
 //
 // Usage:
 //
@@ -267,9 +292,9 @@ func index(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	ord('A');   // Returns 65
-//	ord("ABC"); // Returns 65
-func ord(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	ordString('A');   // Returns 65
+//	ordString("ABC"); // Returns 65
+func ordString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: ord expects 1 argument, got %d", len(args))
 	}
@@ -283,9 +308,9 @@ func ord(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Integer{Value: int64([]rune(s)[0])}
 }
 
-// chr returns a character object representing the given Unicode code point.
+// chrString returns a character object representing the given Unicode code point.
 //
-// Syntax: chr(integer)
+// Syntax: chrString(integer)
 //
 // Usage:
 //
@@ -293,8 +318,8 @@ func ord(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	chr(65); // Returns 'A'
-func chr(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	chrString(65); // Returns 'A'
+func chrString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: chr expects 1 argument, got %d", len(args))
 	}
@@ -304,7 +329,7 @@ func chr(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Char{Value: rune(args[0].(*Integer).Value)}
 }
 
-// startsWith tests whether the string starts with prefix.
+// startsWithString tests whether the string starts with prefix.
 //
 // Syntax: starts_with(str, prefix)
 //
@@ -315,14 +340,14 @@ func chr(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	starts_with("hello", "he"); // Returns true
-func startsWith(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+func startsWithString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: starts_with expects 2 arguments, got %d", len(args))
 	}
 	return &Boolean{Value: strings.HasPrefix(args[0].ToString(), args[1].ToString())}
 }
 
-// endsWith tests whether the string ends with suffix.
+// endsWithString tests whether the string ends with suffix.
 //
 // Syntax: ends_with(str, suffix)
 //
@@ -333,17 +358,17 @@ func startsWith(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	ends_with("hello", "lo"); // Returns true
-func endsWith(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+func endsWithString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: ends_with expects 2 arguments, got %d", len(args))
 	}
 	return &Boolean{Value: strings.HasSuffix(args[0].ToString(), args[1].ToString())}
 }
 
-// strcmp compares two strings lexicographically.
+// strcmpString compares two strings lexicographically.
 // Returns 0 if s1 == s2, -1 if s1 < s2, and 1 if s1 > s2.
 //
-// Syntax: strcmp(s1, s2)
+// Syntax: strcmpString(s1, s2)
 //
 // Usage:
 //
@@ -351,10 +376,10 @@ func endsWith(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 // Example:
 //
-//	strcmp("apple", "banana"); // Returns -1
-//	strcmp("hello", "hello");  // Returns 0
-//	strcmp("zoo", "zebra");    // Returns 1
-func strcmp(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	strcmpString("apple", "banana"); // Returns -1
+//	strcmpString("hello", "hello");  // Returns 0
+//	strcmpString("zoo", "zebra");    // Returns 1
+func strcmpString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: strcmp expects 2 arguments, got %d", len(args))
 	}
@@ -368,19 +393,19 @@ func strcmp(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Integer{Value: 0}
 }
 
-// reverse returns a new string with the characters in reverse order.
+// reverseString returns a new string with the characters in reverseString order.
 //
-// Syntax: reverse(str)
+// Syntax: reverseString(str)
 //
 // Usage:
 //
-//	Returns a new string with the characters of the input string in reverse order.
+//	Returns a new string with the characters of the input string in reverseString order.
 //	Handles Unicode characters correctly.
 //
 // Example:
 //
-//	reverse("abc"); // Returns "cba"
-func reverse(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	reverseString("abc"); // Returns "cba"
+func reverseString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: reverse expects 1 argument, got %d", len(args))
 	}
@@ -392,20 +417,20 @@ func reverse(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &String{Value: string(runes)}
 }
 
-// substring extracts a part of a string.
+// substringString extracts a part of a string.
 //
-// Syntax: substring(str, start, [length])
+// Syntax: substringString(str, start, [length])
 //
 // Usage:
 //
-//	Returns a substring starting at the 'start' index. If 'length' is provided,
+//	Returns a substringString starting at the 'start' index. If 'length' is provided,
 //	it returns that many characters. Otherwise, it returns until the end of the string.
 //
 // Example:
 //
-//	substring("hello", 1, 2); // Returns "el"
-//	substring("hello", 2);    // Returns "llo"
-func substring(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	substringString("hello", 1, 2); // Returns "el"
+//	substringString("hello", 2);    // Returns "llo"
+func substringString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) < 2 || len(args) > 3 {
 		return createError("ERROR: substring expects 2 or 3 arguments, got %d", len(args))
 	}
@@ -437,14 +462,14 @@ func substring(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &String{Value: string(runes[start : start+length])}
 }
 
-// capitalize converts the first character of a string to uppercase and the rest to lowercase.
+// capitalizeString converts the first character of a string to uppercase and the rest to lowercase.
 //
-// Syntax: capitalize(str)
+// Syntax: capitalizeString(str)
 //
 // Example:
 //
-//	capitalize("gOMIX"); // Returns "Gomix"
-func capitalize(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	capitalizeString("gOMIX"); // Returns "Gomix"
+func capitalizeString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: capitalize expects 1 argument, got %d", len(args))
 	}
@@ -456,21 +481,21 @@ func capitalize(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &String{Value: strings.ToUpper(string(runes[0])) + strings.ToLower(string(runes[1:]))}
 }
 
-// count returns the number of non-overlapping instances of a substring in a string.
+// countString returns the number of non-overlapping instances of a substring in a string.
 //
-// Syntax: count(str, substring)
+// Syntax: countString(str, substring)
 //
 // Example:
 //
-//	count("banana", "a"); // Returns 3
-func count(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	countString("banana", "a"); // Returns 3
+func countString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: count expects 2 arguments, got %d", len(args))
 	}
 	return &Integer{Value: int64(strings.Count(args[0].ToString(), args[1].ToString()))}
 }
 
-// isDigitFunc checks if the string consists entirely of decimal digits.
+// isDigitFuncString checks if the string consists entirely of decimal digits.
 //
 // Syntax: is_digit(str)
 //
@@ -478,7 +503,7 @@ func count(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //
 //	is_digit("123"); // Returns true
 //	is_digit("12a"); // Returns false
-func isDigitFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+func isDigitFuncString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: is_digit expects 1 argument, got %d", len(args))
 	}
@@ -494,7 +519,7 @@ func isDigitFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject 
 	return &Boolean{Value: true}
 }
 
-// isAlphaFunc checks if the string consists entirely of alphabetic characters.
+// isAlphaFuncString checks if the string consists entirely of alphabetic characters.
 //
 // Syntax: is_alpha(str)
 //
@@ -502,7 +527,7 @@ func isDigitFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject 
 //
 //	is_alpha("abc"); // Returns true
 //	is_alpha("a12"); // Returns false
-func isAlphaFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+func isAlphaFuncString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
 		return createError("ERROR: is_alpha expects 1 argument, got %d", len(args))
 	}

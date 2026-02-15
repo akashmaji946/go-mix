@@ -12,6 +12,7 @@ package std
 // The file also contains helper functions for error handling and
 // string conversion that are used by various builtin functions.
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"reflect"
@@ -20,30 +21,49 @@ import (
 // commonMethods is a slice of common builtin functions that are always available.
 // These include printing functions, length calculation, and string conversion.
 var commonMethods = []*Builtin{
-	{Name: "print", Callback: print},                  // Prints arguments without a newline
-	{Name: "println", Callback: println},              // Prints arguments with a newline
-	{Name: "printf", Callback: printf},                // Prints formatted string with arguments
-	{Name: "length", Callback: length},                // Returns the length of strings or arrays
-	{Name: "tostring", Callback: tostring},            // Converts an object to its string representation
-	{Name: "range", Callback: rangeFunc},              // Creates an inclusive range from start to end
-	{Name: "typeof", Callback: typeofFunc},            // Returns the type of a Go-Mix object as a string
-	{Name: "size", Callback: length},                  // Alias for length - returns the size of strings, arrays, maps, or sets
-	{Name: "array", Callback: arrayFunc},              // Converts any iterable to a new array
-	{Name: "sorted", Callback: sortedArray},           // Returns a new sorted array
-	{Name: "sort", Callback: sortArray},               // Sorts an array in-place
-	{Name: "csort", Callback: csort},                  // Custom sort for an array using a comparator
-	{Name: "csorted", Callback: csorted},              // Returns a new sorted array using a comparator
-	{Name: "map", Callback: mapArray},                 // Applies a function to each element
-	{Name: "filter", Callback: filterArray},           // Filters elements based on a predicate
-	{Name: "reduce", Callback: reduceArray},           // Accumulates a value across an array
-	{Name: "find", Callback: findArray},               // Finds the first element matching a predicate
-	{Name: "some", Callback: someArray},               // Checks if at least one element matches
-	{Name: "every", Callback: everyArray},             // Checks if all elements match
-	{Name: "reverse", Callback: reverseArray},         // Returns a new reversed array
-	{Name: "json_encode", Callback: jsonStringEncode}, // Alias for json_string_encode
-	{Name: "str", Callback: tostring},                 // Alias for tostring - converts an object to a string
-	{Name: "addr", Callback: addrFunc},                // Returns the memory address of an object as an integer
-	{Name: "is_same_ref", Callback: isSameRef},        // Checks if two objects point to the same memory address
+	{Name: "print", Callback: print},     // Prints arguments without a newline
+	{Name: "println", Callback: println}, // Prints arguments with a newline
+	{Name: "printf", Callback: printf},   // Prints formatted string with arguments
+
+	{Name: "length", Callback: length}, // Returns the length of strings or arrays
+	{Name: "size", Callback: length},   // Alias for length - returns the size of strings, arrays, maps, or sets
+
+	{Name: "to_string", Callback: tostring}, // Converts an object to its string representation
+	// {Name: "string", Callback: tostring},                     // Alias for tostring - converts an object to a string
+	{Name: "range", Callback: rangeFunc}, // Creates an inclusive range from start to end
+
+	// constructors
+	{Name: "array", Callback: arrayFunc}, // Converts any iterable to a new array
+	{Name: "list", Callback: listFunc},   // Creates a new mutable list from arguments
+	{Name: "tuple", Callback: tupleFunc}, // Creates a new immutable tuple from arguments
+
+	// array methods
+	{Name: "push", Callback: pushArray},       // Adds an element to the end of the array
+	{Name: "pop", Callback: popArray},         // Removes and returns the last element of the array
+	{Name: "shift", Callback: shiftArray},     // Removes and returns the first element of the array
+	{Name: "unshift", Callback: unshiftArray}, // Adds an element to the beginning of the array
+	{Name: "sort", Callback: sortArray},       // Sorts the elements of the array in-place
+	{Name: "sorted", Callback: sortedArray},   // Returns a new sorted array
+	{Name: "clone", Callback: cloneArray},     // Returns a shallow copy of the array
+	{Name: "csort", Callback: csortArray},     // Custom sort for an array using a comparator
+	{Name: "csorted", Callback: csortedArray}, // Returns a new sorted array using a comparator
+
+	{Name: "find", Callback: findArray},   // Finds the first element matching a predicate
+	{Name: "some", Callback: someArray},   // Checks if at least one element matches
+	{Name: "every", Callback: everyArray}, // Checks if all elements match
+
+	{Name: "reverse", Callback: reverseArray},   // Returns a new reversed array
+	{Name: "contains", Callback: containsArray}, // Checks if a value exists in the array
+	{Name: "replace", Callback: replaceArray},   // Returns the index of the first occurrence of a value, or -1 if not found
+	{Name: "index", Callback: indexArray},       // Returns the index of the first occurrence of a value, or -1 if not found
+
+	{Name: "json_string_to_map", Callback: jsonStringDecode}, // Converts a JSON string into a map
+	{Name: "map_to_json_string", Callback: jsonStringEncode}, // Converts a map into a JSON string
+	{Name: "json_encode", Callback: jsonStringEncode},        // Alias for
+
+	{Name: "typeof", Callback: typeofFunc},     // Returns the type of a Go-Mix object as a string
+	{Name: "addr", Callback: addrFunc},         // Returns the memory address of an object as an integer
+	{Name: "is_same_ref", Callback: isSameRef}, // Checks if two objects point to the same memory address
 }
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
@@ -185,14 +205,14 @@ func length(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Determine the type and calculate length accordingly
 	switch args[0].GetType() {
 	case StringType:
-		// Return the length of the string
-		return &Integer{Value: int64(len(args[0].ToString()))}
+		// Return the length of the string by directly accessing the Value field
+		return &Integer{Value: int64(len(args[0].(*String).Value))}
 	case ArrayType:
 		// Return the number of elements in the array
 		return &Integer{Value: int64(len(args[0].(*Array).Elements))}
 	case MapType:
 		// Return the number of key-value pairs in the map
-		return &Integer{Value: int64(len(args[0].(*Map).Keys))}
+		return &Integer{Value: int64(len(args[0].(*Map).Pairs))}
 	case SetType:
 		// Return the number of unique values in the set
 		return &Integer{Value: int64(len(args[0].(*Set).Values))}
@@ -267,115 +287,6 @@ func typeofFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &String{Value: string(args[0].GetType())}
 }
 
-// arrayFunc creates a new array from arguments or converts an iterable to an array.
-// It accepts zero or more arguments:
-//   - 0 arguments: returns an empty array
-//   - 1 iterable argument: converts the iterable to a new array
-//   - 1 non-iterable argument: wraps it in an array
-//   - Multiple arguments: creates an array containing all arguments
-//
-// Examples:
-//
-//	array()                    -> []
-//	array(1, 2, 3)             -> [1, 2, 3]
-//	array([1, 2, 3])           -> [1, 2, 3]
-//	array(list(1, 2, 3))       -> [1, 2, 3]
-//	array(tuple(1, 2, 3))      -> [1, 2, 3]
-//	array(set{1, 2, 3})        -> [1, 2, 3]
-//	array(map{"a": 1, "b": 2}) -> [1, 2]
-//	array(42)                  -> [42]
-func arrayFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
-	// Handle 0 arguments: return empty array
-	if len(args) == 0 {
-		return &Array{Elements: []GoMixObject{}}
-	}
-
-	// Handle multiple arguments: create array from all arguments
-	if len(args) > 1 {
-		elements := make([]GoMixObject, len(args))
-		copy(elements, args)
-		return &Array{Elements: elements}
-	}
-
-	// Handle single argument
-	arg := args[0]
-	argType := arg.GetType()
-
-	// Handle iterable types (convert to array)
-	switch argType {
-	case ArrayType:
-		// Create a new array with copied elements from the input array
-		arr := arg.(*Array)
-		elements := make([]GoMixObject, len(arr.Elements))
-		copy(elements, arr.Elements)
-		return &Array{Elements: elements}
-
-	case ListType:
-		// Convert list elements to array
-		list := arg.(*List)
-		elements := make([]GoMixObject, len(list.Elements))
-		copy(elements, list.Elements)
-		return &Array{Elements: elements}
-
-	case TupleType:
-		// Convert tuple elements to array
-		tuple := arg.(*Tuple)
-		elements := make([]GoMixObject, len(tuple.Elements))
-		copy(elements, tuple.Elements)
-		return &Array{Elements: elements}
-
-	case MapType:
-		// Convert map values to array (in key insertion order)
-		m := arg.(*Map)
-		elements := make([]GoMixObject, len(m.Keys))
-		for i, key := range m.Keys {
-			elements[i] = m.Pairs[key]
-		}
-		return &Array{Elements: elements}
-
-	case SetType:
-		// Convert set values to array (in insertion order)
-		s := arg.(*Set)
-		elements := make([]GoMixObject, len(s.Values))
-		for i, val := range s.Values {
-			elements[i] = &String{Value: val}
-		}
-		return &Array{Elements: elements}
-
-	case RangeType:
-		// Convert range to array of integers
-		r := arg.(*Range)
-		start := r.Start
-		end := r.End
-
-		// Calculate size and direction
-		var size int
-		if start <= end {
-			size = int(end - start + 1)
-		} else {
-			size = int(start - end + 1)
-		}
-
-		elements := make([]GoMixObject, size)
-		if start <= end {
-			// Ascending range
-			for i := int64(0); i <= end-start; i++ {
-				elements[i] = &Integer{Value: start + i}
-			}
-		} else {
-			// Descending range
-			for i := int64(0); i <= start-end; i++ {
-				elements[i] = &Integer{Value: start - i}
-			}
-		}
-		return &Array{Elements: elements}
-
-	default:
-		// Non-iterable single argument: wrap it in an array
-		return &Array{Elements: []GoMixObject{arg}}
-	}
-}
-
 // addrFunc returns the memory address of a GoMixObject as an integer.
 // It uses Go's pointer representation to extract the address of the underlying value.
 //
@@ -433,4 +344,115 @@ func isSameRef(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	}
 
 	return &Boolean{Value: rv1.Pointer() == rv2.Pointer()}
+}
+
+// jsonStringDecode parses a JSON string into a Go-Mix Map.
+//
+// Parameters:
+//   - args[0]: The JSON string to decode
+//
+// Returns:
+//   - Map object, or Error if decoding fails
+//
+// Example:
+//
+//	var s = "{\"name\": \"John\", \"age\": 25}";
+//	var m = json_string_decode(s);
+func jsonStringDecode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: json_string_decode expects 1 argument (string)")
+	}
+
+	if args[0].GetType() != StringType {
+		return createError("ERROR: argument to `json_string_decode` must be a string, got '%s'", args[0].GetType())
+	}
+
+	var data interface{}
+	err := json.Unmarshal([]byte(args[0].ToString()), &data)
+	if err != nil {
+		return createError("ERROR: failed to decode JSON: %v", err)
+	}
+
+	return convertToGoMix(data)
+}
+
+// jsonStringEncode converts a Go-Mix object into a JSON string.
+func jsonStringEncode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: json_string_encode expects 1 argument")
+	}
+
+	data := convertFromGoMix(args[0])
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return createError("ERROR: failed to encode JSON: %v", err)
+	}
+
+	return &String{Value: string(bytes)}
+}
+
+func convertFromGoMix(obj GoMixObject) interface{} {
+	switch obj.GetType() {
+	case ArrayType:
+		arr := obj.(*Array)
+		res := make([]interface{}, len(arr.Elements))
+		for i, e := range arr.Elements {
+			res[i] = convertFromGoMix(e)
+		}
+		return res
+	case MapType:
+		m := obj.(*Map)
+		res := make(map[string]interface{})
+		for k, v := range m.Pairs {
+			res[k] = convertFromGoMix(v)
+		}
+		return res
+	case IntegerType:
+		return obj.(*Integer).Value
+	case FloatType:
+		return obj.(*Float).Value
+	case BooleanType:
+		return obj.(*Boolean).Value
+	case StringType:
+		return obj.(*String).Value
+	case NilType:
+		return nil
+	default:
+		return obj.ToString()
+	}
+}
+
+// convertToGoMix recursively converts Go native types from json.Unmarshal
+// into Go-Mix internal objects.
+func convertToGoMix(val interface{}) GoMixObject {
+	switch v := val.(type) {
+	case map[string]interface{}:
+		m := &Map{
+			Pairs: make(map[string]GoMixObject),
+			Keys:  make([]string, 0, len(v)),
+		}
+		for k, rawVal := range v {
+			m.Pairs[k] = convertToGoMix(rawVal)
+			m.Keys = append(m.Keys, k)
+		}
+		return m
+	case []interface{}:
+		elements := make([]GoMixObject, len(v))
+		for i, rawVal := range v {
+			elements[i] = convertToGoMix(rawVal)
+		}
+		return &Array{Elements: elements}
+	case string:
+		return &String{Value: v}
+	case bool:
+		return &Boolean{Value: v}
+	case float64:
+		// Check if it's actually an integer
+		if v == float64(int64(v)) {
+			return &Integer{Value: int64(v)}
+		}
+		return &Float{Value: v}
+	default:
+		return &Nil{}
+	}
 }

@@ -17,12 +17,13 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var listMethods = []*Builtin{
-	{Name: "list", Callback: listFunc},                // Creates a new mutable list from arguments
+	{Name: "make_list", Callback: listFunc},
+
 	{Name: "pushback_list", Callback: pushbackList},   // Appends an element to the end of a list
 	{Name: "pushfront_list", Callback: pushfrontList}, // Prepends an element to the start of a list
 	{Name: "popback_list", Callback: popbackList},     // Removes and returns the last element of a list
 	{Name: "popfront_list", Callback: popfrontList},   // Removes and returns the first element of a list
-	{Name: "size_list", Callback: sizeList},           // Returns the number of elements in a list
+
 	{Name: "peekback_list", Callback: peekbackList},   // Returns the last element without removing it
 	{Name: "peekfront_list", Callback: peekfrontList}, // Returns the first element without removing it
 	{Name: "insert_list", Callback: insertList},       // Inserts an element at a specific index
@@ -36,7 +37,10 @@ var listMethods = []*Builtin{
 	{Name: "some_list", Callback: someList},     // Checks if at least one element matches
 	{Name: "every_list", Callback: everyList},   // Checks if all elements match
 
-	{Name: "to_list", Callback: toList}, // Converts array/tuple to list
+	{Name: "to_list", Callback: toList},       // Converts array/tuple to list
+	{Name: "size_list", Callback: sizeList},   // Returns the number of elements in a list
+	{Name: "length_list", Callback: sizeList}, // Returns the number of elements in a list (alias)
+
 }
 
 // init registers the list methods by appending them to the global Builtins slice.

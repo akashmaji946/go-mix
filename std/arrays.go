@@ -18,26 +18,35 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var arrayMethods = []*Builtin{
-	{Name: "push_array", Callback: push},          // Adds an element to the end of the array
-	{Name: "pop_array", Callback: pop},            // Removes and returns the last element of the array
-	{Name: "shift_array", Callback: shift},        // Removes and returns the first element of the array
-	{Name: "unshift_array", Callback: unshift},    // Adds an element to the beginning of the array
-	{Name: "sort_array", Callback: sortArray},     // Sorts the elements of the array in-place
-	{Name: "sorted_array", Callback: sortedArray}, // Returns a new sorted array
-	{Name: "clone_array", Callback: cloneArray},   // Returns a shallow copy of the array
-	{Name: "csort_array", Callback: csort},        // Custom sort for an array using a comparator
-	{Name: "csorted_array", Callback: csorted},    // Returns a new sorted array using a comparator
+	{Name: "make_array", Callback: arrayFunc},
+
+	{Name: "push_array", Callback: pushArray},       // Adds an element to the end of the array
+	{Name: "pop_array", Callback: popArray},         // Removes and returns the last element of the array
+	{Name: "shift_array", Callback: shiftArray},     // Removes and returns the first element of the array
+	{Name: "unshift_array", Callback: unshiftArray}, // Adds an element to the beginning of the array
+	{Name: "sort_array", Callback: sortArray},       // Sorts the elements of the array in-place
+	{Name: "sorted_array", Callback: sortedArray},   // Returns a new sorted array
+	{Name: "clone_array", Callback: cloneArray},     // Returns a shallow copy of the array
+	{Name: "csort_array", Callback: csortArray},     // Custom sort for an array using a comparator
+	{Name: "csorted_array", Callback: csortedArray}, // Returns a new sorted array using a comparator
 
 	{Name: "find_array", Callback: findArray},   // Finds the first element matching a predicate
 	{Name: "some_array", Callback: someArray},   // Checks if at least one element matches
 	{Name: "every_array", Callback: everyArray}, // Checks if all elements match
 
-	{Name: "reverse_array", Callback: reverseArray}, // Returns a new reversed array
+	{Name: "reverse_array", Callback: reverseArray},   // Returns a new reversed array
+	{Name: "contains_array", Callback: containsArray}, // Checks if a value exists in the array
+	{Name: "replace_array", Callback: replaceArray},   // Returns the index of the first occurrence of a value, or -1 if not found
+	{Name: "index_array", Callback: indexArray},       // Returns the index of the first occurrence of a value, or -1 if not found
 
 	{Name: "to_array", Callback: toArray},         // Converts list/tuple to array
 	{Name: "map_array", Callback: mapArray},       // Applies a function to each element
 	{Name: "filter_array", Callback: filterArray}, // Filters elements based on a predicate
 	{Name: "reduce_array", Callback: reduceArray}, // Accumulates a value across an array
+
+	{Name: "size_array", Callback: sizeArray},   // Returns the number of elements in an array
+	{Name: "length_array", Callback: sizeArray}, // Checks if a value exists in the array
+
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -58,11 +67,120 @@ func init() {
 	RegisterPackage(arraysPackage)
 }
 
-// push adds an element to the end of an array and returns the modified array.
+// arrayFunc creates a new array from arguments or converts an iterable to an array.
+// It accepts zero or more arguments:
+//   - 0 arguments: returns an empty array
+//   - 1 iterable argument: converts the iterable to a new array
+//   - 1 non-iterable argument: wraps it in an array
+//   - Multiple arguments: creates an array containing all arguments
+//
+// Examples:
+//
+//	array()                    -> []
+//	array(1, 2, 3)             -> [1, 2, 3]
+//	array([1, 2, 3])           -> [1, 2, 3]
+//	array(list(1, 2, 3))       -> [1, 2, 3]
+//	array(tuple(1, 2, 3))      -> [1, 2, 3]
+//	array(set{1, 2, 3})        -> [1, 2, 3]
+//	array(map{"a": 1, "b": 2}) -> [1, 2]
+//	array(42)                  -> [42]
+func arrayFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	// Handle 0 arguments: return empty array
+	if len(args) == 0 {
+		return &Array{Elements: []GoMixObject{}}
+	}
+
+	// Handle multiple arguments: create array from all arguments
+	if len(args) > 1 {
+		elements := make([]GoMixObject, len(args))
+		copy(elements, args)
+		return &Array{Elements: elements}
+	}
+
+	// Handle single argument
+	arg := args[0]
+	argType := arg.GetType()
+
+	// Handle iterable types (convert to array)
+	switch argType {
+	case ArrayType:
+		// Create a new array with copied elements from the input array
+		arr := arg.(*Array)
+		elements := make([]GoMixObject, len(arr.Elements))
+		copy(elements, arr.Elements)
+		return &Array{Elements: elements}
+
+	case ListType:
+		// Convert list elements to array
+		list := arg.(*List)
+		elements := make([]GoMixObject, len(list.Elements))
+		copy(elements, list.Elements)
+		return &Array{Elements: elements}
+
+	case TupleType:
+		// Convert tuple elements to array
+		tuple := arg.(*Tuple)
+		elements := make([]GoMixObject, len(tuple.Elements))
+		copy(elements, tuple.Elements)
+		return &Array{Elements: elements}
+
+	case MapType:
+		// Convert map values to array (in key insertion order)
+		m := arg.(*Map)
+		elements := make([]GoMixObject, len(m.Keys))
+		for i, key := range m.Keys {
+			elements[i] = m.Pairs[key]
+		}
+		return &Array{Elements: elements}
+
+	case SetType:
+		// Convert set values to array (in insertion order)
+		s := arg.(*Set)
+		elements := make([]GoMixObject, len(s.Values))
+		for i, val := range s.Values {
+			elements[i] = &String{Value: val}
+		}
+		return &Array{Elements: elements}
+
+	case RangeType:
+		// Convert range to array of integers
+		r := arg.(*Range)
+		start := r.Start
+		end := r.End
+
+		// Calculate size and direction
+		var size int
+		if start <= end {
+			size = int(end - start + 1)
+		} else {
+			size = int(start - end + 1)
+		}
+
+		elements := make([]GoMixObject, size)
+		if start <= end {
+			// Ascending range
+			for i := int64(0); i <= end-start; i++ {
+				elements[i] = &Integer{Value: start + i}
+			}
+		} else {
+			// Descending range
+			for i := int64(0); i <= start-end; i++ {
+				elements[i] = &Integer{Value: start - i}
+			}
+		}
+		return &Array{Elements: elements}
+
+	default:
+		// Non-iterable single argument: wrap it in an array
+		return &Array{Elements: []GoMixObject{arg}}
+	}
+}
+
+// pushArray adds an element to the end of an array and returns the modified array.
 // It takes two arguments: the array to modify and the element to add.
 // If the arguments are invalid, it returns an error object.
 //
-// Syntax: push(array, element)
+// Syntax: pushArray(array, element)
 //
 // Usage:
 //
@@ -72,8 +190,8 @@ func init() {
 // Example:
 //
 //	var a = [1, 2];
-//	a = push(a, 3); // a is now [1, 2, 3]
-func push(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	a = pushArray(a, 3); // a is now [1, 2, 3]
+func pushArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly 2 arguments are provided
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
@@ -225,10 +343,10 @@ func cloneArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return &Array{Elements: newElements}
 }
 
-// csort performs an in-place sort of an array using a custom comparator.
+// csortArray performs an in-place sort of an array using a custom comparator.
 //
-// Syntax: csort(array, comparator)
-func csort(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+// Syntax: csortArray(array, comparator)
+func csortArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: csort expects 2 arguments (array, comparator)")
 	}
@@ -265,11 +383,11 @@ func csort(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return arr
 }
 
-// csorted returns a new array with elements sorted using a custom comparator.
+// csortedArray returns a new array with elements sorted using a custom comparator.
 // It does not modify the original array.
 //
-// Syntax: csorted(array, comparator)
-func csorted(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+// Syntax: csortedArray(array, comparator)
+func csortedArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: csorted expects 2 arguments (array, comparator)")
 	}
@@ -380,6 +498,10 @@ func filterArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject 
 // reduceArray accumulates a value by applying a function to each element of an array.
 //
 // Syntax: reduce_array(array, function, initial)
+// Example:
+//
+//	var a = [1, 2, 3];
+//	var sum = reduce_array(a, (acc, x) => acc + x, 0); // sum is 6
 func reduceArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 3 {
 		return createError("ERROR: reduce_array expects 3 arguments (array, function, initial)")
@@ -500,11 +622,11 @@ func IsTruthy(obj GoMixObject) bool {
 	}
 }
 
-// pop removes and returns the last element from an array.
+// popArray removes and returns the last element from an array.
 // It takes one argument: the array to modify.
 // If the array is empty or arguments are invalid, it returns an error.
 //
-// Syntax: pop(array)
+// Syntax: popArray(array)
 //
 // Usage:
 //
@@ -514,8 +636,8 @@ func IsTruthy(obj GoMixObject) bool {
 // Example:
 //
 //	var a = [1, 2, 3];
-//	var x = pop(a); // x is 3, a is now [1, 2]
-func pop(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	var x = popArray(a); // x is 3, a is now [1, 2]
+func popArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly 1 argument is provided
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
@@ -542,11 +664,11 @@ func pop(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return lastElement
 }
 
-// shift removes and returns the first element from an array.
+// shiftArray removes and returns the first element from an array.
 // It takes one argument: the array to modify.
 // If the array is empty or arguments are invalid, it returns an error.
 //
-// Syntax: shift(array)
+// Syntax: shiftArray(array)
 //
 // Usage:
 //
@@ -556,8 +678,8 @@ func pop(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	var a = [1, 2, 3];
-//	var x = shift(a); // x is 1, a is now [2, 3]
-func shift(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	var x = shiftArray(a); // x is 1, a is now [2, 3]
+func shiftArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly 1 argument is provided
 	if len(args) != 1 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
@@ -584,11 +706,11 @@ func shift(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	return firstElement
 }
 
-// unshift adds an element to the beginning of an array and returns the modified array.
+// unshiftArray adds an element to the beginning of an array and returns the modified array.
 // It takes two arguments: the array to modify and the element to add at the front.
 // If the arguments are invalid, it returns an error object.
 //
-// Syntax: unshift(array, element)
+// Syntax: unshiftArray(array, element)
 //
 // Usage:
 //
@@ -598,8 +720,8 @@ func shift(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 // Example:
 //
 //	var a = [2, 3];
-//	a = unshift(a, 1); // a is now [1, 2, 3]
-func unshift(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	a = unshiftArray(a, 1); // a is now [1, 2, 3]
+func unshiftArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	// Check if exactly 2 arguments are provided
 	if len(args) != 2 {
 		return createError("ERROR: wrong number of arguments. got=%d, want=2", len(args))
@@ -616,4 +738,116 @@ func unshift(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 
 	// Return the modified array
 	return arr
+}
+
+// containsArray checks if a value exists in the array and returns a boolean.
+//
+// Syntax: contains_array(array, value)
+//
+// Usage:
+//
+//	Checks if the specified value is present in the array.
+//	Returns true if found, otherwise false.
+//
+// Example:
+//
+//	var a = [1, 2, 3];
+//	var exists = contains_array(a, 2); // exists is true
+//	var notExists = contains_array(a, 4); // notExists is false
+func containsArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: contains_array expects 2 arguments (array, value)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: first argument to `contains_array` must be an array")
+	}
+	value := args[1]
+
+	for _, elem := range arr.Elements {
+		if elem.ToString() == value.ToString() {
+			return &Boolean{Value: true}
+		}
+	}
+	return &Boolean{Value: false}
+}
+
+// replaceArray replaces the first occurrence of a value in the array with a new value and returns the index of the replaced element, else -1
+//
+// Syntax: replace_array(array, old_value, new_value)
+//
+// Example:
+//
+//	var a = [1, 2, 3];
+//	var index = replace_array(a, 2, 42); // a is now [1, 42, 3], index is 1
+//	var notFoundIndex = replace_array(a, 4, 99); // a remains [1, 42, 3], notFoundIndex is -1
+func replaceArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 3 {
+		return createError("ERROR: replace_array expects 3 arguments (array, old_value, new_value)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: first argument to `replace_array` must be an array")
+	}
+	oldValue := args[1]
+	newValue := args[2]
+
+	for i, elem := range arr.Elements {
+		if elem.ToString() == oldValue.ToString() {
+			arr.Elements[i] = newValue
+			return &Integer{Value: int64(i)}
+		}
+	}
+	return &Integer{Value: -1}
+}
+
+// indexArray returns the index of the first occurrence of a value in the array, or -1 if not found.
+//
+// Syntax: index_array(array, value)
+//
+// Example:
+//
+//	var a = [1, 2, 3];
+//	var index = index_array(a, 2); // index is 1
+//	var notFoundIndex = index_array(a, 4); // notFoundIndex is -1
+func indexArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: index_array expects 2 arguments (array, value)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: first argument to `index_array` must be an array")
+	}
+	value := args[1]
+
+	for i, elem := range arr.Elements {
+		if elem.ToString() == value.ToString() {
+			return &Integer{Value: int64(i)}
+		}
+	}
+	return &Integer{Value: -1}
+}
+
+// sizeArray returns the number of elements in an array.
+//
+// Syntax: size_array(array)
+//
+// Usage:
+//
+//	Returns the count of elements contained in the provided array.
+//
+// Example:
+//
+//	var a = [1, 2, 3];
+//	var count = size_array(a); // count is 3
+func sizeArray(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: size_array expects 1 argument (array)")
+	}
+	arr, ok := args[0].(*Array)
+	if !ok {
+		return createError("ERROR: argument to `size_array` must be an array")
+	}
+
+	return &Integer{Value: int64(len(arr.Elements))}
 }

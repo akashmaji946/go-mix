@@ -11,7 +11,6 @@ Contact : akashmaji(@iisc.ac.in)
 package std
 
 import (
-	"encoding/json"
 	"io" // io.Writer is used for output in builtin functions
 )
 
@@ -19,13 +18,18 @@ import (
 // Each Builtin has a name (the method name) and a callback function that implements the behavior.
 // These are appended to the global Builtins slice during package initialization.
 var mapMethods = []*Builtin{
-	{Name: "keys_map", Callback: mapKeys},                    // Returns an array of all keys in a map
-	{Name: "insert_map", Callback: mapInsert},                // Inserts or updates a key-value pair in a map
-	{Name: "remove_map", Callback: mapRemove},                // Removes a key-value pair from a map
-	{Name: "contain_map", Callback: mapContain},              // Checks if a map contains a key
-	{Name: "enumerate_map", Callback: mapEnumerate},          // Returns array of [key, value] pairs
-	{Name: "json_string_to_map", Callback: jsonStringDecode}, // Converts a JSON string into a map
-	{Name: "map_to_json_string", Callback: jsonStringEncode}, // Converts a map into a JSON string
+	{Name: "make_map", Callback: mapMake},           // Creates a new  map
+	{Name: "keys_map", Callback: mapKeys},           // Returns an array of all keys in a map
+	{Name: "insert_map", Callback: mapInsert},       // Inserts or updates a key-value pair in a map
+	{Name: "remove_map", Callback: mapRemove},       // Removes a key-value pair from a map
+	{Name: "contain_map", Callback: mapContain},     // Checks if a map contains a key
+	{Name: "enumerate_map", Callback: mapEnumerate}, // Returns array of [key, value] pairs
+
+	{Name: "size_map", Callback: mapSize},   // Returns the number of key-value pairs in a map
+	{Name: "length_map", Callback: mapSize}, // Applies a function to each key-value pair, returning a new map
+
+	{Name: "values_map", Callback: mapValues}, // Returns an array of all values in a map
+
 }
 
 // init is a special Go function that runs when the package is initialized.
@@ -44,6 +48,67 @@ func init() {
 		mapsPackage.Functions[method.Name] = method
 	}
 	RegisterPackage(mapsPackage)
+}
+
+// mapMake creates a new map object.
+// Parameters:
+//   - args: Optional key-value pairs to initialize the map (e.g. "name", "John", "age", 25)
+//
+// Returns:
+//   - A new Map object initialized with the provided key-value pairs, or Error if arguments are invalid
+//
+// Example:
+//
+//	var m = make_map("name", "John", "age", 25); // Creates map{"name": "John", "age": 25}
+func mapMake(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args)%2 != 0 {
+		return createError("ERROR: make_map expects an even number of arguments (key-value pairs)")
+	}
+
+	m := &Map{
+		Pairs: make(map[string]GoMixObject),
+		Keys:  make([]string, 0, len(args)/2),
+	}
+
+	for i := 0; i < len(args); i += 2 {
+		keyStr := args[i].ToString()
+		value := args[i+1]
+
+		// Check if key already exists
+		if _, exists := m.Pairs[keyStr]; !exists {
+			// New key, add to keys list
+			m.Keys = append(m.Keys, keyStr)
+		}
+
+		m.Pairs[keyStr] = value
+	}
+
+	return m
+}
+
+// mapSize returns the number of key-value pairs in a map.
+//
+// Parameters:
+//   - args[0]: The map to check
+//
+// Returns:
+//   - Integer representing the number of key-value pairs, or Error if argument is not a map
+//
+// Example:
+//
+//	var m = make_map("name", "John", "age", 25);
+//	size_map(m);  // Returns 2
+func mapSize(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 1 {
+		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
+	}
+
+	if args[0].GetType() != MapType {
+		return createError("ERROR: argument to `size_map` must be a map, got '%s'", args[0].GetType())
+	}
+
+	mapObj := args[0].(*Map)
+	return &Integer{Value: int64(len(mapObj.Pairs))}
 }
 
 // mapKeys returns an array of all keys in a map.
@@ -234,113 +299,34 @@ func mapEnumerate(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject
 	return &Array{Elements: pairs}
 }
 
-// jsonStringDecode parses a JSON string into a Go-Mix Map.
+// mapValues returns an array of all values in a map.
+// The values may not be returned in the order their keys were inserted.
 //
 // Parameters:
-//   - args[0]: The JSON string to decode
+//   - args[0]: The map to get values from
 //
 // Returns:
-//   - Map object, or Error if decoding fails
+//   - Array of values, or Error if argument is not a map
 //
 // Example:
 //
-//	var s = "{\"name\": \"John\", \"age\": 25}";
-//	var m = json_string_decode(s);
-func jsonStringDecode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+//	var m = map{"name": "John", "age": 25};
+//	values_map(m);  // Returns ["John", 25]
+func mapValues(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 1 {
-		return createError("ERROR: json_string_decode expects 1 argument (string)")
+		return createError("ERROR: wrong number of arguments. got=%d, want=1", len(args))
 	}
 
-	if args[0].GetType() != StringType {
-		return createError("ERROR: argument to `json_string_decode` must be a string, got '%s'", args[0].GetType())
+	if args[0].GetType() != MapType {
+		return createError("ERROR: argument to `values_map` must be a map, got '%s'", args[0].GetType())
 	}
 
-	var data interface{}
-	err := json.Unmarshal([]byte(args[0].ToString()), &data)
-	if err != nil {
-		return createError("ERROR: failed to decode JSON: %v", err)
+	mapObj := args[0].(*Map)
+	valueObjects := make([]GoMixObject, len(mapObj.Keys))
+
+	for i, key := range mapObj.Keys {
+		valueObjects[i] = mapObj.Pairs[key]
 	}
 
-	return convertToGoMix(data)
-}
-
-// jsonStringEncode converts a Go-Mix object into a JSON string.
-func jsonStringEncode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
-	if len(args) != 1 {
-		return createError("ERROR: json_string_encode expects 1 argument")
-	}
-
-	data := convertFromGoMix(args[0])
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		return createError("ERROR: failed to encode JSON: %v", err)
-	}
-
-	return &String{Value: string(bytes)}
-}
-
-func convertFromGoMix(obj GoMixObject) interface{} {
-	switch obj.GetType() {
-	case ArrayType:
-		arr := obj.(*Array)
-		res := make([]interface{}, len(arr.Elements))
-		for i, e := range arr.Elements {
-			res[i] = convertFromGoMix(e)
-		}
-		return res
-	case MapType:
-		m := obj.(*Map)
-		res := make(map[string]interface{})
-		for k, v := range m.Pairs {
-			res[k] = convertFromGoMix(v)
-		}
-		return res
-	case IntegerType:
-		return obj.(*Integer).Value
-	case FloatType:
-		return obj.(*Float).Value
-	case BooleanType:
-		return obj.(*Boolean).Value
-	case StringType:
-		return obj.(*String).Value
-	case NilType:
-		return nil
-	default:
-		return obj.ToString()
-	}
-}
-
-// convertToGoMix recursively converts Go native types from json.Unmarshal
-// into Go-Mix internal objects.
-func convertToGoMix(val interface{}) GoMixObject {
-	switch v := val.(type) {
-	case map[string]interface{}:
-		m := &Map{
-			Pairs: make(map[string]GoMixObject),
-			Keys:  make([]string, 0, len(v)),
-		}
-		for k, rawVal := range v {
-			m.Pairs[k] = convertToGoMix(rawVal)
-			m.Keys = append(m.Keys, k)
-		}
-		return m
-	case []interface{}:
-		elements := make([]GoMixObject, len(v))
-		for i, rawVal := range v {
-			elements[i] = convertToGoMix(rawVal)
-		}
-		return &Array{Elements: elements}
-	case string:
-		return &String{Value: v}
-	case bool:
-		return &Boolean{Value: v}
-	case float64:
-		// Check if it's actually an integer
-		if v == float64(int64(v)) {
-			return &Integer{Value: int64(v)}
-		}
-		return &Float{Value: v}
-	default:
-		return &Nil{}
-	}
+	return &Array{Elements: valueObjects}
 }

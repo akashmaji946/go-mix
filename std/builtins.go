@@ -42,8 +42,11 @@ var Builtins = make([]*Builtin, 0)
 
 // Package represents an imported package with its functions.
 // It provides a way to organize builtins into namespaces.
+// Packages can be imported with optional aliases (e.g., "import math as m").
+// If an alias is provided, the alias is used as the namespace; otherwise, the original name is used.
 type Package struct {
 	Name      string              // The package name (e.g., "math")
+	Alias     string              // Optional alias for the package (e.g., "m"); if empty, Name is used
 	Functions map[string]*Builtin // Map of function name to builtin function
 }
 
@@ -54,12 +57,12 @@ func (p *Package) GetType() GoMixType {
 
 // ToString returns the string representation of the package
 func (p *Package) ToString() string {
-	return "package:" + p.Name
+	return "package:" + p.Name + ":" + p.Alias
 }
 
 // ToObject returns a detailed representation including type info
 func (p *Package) ToObject() string {
-	return "<package(" + p.Name + ")>"
+	return "<package(" + p.Name + ":" + p.Alias + ")>"
 }
 
 // Packages is a global map of registered packages.
