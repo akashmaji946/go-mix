@@ -235,7 +235,7 @@ Go-Mix implements lexical (static) scoping with proper block-level scope:
 ```go
 var x = "global";
 
-fn testScope() {
+func testScope() {
     var x = "function";     // Shadows outer x
     println(x);             // "function"
     
@@ -486,26 +486,26 @@ println(length(primes));   // 5
 
 ```go
 // Basic function
-fn greet(name) {
+func greet(name) {
     return "Hello, " + name;
 }
 
 println(greet("Alice"));   // "Hello, Alice"
 
 // Function with multiple parameters
-fn add(a, b) {
+func add(a, b) {
     return a + b;
 }
 
 println(add(3, 5));        // 8
 
 // Function with no return (returns nil)
-fn printInfo(x) {
+func printInfo(x) {
     println("Value: " + x);
 }
 
 // Recursive function
-fn factorial(n) {
+func factorial(n) {
     if (n <= 1) { return 1; }
     return n * factorial(n - 1);
 }
@@ -517,15 +517,15 @@ println(factorial(5));     // 120
 
 ```go
 // Anonymous functions assigned to variables
-var double = fn(x) { return x * 2; };
+var double = func(x) { return x * 2; };
 println(double(5));        // 10
 
-var add = fn(a, b) { return a + b; };
+var add = func(a, b) { return a + b; };
 println(add(3, 4));        // 7
 
 // Nested function definitions
-var makeMultiplier = fn(factor) {
-    return fn(x) { return x * factor; };
+var makeMultiplier = func(factor) {
+    return func(x) { return x * factor; };
 };
 
 var times5 = makeMultiplier(5);
@@ -540,10 +540,10 @@ println(times5(7));        // 35
 ```go
 // Apply function to each element
 var nums = [1, 2, 3, 4, 5];
-var doubled = map(nums, fn(x) { return x * 2; });
+var doubled = map(nums, func(x) { return x * 2; });
 println(doubled);          // [2, 4, 6, 8, 10]
 
-var squared = map(nums, fn(x) { return x * x; });
+var squared = map(nums, func(x) { return x * x; });
 println(squared);          // [1, 4, 9, 16, 25]
 ```
 
@@ -552,10 +552,10 @@ println(squared);          // [1, 4, 9, 16, 25]
 ```go
 // Keep elements that satisfy predicate
 var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-var evens = filter(numbers, fn(x) { return x % 2 == 0; });
+var evens = filter(numbers, func(x) { return x % 2 == 0; });
 println(evens);            // [2, 4, 6, 8, 10]
 
-var bigNums = filter(numbers, fn(x) { return x > 5; });
+var bigNums = filter(numbers, func(x) { return x > 5; });
 println(bigNums);          // [6, 7, 8, 9, 10]
 ```
 
@@ -566,15 +566,15 @@ println(bigNums);          // [6, 7, 8, 9, 10]
 var nums = [1, 2, 3, 4, 5];
 
 // Sum
-var sum = reduce(nums, fn(acc, x) { return acc + x; }, 0);
+var sum = reduce(nums, func(acc, x) { return acc + x; }, 0);
 println(sum);              // 15
 
 // Product
-var product = reduce(nums, fn(acc, x) { return acc * x; }, 1);
+var product = reduce(nums, func(acc, x) { return acc * x; }, 1);
 println(product);          // 120
 
 // Building a string
-var str = reduce(nums, fn(acc, x) { return acc + x; }, "");
+var str = reduce(nums, func(acc, x) { return acc + x; }, "");
 println(str);              // "12345"
 ```
 
@@ -584,21 +584,21 @@ println(str);              // "12345"
 var nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // Find first matching element
-var first_even = find(nums, fn(x) { return x % 2 == 0; });
+var first_even = find(nums, func(x) { return x % 2 == 0; });
 println(first_even);       // 2
 
 // Check if at least one element matches
-var has_negative = some(nums, fn(x) { return x < 0; });
+var has_negative = some(nums, func(x) { return x < 0; });
 println(has_negative);     // false
 
-var has_five = some(nums, fn(x) { return x == 5; });
+var has_five = some(nums, func(x) { return x == 5; });
 println(has_five);         // true
 
 // Check if all elements match
-var all_positive = every(nums, fn(x) { return x > 0; });
+var all_positive = every(nums, func(x) { return x > 0; });
 println(all_positive);     // true
 
-var all_even = every(nums, fn(x) { return x % 2 == 0; });
+var all_even = every(nums, func(x) { return x % 2 == 0; });
 println(all_even);         // false
 ```
 
@@ -614,7 +614,7 @@ sort(nums);                // [1, 1, 2, 3, 4, 5, 6, 9]
 var sorted = sorted(nums);
 
 // Custom sort (descending)
-csort(nums, fn(a, b) { 
+csort(nums, func(a, b) { 
     if (a > b) { return -1; }
     if (a < b) { return 1; }
     return 0;
@@ -622,7 +622,7 @@ csort(nums, fn(a, b) {
 
 // Sort strings by length
 var words = ["apple", "pi", "banana", "cat"];
-csort(words, fn(a, b) {
+csort(words, func(a, b) {
     var len_a = length(a);
     var len_b = length(b);
     if (len_a < len_b) { return -1; }
@@ -899,7 +899,7 @@ sort([3, 1, 4, 1, 5], true); // [5, 4, 3, 1, 1] (reverse)
 
 // Custom sorting
 var numbers = [5, 2, 8, 1, 9];
-csort(numbers, fn(a, b) { return a > b; });  // Sort descending
+csort(numbers, func(a, b) { return a > b; });  // Sort descending
 
 // Array cloning
 var original = [1, 2, 3];
@@ -909,42 +909,42 @@ var copy = clone_array(original);
 var nums = [1, 2, 3, 4, 5];
 
 // Map - transform each element
-var doubled = map(nums, fn(x) { return x * 2; });
+var doubled = map(nums, func(x) { return x * 2; });
 // doubled = [2, 4, 6, 8, 10]
 
-var squared = map_array(nums, fn(x) { return x * x; });
+var squared = map_array(nums, func(x) { return x * x; });
 // squared = [1, 4, 9, 16, 25]
 
 // Filter - keep matching elements
-var evens = filter(nums, fn(x) { return x % 2 == 0; });
+var evens = filter(nums, func(x) { return x % 2 == 0; });
 // evens = [2, 4]
 
-var large = filter_array(nums, fn(x) { return x > 3; });
+var large = filter_array(nums, func(x) { return x > 3; });
 // large = [4, 5]
 
 // Reduce - accumulate to single value
-var sum = reduce(nums, fn(acc, x) { return acc + x; }, 0);
+var sum = reduce(nums, func(acc, x) { return acc + x; }, 0);
 // sum = 15
 
-var product = reduce(nums, fn(acc, x) { return acc * x; }, 1);
+var product = reduce(nums, func(acc, x) { return acc * x; }, 1);
 // product = 120
 
-var concatenated = reduce(nums, fn(acc, x) { return acc + tostring(x); }, "");
+var concatenated = reduce(nums, func(acc, x) { return acc + tostring(x); }, "");
 // concatenated = "12345"
 
 // Find - get first matching element
-var first_large = find(nums, fn(x) { return x > 3; });
+var first_large = find(nums, func(x) { return x > 3; });
 // first_large = 4
 
-var first_even = find_array(nums, fn(x) { return x % 2 == 0; });
+var first_even = find_array(nums, func(x) { return x % 2 == 0; });
 // first_even = 2
 
 // Check if any/all match
-some(nums, fn(x) { return x > 10; });        // false
-some_array(nums, fn(x) { return x > 3; });  // true
+some(nums, func(x) { return x > 10; });        // false
+some_array(nums, func(x) { return x > 3; });  // true
 
-every(nums, fn(x) { return x > 0; });       // true
-every_array(nums, fn(x) { return x < 10; }); // true
+every(nums, func(x) { return x > 0; });       // true
+every_array(nums, func(x) { return x < 10; }); // true
 
 // Type conversion
 var list_data = list(10, 20, 30);
@@ -1081,14 +1081,14 @@ contains_list(l, 99);          // false
 
 // Functional operations
 var nums = list(1, 2, 3, 4, 5);
-var doubled = map_list(nums, fn(x) { return x * 2; });
-var evens = filter_list(nums, fn(x) { return x % 2 == 0; });
-var sum = reduce_list(nums, fn(a, x) { return a + x; }, 0);
+var doubled = map_list(nums, func(x) { return x * 2; });
+var evens = filter_list(nums, func(x) { return x % 2 == 0; });
+var sum = reduce_list(nums, func(a, x) { return a + x; }, 0);
 
 // Search and predicates
-var found = find_list(nums, fn(x) { return x > 3; }); // 4
-var has_even = some_list(nums, fn(x) { return x % 2 == 0; }); // true
-var all_pos = every_list(nums, fn(x) { return x > 0; }); // true
+var found = find_list(nums, func(x) { return x > 3; }); // 4
+var has_even = some_list(nums, func(x) { return x % 2 == 0; }); // true
+var all_pos = every_list(nums, func(x) { return x > 0; }); // true
 
 // Type conversion
 var arr = [1, 2, 3];
@@ -1137,13 +1137,13 @@ contains_tuple(coords, 99);    // false
 
 // Functional operations
 var nums = tuple(1, 2, 3, 4, 5);
-var doubled = map_tuple(nums, fn(x) { return x * 2; });
-var sum = reduce_tuple(nums, fn(a, x) { return a + x; }, 0);
+var doubled = map_tuple(nums, func(x) { return x * 2; });
+var sum = reduce_tuple(nums, func(a, x) { return a + x; }, 0);
 
 // Search and predicates
-var found = find_tuple(nums, fn(x) { return x > 3; }); // 4
-var has_even = some_tuple(nums, fn(x) { return x % 2 == 0; }); // true
-var all_pos = every_tuple(nums, fn(x) { return x > 0; }); // true
+var found = find_tuple(nums, func(x) { return x > 3; }); // 4
+var has_even = some_tuple(nums, func(x) { return x % 2 == 0; }); // true
+var all_pos = every_tuple(nums, func(x) { return x > 0; }); // true
 
 // Type conversion
 var arr = [1, 2, 3];
@@ -1613,12 +1613,12 @@ if (response["status"] == 200) {
 var srv = create_server();
 
 // Simple text response
-handle_server(srv, "/", fn(req) {
+handle_server(srv, "/", func(req) {
     return "Welcome to Go-Mix!";
 });
 
 // JSON API endpoint
-handle_server(srv, "/api/users", fn(req) {
+handle_server(srv, "/api/users", func(req) {
     var users = [
         map{"id": 1, "name": "Alice"},
         map{"id": 2, "name": "Bob"}
@@ -1635,7 +1635,7 @@ serve_static(srv, "/static/", "./public/");
 serve_static(srv, "/assets/", "./assets/");
 
 // Request inspection
-handle_server(srv, "/info", fn(req) {
+handle_server(srv, "/info", func(req) {
     var info = "Method: " + req["method"] + "\n" +
                "URL: " + req["url"] + "\n" +
                "Timestamp: " + now();
@@ -1712,7 +1712,7 @@ foreach user in restored["users"] {
 
 ```go
 // Panic terminates execution with error message
-fn divide(a, b) {
+func divide(a, b) {
     if (b == 0) {
         panic("Division by zero!");
     }
@@ -2224,7 +2224,7 @@ var arr = [1,2,3];              var map = map{"key": "value"};
 arr[0];          arr[-1];        map["key"];
 
 // Functions
-fn add(a,b) { return a + b; }   var f = fn(x){ return x*2; };
+func add(a,b) { return a + b; }   var f = func(x){ return x*2; };
 
 // Control Flow
 if (cond) { } else if { } else { }
@@ -2232,12 +2232,12 @@ for (var i=0; i<n; i=i+1) { }   while (cond) { }
 foreach x in arr { }            foreach i, v in arr { }
 
 // Functional
-map(arr, fn(x){ return x*2; });
-filter(arr, fn(x){ return x>5; });
-reduce(arr, fn(a,x){ return a+x; }, 0);
+map(arr, func(x){ return x*2; });
+filter(arr, func(x){ return x>5; });
+reduce(arr, func(a,x){ return a+x; }, 0);
 
 // Classes & Objects
-struct Name { var x; fn method() { } }
+struct Name { var x; func method() { } }
 var obj = new Name();
 
 // Common Functions
