@@ -30,7 +30,6 @@ permalink: /standard-library/
             </ul>
         </nav>
     </aside>
-    
     <div class="content-body">
         <h1>Standard Library</h1>
         
@@ -252,8 +251,7 @@ arrays.sort_array(arr);
 var upper = strings.upper_string("hello");
 var sqrt = math.sqrt(16);
 {% endhighlight %}
-        </div>
-        
+</div>
         <div class="callout callout-success">
             <div class="callout-title">
                 <i class="fas fa-book-open"></i> Explore Packages

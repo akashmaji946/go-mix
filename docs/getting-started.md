@@ -225,7 +225,7 @@ go-mix hello.gm
                 <span class="code-dot green"></span>
                 <span class="code-title">Output</span>
             </div>
-{% highlight %}
+{% highlight text %}
 Hello, World! Welcome to 2024
 Doubled: [2, 4, 6, 8, 10]
 Sum: 15
