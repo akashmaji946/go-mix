@@ -8,6 +8,7 @@ package parser
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/akashmaji946/go-mix/lexer"
 	"github.com/akashmaji946/go-mix/std"
@@ -2281,15 +2282,22 @@ func (par *Parser) parseContinueStatement() StatementNode {
 }
 
 // parseImportStatement parses an import statement.
-// Syntax: import packageName;
+// Syntax: import packageName; or import "packageName";
 func (par *Parser) parseImportStatement() StatementNode {
 	importToken := par.CurrToken
 
-	// Expect the package name (identifier)
-	if !par.expectAdvance(lexer.IDENTIFIER_ID) {
+	// Expect the package name (identifier or string literal)
+	if par.NextToken.Type != lexer.IDENTIFIER_ID && par.NextToken.Type != lexer.STRING_LIT {
+		par.addError(fmt.Sprintf("[%d:%d] PARSER ERROR: expected Identifier or StringLiteral, got %s",
+			par.NextToken.Line, par.NextToken.Column, par.NextToken.Type))
 		return nil
 	}
+	par.advance()
 	packageName := par.CurrToken.Literal
+	// If it's a string literal, remove the quotes
+	if par.CurrToken.Type == lexer.STRING_LIT {
+		packageName = strings.Trim(packageName, `"`)
+	}
 	alias := "" // Default: no alias
 
 	// Check for optional "as" keyword for aliasing
