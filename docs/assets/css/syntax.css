@@ -1,0 +1,161 @@
+/* Go-Mix Syntax Highlighting */
+
+/* Base */
+.highlight {
+    background-color: #1a1a2e;
+    color: #e2e8f0;
+}
+
+.highlight .c { color: #6b7280; font-style: italic } /* Comment */
+.highlight .err { color: #ff6b6b } /* Error */
+.highlight .k { color: #c084fc; font-weight: 600 } /* Keyword */
+.highlight .o { color: #f472b6 } /* Operator */
+.highlight .cm { color: #6b7280; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #6b7280; font-weight: 600 } /* Comment.Preproc */
+.highlight .c1 { color: #6b7280; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #6b7280; font-weight: 600; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #ff6b6b } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #ff6b6b } /* Generic.Error */
+.highlight .gh { color: #00ADD8; font-weight: 600 } /* Generic.Heading */
+.highlight .gi { color: #51cf66 } /* Generic.Inserted */
+.highlight .go { color: #6b7280 } /* Generic.Output */
+.highlight .gp { color: #6b7280; font-weight: 600 } /* Generic.Prompt */
+.highlight .gs { font-weight: 600 } /* Generic.Strong */
+.highlight .gu { color: #00ADD8; font-weight: 600 } /* Generic.Subheading */
+.highlight .gt { color: #ff6b6b } /* Generic.Traceback */
+.highlight .kc { color: #c084fc; font-weight: 600 } /* Keyword.Constant */
+.highlight .kd { color: #c084fc; font-weight: 600 } /* Keyword.Declaration */
+.highlight .kn { color: #f472b6 } /* Keyword.Namespace */
+.highlight .kp { color: #c084fc } /* Keyword.Pseudo */
+.highlight .kr { color: #c084fc; font-weight: 600 } /* Keyword.Reserved */
+.highlight .kt { color: #60a5fa } /* Keyword.Type */
+.highlight .m { color: #fbbf24 } /* Literal.Number */
+.highlight .s { color: #a3e635 } /* Literal.String */
+.highlight .na { color: #f472b6 } /* Name.Attribute */
+.highlight .nb { color: #60a5fa } /* Name.Builtin */
+.highlight .nc { color: #fbbf24; font-weight: 600 } /* Name.Class */
+.highlight .no { color: #c084fc } /* Name.Constant */
+.highlight .nd { color: #f472b6 } /* Name.Decorator */
+.highlight .ni { color: #e2e8f0 } /* Name.Entity */
+.highlight .ne { color: #ff6b6b; font-weight: 600 } /* Name.Exception */
+.highlight .nf { color: #00ADD8 } /* Name.Function */
+.highlight .nl { color: #e2e8f0 } /* Name.Label */
+.highlight .nn { color: #fbbf24; font-weight: 600 } /* Name.Namespace */
+.highlight .nx { color: #e2e8f0 } /* Name.Other */
+.highlight .py { color: #e2e8f0 } /* Name.Property */
+.highlight .nt { color: #f472b6 } /* Name.Tag */
+.highlight .nv { color: #e2e8f0 } /* Name.Variable */
+.highlight .ow { color: #f472b6; font-weight: 600 } /* Operator.Word */
+.highlight .w { color: #e2e8f0 } /* Text.Whitespace */
+.highlight .mf { color: #fbbf24 } /* Literal.Number.Float */
+.highlight .mh { color: #fbbf24 } /* Literal.Number.Hex */
+.highlight .mi { color: #fbbf24 } /* Literal.Number.Integer */
+.highlight .mo { color: #fbbf24 } /* Literal.Number.Oct */
+.highlight .sb { color: #a3e635 } /* Literal.String.Backtick */
+.highlight .sc { color: #a3e635 } /* Literal.String.Char */
+.highlight .sd { color: #a3e635 } /* Literal.String.Doc */
+.highlight .s2 { color: #a3e635 } /* Literal.String.Double */
+.highlight .se { color: #fbbf24 } /* Literal.String.Escape */
+.highlight .sh { color: #a3e635 } /* Literal.String.Heredoc */
+.highlight .si { color: #fbbf24 } /* Literal.String.Interpol */
+.highlight .sx { color: #a3e635 } /* Literal.String.Other */
+.highlight .sr { color: #a3e635 } /* Literal.String.Regex */
+.highlight .s1 { color: #a3e635 } /* Literal.String.Single */
+.highlight .ss { color: #fbbf24 } /* Literal.String.Symbol */
+.highlight .bp { color: #60a5fa } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #e2e8f0 } /* Name.Variable.Class */
+.highlight .vg { color: #e2e8f0 } /* Name.Variable.Global */
+.highlight .vi { color: #e2e8f0 } /* Name.Variable.Instance */
+.highlight .il { color: #fbbf24 } /* Literal.Number.Integer.Long */
+
+/* Go-Mix Specific Colors */
+.highlight .language-go .k { color: #c084fc } /* Keywords: var, let, const, fn, if, else, for, while, foreach, return, struct, new */
+.highlight .language-go .nf { color: #00ADD8 } /* Function names */
+.highlight .language-go .s { color: #a3e635 } /* Strings */
+.highlight .language-go .s1 { color: #a3e635 } /* Single quoted strings */
+.highlight .language-go .s2 { color: #a3e635 } /* Double quoted strings */
+.highlight .language-go .mi { color: #fbbf24 } /* Integers */
+.highlight .language-go .mf { color: #fbbf24 } /* Floats */
+.highlight .language-go .c { color: #6b7280 } /* Comments */
+.highlight .language-go .c1 { color: #6b7280 } /* Single line comments */
+.highlight .language-go .cm { color: #6b7280 } /* Multi line comments */
+.highlight .language-go .o { color: #f472b6 } /* Operators */
+.highlight .language-go .nb { color: #60a5fa } /* Builtins: print, println, length, typeof, etc. */
+.highlight .language-go .nc { color: #fbbf24 } /* Class/Struct names */
+.highlight .language-go .kc { color: #c084fc } /* Constants: true, false, nil */
+
+/* Additional styling for code blocks */
+pre.highlight {
+    background-color: #1a1a2e;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    overflow-x: auto;
+    line-height: 1.7;
+}
+
+pre.highlight code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.875rem;
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+/* Line numbers (if enabled) */
+.highlight .lineno {
+    color: #4a4a6a;
+    margin-right: 1rem;
+    user-select: none;
+}
+
+/* Copy button styling */
+.code-block {
+    position: relative;
+}
+
+.code-copy-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #9ca3af;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.code-block:hover .code-copy-btn {
+    opacity: 1;
+}
+
+.code-copy-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #e2e8f0;
+}
+
+.code-copy-btn.copied {
+    background-color: #51cf66;
+    color: white;
+}
+
+/* Inline code styling */
+code.highlighter-rouge {
+    background-color: #f1f5f9;
+    color: #1a1a2e;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.875em;
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+    code.highlighter-rouge {
+        background-color: #2a2a4a;
+        color: #e2e8f0;
+    }
+}

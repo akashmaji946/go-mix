@@ -1,0 +1,222 @@
+---
+layout: default
+title: Go-Mix Programming Language
+description: High-performance interpreted programming language with dynamic typing, lexical closures, and comprehensive standard library
+---
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-star"></i>
+                <span>v1.0.0 Now Available</span>
+            </div>
+            <h1 class="hero-title">Go-Mix Programming Language</h1>
+            <p class="hero-description">
+                A high-performance, interpreted language implemented in Go. Features dynamic typing with static safety, 
+                lexical closures, first-class functions, and a comprehensive standard library with 100+ built-in functions.
+            </p>
+            <div class="hero-actions">
+                <a href="{{ '/getting-started/' | relative_url }}" class="hero-btn-primary">
+                    <i class="fas fa-rocket"></i> Get Started
+                </a>
+                <a href="https://github.com/akashmaji946/go-mix" class="hero-btn-secondary" target="_blank" rel="noopener">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">100+</div>
+                    <div class="hero-stat-label">Built-in Functions</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">17</div>
+                    <div class="hero-stat-label">Standard Packages</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">50+</div>
+                    <div class="hero-stat-label">Sample Programs</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">MIT</div>
+                    <div class="hero-stat-label">Open Source</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Why Go-Mix?</h2>
+            <p class="section-description">
+                Designed for rapid prototyping, education, and embedding as a scripting layer in Go applications.
+            </p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="feature-title">High Performance</h3>
+                <p class="feature-description">
+                    Implemented in Go with efficient Pratt parser and optimized evaluation engine for fast execution.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h3 class="feature-title">Hybrid Type System</h3>
+                <p class="feature-description">
+                    Three variable kinds: <code>var</code> (dynamic), <code>let</code> (static), and <code>const</code> (immutable) for flexibility and safety.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+                <h3 class="feature-title">First-Class Functions</h3>
+                <p class="feature-description">
+                    Full support for higher-order functions, closures, and functional programming patterns.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <h3 class="feature-title">Rich Collections</h3>
+                <p class="feature-description">
+                    Arrays, lists, tuples, maps, and sets with comprehensive manipulation functions and functional operations.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h3 class="feature-title">Comprehensive Standard Library</h3>
+                <p class="feature-description">
+                    100+ built-in functions across 17 packages: strings, math, file I/O, HTTP, regex, JSON, and more.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-terminal"></i>
+                </div>
+                <h3 class="feature-title">Interactive REPL</h3>
+                <p class="feature-description">
+                    Built-in Read-Eval-Print Loop for rapid prototyping and experimentation with line-by-line execution.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Code Preview Section -->
+<section class="code-preview">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Clean, Expressive Syntax</h2>
+            <p class="section-description">
+                Familiar syntax combining the best of Go, JavaScript, and Python with powerful features.
+            </p>
+        </div>
+        
+        <div class="code-preview-grid">
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-dot red"></span>
+                    <span class="code-dot yellow"></span>
+                    <span class="code-dot green"></span>
+                    <span class="code-title">hello.gm</span>
+                </div>
+                <div class="code-content">
+{% highlight go %}
+// Variables and types
+var name = "World";
+let count = 42;
+const PI = 3.14159;
+
+// Functions
+fn greet(name) {
+    return "Hello, " + name + "!";
+}
+
+// Arrays and functional operations
+var numbers = [1, 2, 3, 4, 5];
+var doubled = map(numbers, fn(x) { 
+    return x * 2; 
+});
+
+// Print results
+println(greet(name));
+println("Doubled: " + doubled);
+{% endhighlight %}
+                </div>
+            </div>
+            
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-dot red"></span>
+                    <span class="code-dot yellow"></span>
+                    <span class="code-dot green"></span>
+                    <span class="code-title">fibonacci.gm</span>
+                </div>
+                <div class="code-content">
+{% highlight go %}
+// Recursive Fibonacci with memoization
+fn fibonacci(n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+// Higher-order function
+fn makeMultiplier(factor) {
+    return fn(x) { return x * factor; };
+}
+
+var triple = makeMultiplier(3);
+
+// Main execution
+for (var i = 0; i < 10; i = i + 1) {
+    printf("fib(%d) = %d, triple = %d\n", 
+           i, fibonacci(i), triple(i));
+}
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Start CTA -->
+<section class="features" style="background-color: var(--bg-primary);">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Ready to Start?</h2>
+            <p class="section-description">
+                Get up and running with Go-Mix in minutes. Install, write your first program, and explore the possibilities.
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ '/getting-started/' | relative_url }}" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                <i class="fas fa-rocket"></i> Get Started Now
+            </a>
+            <a href="{{ '/language-guide/' | relative_url }}" class="btn btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem; margin-left: 1rem;">
+                <i class="fas fa-book"></i> Read the Docs
+            </a>
+        </div>
+    </div>
+</section>

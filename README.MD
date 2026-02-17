@@ -1302,13 +1302,6 @@ The `file` package provides comprehensive file system operations.
 | `truncate_file(path, size)` | string, int | nil | Change file size |
 | `chmod(path, mode)` | string, int | nil | Change file permissions |
 | `cat(path, ...)` | string... | nil | Print file contents |
-| `path_join(...)` | string... | string | Join path elements |
-| `path_base(path)` | string | string | Returns last element of path |
-| `path_dir(path)` | string | string | Returns all but last element of path |
-| `path_ext(path)` | string | string | Returns file extension |
-| `path_abs(path)` | string | string | Returns absolute path |
-| `glob(pattern)` | string | array | Files matching pattern |
-| `copy_file(src, dst)` | string, string | nil | Copy file from src to dst |
 
 **File I/O Function Examples:**
 ```go
@@ -1368,7 +1361,6 @@ The `format` package provides functions for converting between types.
 | `to_float(value)` | any | float | Convert to float |
 | `to_bool(value)` | any | bool | Convert to boolean |
 | `to_string(value)` | any | string | Convert to string |
-| `to_str(value)` | any | string | Convert to string (alias) |
 | `to_char(value)` | any | char | Convert to character |
 
 **Type Conversion Examples:**
@@ -1412,13 +1404,11 @@ The `io` package provides functions for reading user input.
 | Function | Parameters | Returns | Description |
 |:---------|:-----------|:--------|:------------|
 | `scanln()` | none | string | Read line from stdin |
-| `gets()` | none | string | Read line from stdin (C-style alias) |
 | `scanf(format)` | string | array | Read formatted input |
 | `input(prompt)` | string | string | Print prompt and read line |
 | `scan(delimiter)` | string | string | Read until delimiter |
 | `getchar()` | none | char | Read single character |
 | `putchar(char)` | char | nil | Print single character |
-| `puts(str)` | string | nil | Print string with newline (C-style alias) |
 | `sprintf(fmt, ...)` | string... | string | Format string without printing |
 | `flush()` | none | nil | Flush input/output buffers |
 | `eprintln(...)` | variadic | nil | Print to stderr with newline |
@@ -1468,13 +1458,6 @@ The `os` package provides operating system interactions.
 | `getpid()` | none | int | Get process ID |
 | `hostname()` | none | string | Get system hostname |
 | `user()` | none | string | Get current username |
-| `getcwd()` | none | string | Get current working directory |
-| `platform()` | none | string | Get OS name (darwin, linux, windows) |
-| `arch()` | none | string | Get system architecture (amd64, arm64, etc.) |
-| `assert(condition)` | bool | nil | Assert that condition is true, panic if false |
-| `assert_equal(a, b)` | any, any | nil | Assert two values are equal, panic if not |
-| `assert_true(condition)` | bool | nil | Assert condition is true, panic if false |
-| `assert_false(condition)` | bool | nil | Assert condition is false, panic if true |
 
 **OS & System Examples:**
 ```go
@@ -1577,7 +1560,6 @@ The `http` package provides comprehensive HTTP client and server functionality f
 | `create_server()` | none | server | Create HTTP server |
 | `handle_server(server, path, handler)` | server, string, function | nil | Register route handler |
 | `start_server(server, address)` | server, string | nil | Start server |
-| `listen_http(address)` | string | server | Create and start HTTP server |
 | `serve_static(server, prefix, root_dir)` | server, string, string | nil | Serve static files |
 | `url_encode(str)` | string | string | URL encode string |
 | `url_decode(str)` | string | string | URL decode string |
@@ -1674,8 +1656,6 @@ JSON handling is integrated into the string and map functions.
 | `map_to_json_string(map)` | map | string | Convert map to JSON string |
 | `json_string_to_map(json_str)` | string | map | Parse JSON string to map |
 | `json_encode(obj)` | any | string | Encode to JSON (alias) |
-| `parse_json(json_str)` | string | map | Parse JSON string to map (alias) |
-| `stringify_json(obj)` | any | string | Convert object to JSON string (alias) |
 
 **JSON Examples:**
 ```go
@@ -1722,84 +1702,6 @@ var restored = json_string_to_map(json);
 foreach user in restored["users"] {
     println(user["name"]);
 }
-```
-
----
-
-### Crypto Functions
-
-The `crypto` package provides cryptographic hashing and encoding utilities.
-
-| Function | Parameters | Returns | Description |
-|:---------|:-----------|:--------|:------------|
-| `md5(str)` | string | string | Calculate MD5 hash |
-| `sha1(str)` | string | string | Calculate SHA-1 hash |
-| `sha256(str)` | string | string | Calculate SHA-256 hash |
-| `base64_encode(str)` | string | string | Encode string to Base64 |
-| `base64_decode(str)` | string | string | Decode Base64 string |
-| `hex_encode(str)` | string | string | Encode string to hex |
-| `hex_decode(str)` | string | string | Decode hex string |
-| `uuid()` | none | string | Generate UUID v4 |
-| `random(n)` | int | string | Generate random string of length n |
-
-**Crypto Function Examples:**
-```go
-// Hashing
-md5("hello");                   // "5d41402abc4b2a76b9719d911017c592"
-sha1("hello");                  // "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d"
-sha256("hello");                // "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
-
-// Base64 encoding/decoding
-base64_encode("Hello World");   // "SGVsbG8gV29ybGQ="
-base64_decode("SGVsbG8gV29ybGQ=");  // "Hello World"
-
-// Hex encoding/decoding
-hex_encode("Hello");             // "48656c6c6f"
-hex_decode("48656c6c6f");        // "Hello"
-
-// UUID generation
-uuid();                          // "550e8400-e29b-41d4-a716-446655440000"
-
-// Random string
-random(16);                     // Random alphanumeric string of length 16
-```
-
-### File Handle Functions
-
-The `file` package provides stateful file handle operations for advanced I/O.
-
-| Function | Parameters | Returns | Description |
-|:---------|:-----------|:--------|:------------|
-| `fopen(path, mode)` | string, string | file | Open file with mode (r, w, a) |
-| `fclose(file)` | file | nil | Close file handle |
-| `fread(file, n)` | file, int | string | Read n bytes from file |
-| `fwrite(file, str)` | file, string | int | Write string to file |
-| `fseek(file, offset)` | file, int | int | Move file cursor |
-| `ftell(file)` | file | int | Get current cursor position |
-
-**File Handle Examples:**
-```go
-// Open file for reading
-var f = fopen("data.txt", "r");
-var content = fread(f, 100);  // Read 100 bytes
-fclose(f);
-
-// Open file for writing
-var out = fopen("output.txt", "w");
-fwrite(out, "Hello, World!");
-fclose(out);
-
-// Append to file
-var append_file = fopen("log.txt", "a");
-fwrite(append_file, "New log entry\n");
-fclose(append_file);
-
-// File cursor operations
-var file_handle = fopen("data.txt", "r");
-var pos = ftell(file_handle);    // Get current position
-fseek(file_handle, 10);          // Move to position 10
-var new_pos = ftell(file_handle); // Verify new position
-fclose(file_handle);
 ```
 
 ---
@@ -1953,7 +1855,7 @@ if (result.GetType() == "error") {
 - Functional operations: `map`, `filter`, `reduce`, `find`, `some`, `every`
 
 #### Total Functions Added
-- **100+ builtin functions** across ~20 packages
+- **100+ builtin functions** across 14 packages
 - **Fully documented** with syntax and examples
 - **Package-based organization** for easy access
 - **Backward compatible** - all functions available globally
@@ -2154,37 +2056,37 @@ go-mix/
 │
 ├── samples/               # Example Programs (50+ .gm files)
 │   ├── algo/             # Algorithms & Data Structures (50 examples)
-│   │    ...
+│   │
 │   ├── arrays/           # Array Operations & Features (11 examples)
-│   │    ...
+│   │
 │   ├── functions/        # Function Examples (14 examples)
-│   │    ...
+│   │
 │   ├── loops/            # Loop Constructs (20 examples)
-│   │    ...
+│   │
 │   ├── maps/             # Map/Dictionary Operations (8 examples)
-│   │    ...
+│   │
 │   ├── lists/            # List Operations (7 examples)
-│   │    ...
+│   │
 │   ├── sets/             # Set Operations (4 examples)
-│   │    ...
+│   │
 │   ├── tuples/           # Tuple Operations (6 examples)
-│   │    ...
+│   │
 │   ├── strings/          # String Manipulation (5 examples)
-│   │    ...
+│   │
 │   ├── format/           # Formatting Examples (5 examples)
-│   │    ...
+│   │
 │   ├── files/            # File I/O Examples (10 examples + test files)
-│   │    ...
+│   │
 │   ├── structs/          # Object-Oriented Examples (40 examples)
-│   │    ...
+│   │
 │   ├── os/               # OS & Environment Examples (5 examples)
-│   │    ...
+│   │
 │   ├── time/             # Time Handling Examples (5 examples)
-│   │    ...
+│   │
 │   ├── range/            # Range Iteration Examples (7 examples)
-│   │    ...
+│   │
 │   └── typeof/           # Type Checking Examples (3 examples)
-│        ...
+│
 ├── vscode-ext/            # VS Code Extension Source
 │   ├── package.json      # Extension manifest
 │   ├── language-configuration.json # Language config
@@ -2248,7 +2150,7 @@ go-mix/
 
 ---
 
-## Installation & Tools
+## �️ Installation & Tools
 
 ### System-Wide Installation
 
@@ -2259,12 +2161,12 @@ sudo ./install.sh
 ```
 
 This script:
-- Verifies Go is installed (v1.18+)
-- Builds the executable from source
-- Installs to `/usr/local/bin`
-- Makes `go-mix` accessible from anywhere
+- ✅ Verifies Go is installed (v1.18+)
+- ✅ Builds the executable from source
+- ✅ Installs to `/usr/local/bin`
+- ✅ Makes `go-mix` accessible from anywhere
 
-For detailed installation instructions, see [INSTALL.MD](INSTALL.MD).
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 
 #### Install Commands
 ```bash
@@ -2293,15 +2195,15 @@ Or install from the [VS Code Marketplace](https://marketplace.visualstudio.com/i
 
 ---
 
-## 📝 License & Attribution
+## �📝 License & Attribution
 
 **License**: MIT
+
 **Author**: Akash Maji  
 **Contact**: akashmaji@iisc.ac.in  
 **Repository**: [github.com/akashmaji946/go-mix](https://github.com/akashmaji946/go-mix)
 
 Go-Mix is designed for:
-
 - **Education** — Learning language design and interpreter implementation
 - **Prototyping** — Rapid algorithm and idea development
 - **Embedding** — Adding scripting capabilities to JS like applications

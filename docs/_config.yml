@@ -1,0 +1,73 @@
+# Jekyll configuration for Go-Mix documentation
+title: Go-Mix Programming Language
+description: High-performance interpreted programming language with dynamic typing, lexical closures, and comprehensive standard library
+baseurl: "/go-mix"
+url: "https://akashmaji946.github.io"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Collections
+collections:
+  packages:
+    output: true
+    permalink: /packages/:name/
+
+# Navigation
+nav:
+  - title: Home
+    url: /
+  - title: Getting Started
+    url: /getting-started/
+  - title: Language Guide
+    url: /language-guide/
+  - title: Standard Library
+    url: /standard-library/
+  - title: Samples
+    url: /samples/
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .sass-cache
+  - .jekyll-cache
+  - .jekyll-metadata
+  - README.md
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "packages"
+    values:
+      layout: "default"
+
+# SEO settings
+author:
+  name: Akash Maji
+  email: akashmaji@iisc.ac.in
+
+social:
+  name: Go-Mix
+  links:
+    - https://github.com/akashmaji946/go-mix
+
+github:
+  repository_url: https://github.com/akashmaji946/go-mix
+  owner_url: https://github.com/akashmaji946

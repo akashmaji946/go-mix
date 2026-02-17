@@ -3,3 +3,6 @@
 *.md
 *.png
 vscode-ext/
+.docs/
+.idea/
+*.log
