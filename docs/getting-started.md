@@ -183,7 +183,7 @@ var name = "World";
 let year = 2024;
 
 // Function definition
-fn greet(name, year) {
+func greet(name, year) {
     return "Hello, " + name + "! Welcome to " + year;
 }
 
@@ -193,11 +193,11 @@ println(message);
 
 // Working with arrays
 var numbers = [1, 2, 3, 4, 5];
-var doubled = map(numbers, fn(x) { return x * 2; });
+var doubled = map(numbers, func(x) { return x * 2; });
 println("Doubled: " + doubled);
 
 // Calculate sum using reduce
-var sum = reduce(numbers, fn(acc, x) { return acc + x; }, 0);
+var sum = reduce(numbers, func(acc, x) { return acc + x; }, 0);
 println("Sum: " + sum);
 {% endhighlight %}
         </div>
@@ -248,11 +248,11 @@ $ go-mix
 Go-Mix >>> var x = 42
 Go-Mix >>> println(x)
 42
-Go-Mix >>> fn square(n) { return n * n; }
+Go-Mix >>> func square(n) { return n * n; }
 Go-Mix >>> square(5)
 25
 Go-Mix >>> var arr = [1, 2, 3, 4, 5]
-Go-Mix >>> map(arr, fn(x) { return x * 2; })
+Go-Mix >>> map(arr, func(x) { return x * 2; })
 [2, 4, 6, 8, 10]
 Go-Mix >>> /help
 Available commands:

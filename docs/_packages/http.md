@@ -106,11 +106,11 @@ var srv = create_server();
                 <div class="function-example">
                     <h4>Example</h4>
 {% highlight go %}
-handle_server(srv, "/", fn(req) {
+handle_server(srv, "/", func(req) {
     return "Hello, World!";
 });
 
-handle_server(srv, "/api/users", fn(req) {
+handle_server(srv, "/api/users", func(req) {
     return '{"users": ["Alice", "Bob"]}';
 });
 {% endhighlight %}

@@ -247,7 +247,7 @@ var first = peekfront_list(l); // first = 1, l = list(1, 2, 3) unchanged
         <div class="function-card" id="map_list">
             <div class="function-header">
                 <div class="function-name">map_list</div>
-                <div class="function-signature">map_list(l, fn) -> list</div>
+                <div class="function-signature">map_list(l, func) -> list</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Applies a function to each element and returns a new list.</div>
@@ -255,7 +255,7 @@ var first = peekfront_list(l); // first = 1, l = list(1, 2, 3) unchanged
                     <h4>Example</h4>
 {% highlight go %}
 var l = list(1, 2, 3);
-var doubled = map_list(l, fn(x) { return x * 2; });
+var doubled = map_list(l, func(x) { return x * 2; });
 // doubled = list(2, 4, 6)
 {% endhighlight %}
                 </div>
@@ -265,7 +265,7 @@ var doubled = map_list(l, fn(x) { return x * 2; });
         <div class="function-card" id="filter_list">
             <div class="function-header">
                 <div class="function-name">filter_list</div>
-                <div class="function-signature">filter_list(l, fn) -> list</div>
+                <div class="function-signature">filter_list(l, func) -> list</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns elements that satisfy the predicate function.</div>
@@ -273,7 +273,7 @@ var doubled = map_list(l, fn(x) { return x * 2; });
                     <h4>Example</h4>
 {% highlight go %}
 var l = list(1, 2, 3, 4, 5, 6);
-var evens = filter_list(l, fn(x) { return x % 2 == 0; });
+var evens = filter_list(l, func(x) { return x % 2 == 0; });
 // evens = list(2, 4, 6)
 {% endhighlight %}
                 </div>
@@ -283,7 +283,7 @@ var evens = filter_list(l, fn(x) { return x % 2 == 0; });
         <div class="function-card" id="reduce_list">
             <div class="function-header">
                 <div class="function-name">reduce_list</div>
-                <div class="function-signature">reduce_list(l, fn, initial) -> any</div>
+                <div class="function-signature">reduce_list(l, func, initial) -> any</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Reduces list to a single value using an accumulator function.</div>
@@ -291,7 +291,7 @@ var evens = filter_list(l, fn(x) { return x % 2 == 0; });
                     <h4>Example</h4>
 {% highlight go %}
 var l = list(1, 2, 3, 4, 5);
-var sum = reduce_list(l, fn(acc, x) { return acc + x; }, 0);
+var sum = reduce_list(l, func(acc, x) { return acc + x; }, 0);
 // sum = 15
 {% endhighlight %}
                 </div>
@@ -301,7 +301,7 @@ var sum = reduce_list(l, fn(acc, x) { return acc + x; }, 0);
         <div class="function-card" id="find_list">
             <div class="function-header">
                 <div class="function-name">find_list</div>
-                <div class="function-signature">find_list(l, fn) -> any</div>
+                <div class="function-signature">find_list(l, func) -> any</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns the first element matching the predicate, or nil if none found.</div>
@@ -309,7 +309,7 @@ var sum = reduce_list(l, fn(acc, x) { return acc + x; }, 0);
                     <h4>Example</h4>
 {% highlight go %}
 var l = list(1, 2, 3, 4, 5);
-var firstEven = find_list(l, fn(x) { return x % 2 == 0; });
+var firstEven = find_list(l, func(x) { return x % 2 == 0; });
 // firstEven = 2
 {% endhighlight %}
                 </div>
@@ -319,7 +319,7 @@ var firstEven = find_list(l, fn(x) { return x % 2 == 0; });
         <div class="function-card" id="some_list">
             <div class="function-header">
                 <div class="function-name">some_list</div>
-                <div class="function-signature">some_list(l, fn) -> bool</div>
+                <div class="function-signature">some_list(l, func) -> bool</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns true if at least one element satisfies the predicate.</div>
@@ -327,8 +327,8 @@ var firstEven = find_list(l, fn(x) { return x % 2 == 0; });
                     <h4>Example</h4>
 {% highlight go %}
 var l = list(1, 2, 3, 4, 5);
-some_list(l, fn(x) { return x > 3; });  // true
-some_list(l, fn(x) { return x > 10; }); // false
+some_list(l, func(x) { return x > 3; });  // true
+some_list(l, func(x) { return x > 10; }); // false
 {% endhighlight %}
                 </div>
             </div>
@@ -337,7 +337,7 @@ some_list(l, fn(x) { return x > 10; }); // false
         <div class="function-card" id="every_list">
             <div class="function-header">
                 <div class="function-name">every_list</div>
-                <div class="function-signature">every_list(l, fn) -> bool</div>
+                <div class="function-signature">every_list(l, func) -> bool</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns true if all elements satisfy the predicate.</div>
@@ -345,8 +345,8 @@ some_list(l, fn(x) { return x > 10; }); // false
                     <h4>Example</h4>
 {% highlight go %}
 var l = list(2, 4, 6, 8);
-every_list(l, fn(x) { return x % 2 == 0; });  // true
-every_list(l, fn(x) { return x > 5; });       // false
+every_list(l, func(x) { return x % 2 == 0; });  // true
+every_list(l, func(x) { return x > 5; });       // false
 {% endhighlight %}
                 </div>
             </div>

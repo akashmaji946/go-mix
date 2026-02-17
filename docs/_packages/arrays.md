@@ -200,7 +200,7 @@ var s = sorted(arr);       // s = [1, 1, 3, 4, 5], arr unchanged
                     <h4>Example</h4>
 {% highlight go %}
 var arr = [3, 1, 4, 1, 5];
-csort(arr, fn(a, b) { return a > b; }); // Descending sort
+csort(arr, func(a, b) { return a > b; }); // Descending sort
 {% endhighlight %}
                 </div>
             </div>
@@ -217,7 +217,7 @@ csort(arr, fn(a, b) { return a > b; }); // Descending sort
                     <h4>Example</h4>
 {% highlight go %}
 var arr = [3, 1, 4, 1, 5];
-var sorted = csorted(arr, fn(a, b) { return a < b; });
+var sorted = csorted(arr, func(a, b) { return a < b; });
 {% endhighlight %}
                 </div>
             </div>
@@ -226,7 +226,7 @@ var sorted = csorted(arr, fn(a, b) { return a < b; });
         <div class="function-card" id="map">
             <div class="function-header">
                 <div class="function-name">map</div>
-                <div class="function-signature">map(arr, fn) -> array</div>
+                <div class="function-signature">map(arr, func) -> array</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Applies a function to each element and returns new array.</div>
@@ -234,7 +234,7 @@ var sorted = csorted(arr, fn(a, b) { return a < b; });
                     <h4>Example</h4>
 {% highlight go %}
 var nums = [1, 2, 3, 4, 5];
-var doubled = map(nums, fn(x) { return x * 2; });
+var doubled = map(nums, func(x) { return x * 2; });
 // doubled = [2, 4, 6, 8, 10]
 {% endhighlight %}
                 </div>
@@ -244,7 +244,7 @@ var doubled = map(nums, fn(x) { return x * 2; });
         <div class="function-card" id="filter">
             <div class="function-header">
                 <div class="function-name">filter</div>
-                <div class="function-signature">filter(arr, fn) -> array</div>
+                <div class="function-signature">filter(arr, func) -> array</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns elements that satisfy the predicate function.</div>
@@ -252,7 +252,7 @@ var doubled = map(nums, fn(x) { return x * 2; });
                     <h4>Example</h4>
 {% highlight go %}
 var nums = [1, 2, 3, 4, 5, 6];
-var evens = filter(nums, fn(x) { return x % 2 == 0; });
+var evens = filter(nums, func(x) { return x % 2 == 0; });
 // evens = [2, 4, 6]
 {% endhighlight %}
                 </div>
@@ -262,7 +262,7 @@ var evens = filter(nums, fn(x) { return x % 2 == 0; });
         <div class="function-card" id="reduce">
             <div class="function-header">
                 <div class="function-name">reduce</div>
-                <div class="function-signature">reduce(arr, fn, initial) -> any</div>
+                <div class="function-signature">reduce(arr, func, initial) -> any</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Reduces array to single value using accumulator function.</div>
@@ -270,7 +270,7 @@ var evens = filter(nums, fn(x) { return x % 2 == 0; });
                     <h4>Example</h4>
 {% highlight go %}
 var nums = [1, 2, 3, 4, 5];
-var sum = reduce(nums, fn(acc, x) { return acc + x; }, 0);
+var sum = reduce(nums, func(acc, x) { return acc + x; }, 0);
 // sum = 15
 {% endhighlight %}
                 </div>
@@ -280,7 +280,7 @@ var sum = reduce(nums, fn(acc, x) { return acc + x; }, 0);
         <div class="function-card" id="find">
             <div class="function-header">
                 <div class="function-name">find</div>
-                <div class="function-signature">find(arr, fn) -> any</div>
+                <div class="function-signature">find(arr, func) -> any</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns first element matching predicate, or nil if none found.</div>
@@ -288,7 +288,7 @@ var sum = reduce(nums, fn(acc, x) { return acc + x; }, 0);
                     <h4>Example</h4>
 {% highlight go %}
 var nums = [1, 2, 3, 4, 5];
-var firstEven = find(nums, fn(x) { return x % 2 == 0; });
+var firstEven = find(nums, func(x) { return x % 2 == 0; });
 // firstEven = 2
 {% endhighlight %}
                 </div>
@@ -298,7 +298,7 @@ var firstEven = find(nums, fn(x) { return x % 2 == 0; });
         <div class="function-card" id="some">
             <div class="function-header">
                 <div class="function-name">some</div>
-                <div class="function-signature">some(arr, fn) -> bool</div>
+                <div class="function-signature">some(arr, func) -> bool</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns true if at least one element satisfies the predicate.</div>
@@ -306,8 +306,8 @@ var firstEven = find(nums, fn(x) { return x % 2 == 0; });
                     <h4>Example</h4>
 {% highlight go %}
 var nums = [1, 2, 3, 4, 5];
-some(nums, fn(x) { return x > 3; });  // true
-some(nums, fn(x) { return x > 10; }); // false
+some(nums, func(x) { return x > 3; });  // true
+some(nums, func(x) { return x > 10; }); // false
 {% endhighlight %}
                 </div>
             </div>
@@ -316,7 +316,7 @@ some(nums, fn(x) { return x > 10; }); // false
         <div class="function-card" id="every">
             <div class="function-header">
                 <div class="function-name">every</div>
-                <div class="function-signature">every(arr, fn) -> bool</div>
+                <div class="function-signature">every(arr, func) -> bool</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Returns true if all elements satisfy the predicate.</div>
@@ -324,8 +324,8 @@ some(nums, fn(x) { return x > 10; }); // false
                     <h4>Example</h4>
 {% highlight go %}
 var nums = [2, 4, 6, 8];
-every(nums, fn(x) { return x % 2 == 0; });  // true
-every(nums, fn(x) { return x > 5; });       // false
+every(nums, func(x) { return x % 2 == 0; });  // true
+every(nums, func(x) { return x > 5; });       // false
 {% endhighlight %}
                 </div>
             </div>

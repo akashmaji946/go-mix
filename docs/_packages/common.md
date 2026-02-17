@@ -146,7 +146,7 @@ typeof(true);              // "bool"
 typeof(nil);               // "nil"
 typeof([1, 2, 3]);         // "array"
 typeof(range(1, 5));       // "range"
-typeof(fn() {});           // "func"
+typeof(func() {});           // "func"
 {% endhighlight %}
                 </div>
             </div>

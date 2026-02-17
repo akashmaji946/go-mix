@@ -32,7 +32,7 @@ permalink: /samples/
             <h3>Factorial</h3>
             <div class="code-block">
 {% highlight go %}
-fn factorial(n) {
+func factorial(n) {
     if (n <= 1) {
         return 1;
     }
@@ -48,7 +48,7 @@ println(factorial(5));  // 120
             <h3>Fibonacci</h3>
             <div class="code-block">
 {% highlight go %}
-fn fibonacci(n) {
+func fibonacci(n) {
     if (n <= 1) {
         return n;
     }
@@ -67,7 +67,7 @@ for (var i = 0; i < 10; i = i + 1) {
             <h3>Binary Search</h3>
             <div class="code-block">
 {% highlight go %}
-fn binary_search(arr, target) {
+func binary_search(arr, target) {
     var left = 0;
     var right = length(arr) - 1;
     
@@ -100,23 +100,23 @@ println(binary_search(sorted, 7));  // 3
 struct Stack {
     var items;
     
-    fn init() {
+    func init() {
         this.items = [];
     }
     
-    fn push(item) {
+    func push(item) {
         push(this.items, item);
     }
     
-    fn pop() {
+    func pop() {
         return pop(this.items);
     }
     
-    fn peek() {
+    func peek() {
         return this.items[-1];
     }
     
-    fn is_empty() {
+    func is_empty() {
         return length(this.items) == 0;
     }
 }
@@ -137,7 +137,7 @@ struct Node {
     var data;
     var next;
     
-    fn init(data) {
+    func init(data) {
         this.data = data;
         this.next = nil;
     }
@@ -146,7 +146,7 @@ struct Node {
 struct LinkedList {
     var head;
     
-    fn append(data) {
+    func append(data) {
         var new_node = new Node(data);
         if (this.head == nil) {
             this.head = new_node;
@@ -159,7 +159,7 @@ struct LinkedList {
         current.next = new_node;
     }
     
-    fn print_list() {
+    func print_list() {
         var current = this.head;
         while (current != nil) {
             print(current.data + " -> ");
@@ -184,11 +184,11 @@ list.print_list();  // 1 -> 2 -> 3 -> nil
             <h3>Higher-Order Functions</h3>
             <div class="code-block">
 {% highlight go %}
-fn apply_twice(f, x) {
+func apply_twice(f, x) {
     return f(f(x));
 }
 
-fn add_ten(x) {
+func add_ten(x) {
     return x + 10;
 }
 
@@ -196,8 +196,8 @@ var result = apply_twice(add_ten, 5);
 println(result);  // 25 (5 + 10 + 10)
 
 // Closure
-fn make_multiplier(factor) {
-    return fn(x) {
+func make_multiplier(factor) {
+    return func(x) {
         return x * factor;
     };
 }
@@ -217,15 +217,15 @@ println(triple(4));  // 12
 var numbers = [1, 2, 3, 4, 5];
 
 // Map
-var doubled = map(numbers, fn(x) { return x * 2; });
+var doubled = map(numbers, func(x) { return x * 2; });
 println(doubled);  // [2, 4, 6, 8, 10]
 
 // Filter
-var evens = filter(numbers, fn(x) { return x % 2 == 0; });
+var evens = filter(numbers, func(x) { return x % 2 == 0; });
 println(evens);    // [2, 4]
 
 // Reduce
-var sum = reduce(numbers, fn(a, x) { return a + x; }, 0);
+var sum = reduce(numbers, func(a, x) { return a + x; }, 0);
 println(sum);      // 15
 
 // Sort
@@ -311,20 +311,20 @@ struct Rectangle {
     var width;
     var height;
     
-    fn init(w, h) {
+    func init(w, h) {
         this.width = w;
         this.height = h;
     }
     
-    fn area() {
+    func area() {
         return this.width * this.height;
     }
     
-    fn perimeter() {
+    func perimeter() {
         return 2 * (this.width + this.height);
     }
     
-    fn scale(factor) {
+    func scale(factor) {
         this.width = this.width * factor;
         this.height = this.height * factor;
     }
@@ -347,11 +347,11 @@ println("New area: " + rect.area());       // 60
 struct Animal {
     var name;
     
-    fn init(name) {
+    func init(name) {
         this.name = name;
     }
     
-    fn speak() {
+    func speak() {
         return "Some sound";
     }
 }
@@ -360,16 +360,16 @@ struct Dog {
     var name;
     var breed;
     
-    fn init(name, breed) {
+    func init(name, breed) {
         this.name = name;
         this.breed = breed;
     }
     
-    fn speak() {
+    func speak() {
         return "Woof!";
     }
     
-    fn fetch() {
+    func fetch() {
         return this.name + " is fetching";
     }
 }
@@ -436,15 +436,15 @@ println(result);
 {% highlight go %}
 var srv = create_server();
 
-handle_server(srv, "/", fn(req) {
+handle_server(srv, "/", func(req) {
     return "Welcome to Go-Mix Server!";
 });
 
-handle_server(srv, "/api/hello", fn(req) {
+handle_server(srv, "/api/hello", func(req) {
     return '{"message": "Hello, World!"}';
 });
 
-handle_server(srv, "/api/echo", fn(req) {
+handle_server(srv, "/api/echo", func(req) {
     return '{"method": "' + req.method + '", "path": "' + req.path + '"}';
 });
 

@@ -89,7 +89,7 @@ typeof("text");            // "string"
 typeof(true);              // "bool"
 typeof(nil);               // "nil"
 typeof([1, 2, 3]);         // "array"
-typeof(fn() {});           // "func"
+typeof(func() {});           // "func"
 {% endhighlight %}
         </div>
         
@@ -447,22 +447,22 @@ coords[0] = 15;            // ERROR
             </div>
 {% highlight go %}
 // Basic function
-fn greet(name) {
+func greet(name) {
     return "Hello, " + name;
 }
 
 // Multiple parameters
-fn add(a, b) {
+func add(a, b) {
     return a + b;
 }
 
 // No return (returns nil)
-fn printInfo(x) {
+func printInfo(x) {
     println("Value: " + x);
 }
 
 // Recursive function
-fn factorial(n) {
+func factorial(n) {
     if (n <= 1) { return 1; }
     return n * factorial(n - 1);
 }
@@ -480,12 +480,12 @@ fn factorial(n) {
             </div>
 {% highlight go %}
 // Anonymous functions
-var double = fn(x) { return x * 2; };
-var add = fn(a, b) { return a + b; };
+var double = func(x) { return x * 2; };
+var add = func(a, b) { return a + b; };
 
 // Higher-order functions
-var makeMultiplier = fn(factor) {
-    return fn(x) { return x * factor; };
+var makeMultiplier = func(factor) {
+    return func(x) { return x * factor; };
 };
 
 var times5 = makeMultiplier(5);
@@ -506,24 +506,24 @@ println(times5(3));        // 15
 var numbers = [1, 2, 3, 4, 5];
 
 // Map - transform each element
-var doubled = map(numbers, fn(x) { return x * 2; });
+var doubled = map(numbers, func(x) { return x * 2; });
 // [2, 4, 6, 8, 10]
 
 // Filter - keep matching elements
-var evens = filter(numbers, fn(x) { return x % 2 == 0; });
+var evens = filter(numbers, func(x) { return x % 2 == 0; });
 // [2, 4]
 
 // Reduce - accumulate to single value
-var sum = reduce(numbers, fn(acc, x) { return acc + x; }, 0);
+var sum = reduce(numbers, func(acc, x) { return acc + x; }, 0);
 // 15
 
 // Find - get first matching element
-var firstEven = find(numbers, fn(x) { return x % 2 == 0; });
+var firstEven = find(numbers, func(x) { return x % 2 == 0; });
 // 2
 
 // Check predicates
-var hasEven = some(numbers, fn(x) { return x % 2 == 0; });     // true
-var allPositive = every(numbers, fn(x) { return x > 0; });       // true
+var hasEven = some(numbers, func(x) { return x % 2 == 0; });     // true
+var allPositive = every(numbers, func(x) { return x > 0; });       // true
 {% endhighlight %}
         </div>
         
@@ -539,9 +539,9 @@ var allPositive = every(numbers, fn(x) { return x > 0; });       // true
                 <span class="code-title">closures.gm</span>
             </div>
 {% highlight go %}
-fn makeCounter(start) {
+func makeCounter(start) {
     var count = start;
-    fn increment() { 
+    func increment() { 
         count = count + 1; 
         return count; 
     }
@@ -575,20 +575,20 @@ struct Circle {
     var radius = 0;
 
     // Constructor
-    fn init(r) {
+    func init(r) {
         this.radius = r;
     }
 
     // Instance methods
-    fn area() {
+    func area() {
         return 3.14159 * this.radius * this.radius;
     }
 
-    fn circumference() {
+    func circumference() {
         return 2 * 3.14159 * this.radius;
     }
 
-    fn scale(factor) {
+    func scale(factor) {
         this.radius = this.radius * factor;
         return this;  // Method chaining
     }
@@ -618,12 +618,12 @@ struct BankAccount {
     var balance = 0;
     var owner = "Unknown";
 
-    fn init(owner, initial) {
+    func init(owner, initial) {
         this.owner = owner;
         this.balance = initial;
     }
 
-    fn deposit(amount) {
+    func deposit(amount) {
         if (amount <= 0) {
             panic("Deposit amount must be positive");
         }
@@ -631,7 +631,7 @@ struct BankAccount {
         return this.balance;
     }
 
-    fn withdraw(amount) {
+    func withdraw(amount) {
         if (amount > this.balance) {
             panic("Insufficient funds");
         }
@@ -639,11 +639,11 @@ struct BankAccount {
         return this.balance;
     }
 
-    fn getBalance() {
+    func getBalance() {
         return this.balance;
     }
 
-    fn getInfo() {
+    func getInfo() {
         return this.owner + " has $" + this.balance;
     }
 }

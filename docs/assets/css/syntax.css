@@ -70,7 +70,7 @@
 .highlight .il { color: #0550ae } /* Literal.Number.Integer.Long */
 
 /* Go-Mix Specific Colors - GitHub-like */
-.highlight .language-go .k { color: #cf222e } /* Keywords: var, let, const, fn, if, else, for, while, foreach, return, struct, new */
+.highlight .language-go .k { color: #cf222e } /* Keywords: var, let, const, func, if, else, for, while, foreach, return, struct, new */
 .highlight .language-go .nf { color: #8250df } /* Function names */
 .highlight .language-go .s { color: #0a3069 } /* Strings */
 .highlight .language-go .s1 { color: #0a3069 } /* Single quoted strings */

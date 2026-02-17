@@ -147,13 +147,13 @@ let count = 42;
 const PI = 3.14159;
 
 // Functions
-fn greet(name) {
+func greet(name) {
     return "Hello, " + name + "!";
 }
 
 // Arrays and functional operations
 var numbers = [1, 2, 3, 4, 5];
-var doubled = map(numbers, fn(x) { 
+var doubled = map(numbers, func(x) { 
     return x * 2; 
 });
 
@@ -174,7 +174,7 @@ println("Doubled: " + doubled);
                 <div class="code-content">
 {% highlight go %}
 // Recursive Fibonacci with memoization
-fn fibonacci(n) {
+func fibonacci(n) {
     if (n <= 1) {
         return n;
     }
@@ -182,8 +182,8 @@ fn fibonacci(n) {
 }
 
 // Higher-order function
-fn makeMultiplier(factor) {
-    return fn(x) { return x * factor; };
+func makeMultiplier(factor) {
+    return func(x) { return x * factor; };
 }
 
 var triple = makeMultiplier(3);
