@@ -5,3 +5,5 @@ vscode-ext/
 .docs/
 .idea/
 *.log
+docs/vendor/
+docs/.bundle/
