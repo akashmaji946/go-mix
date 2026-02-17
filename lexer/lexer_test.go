@@ -275,14 +275,14 @@ func TestNewLexer_ConsumeTokens(t *testing.T) {
 func TestNewLexer_Import(t *testing.T) {
 	tests := []TestConsumeToken{
 		{
-			Input: `import "math"`,
+			Input: `import math`,
 			ExpectedTokens: []Token{
 				NewToken(IMPORT_KEY, "import"),
 				NewToken(STRING_LIT, "math"),
 			},
 		},
 		{
-			Input: `import "sets"`,
+			Input: `import sets`,
 			ExpectedTokens: []Token{
 				NewToken(IMPORT_KEY, "import"),
 				NewToken(STRING_LIT, "sets"),

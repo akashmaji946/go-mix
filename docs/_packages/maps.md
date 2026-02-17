@@ -9,14 +9,15 @@ description: Dictionary operations including keys, insert, remove, contain, enum
         <nav class="sidebar-nav">
             <div class="sidebar-title">Map Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#make_map">make_map</a></li>
-                <li><a href="#keys_map">keys_map</a></li>
-                <li><a href="#values_map">values_map</a></li>
-                <li><a href="#insert_map">insert_map</a></li>
-                <li><a href="#remove_map">remove_map</a></li>
-                <li><a href="#contain_map">contain_map</a></li>
-                <li><a href="#enumerate_map">enumerate_map</a></li>
-                <li><a href="#size_map">size_map</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#make_map">make_map()</a></li>
+                <li><a href="#keys_map">keys_map()</a></li>
+                <li><a href="#values_map">values_map()</a></li>
+                <li><a href="#insert_map">insert_map()</a></li>
+                <li><a href="#remove_map">remove_map()</a></li>
+                <li><a href="#contain_map">contain_map()</a></li>
+                <li><a href="#enumerate_map">enumerate_map()</a></li>
+                <li><a href="#size_map">size_map()</a></li>
             </ul>
         </nav>
     </aside>
@@ -24,6 +25,30 @@ description: Dictionary operations including keys, insert, remove, contain, enum
     <div class="content-body">
         <h1>Maps Package</h1>
         <p>Dictionary operations for key-value data structures.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "maps"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the maps package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import maps;
+var m = maps.make_map("name", "John", "age", 25)
+var keys = maps.keys_map(m)
+
+// With alias
+import maps as m;
+var map = m.make_map("name", "John", "age", 25)
+var keys = m.keys_map(map)
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="make_map">
             <div class="function-header">

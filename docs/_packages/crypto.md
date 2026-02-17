@@ -9,14 +9,15 @@ description: Cryptographic functions including hashing and random generation
         <nav class="sidebar-nav">
             <div class="sidebar-title">Crypto Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#md5">md5</a></li>
-                <li><a href="#sha1">sha1</a></li>
-                <li><a href="#sha256">sha256</a></li>
-                <li><a href="#base64_encode">base64_encode</a></li>
-                <li><a href="#base64_decode">base64_decode</a></li>
-                <li><a href="#uuid">uuid</a></li>
-                <li><a href="#random">random</a></li>
-                <li><a href="#rand_int">rand_int</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#md5">md5()</a></li>
+                <li><a href="#sha1">sha1()</a></li>
+                <li><a href="#sha256">sha256()</a></li>
+                <li><a href="#base64_encode">base64_encode()</a></li>
+                <li><a href="#base64_decode">base64_decode()</a></li>
+                <li><a href="#uuid">uuid()</a></li>
+                <li><a href="#random">random()</a></li>
+                
             </ul>
         </nav>
     </aside>
@@ -24,6 +25,30 @@ description: Cryptographic functions including hashing and random generation
     <div class="content-body">
         <h1>Crypto Package</h1>
         <p>Cryptographic hashing, encoding, and random generation functions.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "crypto"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the crypto package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import crypto;
+var hash = crypto.md5("hello");
+var uuid = crypto.uuid();
+
+// With alias
+import "crypto" as c
+var hash = c.md5("hello")
+var uuid = c.uuid()
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="md5">
             <div class="function-header">
@@ -139,23 +164,6 @@ var id = uuid();
 {% highlight go %}
 var r = random();          // 0.0 to 1.0
 var scaled = random() * 100;  // 0.0 to 100.0
-{% endhighlight %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="function-card" id="rand_int">
-            <div class="function-header">
-                <div class="function-name">rand_int</div>
-                <div class="function-signature">rand_int(min, max) -> int</div>
-            </div>
-            <div class="function-body">
-                <div class="function-description">Returns random integer in range [min, max).</div>
-                <div class="function-example">
-                    <h4>Example</h4>
-{% highlight go %}
-var dice = rand_int(1, 7);     // 1 to 6
-var coin = rand_int(0, 2);     // 0 or 1
 {% endhighlight %}
                 </div>
             </div>

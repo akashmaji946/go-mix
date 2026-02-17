@@ -9,8 +9,9 @@ description: JSON parsing and serialization functions
         <nav class="sidebar-nav">
             <div class="sidebar-title">JSON Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#map_to_json_string">map_to_json_string</a></li>
-                <li><a href="#json_string_to_map">json_string_to_map</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#map_to_json_string">map_to_json_string()</a></li>
+                <li><a href="#json_string_to_map">json_string_to_map()</a></li>
             </ul>
         </nav>
     </aside>
@@ -18,6 +19,30 @@ description: JSON parsing and serialization functions
     <div class="content-body">
         <h1>JSON Package</h1>
         <p>JSON encoding and decoding functions.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "json"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the json package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import json;
+var data = json.json_string_to_map('{"name": "John"}')
+var str = json.map_to_json_string(map{"age": 30})
+
+// With alias
+import json as j;
+var data = j.json_string_to_map('{"name": "John"}')
+var str = j.map_to_json_string(map{"age": 30})
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="map_to_json_string">
             <div class="function-header">

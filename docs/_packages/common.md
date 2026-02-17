@@ -9,26 +9,50 @@ description: Core functions including print, length, typeof, range, and type con
         <nav class="sidebar-nav">
             <div class="sidebar-title">Common Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#print">print</a></li>
-                <li><a href="#println">println</a></li>
-                <li><a href="#printf">printf</a></li>
-                <li><a href="#length">length/size</a></li>
-                <li><a href="#typeof">typeof</a></li>
-                <li><a href="#range">range</a></li>
-                <li><a href="#tostring">to_string</a></li>
-                <li><a href="#array">array</a></li>
-                <li><a href="#list">list</a></li>
-                <li><a href="#tuple">tuple</a></li>
-                <li><a href="#addr">addr</a></li>
-                <li><a href="#is_same_ref">is_same_ref</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#print">print()</a></li>
+                <li><a href="#println">println()</a></li>
+                <li><a href="#printf">printf()</a></li>
+                <li><a href="#length">length()/size()</a></li>
+                <li><a href="#typeof">typeof()</a></li>
+                <li><a href="#range">range()</a></li>
+                <li><a href="#tostring">to_string()</a></li>
+                <li><a href="#array">array()</a></li>
+                <li><a href="#list">list()</a></li>
+                <li><a href="#tuple">tuple()</a></li>
+                <li><a href="#addr">addr()</a></li>
+                <li><a href="#is_same_ref">is_same_ref()</a></li>
             </ul>
         </nav>
     </aside>
     
     <div class="content-body">
         <h1>Common Package</h1>
-        
         <p>The Common package provides essential functions for output, type inspection, and object creation. These are the most frequently used functions in Go-Mix.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "common"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the common package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import common;
+common.print("Hello");
+common.println("World");
+
+// With alias
+import "common" as c
+c.print("Hello")
+c.println("World")
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="print">
             <div class="function-header">

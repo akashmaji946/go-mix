@@ -9,26 +9,27 @@ description: List operations for mutable heterogeneous sequences
         <nav class="sidebar-nav">
             <div class="sidebar-title">List Functions</div>
             <ul class="sidebar-menu">
+                <li><a href="#import">Import</a></li>
                 <li><a href="#list">list</a></li>
-                <li><a href="#pushback_list">pushback_list</a></li>
-                <li><a href="#pushfront_list">pushfront_list</a></li>
-                <li><a href="#popback_list">popback_list</a></li>
-                <li><a href="#popfront_list">popfront_list</a></li>
-                <li><a href="#insert_list">insert_list</a></li>
-                <li><a href="#remove_list">remove_list</a></li>
-                <li><a href="#slice_list">slice_list</a></li>
-                <li><a href="#contains_list">contains_list</a></li>
-                <li><a href="#index_list">index_list</a></li>
-                <li><a href="#peekback_list">peekback_list</a></li>
-                <li><a href="#peekfront_list">peekfront_list</a></li>
-                <li><a href="#map_list">map_list</a></li>
-                <li><a href="#filter_list">filter_list</a></li>
-                <li><a href="#reduce_list">reduce_list</a></li>
-                <li><a href="#find_list">find_list</a></li>
-                <li><a href="#some_list">some_list</a></li>
-                <li><a href="#every_list">every_list</a></li>
-                <li><a href="#to_list">to_list</a></li>
-                <li><a href="#size_list">size_list</a></li>
+                <li><a href="#pushback_list">pushback_list()</a></li>
+                <li><a href="#pushfront_list">pushfront_list()</a></li>
+                <li><a href="#popback_list">popback_list()</a></li>
+                <li><a href="#popfront_list">popfront_list()</a></li>
+                <li><a href="#insert_list">insert_list()</a></li>
+                <li><a href="#remove_list">remove_list()</a></li>
+                <li><a href="#slice_list">slice_list()</a></li>
+                <li><a href="#contains_list">contains_list()</a></li>
+                <li><a href="#index_list">index_list()</a></li>
+                <li><a href="#peekback_list">peekback_list()</a></li>
+                <li><a href="#peekfront_list">peekfront_list()</a></li>
+                <li><a href="#map_list">map_list()</a></li>
+                <li><a href="#filter_list">filter_list()</a></li>
+                <li><a href="#reduce_list">reduce_list()</a></li>
+                <li><a href="#find_list">find_list()</a></li>
+                <li><a href="#some_list">some_list()</a></li>
+                <li><a href="#every_list">every_list()</a></li>
+                <li><a href="#to_list">to_list()</a></li>
+                <li><a href="#size_list">size_list()</a></li>
             </ul>
         </nav>
     </aside>
@@ -36,6 +37,30 @@ description: List operations for mutable heterogeneous sequences
     <div class="content-body">
         <h1>Lists Package</h1>
         <p>Mutable heterogeneous sequences with flexible operations.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "lists"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the lists package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import lists;
+var l = lists.list(1, 2, 3)
+lists.pushback_list(l, 4)
+
+// With alias
+import lists as lst;
+var l = lst.list(1, 2, 3)
+lst.pushback_list(l, 4)
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="list">
             <div class="function-header">

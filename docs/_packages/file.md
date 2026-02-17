@@ -9,30 +9,31 @@ description: File operations including read, write, mkdir, list_dir, and more
         <nav class="sidebar-nav">
             <div class="sidebar-title">File Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#read_file">read_file</a></li>
-                <li><a href="#write_file">write_file</a></li>
-                <li><a href="#append_file">append_file</a></li>
-                <li><a href="#file_exists">file_exists</a></li>
-                <li><a href="#mkdir">mkdir</a></li>
-                <li><a href="#list_dir">list_dir</a></li>
-                <li><a href="#remove_file">remove_file</a></li>
-                <li><a href="#rename_file">rename_file</a></li>
-                <li><a href="#is_dir">is_dir</a></li>
-                <li><a href="#is_file">is_file</a></li>
-                <li><a href="#touch">touch</a></li>
-                <li><a href="#pwd">pwd</a></li>
-                <li><a href="#home">home</a></li>
-                <li><a href="#truncate_file">truncate_file</a></li>
-                <li><a href="#remove_all">remove_all</a></li>
-                <li><a href="#chmod">chmod</a></li>
-                <li><a href="#cat">cat</a></li>
-                <li><a href="#path_join">path_join</a></li>
-                <li><a href="#path_base">path_base</a></li>
-                <li><a href="#path_dir">path_dir</a></li>
-                <li><a href="#path_ext">path_ext</a></li>
-                <li><a href="#path_abs">path_abs</a></li>
-                <li><a href="#glob">glob</a></li>
-                <li><a href="#copy_file">copy_file</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#read_file">read_file()</a></li>
+                <li><a href="#write_file">write_file()</a></li>
+                <li><a href="#append_file">append_file()</a></li>
+                <li><a href="#file_exists">file_exists()</a></li>
+                <li><a href="#mkdir">mkdir()</a></li>
+                <li><a href="#list_dir">list_dir()</a></li>
+                <li><a href="#remove_file">remove_file()</a></li>
+                <li><a href="#rename_file">rename_file()</a></li>
+                <li><a href="#is_dir">is_dir()</a></li>
+                <li><a href="#is_file">is_file()</a></li>
+                <li><a href="#touch">touch()</a></li>
+                <li><a href="#pwd">pwd()</a></li>
+                <li><a href="#home">home()</a></li>
+                <li><a href="#truncate_file">truncate_file()</a></li>
+                <li><a href="#remove_all">remove_all()</a></li>
+                <li><a href="#chmod">chmod()</a></li>
+                <li><a href="#cat">cat()</a></li>
+                <li><a href="#path_join">path_join()</a></li>
+                <li><a href="#path_base">path_base()</a></li>
+                <li><a href="#path_dir">path_dir()</a></li>
+                <li><a href="#path_ext">path_ext()</a></li>
+                <li><a href="#path_abs">path_abs()</a></li>
+                <li><a href="#glob">glob()</a></li>
+                <li><a href="#copy_file">copy_file()</a></li>
             </ul>
         </nav>
     </aside>
@@ -40,6 +41,30 @@ description: File operations including read, write, mkdir, list_dir, and more
     <div class="content-body">
         <h1>File I/O Package</h1>
         <p>Comprehensive file system operations (17 functions).</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "file"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the file package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import file;
+var content = file.read_file("data.txt");
+file.write_file("output.txt", "Hello");
+
+// With alias
+import file as f;
+var content = f.read_file("data.txt");
+f.write_file("output.txt", "Hello");
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="read_file">
             <div class="function-header">

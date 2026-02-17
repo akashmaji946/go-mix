@@ -9,11 +9,12 @@ description: Type conversion functions including to_int, to_float, to_string, to
         <nav class="sidebar-nav">
             <div class="sidebar-title">Format Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#to_int">to_int</a></li>
-                <li><a href="#to_float">to_float</a></li>
-                <li><a href="#to_string">to_string</a></li>
-                <li><a href="#to_bool">to_bool</a></li>
-                <li><a href="#to_char">to_char</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#to_int">to_int()</a></li>
+                <li><a href="#to_float">to_float()</a></li>
+                <li><a href="#to_string">to_str()</a></li>
+                <li><a href="#to_bool">to_bool()</a></li>
+                <li><a href="#to_char">to_char()</a></li>
             </ul>
         </nav>
     </aside>
@@ -21,6 +22,30 @@ description: Type conversion functions including to_int, to_float, to_string, to
     <div class="content-body">
         <h1>Format Package</h1>
         <p>Type conversion and formatting functions.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "format"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the format package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import format;
+var num = format.to_int("42");
+var str = format.to_str(123);
+
+// With alias
+import format as fmt;
+var num = fmt.to_int("42")
+var str = fmt.to_str(123)
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="to_int">
             <div class="function-header">
@@ -63,17 +88,17 @@ to_float(42);              // 42.0
         <div class="function-card" id="to_string">
             <div class="function-header">
                 <div class="function-name">to_string</div>
-                <div class="function-signature">to_string(value) -> string</div>
+                <div class="function-signature">to_str(value) -> string</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Converts value to string.</div>
                 <div class="function-example">
                     <h4>Example</h4>
 {% highlight go %}
-to_string(42);             // "42"
-to_string(3.14);           // "3.14"
-to_string(true);           // "true"
-to_string([1, 2, 3]);      // "[1, 2, 3]"
+to_str(42);             // "42"
+to_str(3.14);           // "3.14"
+to_str(true);           // "true"
+to_str([1, 2, 3]);      // "[1, 2, 3]"
 {% endhighlight %}
                 </div>
             </div>

@@ -9,13 +9,14 @@ description: Time handling functions including now, format_time, parse_time, tim
         <nav class="sidebar-nav">
             <div class="sidebar-title">Time Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#now">now</a></li>
-                <li><a href="#now_ms">now_ms</a></li>
-                <li><a href="#utc_now">utc_now</a></li>
-                <li><a href="#format_time">format_time</a></li>
-                <li><a href="#parse_time">parse_time</a></li>
-                <li><a href="#timezone">timezone</a></li>
-                <li><a href="#sleep">sleep</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#now">now()</a></li>
+                <li><a href="#now_ms">now_ms()</a></li>
+                <li><a href="#utc_now">utc_now()</a></li>
+                <li><a href="#format_time">format_time()</a></li>
+                <li><a href="#parse_time">parse_time()</a></li>
+                <li><a href="#timezone">timezone()</a></li>
+                <li><a href="#sleep">sleep()</a></li>
             </ul>
         </nav>
     </aside>
@@ -23,6 +24,30 @@ description: Time handling functions including now, format_time, parse_time, tim
     <div class="content-body">
         <h1>Time Package</h1>
         <p>Time handling and formatting functions.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "time"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the time package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import time;
+var now = time.now();
+var formatted = time.format_time(now, "2006-01-02");
+
+// With alias
+import time as t;
+var now = t.now();
+var formatted = t.format_time(now, "2006-01-02");
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="now">
             <div class="function-header">

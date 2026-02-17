@@ -9,12 +9,13 @@ description: HTTP client and server functions for web requests and APIs
         <nav class="sidebar-nav">
             <div class="sidebar-title">HTTP Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#get_http">get_http</a></li>
-                <li><a href="#post_http">post_http</a></li>
-                <li><a href="#request_http">request_http</a></li>
-                <li><a href="#create_server">create_server</a></li>
-                <li><a href="#handle_server">handle_server</a></li>
-                <li><a href="#start_server">start_server</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#get_http">get_http()</a></li>
+                <li><a href="#post_http">post_http()</a></li>
+                <li><a href="#request_http">request_http()</a></li>
+                <li><a href="#create_server">create_server()</a></li>
+                <li><a href="#handle_server">handle_server()</a></li>
+                <li><a href="#start_server">start_server()</a></li>
             </ul>
         </nav>
     </aside>
@@ -22,6 +23,28 @@ description: HTTP client and server functions for web requests and APIs
     <div class="content-body">
         <h1>HTTP Package</h1>
         <p>HTTP client and server functionality for web development.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "http"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the http package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import http;
+var response = http.get_http("https://api.example.com")
+
+// With alias
+import http as h;
+var response = h.get_http("https://api.example.com")
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="get_http">
             <div class="function-header">

@@ -9,11 +9,12 @@ description: Regular expression functions for pattern matching
         <nav class="sidebar-nav">
             <div class="sidebar-title">Regex Functions</div>
             <ul class="sidebar-menu">
-                <li><a href="#match_regex">match_regex</a></li>
-                <li><a href="#find_regex">find_regex</a></li>
-                <li><a href="#findall_regex">findall_regex</a></li>
-                <li><a href="#replace_regex">replace_regex</a></li>
-                <li><a href="#split_regex">split_regex</a></li>
+                <li><a href="#import">Import</a></li>
+                <li><a href="#match_regex">match_regex()</a></li>
+                <li><a href="#find_regex">find_regex()</a></li>
+                <li><a href="#findall_regex">findall_regex()</a></li>
+                <li><a href="#replace_regex">replace_regex()</a></li>
+                <li><a href="#split_regex">split_regex()</a></li>
             </ul>
         </nav>
     </aside>
@@ -21,6 +22,30 @@ description: Regular expression functions for pattern matching
     <div class="content-body">
         <h1>Regex Package</h1>
         <p>Regular expression pattern matching and manipulation.</p>
+        
+        <div class="function-card" id="import">
+            <div class="function-header">
+                <div class="function-name">Import</div>
+                <div class="function-signature">import "regex"</div>
+            </div>
+            <div class="function-body">
+                <div class="function-description">Import the regex package to use namespaced functions.</div>
+                <div class="function-example">
+                    <h4>Examples</h4>
+{% highlight go %}
+// Standard import
+import regex;
+var match = regex.match_regex("\\d+", "123")
+var found = regex.find_regex("\\d+", "abc123")
+
+// With alias
+import regex as re;
+var match = re.match_regex("\\d+", "123")
+var found = re.find_regex("\\d+", "abc123")
+{% endhighlight %}
+                </div>
+            </div>
+        </div>
         
         <div class="function-card" id="match_regex">
             <div class="function-header">

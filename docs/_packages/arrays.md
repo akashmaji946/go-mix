@@ -43,7 +43,7 @@ description: Array manipulation functions including push, pop, sort, map, filter
         <div class="function-card" id="import">
             <div class="function-header">
                 <div class="function-name">Import</div>
-                <div class="function-signature">import "arrays"</div>
+                <div class="function-signature">import arrays</div>
             </div>
             <div class="function-body">
                 <div class="function-description">Import the arrays package to use namespaced functions.</div>
@@ -51,12 +51,12 @@ description: Array manipulation functions including push, pop, sort, map, filter
                     <h4>Examples</h4>
 {% highlight go %}
 // Standard import
-import "arrays"
+import arrays;
 var arr = arrays.make_array(1, 2, 3)
 arrays.push_array(arr, 4)
 
 // With alias
-import "arrays" as arr
+import arrays as arr
 var a = arr.make_array(1, 2, 3)
 arr.push_array(a, 4)
 {% endhighlight %}
