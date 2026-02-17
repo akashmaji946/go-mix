@@ -1,6 +1,5 @@
 .commits
 .tutorial/
-*.md
 *.png
 vscode-ext/
 .docs/
