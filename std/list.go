@@ -46,6 +46,18 @@ var listMethods = []*Builtin{
 // init registers the list methods by appending them to the global Builtins slice.
 // This function runs automatically when the package is initialized.
 // It also registers the list package for import functionality.
+//
+// Import Examples:
+//
+//	import "lists"
+//	var l = lists.make_list(1, 2, 3)
+//	lists.pushback_list(l, 4)
+//
+// Or with alias:
+//
+//	import "lists" as lst
+//	var mylist = lst.make_list(1, 2, 3)
+//	lst.pushback_list(mylist, 4)
 func init() {
 	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, listMethods...)

@@ -49,6 +49,18 @@ var stringMethods = []*Builtin{
 }
 
 // init registers the string methods as global builtins and as a package for import.
+//
+// Import Examples:
+//
+//	import "strings"
+//	var s = strings.upper("hello")
+//	var t = strings.split("a,b,c", ",")
+//
+// Or with alias:
+//
+//	import "strings" as str
+//	var s = str.upper("hello")
+//	var t = str.split("a,b,c", ",")
 func init() {
 	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, stringMethods...)

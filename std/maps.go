@@ -35,6 +35,18 @@ var mapMethods = []*Builtin{
 // init is a special Go function that runs when the package is initialized.
 // It registers the map methods as global builtins by appending them to the Builtins slice.
 // It also registers the map package for import functionality.
+//
+// Import Examples:
+//
+//	import "maps"
+//	var m = maps.make_map("name", "John", "age", 25)
+//	var keys = maps.keys_map(m)
+//
+// Or with alias:
+//
+//	import "maps" as m
+//	var map1 = m.make_map("a", 1, "b", 2)
+//	var k = m.keys_map(map1)
 func init() {
 	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, mapMethods...)

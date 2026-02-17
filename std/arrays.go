@@ -10,7 +10,7 @@ Contact : akashmaji(@iisc.ac.in)
 package std
 
 import (
-	"io" // io.Writer is used for output in builtin functions, though not directly in this file
+	"io"
 	"sort"
 )
 
@@ -52,6 +52,18 @@ var arrayMethods = []*Builtin{
 // init is a special Go function that runs when the package is initialized.
 // It registers the array methods as global builtins by appending them to the Builtins slice.
 // It also registers the arrays package for import functionality.
+//
+// Import Examples:
+//
+//	import "arrays"
+//	var arr = arrays.make_array(1, 2, 3)
+//	arrays.push_array(arr, 4)
+//
+// Or with alias:
+//
+//	import "arrays" as arr
+//	var a = arr.make_array(1, 2, 3)
+//	arr.push_array(a, 4)
 func init() {
 	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, arrayMethods...)

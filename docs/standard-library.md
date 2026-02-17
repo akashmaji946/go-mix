@@ -10,23 +10,23 @@ permalink: /standard-library/
         <nav class="sidebar-nav">
             <div class="sidebar-title">Packages</div>
             <ul class="sidebar-menu">
-                <li><a href="#common">Common</a></li>
-                <li><a href="#arrays">Arrays</a></li>
-                <li><a href="#strings">Strings</a></li>
-                <li><a href="#math">Math</a></li>
-                <li><a href="#maps">Maps</a></li>
-                <li><a href="#lists">Lists</a></li>
-                <li><a href="#tuples">Tuples</a></li>
-                <li><a href="#sets">Sets</a></li>
-                <li><a href="#time">Time</a></li>
-                <li><a href="#file">File I/O</a></li>
-                <li><a href="#io">I/O</a></li>
-                <li><a href="#os">OS</a></li>
-                <li><a href="#format">Format</a></li>
-                <li><a href="#regex">Regex</a></li>
-                <li><a href="#http">HTTP</a></li>
-                <li><a href="#json">JSON</a></li>
-                <li><a href="#crypto">Crypto</a></li>
+                <li><a href="{{ '/packages/common/' | relative_url }}">Common</a></li>
+                <li><a href="{{ '/packages/arrays/' | relative_url }}">Arrays</a></li>
+                <li><a href="{{ '/packages/strings/' | relative_url }}">Strings</a></li>
+                <li><a href="{{ '/packages/math/' | relative_url }}">Math</a></li>
+                <li><a href="{{ '/packages/maps/' | relative_url }}">Maps</a></li>
+                <li><a href="{{ '/packages/lists/' | relative_url }}">Lists</a></li>
+                <li><a href="{{ '/packages/tuples/' | relative_url }}">Tuples</a></li>
+                <li><a href="{{ '/packages/sets/' | relative_url }}">Sets</a></li>
+                <li><a href="{{ '/packages/time/' | relative_url }}">Time</a></li>
+                <li><a href="{{ '/packages/file/' | relative_url }}">File I/O</a></li>
+                <li><a href="{{ '/packages/io/' | relative_url }}">I/O</a></li>
+                <li><a href="{{ '/packages/os/' | relative_url }}">OS</a></li>
+                <li><a href="{{ '/packages/format/' | relative_url }}">Format</a></li>
+                <li><a href="{{ '/packages/regex/' | relative_url }}">Regex</a></li>
+                <li><a href="{{ '/packages/http/' | relative_url }}">HTTP</a></li>
+                <li><a href="{{ '/packages/json/' | relative_url }}">JSON</a></li>
+                <li><a href="{{ '/packages/crypto/' | relative_url }}">Crypto</a></li>
             </ul>
         </nav>
     </aside>
@@ -47,7 +47,7 @@ import strings;</code></pre>
         <h2>Package Overview</h2>
         
         <div class="packages-grid">
-            <a href="#common" class="package-card">
+            <a href="{{ '/packages/common/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-cube"></i>
                 </div>
@@ -55,7 +55,7 @@ import strings;</code></pre>
                 <p>Core functions: print, length, typeof, range, and type constructors.</p>
             </a>
             
-            <a href="#arrays" class="package-card">
+            <a href="{{ '/packages/arrays/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-list-ol"></i>
                 </div>
@@ -63,7 +63,7 @@ import strings;</code></pre>
                 <p>Array manipulation: push, pop, sort, map, filter, reduce, and more.</p>
             </a>
             
-            <a href="#strings" class="package-card">
+            <a href="{{ '/packages/strings/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-font"></i>
                 </div>
@@ -71,7 +71,7 @@ import strings;</code></pre>
                 <p>String operations: upper, lower, split, join, 21 functions total.</p>
             </a>
             
-            <a href="#math" class="package-card">
+            <a href="{{ '/packages/math/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-calculator"></i>
                 </div>
@@ -79,7 +79,7 @@ import strings;</code></pre>
                 <p>Mathematical functions: abs, sin, cos, pow, random, 20 functions.</p>
             </a>
             
-            <a href="#maps" class="package-card">
+            <a href="{{ '/packages/maps/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-map"></i>
                 </div>
@@ -87,7 +87,7 @@ import strings;</code></pre>
                 <p>Dictionary operations: keys, insert, remove, contain, enumerate.</p>
             </a>
             
-            <a href="#lists" class="package-card">
+            <a href="{{ '/packages/lists/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-list"></i>
                 </div>
@@ -95,7 +95,7 @@ import strings;</code></pre>
                 <p>Mutable heterogeneous sequences: pushback, popfront, insert, remove.</p>
             </a>
             
-            <a href="#tuples" class="package-card">
+            <a href="{{ '/packages/tuples/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-stream"></i>
                 </div>
@@ -103,7 +103,7 @@ import strings;</code></pre>
                 <p>Immutable fixed-size sequences with functional operations.</p>
             </a>
             
-            <a href="#sets" class="package-card">
+            <a href="{{ '/packages/sets/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-object-group"></i>
                 </div>
@@ -111,7 +111,7 @@ import strings;</code></pre>
                 <p>Unique value collections: insert, remove, contains, values.</p>
             </a>
             
-            <a href="#time" class="package-card">
+            <a href="{{ '/packages/time/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-clock"></i>
                 </div>
@@ -119,7 +119,7 @@ import strings;</code></pre>
                 <p>Time handling: now, format_time, parse_time, timezone.</p>
             </a>
             
-            <a href="#file" class="package-card">
+            <a href="{{ '/packages/file/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-file-alt"></i>
                 </div>
@@ -127,7 +127,7 @@ import strings;</code></pre>
                 <p>File operations: read_file, write_file, mkdir, list_dir, 17 functions.</p>
             </a>
             
-            <a href="#io" class="package-card">
+            <a href="{{ '/packages/io/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-terminal"></i>
                 </div>
@@ -135,7 +135,7 @@ import strings;</code></pre>
                 <p>Input/output: scanln, scanf, input, getchar, sprintf.</p>
             </a>
             
-            <a href="#os" class="package-card">
+            <a href="{{ '/packages/os/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-desktop"></i>
                 </div>
@@ -143,7 +143,7 @@ import strings;</code></pre>
                 <p>System operations: getenv, exec, sleep, getpid, hostname.</p>
             </a>
             
-            <a href="#format" class="package-card">
+            <a href="{{ '/packages/format/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-exchange-alt"></i>
                 </div>
@@ -151,7 +151,7 @@ import strings;</code></pre>
                 <p>Type conversion: to_int, to_float, to_bool, to_string, to_char.</p>
             </a>
             
-            <a href="#regex" class="package-card">
+            <a href="{{ '/packages/regex/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-search"></i>
                 </div>
@@ -159,7 +159,7 @@ import strings;</code></pre>
                 <p>Pattern matching: match_regex, find_regex, replace_regex, split_regex.</p>
             </a>
             
-            <a href="#http" class="package-card">
+            <a href="{{ '/packages/http/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-globe"></i>
                 </div>
@@ -167,7 +167,7 @@ import strings;</code></pre>
                 <p>Web client/server: get_http, post_http, create_server, serve_static.</p>
             </a>
             
-            <a href="#json" class="package-card">
+            <a href="{{ '/packages/json/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-code"></i>
                 </div>
@@ -175,7 +175,7 @@ import strings;</code></pre>
                 <p>JSON handling: map_to_json_string, json_string_to_map.</p>
             </a>
             
-            <a href="#crypto" class="package-card">
+            <a href="{{ '/packages/crypto/' | relative_url }}" class="package-card">
                 <div class="package-icon">
                     <i class="fas fa-lock"></i>
                 </div>

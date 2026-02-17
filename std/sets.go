@@ -32,6 +32,18 @@ var setMethods = []*Builtin{
 // init is a special Go function that runs when the package is initialized.
 // It registers the set methods as global builtins by appending them to the Builtins slice.
 // It also registers the set package for import functionality.
+//
+// Import Examples:
+//
+//	import "sets"
+//	var s = sets.make_set(1, 2, 3)
+//	sets.insert_set(s, 4)
+//
+// Or with alias:
+//
+//	import "sets" as st
+//	var myset = st.make_set(1, 2, 3)
+//	st.insert_set(myset, 4)
 func init() {
 	// Register as global builtins (for backward compatibility)
 	Builtins = append(Builtins, setMethods...)

@@ -31,6 +31,8 @@ nav:
     url: /language-guide/
   - title: Standard Library
     url: /standard-library/
+  - title: Packages
+    url: /packages/arrays/
   - title: Samples
     url: /samples/
 
