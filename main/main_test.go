@@ -17,6 +17,12 @@ func TestMain_Main(t *testing.T) {
 
 	fmt.Println("Hello, go-mix!")
 
+	src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
+	root72 := parser.NewParser(src72).Parse()
+	visitor72 := &PrintingVisitor{}
+	root72.Accept(visitor72)
+	fmt.Println(visitor72)
+
 	// binary expression with operator precedence
 	src1 := `1 + 2 * 3`
 	root1 := parser.NewParser(src1).Parse()
@@ -705,11 +711,11 @@ func TestMain_Main(t *testing.T) {
 	fmt.Println(visitor71)
 
 	// array with function element
-	src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
-	root72 := parser.NewParser(src72).Parse()
-	visitor72 := &PrintingVisitor{}
-	root72.Accept(visitor72)
-	fmt.Println(visitor72)
+	// src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
+	// root72 := parser.NewParser(src72).Parse()
+	// visitor72 := &PrintingVisitor{}
+	// root72.Accept(visitor72)
+	// fmt.Println(visitor72)
 
 	// chained function and array access
 	src73 := `a()[b()+1]`

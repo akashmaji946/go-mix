@@ -161,7 +161,7 @@ func (par *Parser) init() {
 	par.registerUnaryFuncs(par.parseFunctionAssignment, lexer.FUNC_KEY)
 
 	// Boolean/comparison operators: &&, ||, <, >, <=, >=, ==, !=
-	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP)
+	par.registerBinaryFuncs(par.parseBooleanExpression, lexer.AND_OP, lexer.OR_OP, lexer.GT_OP, lexer.LT_OP, lexer.GE_OP, lexer.LE_OP, lexer.EQ_OP, lexer.NE_OP, lexer.STRICT_EQ_OP, lexer.STRICT_NE_OP)
 
 	// Assignment operators: =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=
 	par.registerBinaryFuncs(par.parseAssignmentExpression, lexer.ASSIGN_OP, lexer.PLUS_ASSIGN, lexer.MINUS_ASSIGN, lexer.MUL_ASSIGN, lexer.DIV_ASSIGN, lexer.MOD_ASSIGN,

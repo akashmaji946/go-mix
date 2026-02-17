@@ -1392,6 +1392,10 @@ func (e *Evaluator) evalBooleanExpression(n *parser.BooleanExpressionNode) std.G
 		return &std.Boolean{Value: left.ToString() == right.ToString()}
 	case lexer.NE_OP:
 		return &std.Boolean{Value: left.ToString() != right.ToString()}
+	case lexer.STRICT_EQ_OP:
+		return &std.Boolean{Value: StrictEqual(left, right)}
+	case lexer.STRICT_NE_OP:
+		return &std.Boolean{Value: !StrictEqual(left, right)}
 	case lexer.GT_OP:
 		if left.GetType() == std.IntegerType && right.GetType() == std.IntegerType {
 			return &std.Boolean{Value: left.(*std.Integer).Value > right.(*std.Integer).Value}
@@ -2725,6 +2729,34 @@ func (e *Evaluator) evalPackageMemberAccess(pkg *std.Package, node parser.Expres
 	return e.CreateError("ERROR: invalid member access on package")
 }
 
+// StrictEqual checks if two objects are strictly equal (same value and type, or same reference).
+func StrictEqual(a, b std.GoMixObject) bool {
+	if a.GetType() != b.GetType() {
+		return false
+	}
+	switch a.GetType() {
+	case std.IntegerType:
+		return a.(*std.Integer).Value == b.(*std.Integer).Value
+	case std.FloatType:
+		return a.(*std.Float).Value == b.(*std.Float).Value
+	case std.BooleanType:
+		return a.(*std.Boolean).Value == b.(*std.Boolean).Value
+	case std.StringType:
+		return a.(*std.String).Value == b.(*std.String).Value
+	case std.CharType:
+		return a.(*std.Char).Value == b.(*std.Char).Value
+	case std.NilType:
+		return true
+	default:
+		// For reference types, check pointer equality
+		b := std.IsSameRef(nil, nil, a, b)
+		if b == nil {
+			return false
+		}
+		return b.(*std.Boolean).Value
+	}
+}
+
 // evalImportStatement evaluates an import statement to make a package available.
 //
 // This method processes import statements (e.g., import math;) by:
@@ -2736,7 +2768,6 @@ func (e *Evaluator) evalPackageMemberAccess(pkg *std.Package, node parser.Expres
 //
 // Parameters:
 //   - n: An ImportStatementNode containing the package name to import
-//
 func (e *Evaluator) evalImportStatement(n *parser.ImportStatementNode) std.GoMixObject {
 	// Look up the package by name
 	pkg, exists := e.Imports[n.Name]
@@ -2755,3 +2786,23 @@ func (e *Evaluator) evalImportStatement(n *parser.ImportStatementNode) std.GoMix
 	return pkg
 }
 
+// func (e *Evaluator) evalFunctionLiteral(n *parser.FunctionLiteralExpressionNode) std.GoMixObject {
+// 	fn := &function.Function{
+// 		Name:   n.Name,
+// 		Params: n.Parameters,
+// 		Body:   n.Body,
+// 		Scp:    e.Scp,
+// 	}
+
+// 	// If the function has a name, register it in the scope (same as FunctionStatementNode)
+// 	if n.Name != "" {
+// 		// Check for redeclaration
+// 		name, has := e.Scp.Bind(n.Name, fn)
+// 		if has && name != "" {
+// 			return e.CreateError("ERROR: function redeclaration found: (%s)", n.Name)
+// 		}
+// 		e.Scp.Bind(n.Name, fn)
+// 	}
+
+// 	return fn
+// }

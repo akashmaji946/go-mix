@@ -25,6 +25,7 @@ type NodeVisitor interface {
 	VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode)     // Float literals: 3.14, -2.5
 	VisitStringLiteralExpressionNode(node StringLiteralExpressionNode)   // String literals: "hello", 'world'
 	VisitNilLiteralExpressionNode(node NilLiteralExpressionNode)         // Nil/null literal
+	// VisitFunctionLiteralExpressionNode(node FunctionLiteralExpressionNode) // Anonymous function literals: func(params) { body }
 
 	// Expression visitors - handle operations and computations
 	VisitBinaryExpressionNode(node BinaryExpressionNode)               // Binary operations: +, -, *, /, %
@@ -1111,3 +1112,28 @@ func (node *CharLiteralExpressionNode) Statement() {
 
 func (node *CharLiteralExpressionNode) Expression() {
 }
+
+// // FunctionLiteral represents a function definition.
+// type FunctionLiteralExpressionNode struct {
+// 	Token      lexer.Token // The 'func' token
+// 	Name       string
+// 	Parameters []*IdentifierExpressionNode
+// 	Body       *BlockStatementNode
+// 	Value      std.GoMixObject
+// }
+
+// func (fl *FunctionLiteralExpressionNode) Literal() string {
+// 	return fl.Token.Literal
+// }
+// func (fl *FunctionLiteralExpressionNode) String() string {
+// 	return "func"
+// }
+// func (fl *FunctionLiteralExpressionNode) Expression() {
+
+// }
+// func (fl *FunctionLiteralExpressionNode) Statement() {
+
+// }
+// func (fl *FunctionLiteralExpressionNode) Accept(visitor NodeVisitor) {
+// 	visitor.VisitFunctionLiteralExpressionNode(*fl)
+// }

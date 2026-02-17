@@ -2575,8 +2575,8 @@ func TestEvaluator_StringFunctions(t *testing.T) {
 		expected interface{}
 	}{
 		{`upper("mix")`, "MIX"},
-		{`reverse("abc")`, "cba"},
-		{`contains("hello", "ell")`, true},
+		{`reverse_string("abc")`, "cba"},
+		{`contains_string("hello", "ell")`, true},
 		{`ord('A')`, int64(65)},
 		{`substring("hello", 1, 2)`, "el"},
 	}
@@ -3155,8 +3155,8 @@ func TestEvaluator_PackageFunctionNotFound(t *testing.T) {
 	}
 }
 
-// ==================== PACKAGE IMPORT TESTS ====================
-
+//	PACKAGE IMPORT TESTS
+//
 // TestPackageImport_Strings tests importing and using the strings package
 func TestPackageImport_Strings(t *testing.T) {
 	input := `
@@ -3295,7 +3295,7 @@ func TestPackageImport_Io(t *testing.T) {
 func TestPackageImport_List(t *testing.T) {
 	input := `
 		import list;
-		var l = list.list(1, 2, 3);
+		var l = list.make_list(1, 2, 3);
 		list.size_list(l)
 	`
 	p := parser.NewParser(input)
@@ -3385,8 +3385,8 @@ func TestPackageImport_Format(t *testing.T) {
 // TestPackageImport_File tests importing and using the file package
 func TestPackageImport_File(t *testing.T) {
 	input := `
-		import file;
-		var exists = file.file_exists("./go-mix");
+		import path;
+		var exists = path.file_exists("./go-mix");
 		typeof(exists)
 	`
 	p := parser.NewParser(input)
@@ -3407,7 +3407,7 @@ func TestPackageImport_File(t *testing.T) {
 func TestPackageImport_Tuple(t *testing.T) {
 	input := `
 		import tuple;
-		var t = tuple.tuple(1, "hello", true);
+		var t = tuple.make_tuple(1, "hello", true);
 		tuple.size_tuple(t)
 	`
 	p := parser.NewParser(input)

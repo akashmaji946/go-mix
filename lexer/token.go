@@ -39,14 +39,16 @@ const (
 	MOD_ASSIGN   TokenType = "%=" // Modulo and assign (x %= y)
 
 	// Logical/Comparison Operators
-	GT_OP     TokenType = ">"  // Greater than
-	LT_OP     TokenType = "<"  // Less than
-	GE_OP     TokenType = ">=" // Greater than or equal to
-	LE_OP     TokenType = "<=" // Less than or equal to
-	EQ_OP     TokenType = "==" // Equality comparison
-	NE_OP     TokenType = "!=" // Not equal comparison
-	ASSIGN_OP TokenType = "="  // Assignment operator
-	NOT_OP    TokenType = "!"  // Logical NOT operator
+	GT_OP        TokenType = ">"   // Greater than
+	LT_OP        TokenType = "<"   // Less than
+	GE_OP        TokenType = ">="  // Greater than or equal to
+	LE_OP        TokenType = "<="  // Less than or equal to
+	EQ_OP        TokenType = "=="  // Equality comparison
+	NE_OP        TokenType = "!="  // Not equal comparison
+	STRICT_EQ_OP TokenType = "===" // Strict equality comparison
+	STRICT_NE_OP TokenType = "!==" // Strict not equal comparison
+	ASSIGN_OP    TokenType = "="   // Assignment operator
+	NOT_OP       TokenType = "!"   // Logical NOT operator
 
 	// Boolean Operators
 	AND_OP TokenType = "&&" // Logical AND

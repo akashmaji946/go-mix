@@ -1,0 +1,106 @@
+import path;
+import os;
+
+func assert(val, expected, msg) {
+    if (val != expected) {
+        println("FAIL: " + msg);
+        println("  Expected: " + to_string(expected));
+        println("  Got:      " + to_string(val));
+        os.exit(1);
+    } else {
+        println("PASS: " + msg);
+    }
+}
+
+println("=== Complex Path & File I/O Test Suite ===");
+
+// --- Environment Checks ---
+var cwd = path.pwd();
+println("Current Directory: " + cwd);
+var home = path.home();
+println("Home Directory:    " + home);
+
+if (length(cwd) == 0) {
+    println("FAIL: pwd() returned empty string");
+    os.exit(1);
+}
+
+// --- Path Construction & Parsing ---
+var root = "sandbox_test_area";
+var level1 = "level1";
+var level2 = "level2";
+var filename = "config.json";
+
+// Test path_join with multiple arguments
+var deepPath = path.path_join(root, level1, level2);
+println("Deep Path: " + deepPath);
+
+var fullFilePath = path.path_join(deepPath, filename);
+println("Full File Path: " + fullFilePath);
+
+// Verify path components
+assert(path.path_base(fullFilePath), filename, "path_base extraction");
+assert(path.path_dir(fullFilePath), deepPath, "path_dir extraction");
+assert(path.path_ext(fullFilePath), ".json", "path_ext extraction");
+
+// --- File System Operations ---
+
+// Clean start
+if (path.file_exists(root)) {
+    println("Cleaning up previous run...");
+    path.remove_all(root);
+}
+
+// 1. Recursive Directory Creation
+println("Creating directory structure...");
+path.mkdir(deepPath);
+assert(path.is_dir(deepPath), true, "Recursive mkdir verification");
+
+// 2. File Writing
+var content = "{\"key\": \"value\"}";
+path.write_file(fullFilePath, content);
+assert(path.file_exists(fullFilePath), true, "File existence after write");
+assert(path.is_file(fullFilePath), true, "is_file verification");
+
+// 3. File Reading
+var readData = path.read_file(fullFilePath);
+assert(readData, content, "Read content matches written content");
+
+// 4. File Appending
+var extra = "\n// footer";
+path.append_file(fullFilePath, extra);
+var updatedData = path.read_file(fullFilePath);
+assert(updatedData, content + extra, "Append verification");
+
+// 5. File Renaming / Moving
+var newName = "archive.txt";
+var newPath = path.path_join(root, newName); // Moving from deep to root
+println("Moving path to: " + newPath);
+
+path.rename_file(fullFilePath, newPath);
+assert(path.file_exists(fullFilePath), false, "Old path gone");
+assert(path.file_exists(newPath), true, "New path exists");
+assert(path.path_ext(newPath), ".txt", "New extension check");
+
+// 6. Truncate
+println("Truncating path to 0 bytes...");
+path.truncate_file(newPath, 0);
+assert(length(path.read_file(newPath)), 0, "File size is 0 after truncate");
+
+// 7. Directory Listing
+var list = path.list_dir(root);
+// root contains: "level1" (dir) and "archive.txt" (path)
+println("Listing root directory contents:");
+var listLen = length(list);
+assert(listLen, 2, "Root directory should contain 2 items");
+
+// 8. Absolute Path
+var abs = path.path_abs(newPath);
+println("Absolute path of moved path: " + abs);
+
+// 9. Cleanup
+println("Removing sandbox...");
+path.remove_all(root);
+assert(path.file_exists(root), false, "Root directory removed");
+
+println("=== Success ===");

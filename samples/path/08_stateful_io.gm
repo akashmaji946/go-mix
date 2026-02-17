@@ -1,0 +1,17 @@
+// 08_stateful_io.gm: Demonstrates the 'file' package handles
+var f = fopen("samples/files/data.bin", "w+");
+
+fwrite(f, "ABCDEFGHIJ"); // Write 10 bytes
+printf("Current cursor position: %d\n", ftell(f));
+
+// Seek back to the 5th byte
+fseek(f, 4, 0); 
+fwrite(f, "X"); // Overwrite 'E' with 'X'
+
+// Seek to start and read
+fseek(f, 0, 0);
+var content = fread(f, 10);
+println("Modified content: " + content);
+
+fclose(f);
+println("File handle closed.");

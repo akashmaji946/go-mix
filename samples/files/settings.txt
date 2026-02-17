@@ -1,3 +1,0 @@
-theme=dark
-font=monospace
-version=1.0

@@ -1,0 +1,11 @@
+// 07_metadata.gm: Demonstrates touch and chmod
+var script_path = "samples/files/generated_script.sh";
+
+touch(script_path);
+write_file(script_path, "#!/bin/bash\necho 'Hello from Go-Mix generated script!'\n");
+
+// Change permissions to 0755 (rwxr-xr-x)
+chmod(script_path, 493); // 493 is decimal for octal 0755
+
+printf("Created and set permissions for: %s\n", script_path);
+println("Home directory is: " + home());

@@ -96,7 +96,12 @@ func (lex *Lexer) NextToken() Token {
 		// Could be '=' (assignment) or '==' (equality)
 		if lex.Peek() == '=' {
 			lex.Advance()
-			token = NewTokenWithMetadata(EQ_OP, "==", lex.Line, lex.Column)
+			if lex.Peek() == '=' {
+				lex.Advance()
+				token = NewTokenWithMetadata(STRICT_EQ_OP, "===", lex.Line, lex.Column)
+			} else {
+				token = NewTokenWithMetadata(EQ_OP, "==", lex.Line, lex.Column)
+			}
 		} else {
 			token = NewTokenWithMetadata(ASSIGN_OP, "=", lex.Line, lex.Column)
 		}
@@ -104,7 +109,12 @@ func (lex *Lexer) NextToken() Token {
 		// Could be '!' (logical NOT) or '!=' (not equal)
 		if lex.Peek() == '=' {
 			lex.Advance()
-			token = NewTokenWithMetadata(NE_OP, "!=", lex.Line, lex.Column)
+			if lex.Peek() == '=' {
+				lex.Advance()
+				token = NewTokenWithMetadata(STRICT_NE_OP, "!==", lex.Line, lex.Column)
+			} else {
+				token = NewTokenWithMetadata(NE_OP, "!=", lex.Line, lex.Column)
+			}
 		} else {
 			token = NewTokenWithMetadata(NOT_OP, "!", lex.Line, lex.Column)
 		}

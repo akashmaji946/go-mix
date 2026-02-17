@@ -40,6 +40,7 @@ var stringMethods = []*Builtin{
 	{Name: "substring", Callback: substringString},   // Extracts a part of a string
 	{Name: "capitalize", Callback: capitalizeString}, // Capitalizes the first letter
 	{Name: "count", Callback: countString},           // Counts occurrences of a substring
+	{Name: "repeat", Callback: repeatString},         // Repeats a string n times
 	{Name: "is_digit", Callback: isDigitFuncString},  // Checks if string contains only digits
 	{Name: "is_alpha", Callback: isAlphaFuncString},  // Checks if string contains only letters
 
@@ -493,6 +494,28 @@ func countString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject 
 		return createError("ERROR: count expects 2 arguments, got %d", len(args))
 	}
 	return &Integer{Value: int64(strings.Count(args[0].ToString(), args[1].ToString()))}
+}
+
+// repeatString returns a new string consisting of count copies of the string s.
+//
+// Syntax: repeat(str, count)
+//
+// Example:
+//
+//	repeat("na", 2); // Returns "nana"
+func repeatString(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+	if len(args) != 2 {
+		return createError("ERROR: repeat expects 2 arguments (str, count), got %d", len(args))
+	}
+	s := args[0].ToString()
+	if args[1].GetType() != IntegerType {
+		return createError("ERROR: count must be an integer")
+	}
+	count := int(args[1].(*Integer).Value)
+	if count < 0 {
+		return createError("ERROR: count cannot be negative")
+	}
+	return &String{Value: strings.Repeat(s, count)}
 }
 
 // isDigitFuncString checks if the string consists entirely of decimal digits.

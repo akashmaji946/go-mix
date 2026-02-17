@@ -66,7 +66,17 @@ func (f *Function) GetType() std.GoMixType {
 // Returns:
 //   - string: A formatted string representation of the function
 func (f *Function) ToString() string {
-	return fmt.Sprintf("func(%s)", f.Name)
+	// Build a comma-separated list of parameter names
+	args := ""
+	for i, param := range f.Params {
+		if i > 0 {
+			args += "," // Add comma between parameters
+		}
+		args += param.Name
+	}
+	body := f.Body.Literal() // Get a string representation of the function body
+	// Return the formatted function representation
+	return fmt.Sprintf("func %s(%s) %s", f.Name, args, body)
 }
 
 // ToObject returns a detailed string representation of the function,
@@ -87,12 +97,13 @@ func (f *Function) ToObject() string {
 	args := ""
 	for i, param := range f.Params {
 		if i > 0 {
-			args += ", " // Add comma between parameters
+			args += "," // Add comma between parameters
 		}
 		args += param.Name
 	}
+	body := f.Body.Literal() // Get a string representation of the function body
 	// Return the formatted function representation
-	return fmt.Sprintf("<func[%s(%s)]>", f.Name, args)
+	return fmt.Sprintf("<func %s(%s) %s>", f.Name, args, body)
 }
 
 // GetParameters returns the slice of parameter names for this function.

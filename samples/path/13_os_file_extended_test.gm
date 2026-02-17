@@ -1,0 +1,134 @@
+import os;
+import path;
+
+// Helper assertion functions
+func assert_eq(actual, expected, msg) {
+    if (actual != expected) {
+        println("FAIL: " + msg);
+        println("  Expected: " + to_string(expected));
+        println("  Got:      " + to_string(actual));
+        os.exit(1);
+    } else {
+        println("PASS: " + msg);
+    }
+}
+
+func assert_true(condition, msg) {
+    if (!condition) {
+        println("FAIL: " + msg);
+        os.exit(1);
+    } else {
+        println("PASS: " + msg);
+    }
+}
+
+println("==========================================");
+println("   Extended OS & File I/O Test Suite");
+println("==========================================");
+
+// ---------------------------------------------------------
+// 1. OS Module Testing
+// ---------------------------------------------------------
+println("\n[Testing OS Module]");
+
+// 1.1 Platform & Arch
+var plat = os.platform();
+var arch = os.arch();
+println("  > OS Platform: " + plat);
+println("  > System Arch: " + arch);
+
+assert_true(length(plat) > 0, "os.platform() returned empty string");
+assert_true(length(arch) > 0, "os.arch() returned empty string");
+
+// 1.2 Environment Variables
+var envKey = "GOMIX_TEST_VAR";
+var envVal = "hello_world";
+
+println("  > Setting env var: " + envKey + "=" + envVal);
+os.setenv(envKey, envVal);
+
+var readVal = os.getenv(envKey);
+assert_eq(readVal, envVal, "os.getenv() match set value");
+
+println("  > Unsetting env var");
+os.unsetenv(envKey);
+readVal = os.getenv(envKey);
+assert_eq(readVal, "", "os.getenv() should be empty after unset");
+
+
+// ---------------------------------------------------------
+// 2. File I/O Module Testing
+// ---------------------------------------------------------
+println("\n[Testing File I/O Module]");
+
+var sandbox = "test_sandbox";
+
+// Setup sandbox
+if (path.file_exists(sandbox)) {
+    path.remove_all(sandbox);
+}
+path.mkdir(sandbox);
+assert_true(path.is_dir(sandbox), "Sandbox directory created");
+
+// 2.1 Copy File
+println("  > Testing copy_file...");
+var srcFile = path.path_join(sandbox, "original.txt");
+var dstFile = path.path_join(sandbox, "copy.txt");
+var content = "This is the original content.";
+
+path.write_file(srcFile, content);
+path.copy_file(srcFile, dstFile);
+
+assert_true(path.file_exists(dstFile), "Destination path exists");
+assert_eq(path.read_file(dstFile), content, "Copied content matches original");
+
+// 2.2 Globbing
+println("  > Testing glob...");
+// Create structure:
+// sandbox/
+//   original.txt
+//   copy.txt
+//   notes.log
+//   error.log
+//   subdir/
+//     ignored.log
+
+path.write_file(path.path_join(sandbox, "notes.log"), "log1");
+path.write_file(path.path_join(sandbox, "error.log"), "log2");
+path.mkdir(path.path_join(sandbox, "subdir"));
+path.write_file(path.path_join(sandbox, "subdir", "ignored.log"), "log3");
+
+// Pattern: sandbox/*.log
+var pattern = path.path_join(sandbox, "*.log");
+var matches = path.glob(pattern);
+
+println("    Pattern: " + pattern);
+println("    Matches: " + to_string(matches));
+
+// Should match notes.log and error.log (2 files)
+// Note: glob does not match recursively by default with *
+assert_eq(length(matches), 2, "Glob found correct number of .log files in root of sandbox");
+
+// Verify contents of matches
+var matchCount = 0;
+foreach m in matches {
+    var base = path.path_base(m);
+    if (base == "notes.log" || base == "error.log") {
+        matchCount += 1;
+    }
+}
+assert_eq(matchCount, 2, "Glob matched expected filenames");
+
+// 2.3 Glob No Matches
+var emptyMatches = path.glob(path.path_join(sandbox, "*.missing"));
+assert_eq(length(emptyMatches), 0, "Glob returns empty array for no matches");
+
+// ---------------------------------------------------------
+// Cleanup
+// ---------------------------------------------------------
+//os.exit(0);
+println("\n[Cleanup]");
+path.remove_all(sandbox);
+assert_true(!path.file_exists(sandbox), "Sandbox removed");
+
+println("\nSUCCESS: All tests passed.");

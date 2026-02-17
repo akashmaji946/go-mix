@@ -21,6 +21,7 @@ import (
 // commonMethods is a slice of common builtin functions that are always available.
 // These include printing functions, length calculation, and string conversion.
 var commonMethods = []*Builtin{
+	// print
 	{Name: "print", Callback: print},     // Prints arguments without a newline
 	{Name: "println", Callback: println}, // Prints arguments with a newline
 	{Name: "printf", Callback: printf},   // Prints formatted string with arguments
@@ -63,7 +64,7 @@ var commonMethods = []*Builtin{
 
 	{Name: "typeof", Callback: typeofFunc},     // Returns the type of a Go-Mix object as a string
 	{Name: "addr", Callback: addrFunc},         // Returns the memory address of an object as an integer
-	{Name: "is_same_ref", Callback: isSameRef}, // Checks if two objects point to the same memory address
+	{Name: "is_same_ref", Callback: IsSameRef}, // Checks if two objects point to the same memory address
 }
 
 // init registers the common builtin methods by appending them to the global Builtins slice.
@@ -319,7 +320,7 @@ func addrFunc(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 //	var a = [1];
 //	var b = a;
 //	println(is_same_ref(a, b)); // true
-func isSameRef(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
+func IsSameRef(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	if len(args) != 2 {
 		return createError("ERROR: is_same_ref expects 2 arguments, got %d", len(args))
 	}

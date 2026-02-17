@@ -840,6 +840,10 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 			val = l == r
 		case lexer.NE_OP:
 			val = l != r
+		case lexer.STRICT_EQ_OP:
+			val = l == r
+		case lexer.STRICT_NE_OP:
+			val = l != r
 		case lexer.AND_OP: // Logical AND/OR on integers should treat them as truthy/falsy
 			val = (l != 0) && (r != 0)
 		case lexer.OR_OP:
@@ -856,6 +860,10 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 		case lexer.EQ_OP:
 			val = l == r
 		case lexer.NE_OP:
+			val = l != r
+		case lexer.STRICT_EQ_OP:
+			val = l == r
+		case lexer.STRICT_NE_OP:
 			val = l != r
 		}
 	} else if (lVal.GetType() == std.FloatType || lVal.GetType() == std.IntegerType) &&
@@ -876,6 +884,18 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 			val = l == r
 		case lexer.NE_OP:
 			val = l != r
+		case lexer.STRICT_EQ_OP:
+			if lVal.GetType() != rVal.GetType() {
+				val = false
+			} else {
+				val = l == r
+			}
+		case lexer.STRICT_NE_OP:
+			if lVal.GetType() != rVal.GetType() {
+				val = true
+			} else {
+				val = l != r
+			}
 		}
 	} else {
 		// Fallback for other types, e.g., string comparison for equality
@@ -884,6 +904,34 @@ func (par *Parser) parseBooleanExpression(left ExpressionNode) ExpressionNode {
 			val = lVal.ToString() == rVal.ToString()
 		case lexer.NE_OP:
 			val = lVal.ToString() != rVal.ToString()
+		case lexer.STRICT_EQ_OP:
+			if lVal.GetType() != rVal.GetType() {
+				val = false
+			} else {
+				if lVal.GetType() == std.StringType {
+					val = lVal.(*std.String).Value == rVal.(*std.String).Value
+				} else if lVal.GetType() == std.CharType {
+					val = lVal.(*std.Char).Value == rVal.(*std.Char).Value
+				} else if lVal.GetType() == std.NilType {
+					val = true
+				} else {
+					val = lVal == rVal
+				}
+			}
+		case lexer.STRICT_NE_OP:
+			if lVal.GetType() != rVal.GetType() {
+				val = true
+			} else {
+				if lVal.GetType() == std.StringType {
+					val = lVal.(*std.String).Value != rVal.(*std.String).Value
+				} else if lVal.GetType() == std.CharType {
+					val = lVal.(*std.Char).Value != rVal.(*std.Char).Value
+				} else if lVal.GetType() == std.NilType {
+					val = false
+				} else {
+					val = lVal != rVal
+				}
+			}
 		case lexer.AND_OP: // Treat as truthy/falsy
 			isLTrue := (lVal.GetType() == std.BooleanType && lVal.(*std.Boolean).Value) || (lVal.GetType() == std.IntegerType && lVal.(*std.Integer).Value != 0)
 			isRTrue := (rVal.GetType() == std.BooleanType && rVal.(*std.Boolean).Value) || (rVal.GetType() == std.IntegerType && rVal.(*std.Integer).Value != 0)

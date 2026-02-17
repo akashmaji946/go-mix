@@ -148,7 +148,7 @@ func getPrecedence(token *lexer.Token) int {
 		return RANGE_PRIORITY
 
 	// Equality: == !=
-	case lexer.EQ_OP, lexer.NE_OP:
+	case lexer.EQ_OP, lexer.NE_OP, lexer.STRICT_EQ_OP, lexer.STRICT_NE_OP:
 		return EQUALITY_PRIORITY
 
 	// Bitwise AND: &

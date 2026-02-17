@@ -1,0 +1,12 @@
+// 02_scanf_demo.gm: Demonstrates formatted input using scanf
+println("Please enter two numbers separated by a space (e.g., 10 20.90):");
+
+// scanf returns an array of scanned values
+// getchar(); // Consume the newline
+var data = scanf("%d %f");
+
+if (length(data) == 2) {
+    printf("Numbers are %d and %f = %f\n", data[0], data[1], data[0] + data[1]);
+} else {
+    eprintln("Error: Failed to scan two integers.");
+}

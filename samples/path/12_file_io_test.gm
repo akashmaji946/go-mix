@@ -1,0 +1,72 @@
+import path;
+import os;
+
+func assert(val, expected, msg) {
+    if (val != expected) {
+        println("FAIL: " + msg);
+        println("  Expected: " + to_string(expected));
+        println("  Got:      " + to_string(val));
+        os.exit(1);
+    } else {
+        println("PASS: " + msg);
+    }
+}
+
+println("=== Testing Path Features ===");
+
+// Construct a path: "test_dir/data.txt" (OS specific separator)
+var dirName = "test_dir";
+var fileName = "data.txt";
+var fullPath = path.path_join(dirName, fileName);
+println("Constructed path: " + fullPath);
+
+// print current working directory for reference
+var cwd = os.getcwd();
+println("Current working directory: " + cwd);
+
+
+// Test path_base
+var base = path.path_base(fullPath);
+assert(base, fileName, "path_base should return filename");
+
+// Test path_dir
+var dir = path.path_dir(fullPath);
+assert(dir, dirName, "path_dir should return directory");
+
+// Test path_ext
+var ext = path.path_ext(fullPath);
+assert(ext, ".txt", "path_ext should return extension");
+
+// Test path_abs (just check it's not empty)
+var abs = path.path_abs(fullPath);
+println("Absolute path: " + abs);
+if (length(abs) <= length(fullPath)) {
+    println("WARNING: Absolute path seems short, verify manually.");
+}
+
+println("\n=== Testing File I/O Operations ===");
+
+// Clean up potential leftovers
+if (path.file_exists(dirName)) {
+    path.remove_all(dirName);
+}
+
+// 1. Create Directory
+path.mkdir(dirName);
+assert(path.is_dir(dirName), true, "mkdir should create directory");
+
+// 2. Write File
+var content = "Hello, Go-Mix File I/O!";
+path.write_file(fullPath, content);
+assert(path.file_exists(fullPath), true, "write_file should create path");
+assert(path.is_file(fullPath), true, "is_file should return true");
+
+// 3. Read File
+var readContent = path.read_file(fullPath);
+assert(readContent, content, "read_file should match written content");
+
+// 4. Clean up
+path.remove_all(dirName);
+assert(path.file_exists(dirName), false, "remove_all should delete directory");
+
+println("\nAll tests passed successfully!");

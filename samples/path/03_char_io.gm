@@ -1,0 +1,14 @@
+// 03_char_io.gm: Demonstrates scan(delimiter) and getchar/putchar
+println("Type a sentence ending with a semicolon (e.g., Hello World;):");
+
+// Reads everything until ';' but does NOT consume the ';'
+var content = scan(";");
+println("Captured before semicolon: " + content);
+
+// Consume the semicolon manually
+var semi = getchar();
+printf("Manually consumed character: %s\n", semi);
+
+putchar("!");
+putchar(10); // Newline ASCII
+flush();     // Ensure output is displayed

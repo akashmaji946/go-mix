@@ -121,7 +121,7 @@ func (p *PrintingVisitor) VisitDeclarativeStatementNode(node parser.DeclarativeS
 func (p *PrintingVisitor) VisitIdentifierExpressionNode(node parser.IdentifierExpressionNode) {
 	p.indent()
 	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Identifier",
-		node.Literal(), node.Literal(), node.Value.ToObject()))
+		node.Literal(), node.Literal(), node.Value))
 }
 
 // VisitReturnStatementNode visits a return statement node and prints the return expression
@@ -392,6 +392,20 @@ func (p *PrintingVisitor) VisitImportStatementNode(node parser.ImportStatementNo
 	p.indent()
 	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s]\n", "Import", node.Literal()))
 }
+
+// // VisitFunctionLiteralExpressionNode visits a function literal node and prints the function details
+// func (p *PrintingVisitor) VisitFunctionLiteralExpressionNode(node parser.FunctionLiteralExpressionNode) {
+// 	p.indent()
+// 	p.Buf.WriteString(fmt.Sprintf("Visiting %15s Node [%s] (%s => %v)\n", "FunctionLiteral",
+// 		node.Literal(), node.Literal(), node.Value))
+// 	p.Indent += INDENT_SIZE
+// 	node.Name = "<anonymous>" // Set a default name for anonymous functions
+// 	for _, param := range node.Parameters {
+// 		param.Accept(p)
+// 	}
+// 	node.Body.Accept(p)
+// 	p.Indent -= INDENT_SIZE
+// }
 
 // String returns the accumulated formatted output as a string
 func (p *PrintingVisitor) String() string {
