@@ -1,0 +1,464 @@
+---
+layout: default
+title: Sample Programs - Go-Mix
+description: Example programs demonstrating Go-Mix language features
+permalink: /samples/
+---
+
+<div class="content-page">
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <div class="sidebar-title">Categories</div>
+            <ul class="sidebar-menu">
+                <li><a href="#algorithms">Algorithms</a></li>
+                <li><a href="#data-structures">Data Structures</a></li>
+                <li><a href="#functions">Functions</a></li>
+                <li><a href="#collections">Collections</a></li>
+                <li><a href="#loops">Loops</a></li>
+                <li><a href="#oop">OOP</a></li>
+                <li><a href="#file-io">File I/O</a></li>
+                <li><a href="#http">HTTP</a></li>
+            </ul>
+        </nav>
+    </aside>
+    
+    <div class="content-body">
+        <h1>Sample Programs</h1>
+        <p>Explore Go-Mix through practical examples organized by category.</p>
+        
+        <h2 id="algorithms">Algorithms</h2>
+        
+        <div class="sample-card">
+            <h3>Factorial</h3>
+            <div class="code-block">
+{% highlight go %}
+fn factorial(n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+println(factorial(5));  // 120
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <div class="sample-card">
+            <h3>Fibonacci</h3>
+            <div class="code-block">
+{% highlight go %}
+fn fibonacci(n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+for (var i = 0; i < 10; i = i + 1) {
+    print(fibonacci(i) + " ");
+}
+// 0 1 1 2 3 5 8 13 21 34
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <div class="sample-card">
+            <h3>Binary Search</h3>
+            <div class="code-block">
+{% highlight go %}
+fn binary_search(arr, target) {
+    var left = 0;
+    var right = length(arr) - 1;
+    
+    while (left <= right) {
+        var mid = (left + right) / 2;
+        if (arr[mid] == target) {
+            return mid;
+        }
+        if (arr[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    return -1;
+}
+
+var sorted = [1, 3, 5, 7, 9, 11, 13];
+println(binary_search(sorted, 7));  // 3
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <h2 id="data-structures">Data Structures</h2>
+        
+        <div class="sample-card">
+            <h3>Stack Implementation</h3>
+            <div class="code-block">
+{% highlight go %}
+struct Stack {
+    var items;
+    
+    fn init() {
+        this.items = [];
+    }
+    
+    fn push(item) {
+        push(this.items, item);
+    }
+    
+    fn pop() {
+        return pop(this.items);
+    }
+    
+    fn peek() {
+        return this.items[-1];
+    }
+    
+    fn is_empty() {
+        return length(this.items) == 0;
+    }
+}
+
+var stack = new Stack();
+stack.push(10);
+stack.push(20);
+println(stack.pop());   // 20
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <div class="sample-card">
+            <h3>Linked List</h3>
+            <div class="code-block">
+{% highlight go %}
+struct Node {
+    var data;
+    var next;
+    
+    fn init(data) {
+        this.data = data;
+        this.next = nil;
+    }
+}
+
+struct LinkedList {
+    var head;
+    
+    fn append(data) {
+        var new_node = new Node(data);
+        if (this.head == nil) {
+            this.head = new_node;
+            return;
+        }
+        var current = this.head;
+        while (current.next != nil) {
+            current = current.next;
+        }
+        current.next = new_node;
+    }
+    
+    fn print_list() {
+        var current = this.head;
+        while (current != nil) {
+            print(current.data + " -> ");
+            current = current.next;
+        }
+        println("nil");
+    }
+}
+
+var list = new LinkedList();
+list.append(1);
+list.append(2);
+list.append(3);
+list.print_list();  // 1 -> 2 -> 3 -> nil
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <h2 id="functions">Functions</h2>
+        
+        <div class="sample-card">
+            <h3>Higher-Order Functions</h3>
+            <div class="code-block">
+{% highlight go %}
+fn apply_twice(f, x) {
+    return f(f(x));
+}
+
+fn add_ten(x) {
+    return x + 10;
+}
+
+var result = apply_twice(add_ten, 5);
+println(result);  // 25 (5 + 10 + 10)
+
+// Closure
+fn make_multiplier(factor) {
+    return fn(x) {
+        return x * factor;
+    };
+}
+
+var triple = make_multiplier(3);
+println(triple(4));  // 12
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <h2 id="collections">Collections</h2>
+        
+        <div class="sample-card">
+            <h3>Array Operations</h3>
+            <div class="code-block">
+{% highlight go %}
+var numbers = [1, 2, 3, 4, 5];
+
+// Map
+var doubled = map(numbers, fn(x) { return x * 2; });
+println(doubled);  // [2, 4, 6, 8, 10]
+
+// Filter
+var evens = filter(numbers, fn(x) { return x % 2 == 0; });
+println(evens);    // [2, 4]
+
+// Reduce
+var sum = reduce(numbers, fn(a, x) { return a + x; }, 0);
+println(sum);      // 15
+
+// Sort
+var unsorted = [3, 1, 4, 1, 5, 9, 2, 6];
+sort(unsorted);
+println(unsorted); // [1, 1, 2, 3, 4, 5, 6, 9]
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <div class="sample-card">
+            <h3>Map Operations</h3>
+            <div class="code-block">
+{% highlight go %}
+var user = map{
+    "name": "Alice",
+    "age": 30,
+    "city": "New York"
+};
+
+println(user["name"]);           // Alice
+insert_map(user, "email", "alice@example.com");
+
+var keys = keys_map(user);
+foreach key in keys {
+    println(key + ": " + user[key]);
+}
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <h2 id="loops">Loops</h2>
+        
+        <div class="sample-card">
+            <h3>Loop Patterns</h3>
+            <div class="code-block">
+{% highlight go %}
+// For loop
+for (var i = 0; i < 5; i = i + 1) {
+    print(i + " ");
+}
+// 0 1 2 3 4
+
+// While loop
+var n = 5;
+while (n > 0) {
+    print(n + " ");
+    n = n - 1;
+}
+// 5 4 3 2 1
+
+// Foreach
+var fruits = ["apple", "banana", "cherry"];
+foreach fruit in fruits {
+    println(fruit);
+}
+
+// Foreach with index
+foreach i, fruit in fruits {
+    println(i + ": " + fruit);
+}
+
+// Nested loops with break
+for (var i = 0; i < 3; i = i + 1) {
+    for (var j = 0; j < 3; j = j + 1) {
+        if (i == 1 && j == 1) {
+            break;
+        }
+        print("(" + i + "," + j + ") ");
+    }
+}
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <h2 id="oop">Object-Oriented Programming</h2>
+        
+        <div class="sample-card">
+            <h3>Class with Methods</h3>
+            <div class="code-block">
+{% highlight go %}
+struct Rectangle {
+    var width;
+    var height;
+    
+    fn init(w, h) {
+        this.width = w;
+        this.height = h;
+    }
+    
+    fn area() {
+        return this.width * this.height;
+    }
+    
+    fn perimeter() {
+        return 2 * (this.width + this.height);
+    }
+    
+    fn scale(factor) {
+        this.width = this.width * factor;
+        this.height = this.height * factor;
+    }
+}
+
+var rect = new Rectangle(5, 3);
+println("Area: " + rect.area());           // 15
+println("Perimeter: " + rect.perimeter()); // 16
+
+rect.scale(2);
+println("New area: " + rect.area());       // 60
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <div class="sample-card">
+            <h3>Inheritance Pattern</h3>
+            <div class="code-block">
+{% highlight go %}
+struct Animal {
+    var name;
+    
+    fn init(name) {
+        this.name = name;
+    }
+    
+    fn speak() {
+        return "Some sound";
+    }
+}
+
+struct Dog {
+    var name;
+    var breed;
+    
+    fn init(name, breed) {
+        this.name = name;
+        this.breed = breed;
+    }
+    
+    fn speak() {
+        return "Woof!";
+    }
+    
+    fn fetch() {
+        return this.name + " is fetching";
+    }
+}
+
+var dog = new Dog("Buddy", "Golden Retriever");
+println(dog.speak());   // Woof!
+println(dog.fetch());   // Buddy is fetching
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <h2 id="file-io">File I/O</h2>
+        
+        <div class="sample-card">
+            <h3>File Operations</h3>
+            <div class="code-block">
+{% highlight go %}
+// Write to file
+write_file("data.txt", "Hello, World!");
+
+// Read from file
+var content = read_file("data.txt");
+println(content);
+
+// Append to file
+append_file("log.txt", "New log entry\n");
+
+// Check if exists
+if (file_exists("config.json")) {
+    var config = read_file("config.json");
+    println("Config loaded");
+}
+
+// List directory
+var files = list_dir(".");
+foreach file in files {
+    println(file);
+}
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <h2 id="http">HTTP</h2>
+        
+        <div class="sample-card">
+            <h3>HTTP Client</h3>
+            <div class="code-block">
+{% highlight go %}
+// GET request
+var response = get_http("https://api.example.com/users");
+println(response);
+
+// POST request
+var body = '{"name": "John", "age": 30}';
+var result = post_http("https://api.example.com/users", body);
+println(result);
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <div class="sample-card">
+            <h3>HTTP Server</h3>
+            <div class="code-block">
+{% highlight go %}
+var srv = create_server();
+
+handle_server(srv, "/", fn(req) {
+    return "Welcome to Go-Mix Server!";
+});
+
+handle_server(srv, "/api/hello", fn(req) {
+    return '{"message": "Hello, World!"}';
+});
+
+handle_server(srv, "/api/echo", fn(req) {
+    return '{"method": "' + req.method + '", "path": "' + req.path + '"}';
+});
+
+println("Server starting on http://localhost:8080");
+start_server(srv, ":8080");
+{% endhighlight %}
+            </div>
+        </div>
+        
+        <div class="callout callout-success">
+            <div class="callout-title">
+                <i class="fas fa-lightbulb"></i> More Examples
+            </div>
+            <p>Check the <code>samples/</code> directory in the Go-Mix repository for 50+ complete example programs covering algorithms, data structures, and language features.</p>
+        </div>
+    </div>
+</div>
