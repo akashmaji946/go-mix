@@ -8,6 +8,8 @@
 
 **Go-Mix** is a high-performance, interpreted programming language implemented in Go. It combines dynamic typing with static safety features, lexical closures, and a comprehensive standard library—perfect for prototyping, education, and embedding as a scripting layer in Go applications.
 
+Access comprehensive documentation here: [DOCS](https://akashmaji946.github.io/go-mix)
+
 ---
 
 ## Table of Contents
