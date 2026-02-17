@@ -12,7 +12,6 @@ package std
 // The file also contains helper functions for error handling and
 // string conversion that are used by various builtin functions.
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"reflect"
@@ -58,9 +57,9 @@ var commonMethods = []*Builtin{
 	{Name: "replace", Callback: replaceArray},   // Returns the index of the first occurrence of a value, or -1 if not found
 	{Name: "index", Callback: indexArray},       // Returns the index of the first occurrence of a value, or -1 if not found
 
-	{Name: "json_string_to_map", Callback: jsonStringDecode}, // Converts a JSON string into a map
-	{Name: "map_to_json_string", Callback: jsonStringEncode}, // Converts a map into a JSON string
-	{Name: "json_encode", Callback: jsonStringEncode},        // Alias for
+	{Name: "json_string_to_map", Callback: jsonParse},     // Converts a JSON string into a map
+	{Name: "map_to_json_string", Callback: jsonStringify}, // Converts a map into a JSON string
+	{Name: "json_encode", Callback: jsonStringify},        // Alias for jsonStringEncode
 
 	{Name: "typeof", Callback: typeofFunc},     // Returns the type of a Go-Mix object as a string
 	{Name: "addr", Callback: addrFunc},         // Returns the memory address of an object as an integer
@@ -345,115 +344,4 @@ func IsSameRef(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
 	}
 
 	return &Boolean{Value: rv1.Pointer() == rv2.Pointer()}
-}
-
-// jsonStringDecode parses a JSON string into a Go-Mix Map.
-//
-// Parameters:
-//   - args[0]: The JSON string to decode
-//
-// Returns:
-//   - Map object, or Error if decoding fails
-//
-// Example:
-//
-//	var s = "{\"name\": \"John\", \"age\": 25}";
-//	var m = json_string_decode(s);
-func jsonStringDecode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
-	if len(args) != 1 {
-		return createError("ERROR: json_string_decode expects 1 argument (string)")
-	}
-
-	if args[0].GetType() != StringType {
-		return createError("ERROR: argument to `json_string_decode` must be a string, got '%s'", args[0].GetType())
-	}
-
-	var data interface{}
-	err := json.Unmarshal([]byte(args[0].ToString()), &data)
-	if err != nil {
-		return createError("ERROR: failed to decode JSON: %v", err)
-	}
-
-	return convertToGoMix(data)
-}
-
-// jsonStringEncode converts a Go-Mix object into a JSON string.
-func jsonStringEncode(rt Runtime, writer io.Writer, args ...GoMixObject) GoMixObject {
-	if len(args) != 1 {
-		return createError("ERROR: json_string_encode expects 1 argument")
-	}
-
-	data := convertFromGoMix(args[0])
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		return createError("ERROR: failed to encode JSON: %v", err)
-	}
-
-	return &String{Value: string(bytes)}
-}
-
-func convertFromGoMix(obj GoMixObject) interface{} {
-	switch obj.GetType() {
-	case ArrayType:
-		arr := obj.(*Array)
-		res := make([]interface{}, len(arr.Elements))
-		for i, e := range arr.Elements {
-			res[i] = convertFromGoMix(e)
-		}
-		return res
-	case MapType:
-		m := obj.(*Map)
-		res := make(map[string]interface{})
-		for k, v := range m.Pairs {
-			res[k] = convertFromGoMix(v)
-		}
-		return res
-	case IntegerType:
-		return obj.(*Integer).Value
-	case FloatType:
-		return obj.(*Float).Value
-	case BooleanType:
-		return obj.(*Boolean).Value
-	case StringType:
-		return obj.(*String).Value
-	case NilType:
-		return nil
-	default:
-		return obj.ToString()
-	}
-}
-
-// convertToGoMix recursively converts Go native types from json.Unmarshal
-// into Go-Mix internal objects.
-func convertToGoMix(val interface{}) GoMixObject {
-	switch v := val.(type) {
-	case map[string]interface{}:
-		m := &Map{
-			Pairs: make(map[string]GoMixObject),
-			Keys:  make([]string, 0, len(v)),
-		}
-		for k, rawVal := range v {
-			m.Pairs[k] = convertToGoMix(rawVal)
-			m.Keys = append(m.Keys, k)
-		}
-		return m
-	case []interface{}:
-		elements := make([]GoMixObject, len(v))
-		for i, rawVal := range v {
-			elements[i] = convertToGoMix(rawVal)
-		}
-		return &Array{Elements: elements}
-	case string:
-		return &String{Value: v}
-	case bool:
-		return &Boolean{Value: v}
-	case float64:
-		// Check if it's actually an integer
-		if v == float64(int64(v)) {
-			return &Integer{Value: int64(v)}
-		}
-		return &Float{Value: v}
-	default:
-		return &Nil{}
-	}
 }
