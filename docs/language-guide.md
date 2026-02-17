@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Language Guide - Go-Mix
-description: Complete guide to Go-Mix programming language syntax, features, and constructs
+description: Complete guide to Go-Mix programming language syntax, features, and constructs.
 permalink: /language-guide/
 ---
 
