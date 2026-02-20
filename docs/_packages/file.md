@@ -39,7 +39,7 @@ description: File operations including read, write, mkdir, list_dir, and more
     </aside>
     
     <div class="content-body">
-        <h1>File I Package</h1>
+        <h1>Path Package</h1>
         <p>Comprehensive file system operations (17 functions).</p>
         
         <div class="function-card" id="import">
@@ -53,12 +53,12 @@ description: File operations including read, write, mkdir, list_dir, and more
                     <h4>Examples</h4>
 {% highlight go %}
 // Standard import
-import file;
+import path;
 var content = file.read_file("data.txt");
 file.write_file("output.txt", "Hello");
 
 // With alias
-import file as f;
+import path as f;
 var content = f.read_file("data.txt");
 f.write_file("output.txt", "Hello");
 {% endhighlight %}

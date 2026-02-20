@@ -2,7 +2,7 @@
 // File Package - Basic Examples
 // ============================================
 
-import file;
+import path;
 
 println("=== File Package - Basic Operations ===");
 

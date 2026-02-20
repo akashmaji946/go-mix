@@ -25,9 +25,8 @@ permalink: /language-guide/
             </ul>
         </nav>
     </aside>
-    
     <div class="content-body">
-        <h1>Language Guide</h>
+        <h1>Language Guide</h1>
         
         <p>Complete reference for Go-Mix programming language syntax, types, and features.</p>
         
@@ -320,8 +319,8 @@ foreach val in arr {
 }
 
 // Array iteration with index and value
-foreach val in arr {
-    println(val);    // 10, 20, 30/O
+foreach idx, val in arr {
+    println(idx, val);
 }
 {% endhighlight %}
         </div>
@@ -401,7 +400,7 @@ switch (light) {
 }
 
 println(action);  // Go
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h3>Switch with String Values</h3>
@@ -432,7 +431,7 @@ switch (fruit) {
 }
 
 println(color);  // red
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h3>Switch with Fallthrough</h3>
@@ -463,7 +462,7 @@ switch (num) {
 // Output:
 // Two
 // Three
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h2 id="collections">Collections</h2>
@@ -606,7 +605,7 @@ is_dir("path.txt");          // Check if it's a directory
 mkdir("new_folder");         // Create directory
 list_dir("folder");          // List directory contents
 remove_file("old.txt");      // Remove file
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h3>Path Manipulation Functions</h3>
@@ -638,7 +637,7 @@ var absPath = path_abs("relative/path");
 // Pattern matching
 var txtFiles = glob("*.txt");
 // ["file1.txt", "file2.txt", ...]
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h3>Advanced File Operations</h3>
@@ -669,7 +668,7 @@ truncate_file("log.txt", 0);  // Clear file content
 
 // Remove directories recursively
 remove_all("temp_folder", true);
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h2 id="enums">Enums</h2>
@@ -697,7 +696,7 @@ enum Color {
 println(Color.RED);    // 0
 println(Color.GREEN);  // 1
 println(Color.BLUE);   // 2
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h3>Enum with Explicit Values</h3>
@@ -722,7 +721,7 @@ println(Status.PENDING);    // 0
 println(Status.ACTIVE);    // 1
 println(Status.COMPLETED); // 2
 println(Status.CANCELLED); // 3
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h3>Enum with Mixed Values</h3>
@@ -747,7 +746,7 @@ println(Priority.LOW);      // 10
 println(Priority.MEDIUM);   // 11
 println(Priority.HIGH);     // 50
 println(Priority.CRITICAL); // 51
-{% highlight %}
+{% endhighlight %}
         </div>
         
         <h2 id="functions">Functions</h2>
