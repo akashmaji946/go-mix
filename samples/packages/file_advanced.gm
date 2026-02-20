@@ -2,7 +2,7 @@
 // File Package - Advanced Examples
 // ============================================
 
-import file;
+import path;
 import io;
 
 println("=== File Package - Advanced Operations ===");
