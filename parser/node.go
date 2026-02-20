@@ -25,7 +25,6 @@ type NodeVisitor interface {
 	VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode)     // Float literals: 3.14, -2.5
 	VisitStringLiteralExpressionNode(node StringLiteralExpressionNode)   // String literals: "hello", 'world'
 	VisitNilLiteralExpressionNode(node NilLiteralExpressionNode)         // Nil/null literal
-	// VisitFunctionLiteralExpressionNode(node FunctionLiteralExpressionNode) // Anonymous function literals: func(params) { body }
 
 	// Expression visitors - handle operations and computations
 	VisitBinaryExpressionNode(node BinaryExpressionNode)               // Binary operations: +, -, *, /, %
@@ -36,46 +35,57 @@ type NodeVisitor interface {
 	// Statement and identifier visitors
 	VisitDeclarativeStatementNode(node DeclarativeStatementNode) // Variable declarations: var x = 10, let y = 5
 	VisitIdentifierExpressionNode(node IdentifierExpressionNode) // Variable/function identifiers: x, myVar
-	VisitReturnStatementNode(node ReturnStatementNode)           // Return statements: return expr
 	VisitBlockStatementNode(node BlockStatementNode)             // Code blocks: { stmt1; stmt2; }
 	VisitAssignmentExpressionNode(node AssignmentExpressionNode) // Assignments: x = 10
 
 	// Conditional control flow visitors
+	// If statement visitor
 	VisitIfExpressionNode(node IfExpressionNode) // If-else conditionals: if (cond) { ... } else { ... }
-
-	// Function-related visitors
-	VisitFunctionStatementNode(node FunctionStatementNode) // Function definitions: func name(params) { body }
-	VisitCallExpressionNode(node CallExpressionNode)       // Function calls: funcName(arg1, arg2)
-
-	// Loop control flow visitors
-	VisitForLoopStatementNode(node ForLoopStatementNode)     // For loops: for(init; cond; update) { ... }
-	VisitWhileLoopStatementNode(node WhileLoopStatementNode) // While loops: while(cond) { ... }
-
-	// Data structure visitors - handle collections
-	VisitArrayExpressionNode(node ArrayExpressionNode) // Array literals: [1, 2, 3]
-	VisitMapExpressionNode(node MapExpressionNode)     // Map literals: map{key: value}
-	VisitSetExpressionNode(node SetExpressionNode)     // Set literals: set{1, 2, 3}
-	VisitIndexExpressionNode(node IndexExpressionNode) // Array indexing: arr[0], arr[-1]
-	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
-	// Structs
-	VisitStructDeclarationNode(node StructDeclarationNode) // Struct definitions: struct Name { method1, method2, ... }
-	VisitNewCallExpressionNode(node NewCallExpressionNode) // Struct instantiation: new Name(args)
-
-	// Control flow
-	VisitBreakStatementNode(node BreakStatementNode)       // break
-	VisitContinueStatementNode(node ContinueStatementNode) // continue
-
-	// Import statement
-	VisitImportStatementNode(node ImportStatementNode) // import package
-
-	// Range and foreach visitors
-	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
-	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
-
 	// Switch statement visitor
 	VisitSwitchStatementNode(node SwitchStatementNode) // Switch statements: switch (expr) { case x: ... default: ... }
+
+	// Function-related visitors
+	// Function statement visitor
+	VisitFunctionStatementNode(node FunctionStatementNode) // Function definitions: func name(params) { body }
+	// Function call visitor
+	VisitCallExpressionNode(node CallExpressionNode) // Function calls: funcName(arg1, arg2)
+
+	// Loop control flow visitors
+	// For loop visitor
+	VisitForLoopStatementNode(node ForLoopStatementNode) // For loops: for(init; cond; update) { ... }
+	// While loop visitor
+	VisitWhileLoopStatementNode(node WhileLoopStatementNode) // While loops: while(cond) { ... }
+	// Foreach loop visitor
+	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
+
+	// Collections/Data structure visitors - handle collections
+	// Array visitors
+	VisitArrayExpressionNode(node ArrayExpressionNode) // Array literals: [1, 2, 3]
+	// Map and set visitors
+	VisitMapExpressionNode(node MapExpressionNode) // Map literals: map{key: value}
+	VisitSetExpressionNode(node SetExpressionNode) // Set literals: set{1, 2, 3}
+	// Indexing and slicing visitors
+	VisitIndexExpressionNode(node IndexExpressionNode) // Array indexing: arr[0], arr[-1]
+	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
+	// Range expression visitor
+	VisitRangeExpressionNode(node RangeExpressionNode) // Range expressions: 2...5
+
+	// Structures and related visitors
+	// Struct declarartion visitors
+	VisitStructDeclarationNode(node StructDeclarationNode) // Struct definitions: struct Name { method1, method2, ... }
+	// Struct instantiation visitor
+	VisitNewCallExpressionNode(node NewCallExpressionNode) // Struct instantiation: new Name(args)
 	// Enum statement visitor
 	VisitEnumDeclarationNode(node EnumDeclarationNode) // Enum definitions: enum Name { Variant1, Variant2, ... }
+
+	// Control flow related visitors
+	// Break and continue visitors
+	VisitBreakStatementNode(node BreakStatementNode)       // break
+	VisitContinueStatementNode(node ContinueStatementNode) // continue
+	// Return statement visitor
+	VisitReturnStatementNode(node ReturnStatementNode) // Return statements: return expr
+	// Import statement
+	VisitImportStatementNode(node ImportStatementNode) // import package
 
 }
 

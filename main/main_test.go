@@ -1,8 +1,3 @@
-/*
-File    : go-mix/main/main_test.go
-Author  : Akash Maji
-Contact : akashmaji(@iisc.ac.in)
-*/
 package main
 
 import (
@@ -12,230 +7,234 @@ import (
 	"github.com/akashmaji946/go-mix/parser"
 )
 
-// TestMain_Main exercises the parser with comprehensive code samples covering all language features
-func TestMain_Main(t *testing.T) {
+func runParseTest(t *testing.T, src string) {
+	t.Helper()
+	root := parser.NewParser(src).Parse()
+	visitor := &PrintingVisitor{}
+	root.Accept(visitor)
+	fmt.Println(visitor)
+}
 
-	fmt.Println("Hello, go-mix!")
+func TestSrc72(t *testing.T) {
+	src := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
+	runParseTest(t, src)
+}
 
-	src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
-	root72 := parser.NewParser(src72).Parse()
-	visitor72 := &PrintingVisitor{}
-	root72.Accept(visitor72)
-	fmt.Println(visitor72)
+// binary expression with operator precedence
 
-	// binary expression with operator precedence
-	src1 := `1 + 2 * 3`
-	root1 := parser.NewParser(src1).Parse()
-	visitor1 := &PrintingVisitor{}
-	root1.Accept(visitor1)
-	fmt.Println(visitor1)
+func TestSrc1(t *testing.T) {
+	src := `1 + 2 * 3`
+	runParseTest(t, src)
+}
 
-	// unary expression with double negation
-	src2 := `!!true`
-	root2 := parser.NewParser(src2).Parse()
-	visitor2 := &PrintingVisitor{}
-	root2.Accept(visitor2)
-	fmt.Println(visitor2)
+// unary expression with double negation
 
-	// parenthesised expression with mixed operators
-	src3 := `4-(1+2)+2+3*4/2`
-	root3 := parser.NewParser(src3).Parse()
-	visitor3 := &PrintingVisitor{}
-	root3.Accept(visitor3)
-	fmt.Println(visitor3)
+func TestSrc2(t *testing.T) {
+	src := `!!true`
+	runParseTest(t, src)
+}
 
-	// parenthesised expression with grouped operations
-	src4 := `4-(1+2)+(2+3)*4/2`
-	root4 := parser.NewParser(src4).Parse()
-	visitor4 := &PrintingVisitor{}
-	root4.Accept(visitor4)
-	fmt.Println(visitor4)
+// parenthesised expression with mixed operators
 
-	// declarative statement with simple assignment
-	src5 := `var a = 1`
-	root5 := parser.NewParser(src5).Parse()
-	visitor5 := &PrintingVisitor{}
-	root5.Accept(visitor5)
-	fmt.Println(visitor5)
+func TestSrc3(t *testing.T) {
+	src := `4-(1+2)+2+3*4/2`
+	runParseTest(t, src)
+}
 
-	// declarative statement with parenthesised expression
-	src6 := `var a = (1 + 2) * 3`
-	root6 := parser.NewParser(src6).Parse()
-	visitor6 := &PrintingVisitor{}
-	root6.Accept(visitor6)
-	fmt.Println(visitor6)
+// parenthesised expression with grouped operations
 
-	// declarative statement using identifiers
-	src7 := `var a = 11
+func TestSrc4(t *testing.T) {
+	src := `4-(1+2)+(2+3)*4/2`
+	runParseTest(t, src)
+}
+
+// declarative statement with simple assignment
+
+func TestSrc5(t *testing.T) {
+	src := `var a = 1`
+	runParseTest(t, src)
+}
+
+// declarative statement with parenthesised expression
+
+func TestSrc6(t *testing.T) {
+	src := `var a = (1 + 2) * 3`
+	runParseTest(t, src)
+}
+
+// declarative statement using identifiers
+
+func TestSrc7(t *testing.T) {
+	src := `var a = 11
 	var b = a + 10`
-	root7 := parser.NewParser(src7).Parse()
-	visitor7 := &PrintingVisitor{}
-	root7.Accept(visitor7)
-	fmt.Println(visitor7)
+	runParseTest(t, src)
+}
 
-	// declarative statement with multiple dependent variables
-	src8 := `var a = (1 + 2) * 3
+// declarative statement with multiple dependent variables
+
+func TestSrc8(t *testing.T) {
+	src := `var a = (1 + 2) * 3
 	var b = (a + 10 * 2)
 	var c = (b + 10 * 4)
 	`
-	root8 := parser.NewParser(src8).Parse()
-	visitor8 := &PrintingVisitor{}
-	root8.Accept(visitor8)
-	fmt.Println(visitor8)
+	runParseTest(t, src)
+}
 
-	// declarative statement with semicolon separators
-	src9 := `var a = (1 + 2) * 3;
+// declarative statement with semicolon separators
+
+func TestSrc9(t *testing.T) {
+	src := `var a = (1 + 2) * 3;
 	var b = (a + 10 * 2);
 	var c = (b + 10 * 4);
 	var d = (c + 10 * 5);
 	`
-	root9 := parser.NewParser(src9).Parse()
-	visitor9 := &PrintingVisitor{}
-	root9.Accept(visitor9)
-	fmt.Println(visitor9)
+	runParseTest(t, src)
+}
 
-	// return statement with literal value
-	src10 := `return 1`
-	root10 := parser.NewParser(src10).Parse()
-	visitor10 := &PrintingVisitor{}
-	root10.Accept(visitor10)
-	fmt.Println(visitor10)
+// return statement with literal value
 
-	// return statement with complex expression
-	src11 := `return (1 + 2) * 100 + (2 * 3) * 100 + 100`
-	root11 := parser.NewParser(src11).Parse()
-	visitor11 := &PrintingVisitor{}
-	root11.Accept(visitor11)
-	fmt.Println(visitor11)
+func TestSrc10(t *testing.T) {
+	src := `return 1`
+	runParseTest(t, src)
+}
 
-	// return statement with variable and expression
-	src12 := `var a = (100 + 900); return ((a * 2) + 100 + 100 / 100);`
-	root12 := parser.NewParser(src12).Parse()
-	visitor12 := &PrintingVisitor{}
-	root12.Accept(visitor12)
-	fmt.Println(visitor12)
+// return statement with complex expression
 
-	// variable redeclaration test case
-	src13 := `var a = 1; var a = a + 10; return a;`
-	root13 := parser.NewParser(src13).Parse()
-	visitor13 := &PrintingVisitor{}
-	root13.Accept(visitor13)
-	fmt.Println(visitor13)
+func TestSrc11(t *testing.T) {
+	src := `return (1 + 2) * 100 + (2 * 3) * 100 + 100`
+	runParseTest(t, src)
+}
 
-	// boolean expression with AND operator
-	src14 := `true && false`
-	root14 := parser.NewParser(src14).Parse()
-	visitor14 := &PrintingVisitor{}
-	root14.Accept(visitor14)
-	fmt.Println(visitor14)
+// return statement with variable and expression
 
-	// boolean expression with OR operator
-	src15 := `true || false`
-	root15 := parser.NewParser(src15).Parse()
-	visitor15 := &PrintingVisitor{}
-	root15.Accept(visitor15)
-	fmt.Println(visitor15)
+func TestSrc12(t *testing.T) {
+	src := `var a = (100 + 900); return ((a * 2) + 100 + 100 / 100);`
+	runParseTest(t, src)
+}
 
-	// boolean expression with parentheses
-	src16 := `true && (false || true)`
-	root16 := parser.NewParser(src16).Parse()
-	visitor16 := &PrintingVisitor{}
-	root16.Accept(visitor16)
-	fmt.Println(visitor16)
+// variable redeclaration test case
 
-	// boolean expression in return statement
-	src17 := `return true && (false || true);`
-	root17 := parser.NewParser(src17).Parse()
-	visitor17 := &PrintingVisitor{}
-	root17.Accept(visitor17)
-	fmt.Println(visitor17)
+func TestSrc13(t *testing.T) {
+	src := `var a = 1; var a = a + 10; return a;`
+	runParseTest(t, src)
+}
 
-	// boolean expression with variables
-	src18 := `var a = true; var b = a && false; return b || true;`
-	root18 := parser.NewParser(src18).Parse()
-	visitor18 := &PrintingVisitor{}
-	root18.Accept(visitor18)
-	fmt.Println(visitor18)
+// boolean expression with AND operator
 
-	// boolean expression with relational operator
-	src19 := `false || 1 < 2`
-	root19 := parser.NewParser(src19).Parse()
-	visitor19 := &PrintingVisitor{}
-	root19.Accept(visitor19)
-	fmt.Println(visitor19)
+func TestSrc14(t *testing.T) {
+	src := `true && false`
+	runParseTest(t, src)
+}
 
-	// relational operator in return statement
-	src20 := `return false || 1 < 2`
-	root20 := parser.NewParser(src20).Parse()
-	visitor20 := &PrintingVisitor{}
-	root20.Accept(visitor20)
-	fmt.Println(visitor20)
+// boolean expression with OR operator
 
-	// relational operator with boolean combination
-	src21 := `return false || (1 <= 2 && true)`
-	root21 := parser.NewParser(src21).Parse()
-	visitor21 := &PrintingVisitor{}
-	root21.Accept(visitor21)
-	fmt.Println(visitor21)
+func TestSrc15(t *testing.T) {
+	src := `true || false`
+	runParseTest(t, src)
+}
 
-	// relational operator with variable
-	src22 := `var a = false; return a || (10 <= 20 && true);`
-	root22 := parser.NewParser(src22).Parse()
-	visitor22 := &PrintingVisitor{}
-	root22.Accept(visitor22)
-	fmt.Println(visitor22)
+// boolean expression with parentheses
 
-	// multiple relational and equality operators
-	src23 := `(10 <= 20 && (10 != 20) && (true != false) && (true == true))`
-	root23 := parser.NewParser(src23).Parse()
-	visitor23 := &PrintingVisitor{}
-	root23.Accept(visitor23)
-	fmt.Println(visitor23)
+func TestSrc16(t *testing.T) {
+	src := `true && (false || true)`
+	runParseTest(t, src)
+}
 
-	// bitwise expression with boolean operators
-	src24 := `(3 & 7) == 3 && true || false && true`
-	root24 := parser.NewParser(src24).Parse()
-	visitor24 := &PrintingVisitor{}
-	root24.Accept(visitor24)
-	fmt.Println(visitor24)
+// boolean expression in return statement
 
-	// complex bitwise and boolean expression
-	src25 := `return ((3&7)!=3&&true||false&&true)||true`
-	root25 := parser.NewParser(src25).Parse()
-	visitor25 := &PrintingVisitor{}
-	root25.Accept(visitor25)
-	fmt.Println(visitor25)
+func TestSrc17(t *testing.T) {
+	src := `return true && (false || true);`
+	runParseTest(t, src)
+}
 
-	// relational operator with arithmetic
-	src26 := `7 > 2 + 1`
-	root26 := parser.NewParser(src26).Parse()
-	visitor26 := &PrintingVisitor{}
-	root26.Accept(visitor26)
-	fmt.Println(visitor26)
+// boolean expression with variables
 
-	// relational operator comparing expressions
-	src27 := `return 7-1>2+1`
-	root27 := parser.NewParser(src27).Parse()
-	visitor27 := &PrintingVisitor{}
-	root27.Accept(visitor27)
-	fmt.Println(visitor27)
+func TestSrc18(t *testing.T) {
+	src := `var a = true; var b = a && false; return b || true;`
+	runParseTest(t, src)
+}
 
-	// relational operator with variable expressions
-	src28 := `var a = 7; var b = 1; var c = 2; var d = 1; return ((a-b)>(c+d));`
-	root28 := parser.NewParser(src28).Parse()
-	visitor28 := &PrintingVisitor{}
-	root28.Accept(visitor28)
-	fmt.Println(visitor28)
+// boolean expression with relational operator
 
-	// block statement with local variables
-	src29 := `{var a = 10; var b = a + 100;}`
-	root29 := parser.NewParser(src29).Parse()
-	visitor29 := &PrintingVisitor{}
-	root29.Accept(visitor29)
-	fmt.Println(visitor29)
+func TestSrc19(t *testing.T) {
+	src := `false || 1 < 2`
+	runParseTest(t, src)
+}
 
-	// nested block statements with return
-	src30 := `
+// relational operator in return statement
+
+func TestSrc20(t *testing.T) {
+	src := `return false || 1 < 2`
+	runParseTest(t, src)
+}
+
+// relational operator with boolean combination
+
+func TestSrc21(t *testing.T) {
+	src := `return false || (1 <= 2 && true)`
+	runParseTest(t, src)
+}
+
+// relational operator with variable
+
+func TestSrc22(t *testing.T) {
+	src := `var a = false; return a || (10 <= 20 && true);`
+	runParseTest(t, src)
+}
+
+// multiple relational and equality operators
+
+func TestSrc23(t *testing.T) {
+	src := `(10 <= 20 && (10 != 20) && (true != false) && (true == true))`
+	runParseTest(t, src)
+}
+
+// bitwise expression with boolean operators
+
+func TestSrc24(t *testing.T) {
+	src := `(3 & 7) == 3 && true || false && true`
+	runParseTest(t, src)
+}
+
+// complex bitwise and boolean expression
+
+func TestSrc25(t *testing.T) {
+	src := `return ((3&7)!=3&&true||false&&true)||true`
+	runParseTest(t, src)
+}
+
+// relational operator with arithmetic
+
+func TestSrc26(t *testing.T) {
+	src := `7 > 2 + 1`
+	runParseTest(t, src)
+}
+
+// relational operator comparing expressions
+
+func TestSrc27(t *testing.T) {
+	src := `return 7-1>2+1`
+	runParseTest(t, src)
+}
+
+// relational operator with variable expressions
+
+func TestSrc28(t *testing.T) {
+	src := `var a = 7; var b = 1; var c = 2; var d = 1; return ((a-b)>(c+d));`
+	runParseTest(t, src)
+}
+
+// block statement with local variables
+
+func TestSrc29(t *testing.T) {
+	src := `{var a = 10; var b = a + 100;}`
+	runParseTest(t, src)
+}
+
+// nested block statements with return
+
+func TestSrc30(t *testing.T) {
+	src := `
 	{
 	var a = 10;
 	var b = a + 10;
@@ -247,13 +246,13 @@ func TestMain_Main(t *testing.T) {
 	}
 	return 0;
 	}`
-	root30 := parser.NewParser(src30).Parse()
-	visitor30 := &PrintingVisitor{}
-	root30.Accept(visitor30)
-	fmt.Println(visitor30)
+	runParseTest(t, src)
+}
 
-	// block statement with outer variable assignment
-	src31 := `
+// block statement with outer variable assignment
+
+func TestSrc31(t *testing.T) {
+	src := `
 	var X = 1234;
 	{
 	var a = 10;
@@ -268,26 +267,26 @@ func TestMain_Main(t *testing.T) {
 	return X;
 	}
 	`
-	root31 := parser.NewParser(src31).Parse()
-	visitor31 := &PrintingVisitor{}
-	root31.Accept(visitor31)
-	fmt.Println(visitor31)
+	runParseTest(t, src)
+}
 
-	// block statement modifying outer variable
-	src32 := `	
+// block statement modifying outer variable
+
+func TestSrc32(t *testing.T) {
+	src := `	
 	var X = 1234;
 	{
 	X = X + 1;
 	}
 	X = X * 100 + 2;
 	return X;`
-	root32 := parser.NewParser(src32).Parse()
-	visitor32 := &PrintingVisitor{}
-	root32.Accept(visitor32)
-	fmt.Println(visitor32)
+	runParseTest(t, src)
+}
 
-	// block statement with variable shadowing
-	src33 := `	
+// block statement with variable shadowing
+
+func TestSrc33(t *testing.T) {
+	src := `	
 	var X = 1234;
 	{
 	var X = 6789;
@@ -296,59 +295,59 @@ func TestMain_Main(t *testing.T) {
 	X = X + 1;
 	return X;
 	`
-	root33 := parser.NewParser(src33).Parse()
-	visitor33 := &PrintingVisitor{}
-	root33.Accept(visitor33)
-	fmt.Println(visitor33)
+	runParseTest(t, src)
+}
 
-	// if statement with expression condition
-	src34 := `if (1 + 1 == 2) { 
+// if statement with expression condition
+
+func TestSrc34(t *testing.T) {
+	src := `if (1 + 1 == 2) { 
 	 2 + 3;
 	}`
-	root34 := parser.NewParser(src34).Parse()
-	visitor34 := &PrintingVisitor{}
-	root34.Accept(visitor34)
-	fmt.Println(visitor34)
+	runParseTest(t, src)
+}
 
-	// if-else statement
-	src35 := `if (1 + 1 == 2) { 
+// if-else statement
+
+func TestSrc35(t *testing.T) {
+	src := `if (1 + 1 == 2) { 
 	 2 + 3;
 	} else {
 	 2 + 4;
 	}`
-	root35 := parser.NewParser(src35).Parse()
-	visitor35 := &PrintingVisitor{}
-	root35.Accept(visitor35)
-	fmt.Println(visitor35)
+	runParseTest(t, src)
+}
 
-	// if-else-if chain
-	src36 := `if (1 + 1 == 21) { 
+// if-else-if chain
+
+func TestSrc36(t *testing.T) {
+	src := `if (1 + 1 == 21) { 
 	 2 + 3;
 	} else if (2 + 2 == 4) {
 	 2 + 4;
 	} else {	
 	 2 + 6;
 	}`
-	root36 := parser.NewParser(src36).Parse()
-	visitor36 := &PrintingVisitor{}
-	root36.Accept(visitor36)
-	fmt.Println(visitor36)
+	runParseTest(t, src)
+}
 
-	// multiple else-if conditions
-	src37 := `if (1 + 1 == 3) { 
+// multiple else-if conditions
+
+func TestSrc37(t *testing.T) {
+	src := `if (1 + 1 == 3) { 
 	 2 + 3;
 	} else if (2 + 2 == 5) {
 	 2 + 4;
 	} else if (3 + 3 == 7){	
 	 2 + 6;
 	}`
-	root37 := parser.NewParser(src37).Parse()
-	visitor37 := &PrintingVisitor{}
-	root37.Accept(visitor37)
-	fmt.Println(visitor37)
+	runParseTest(t, src)
+}
 
-	// if-else-if with variable assignments
-	src38 := `
+// if-else-if with variable assignments
+
+func TestSrc38(t *testing.T) {
+	src := `
 	var a = 100;
 	var b = 0;
 	if (2 * a == 200) {
@@ -361,145 +360,145 @@ func TestMain_Main(t *testing.T) {
 		b = 311111;
 	}
 	return b;`
-	root38 := parser.NewParser(src38).Parse()
-	visitor38 := &PrintingVisitor{}
-	root38.Accept(visitor38)
-	fmt.Println(visitor38)
+	runParseTest(t, src)
+}
 
-	// if-else with empty blocks
-	src39 := `{
+// if-else with empty blocks
+
+func TestSrc39(t *testing.T) {
+	src := `{
 	var x = 1;
 	if(x==9){}else{}
 	if(x==10){}else{}
 	if(x==11){}else{}
 	if(x==12){}else{}
 	}`
-	root39 := parser.NewParser(src39).Parse()
-	visitor39 := &PrintingVisitor{}
-	root39.Accept(visitor39)
-	fmt.Println(visitor39)
+	runParseTest(t, src)
+}
 
-	// deeply nested blocks with if-else
-	src40 := `{{{var x=1;{{{{if(x==9){}else{x+1;}}}}}}}}`
-	root40 := parser.NewParser(src40).Parse()
-	visitor40 := &PrintingVisitor{}
-	root40.Accept(visitor40)
-	fmt.Println(visitor40)
+// deeply nested blocks with if-else
 
-	// string literals and identifiers
-	src41 := `"hello world" "C++" Pascal 2026 1234567890 "123"`
-	root41 := parser.NewParser(src41).Parse()
-	visitor41 := &PrintingVisitor{}
-	root41.Accept(visitor41)
-	fmt.Println(visitor41)
+func TestSrc40(t *testing.T) {
+	src := `{{{var x=1;{{{{if(x==9){}else{x+1;}}}}}}}}`
+	runParseTest(t, src)
+}
 
-	// function declaration with return
-	src42 := `func foo() { var a = 1; var b = 2; return a + b; }`
-	root42 := parser.NewParser(src42).Parse()
-	visitor42 := &PrintingVisitor{}
-	root42.Accept(visitor42)
-	fmt.Println(visitor42)
+// string literals and identifiers
 
-	// function with parameters
-	src43 := `func foo(a, b, c, d) { var a = 1; var b = 2; return a * b; }`
-	root43 := parser.NewParser(src43).Parse()
-	visitor43 := &PrintingVisitor{}
-	root43.Accept(visitor43)
-	fmt.Println(visitor43)
+func TestSrc41(t *testing.T) {
+	src := `"hello world" "C++" Pascal 2026 1234567890 "123"`
+	runParseTest(t, src)
+}
 
-	// function with conditional logic
-	src44 := `func foo(a) { if(a==1){a=a+1;}else if(a==2){a=a+2;}else{a=a+3;} return a;}`
-	root44 := parser.NewParser(src44).Parse()
-	visitor44 := &PrintingVisitor{}
-	root44.Accept(visitor44)
-	fmt.Println(visitor44)
+// function declaration with return
 
-	// function call with arguments
-	src45 := `foo(1, 2, 3, 4)`
-	root45 := parser.NewParser(src45).Parse()
-	visitor45 := &PrintingVisitor{}
-	root45.Accept(visitor45)
-	fmt.Println(visitor45)
+func TestSrc42(t *testing.T) {
+	src := `func foo() { var a = 1; var b = 2; return a + b; }`
+	runParseTest(t, src)
+}
 
-	// function call with complex arguments
-	src46 := `foo(1 + 2 * 3 - 8, true, (2==3), !!!!!true)`
-	root46 := parser.NewParser(src46).Parse()
-	visitor46 := &PrintingVisitor{}
-	root46.Accept(visitor46)
-	fmt.Println(visitor46)
+// function with parameters
 
-	// function call assigned to variable
-	src47 := `var b = 1; var a = foo(b, 2, 3); b = a + 1;`
-	root47 := parser.NewParser(src47).Parse()
-	visitor47 := &PrintingVisitor{}
-	root47.Accept(visitor47)
-	fmt.Println(visitor47)
+func TestSrc43(t *testing.T) {
+	src := `func foo(a, b, c, d) { var a = 1; var b = 2; return a * b; }`
+	runParseTest(t, src)
+}
 
-	// variable redeclaration
-	src48 := `var a = 1; var a = 2; var c = a;`
-	root48 := parser.NewParser(src48).Parse()
-	visitor48 := &PrintingVisitor{}
-	root48.Accept(visitor48)
-	fmt.Println(visitor48)
+// function with conditional logic
 
-	// function with boolean parameter
-	src49 := `func foo(a) { if(a) {return 1;} else {return 2;}}`
-	root49 := parser.NewParser(src49).Parse()
-	visitor49 := &PrintingVisitor{}
-	root49.Accept(visitor49)
-	fmt.Println(visitor49)
+func TestSrc44(t *testing.T) {
+	src := `func foo(a) { if(a==1){a=a+1;}else if(a==2){a=a+2;}else{a=a+3;} return a;}`
+	runParseTest(t, src)
+}
 
-	// recursive fibonacci function
-	src50 := `func fib(n) { if(n==0){return 0;} else if(n == 1) {return 1;} else {return fib(n-1) + fib(n-2);}} fib(10);`
-	root50 := parser.NewParser(src50).Parse()
-	visitor50 := &PrintingVisitor{}
-	root50.Accept(visitor50)
-	fmt.Println(visitor50)
+// function call with arguments
 
-	// anonymous function assigned to variable
-	src51 := `var foo = func(a) { if(a) {return 1;} else {return 2;}};;;;foo(true);`
-	root51 := parser.NewParser(src51).Parse()
-	visitor51 := &PrintingVisitor{}
-	root51.Accept(visitor51)
-	fmt.Println(visitor51)
+func TestSrc45(t *testing.T) {
+	src := `foo(1, 2, 3, 4)`
+	runParseTest(t, src)
+}
 
-	// const and var declarations
-	src52 := `var a = 1; const b = 2; a = 14;`
-	root52 := parser.NewParser(src52).Parse()
-	visitor52 := &PrintingVisitor{}
-	root52.Accept(visitor52)
-	fmt.Println(visitor52)
+// function call with complex arguments
 
-	// while loop with single condition
-	src53 := `var i = 0; while(i < 5){ i = i + 1; }`
-	root53 := parser.NewParser(src53).Parse()
-	visitor53 := &PrintingVisitor{}
-	root53.Accept(visitor53)
-	fmt.Println(visitor53)
+func TestSrc46(t *testing.T) {
+	src := `foo(1 + 2 * 3 - 8, true, (2==3), !!!!!true)`
+	runParseTest(t, src)
+}
 
-	// while loop with multiple conditions
-	src54 := `var i = 0; var j = 10; while(i < 5, j > 5){ i = i + 1; j = j - 1; }`
-	root54 := parser.NewParser(src54).Parse()
-	visitor54 := &PrintingVisitor{}
-	root54.Accept(visitor54)
-	fmt.Println(visitor54)
+// function call assigned to variable
 
-	// while loop with three conditions
-	src55 := `var a = 0; var b = 20; var c = 10; while(a < 10, b > 10, c > 5){ a = a + 1; b = b - 1; c = c - 1; }`
-	root55 := parser.NewParser(src55).Parse()
-	visitor55 := &PrintingVisitor{}
-	root55.Accept(visitor55)
-	fmt.Println(visitor55)
+func TestSrc47(t *testing.T) {
+	src := `var b = 1; var a = foo(b, 2, 3); b = a + 1;`
+	runParseTest(t, src)
+}
 
-	// for loop with multiple initializers and updates
-	src56 := `for(i = 0, j = 10; i < 5 && j > 5; i = i + 1, j = j - 1){ }`
-	root56 := parser.NewParser(src56).Parse()
-	visitor56 := &PrintingVisitor{}
-	root56.Accept(visitor56)
-	fmt.Println(visitor56)
+// variable redeclaration
 
-	// comprehensive while loop test suite
-	src57 := `
+func TestSrc48(t *testing.T) {
+	src := `var a = 1; var a = 2; var c = a;`
+	runParseTest(t, src)
+}
+
+// function with boolean parameter
+
+func TestSrc49(t *testing.T) {
+	src := `func foo(a) { if(a) {return 1;} else {return 2;}}`
+	runParseTest(t, src)
+}
+
+// recursive fibonacci function
+
+func TestSrc50(t *testing.T) {
+	src := `func fib(n) { if(n==0){return 0;} else if(n == 1) {return 1;} else {return fib(n-1) + fib(n-2);}} fib(10);`
+	runParseTest(t, src)
+}
+
+// anonymous function assigned to variable
+
+func TestSrc51(t *testing.T) {
+	src := `var foo = func(a) { if(a) {return 1;} else {return 2;}};;;;foo(true);`
+	runParseTest(t, src)
+}
+
+// const and var declarations
+
+func TestSrc52(t *testing.T) {
+	src := `var a = 1; const b = 2; a = 14;`
+	runParseTest(t, src)
+}
+
+// while loop with single condition
+
+func TestSrc53(t *testing.T) {
+	src := `var i = 0; while(i < 5){ i = i + 1; }`
+	runParseTest(t, src)
+}
+
+// while loop with multiple conditions
+
+func TestSrc54(t *testing.T) {
+	src := `var i = 0; var j = 10; while(i < 5, j > 5){ i = i + 1; j = j - 1; }`
+	runParseTest(t, src)
+}
+
+// while loop with three conditions
+
+func TestSrc55(t *testing.T) {
+	src := `var a = 0; var b = 20; var c = 10; while(a < 10, b > 10, c > 5){ a = a + 1; b = b - 1; c = c - 1; }`
+	runParseTest(t, src)
+}
+
+// for loop with multiple initializers and updates
+
+func TestSrc56(t *testing.T) {
+	src := `for(i = 0, j = 10; i < 5 && j > 5; i = i + 1, j = j - 1){ }`
+	runParseTest(t, src)
+}
+
+// comprehensive while loop test suite
+
+func TestSrc57(t *testing.T) {
+	src := `
 	// Test multiple conditions in while loops
 
 	print("=== Test 1: While with 2 conditions ===")
@@ -534,13 +533,13 @@ func TestMain_Main(t *testing.T) {
 	print("\nAll while loop tests completed!")
 
 	`
-	root57 := parser.NewParser(src57).Parse()
-	visitor57 := &PrintingVisitor{}
-	root57.Accept(visitor57)
-	fmt.Println(visitor57)
+	runParseTest(t, src)
+}
 
-	// fibonacci with main function
-	src58 := `
+// fibonacci with main function
+
+func TestSrc58(t *testing.T) {
+	src := `
 		var ans = 0;
 		const n = 10;
 
@@ -558,99 +557,99 @@ func TestMain_Main(t *testing.T) {
 
 		main()
 	`
-	root58 := parser.NewParser(src58).Parse()
-	visitor58 := &PrintingVisitor{}
-	root58.Accept(visitor58)
-	fmt.Println(visitor58)
+	runParseTest(t, src)
+}
 
-	// let keyword with reassignment
-	src59 := `let a = 1; a = 2; a = 2.9;`
-	root59 := parser.NewParser(src59).Parse()
-	visitor59 := &PrintingVisitor{}
-	root59.Accept(visitor59)
-	fmt.Println(visitor59)
+// let keyword with reassignment
 
-	// const keyword with reassignment attempt
-	src60 := `const a = 1; a = 2; a = 2.9;`
-	root60 := parser.NewParser(src60).Parse()
-	visitor60 := &PrintingVisitor{}
-	root60.Accept(visitor60)
-	fmt.Println(visitor60)
+func TestSrc59(t *testing.T) {
+	src := `let a = 1; a = 2; a = 2.9;`
+	runParseTest(t, src)
+}
 
-	// single-line comments
-	src61 := `// this is a comment line
+// const keyword with reassignment attempt
+
+func TestSrc60(t *testing.T) {
+	src := `const a = 1; a = 2; a = 2.9;`
+	runParseTest(t, src)
+}
+
+// single-line comments
+
+func TestSrc61(t *testing.T) {
+	src := `// this is a comment line
 	// again a new comment
 	// again
 	// yet again
 	// `
-	root61 := parser.NewParser(src61).Parse()
-	visitor61 := &PrintingVisitor{}
-	root61.Accept(visitor61)
-	fmt.Println(visitor61)
+	runParseTest(t, src)
+}
 
-	// mixed single and multi-line comments
-	src62 := `// this is a comment line
+// mixed single and multi-line comments
+
+func TestSrc62(t *testing.T) {
+	src := `// this is a comment line
 	// again a new comment
 	/* haha I a comment too */
 	// now a line
 	(2 + 3);
 	(3 + 9);`
-	root62 := parser.NewParser(src62).Parse()
-	visitor62 := &PrintingVisitor{}
-	root62.Accept(visitor62)
-	fmt.Println(visitor62)
+	runParseTest(t, src)
+}
 
-	// arithmetic compound assignments
-	src64 := `var a = 10; a += 5; a -= 3; a *= 2; a /= 4; a %= 3`
-	root64 := parser.NewParser(src64).Parse()
-	visitor64 := &PrintingVisitor{}
-	root64.Accept(visitor64)
-	fmt.Println(visitor64)
+// arithmetic compound assignments
 
-	// bitwise compound assignments
-	src65 := `var a = 12; a &= 10; a |= 3; a ^= 5`
-	root65 := parser.NewParser(src65).Parse()
-	visitor65 := &PrintingVisitor{}
-	root65.Accept(visitor65)
-	fmt.Println(visitor65)
+func TestSrc64(t *testing.T) {
+	src := `var a = 10; a += 5; a -= 3; a *= 2; a /= 4; a %= 3`
+	runParseTest(t, src)
+}
 
-	// shift compound assignments
-	src66 := `var a = 4; a <<= 2; a >>= 1`
-	root66 := parser.NewParser(src66).Parse()
-	visitor66 := &PrintingVisitor{}
-	root66.Accept(visitor66)
-	fmt.Println(visitor66)
+// bitwise compound assignments
 
-	// compound assignment in for loop
-	src67 := `for(i = 0; i < 10; i += 2){ var x = i * 2; }`
-	root67 := parser.NewParser(src67).Parse()
-	visitor67 := &PrintingVisitor{}
-	root67.Accept(visitor67)
-	fmt.Println(visitor67)
+func TestSrc65(t *testing.T) {
+	src := `var a = 12; a &= 10; a |= 3; a ^= 5`
+	runParseTest(t, src)
+}
 
-	// compound assignment in while loop
-	src68 := `var sum = 0; var i = 1; while(i <= 5){ sum += i; i += 1; }`
-	root68 := parser.NewParser(src68).Parse()
-	visitor68 := &PrintingVisitor{}
-	root68.Accept(visitor68)
-	fmt.Println(visitor68)
+// shift compound assignments
 
-	// multiple compound assignments in for loop
-	src69 := `for(i = 0, j = 10; i < 5; i += 1, j -= 2){ var diff = j - i; }`
-	root69 := parser.NewParser(src69).Parse()
-	visitor69 := &PrintingVisitor{}
-	root69.Accept(visitor69)
-	fmt.Println(visitor69)
+func TestSrc66(t *testing.T) {
+	src := `var a = 4; a <<= 2; a >>= 1`
+	runParseTest(t, src)
+}
 
-	// compound assignment with complex expressions
-	src70 := `var a = 100; a += 2 * 3 + 4; a -= (10 - 5); a *= 2`
-	root70 := parser.NewParser(src70).Parse()
-	visitor70 := &PrintingVisitor{}
-	root70.Accept(visitor70)
-	fmt.Println(visitor70)
+// compound assignment in for loop
 
-	// complex nested loop patterns
-	src71 := `
+func TestSrc67(t *testing.T) {
+	src := `for(i = 0; i < 10; i += 2){ var x = i * 2; }`
+	runParseTest(t, src)
+}
+
+// compound assignment in while loop
+
+func TestSrc68(t *testing.T) {
+	src := `var sum = 0; var i = 1; while(i <= 5){ sum += i; i += 1; }`
+	runParseTest(t, src)
+}
+
+// multiple compound assignments in for loop
+
+func TestSrc69(t *testing.T) {
+	src := `for(i = 0, j = 10; i < 5; i += 1, j -= 2){ var diff = j - i; }`
+	runParseTest(t, src)
+}
+
+// compound assignment with complex expressions
+
+func TestSrc70(t *testing.T) {
+	src := `var a = 100; a += 2 * 3 + 4; a -= (10 - 5); a *= 2`
+	runParseTest(t, src)
+}
+
+// complex nested loop patterns
+
+func TestSrc71(t *testing.T) {
+	src := `
 	// Complex loop patterns with variable declarations
 
 	// Test 1: Matrix-like operations (2D array simulation)
@@ -705,34 +704,34 @@ func TestMain_Main(t *testing.T) {
 	}
 
 	`
-	root71 := parser.NewParser(src71).Parse()
-	visitor71 := &PrintingVisitor{}
-	root71.Accept(visitor71)
-	fmt.Println(visitor71)
+	runParseTest(t, src)
+}
 
-	// array with function element
-	// src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
-	// root72 := parser.NewParser(src72).Parse()
-	// visitor72 := &PrintingVisitor{}
-	// root72.Accept(visitor72)
-	// fmt.Println(visitor72)
+// array with function element
+// src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
+// root72 := parser.NewParser(src72).Parse()
+// visitor72 := &PrintingVisitor{}
+// root72.Accept(visitor72)
+// fmt.Println(visitor72)
 
-	// chained function and array access
-	src73 := `a()[b()+1]`
-	root73 := parser.NewParser(src73).Parse()
-	visitor73 := &PrintingVisitor{}
-	root73.Accept(visitor73)
-	fmt.Println(visitor73)
+// chained function and array access
 
-	// array with mixed types and negative index
-	src74 := `var arr = [1, 2, true, 2.5, func () { }];  var foo = arr[-1]; foo();`
-	root74 := parser.NewParser(src74).Parse()
-	visitor74 := &PrintingVisitor{}
-	root74.Accept(visitor74)
-	fmt.Println(visitor74)
+func TestSrc73(t *testing.T) {
+	src := `a()[b()+1]`
+	runParseTest(t, src)
+}
 
-	// array with builtin functions (push, pop, length)
-	src75 := `var x = 1; 
+// array with mixed types and negative index
+
+func TestSrc74(t *testing.T) {
+	src := `var arr = [1, 2, true, 2.5, func () { }];  var foo = arr[-1]; foo();`
+	runParseTest(t, src)
+}
+
+// array with builtin functions (push, pop, length)
+
+func TestSrc75(t *testing.T) {
+	src := `var x = 1; 
 	var y = 1 + x; 
 	var arr = [x + y, x, y * 2.0, 1, 2, true, 2.5, func () {  while(true){} }];  
 	var foo = arr[-1]; 
@@ -740,34 +739,34 @@ func TestMain_Main(t *testing.T) {
 	arr = push(arr, 4); 
 	pop(arr); 
 	length(arr);`
-	root75 := parser.NewParser(src75).Parse()
-	visitor75 := &PrintingVisitor{}
-	root75.Accept(visitor75)
-	fmt.Println(visitor75)
+	runParseTest(t, src)
+}
 
-	// Test 76: Simple range expression
-	src76 := `var r = 2...5; r`
-	root76 := parser.NewParser(src76).Parse()
-	visitor76 := &PrintingVisitor{}
-	root76.Accept(visitor76)
-	fmt.Println(visitor76)
+// Test 76: Simple range expression
 
-	// Test 77: Foreach loop with range
-	src77 := `var sum = 0; foreach i in 1...5 { sum = sum + i; } sum`
-	root77 := parser.NewParser(src77).Parse()
-	visitor77 := &PrintingVisitor{}
-	root77.Accept(visitor77)
-	fmt.Println(visitor77)
+func TestSrc76(t *testing.T) {
+	src := `var r = 2...5; r`
+	runParseTest(t, src)
+}
 
-	// Test 78: Foreach loop with array
-	src78 := `var total = 0; foreach num in [10, 20, 30, 40] { total = total + num; } total`
-	root78 := parser.NewParser(src78).Parse()
-	visitor78 := &PrintingVisitor{}
-	root78.Accept(visitor78)
-	fmt.Println(visitor78)
+// Test 77: Foreach loop with range
 
-	// Test 79: Nested foreach loops with ranges
-	src79 := `
+func TestSrc77(t *testing.T) {
+	src := `var sum = 0; foreach i in 1...5 { sum = sum + i; } sum`
+	runParseTest(t, src)
+}
+
+// Test 78: Foreach loop with array
+
+func TestSrc78(t *testing.T) {
+	src := `var total = 0; foreach num in [10, 20, 30, 40] { total = total + num; } total`
+	runParseTest(t, src)
+}
+
+// Test 79: Nested foreach loops with ranges
+
+func TestSrc79(t *testing.T) {
+	src := `
 	var result = 0;
 	foreach i in 1...3 {
 		foreach j in 1...3 {
@@ -776,13 +775,13 @@ func TestMain_Main(t *testing.T) {
 	}
 	result
 	`
-	root79 := parser.NewParser(src79).Parse()
-	visitor79 := &PrintingVisitor{}
-	root79.Accept(visitor79)
-	fmt.Println(visitor79)
+	runParseTest(t, src)
+}
 
-	// Test 80: Range builtin function and foreach with complex operations
-	src80 := `
+// Test 80: Range builtin function and foreach with complex operations
+
+func TestSrc80(t *testing.T) {
+	src := `
 	// Test range() builtin and foreach with various operations
 	
 	// Create range using builtin
@@ -815,104 +814,104 @@ func TestMain_Main(t *testing.T) {
 	// Return combined result
 	factorial_sum + matrix_result + range_sum
 	`
-	root80 := parser.NewParser(src80).Parse()
-	visitor80 := &PrintingVisitor{}
-	root80.Accept(visitor80)
-	fmt.Println(visitor80)
+	runParseTest(t, src)
+}
 
-	// Test 81: Map creation and access
-	src81 := `var m = map{"name": "John", "age": 25}; m["name"]`
-	root81 := parser.NewParser(src81).Parse()
-	visitor81 := &PrintingVisitor{}
-	root81.Accept(visitor81)
-	fmt.Println(visitor81)
+// Test 81: Map creation and access
 
-	// Test 82: Map with keys_map builtin
-	src82 := `var person = map{"name": "Alice", "age": 30, "city": "NYC"}; keys_map(person)`
-	root82 := parser.NewParser(src82).Parse()
-	visitor82 := &PrintingVisitor{}
-	root82.Accept(visitor82)
-	fmt.Println(visitor82)
+func TestSrc81(t *testing.T) {
+	src := `var m = map{"name": "John", "age": 25}; m["name"]`
+	runParseTest(t, src)
+}
 
-	// Test 83: Map with insert_map and remove_map
-	src83 := `
+// Test 82: Map with keys_map builtin
+
+func TestSrc82(t *testing.T) {
+	src := `var person = map{"name": "Alice", "age": 30, "city": "NYC"}; keys_map(person)`
+	runParseTest(t, src)
+}
+
+// Test 83: Map with insert_map and remove_map
+
+func TestSrc83(t *testing.T) {
+	src := `
 	var config = map{"debug": false, "port": 8080};
 	insert_map(config, "host", "localhost");
 	remove_map(config, "debug");
 	config
 	`
-	root83 := parser.NewParser(src83).Parse()
-	visitor83 := &PrintingVisitor{}
-	root83.Accept(visitor83)
-	fmt.Println(visitor83)
+	runParseTest(t, src)
+}
 
-	// Test 84: Map with contain_map
-	src84 := `
+// Test 84: Map with contain_map
+
+func TestSrc84(t *testing.T) {
+	src := `
 	var settings = map{"theme": "dark", "lang": "en"};
 	var has_theme = contain_map(settings, "theme");
 	var has_font = contain_map(settings, "font");
 	has_theme
 	`
-	root84 := parser.NewParser(src84).Parse()
-	visitor84 := &PrintingVisitor{}
-	root84.Accept(visitor84)
-	fmt.Println(visitor84)
+	runParseTest(t, src)
+}
 
-	// Test 85: Map with enumerate_map (NEW)
-	src85 := `
+// Test 85: Map with enumerate_map (NEW)
+
+func TestSrc85(t *testing.T) {
+	src := `
 	var data = map{"x": 10, "y": 20, "z": 30};
 	var pairs = enumerate_map(data);
 	pairs
 	`
-	root85 := parser.NewParser(src85).Parse()
-	visitor85 := &PrintingVisitor{}
-	root85.Accept(visitor85)
-	fmt.Println(visitor85)
+	runParseTest(t, src)
+}
 
-	// Test 86: Set creation and operations
-	src86 := `var s = set{1, 2, 3, 4, 5}; s`
-	root86 := parser.NewParser(src86).Parse()
-	visitor86 := &PrintingVisitor{}
-	root86.Accept(visitor86)
-	fmt.Println(visitor86)
+// Test 86: Set creation and operations
 
-	// Test 87: Set with insert_set and remove_set
-	src87 := `
+func TestSrc86(t *testing.T) {
+	src := `var s = set{1, 2, 3, 4, 5}; s`
+	runParseTest(t, src)
+}
+
+// Test 87: Set with insert_set and remove_set
+
+func TestSrc87(t *testing.T) {
+	src := `
 	var numbers = set{10, 20, 30};
 	insert_set(numbers, 40);
 	remove_set(numbers, 20);
 	numbers
 	`
-	root87 := parser.NewParser(src87).Parse()
-	visitor87 := &PrintingVisitor{}
-	root87.Accept(visitor87)
-	fmt.Println(visitor87)
+	runParseTest(t, src)
+}
 
-	// Test 88: Set with contains_set
-	src88 := `
+// Test 88: Set with contains_set
+
+func TestSrc88(t *testing.T) {
+	src := `
 	var tags = set{"golang", "programming", "tutorial"};
 	var has_golang = contains_set(tags, "golang");
 	var has_python = contains_set(tags, "python");
 	has_golang
 	`
-	root88 := parser.NewParser(src88).Parse()
-	visitor88 := &PrintingVisitor{}
-	root88.Accept(visitor88)
-	fmt.Println(visitor88)
+	runParseTest(t, src)
+}
 
-	// Test 89: Set with values_set (NEW)
-	src89 := `
+// Test 89: Set with values_set (NEW)
+
+func TestSrc89(t *testing.T) {
+	src := `
 	var unique_ids = set{101, 102, 103, 104};
 	var id_array = values_set(unique_ids);
 	id_array
 	`
-	root89 := parser.NewParser(src89).Parse()
-	visitor89 := &PrintingVisitor{}
-	root89.Accept(visitor89)
-	fmt.Println(visitor89)
+	runParseTest(t, src)
+}
 
-	// Test 90: Complex map and set operations
-	src90 := `
+// Test 90: Complex map and set operations
+
+func TestSrc90(t *testing.T) {
+	src := `
 	// Build a map from set values
 	var source_set = set{"a", "b", "c"};
 	var set_vals = values_set(source_set);
@@ -933,20 +932,20 @@ func TestMain_Main(t *testing.T) {
 	
 	result_set
 	`
-	root90 := parser.NewParser(src90).Parse()
-	visitor90 := &PrintingVisitor{}
-	root90.Accept(visitor90)
-	fmt.Println(visitor90)
+	runParseTest(t, src)
+}
 
-	// Test 91: List creation and basic operations
-	src91 := `var l = list(1, 2, 3, 4, 5); l`
-	root91 := parser.NewParser(src91).Parse()
-	visitor91 := &PrintingVisitor{}
-	root91.Accept(visitor91)
-	fmt.Println(visitor91)
+// Test 91: List creation and basic operations
 
-	// Test 92: List with push and pop operations
-	src92 := `
+func TestSrc91(t *testing.T) {
+	src := `var l = list(1, 2, 3, 4, 5); l`
+	runParseTest(t, src)
+}
+
+// Test 92: List with push and pop operations
+
+func TestSrc92(t *testing.T) {
+	src := `
 	var nums = list(10, 20, 30);
 	pushback_list(nums, 40);
 	pushfront_list(nums, 5);
@@ -954,95 +953,95 @@ func TestMain_Main(t *testing.T) {
 	var first = popfront_list(nums);
 	nums
 	`
-	root92 := parser.NewParser(src92).Parse()
-	visitor92 := &PrintingVisitor{}
-	root92.Accept(visitor92)
-	fmt.Println(visitor92)
+	runParseTest(t, src)
+}
 
-	// Test 93: List indexing and slicing
-	src93 := `
+// Test 93: List indexing and slicing
+
+func TestSrc93(t *testing.T) {
+	src := `
 	var data = list(0, 10, 20, 30, 40, 50);
 	var elem = data[2];
 	var slice = data[1:4];
 	slice
 	`
-	root93 := parser.NewParser(src93).Parse()
-	visitor93 := &PrintingVisitor{}
-	root93.Accept(visitor93)
-	fmt.Println(visitor93)
+	runParseTest(t, src)
+}
 
-	// Test 94: List with foreach loop
-	src94 := `
+// Test 94: List with foreach loop
+
+func TestSrc94(t *testing.T) {
+	src := `
 	var sum = 0;
 	foreach num in list(1, 2, 3, 4, 5) {
 		sum = sum + num;
 	}
 	sum
 	`
-	root94 := parser.NewParser(src94).Parse()
-	visitor94 := &PrintingVisitor{}
-	root94.Accept(visitor94)
-	fmt.Println(visitor94)
+	runParseTest(t, src)
+}
 
-	// Test 95: Nested lists
-	src95 := `
+// Test 95: Nested lists
+
+func TestSrc95(t *testing.T) {
+	src := `
 	var matrix = list(list(1, 2, 3), list(4, 5, 6), list(7, 8, 9));
 	var row = matrix[1];
 	var elem = matrix[0][2];
 	elem
 	`
-	root95 := parser.NewParser(src95).Parse()
-	visitor95 := &PrintingVisitor{}
-	root95.Accept(visitor95)
-	fmt.Println(visitor95)
+	runParseTest(t, src)
+}
 
-	// Test 96: Tuple creation and basic operations
-	src96 := `var t = tuple(10, 20, 30); t`
-	root96 := parser.NewParser(src96).Parse()
-	visitor96 := &PrintingVisitor{}
-	root96.Accept(visitor96)
-	fmt.Println(visitor96)
+// Test 96: Tuple creation and basic operations
 
-	// Test 97: Tuple indexing and slicing
-	src97 := `
+func TestSrc96(t *testing.T) {
+	src := `var t = tuple(10, 20, 30); t`
+	runParseTest(t, src)
+}
+
+// Test 97: Tuple indexing and slicing
+
+func TestSrc97(t *testing.T) {
+	src := `
 	var coords = tuple(100, 200, 300, 400);
 	var x = coords[0];
 	var slice = coords[1:3];
 	slice
 	`
-	root97 := parser.NewParser(src97).Parse()
-	visitor97 := &PrintingVisitor{}
-	root97.Accept(visitor97)
-	fmt.Println(visitor97)
+	runParseTest(t, src)
+}
 
-	// Test 98: Tuple with foreach loop
-	src98 := `
+// Test 98: Tuple with foreach loop
+
+func TestSrc98(t *testing.T) {
+	src := `
 	var product = 1;
 	foreach val in tuple(2, 3, 4) {
 		product = product * val;
 	}
 	product
 	`
-	root98 := parser.NewParser(src98).Parse()
-	visitor98 := &PrintingVisitor{}
-	root98.Accept(visitor98)
-	fmt.Println(visitor98)
+	runParseTest(t, src)
+}
 
-	// Test 99: Tuple immutability and peek operations
-	src99 := `
+// Test 99: Tuple immutability and peek operations
+
+func TestSrc99(t *testing.T) {
+	src := `
 	var person = tuple("Alice", 25, true);
 	var name = peekfront_tuple(person);
 	var active = peekback_tuple(person);
 	var size = size_tuple(person);
 	size
 	`
-	root99 := parser.NewParser(src99).Parse()
-	visitor99 := &PrintingVisitor{}
-	root99.Accept(visitor99)
-	fmt.Println(visitor99)
+	runParseTest(t, src)
+}
 
-	// Test 100: Mixed list and tuple operations
-	src100 := `
+// Test 100: Mixed list and tuple operations
+
+func TestSrc100(t *testing.T) {
+	src := `
 	// Create a list of tuples
 	var points = list(tuple(0, 0), tuple(10, 20), tuple(30, 40));
 	var second_point = points[1];
@@ -1055,49 +1054,49 @@ func TestMain_Main(t *testing.T) {
 	
 	first_list
 	`
-	root100 := parser.NewParser(src100).Parse()
-	visitor100 := &PrintingVisitor{}
-	root100.Accept(visitor100)
-	fmt.Println(visitor100)
+	runParseTest(t, src)
+}
 
-	// Test 101: List with length and size functions
-	src101 := `
+// Test 101: List with length and size functions
+
+func TestSrc101(t *testing.T) {
+	src := `
 	var items = list("a", "b", "c", "d", "e");
 	var len1 = length(items);
 	var len2 = size_list(items);
 	len1
 	`
-	root101 := parser.NewParser(src101).Parse()
-	visitor101 := &PrintingVisitor{}
-	root101.Accept(visitor101)
-	fmt.Println(visitor101)
+	runParseTest(t, src)
+}
 
-	// Test 102: Tuple with length function
-	src102 := `
+// Test 102: Tuple with length function
+
+func TestSrc102(t *testing.T) {
+	src := `
 	var rgb = tuple(255, 128, 64);
 	var len = length(rgb);
 	len
 	`
-	root102 := parser.NewParser(src102).Parse()
-	visitor102 := &PrintingVisitor{}
-	root102.Accept(visitor102)
-	fmt.Println(visitor102)
+	runParseTest(t, src)
+}
 
-	// Test 103: List index assignment
-	src103 := `
+// Test 103: List index assignment
+
+func TestSrc103(t *testing.T) {
+	src := `
 	var arr = list(1, 2, 3, 4, 5);
 	arr[0] = 100;
 	arr[2] = 300;
 	arr[-1] = 999;
 	arr
 	`
-	root103 := parser.NewParser(src103).Parse()
-	visitor103 := &PrintingVisitor{}
-	root103.Accept(visitor103)
-	fmt.Println(visitor103)
+	runParseTest(t, src)
+}
 
-	// Test 104: Complex list manipulation
-	src104 := `
+// Test 104: Complex list manipulation
+
+func TestSrc104(t *testing.T) {
+	src := `
 	var stack = list();
 	pushback_list(stack, 10);
 	pushback_list(stack, 20);
@@ -1107,84 +1106,84 @@ func TestMain_Main(t *testing.T) {
 	var new_size = size_list(stack);
 	new_size
 	`
-	root104 := parser.NewParser(src104).Parse()
-	visitor104 := &PrintingVisitor{}
-	root104.Accept(visitor104)
-	fmt.Println(visitor104)
+	runParseTest(t, src)
+}
 
-	// Test 105: Tuple as function return value simulation
-	src105 := `
+// Test 105: Tuple as function return value simulation
+
+func TestSrc105(t *testing.T) {
+	src := `
 	var result = tuple(42, "success", true);
 	var code = result[0];
 	var message = result[1];
 	var status = result[2];
 	status
 	`
-	root105 := parser.NewParser(src105).Parse()
-	visitor105 := &PrintingVisitor{}
-	root105.Accept(visitor105)
-	fmt.Println(visitor105)
+	runParseTest(t, src)
+}
 
-	// Test 106: List and tuple with nested structures
-	src106 := `
+// Test 106: List and tuple with nested structures
+
+func TestSrc106(t *testing.T) {
+	src := `
 	var complex_list = list(tuple(1, 2), tuple(3, 4), tuple(5, 6));
 	var first_tuple = complex_list[0];
 	var second_elem = first_tuple[1];
 	second_elem
 	`
-	root106 := parser.NewParser(src106).Parse()
-	visitor106 := &PrintingVisitor{}
-	root106.Accept(visitor106)
-	fmt.Println(visitor106)
+	runParseTest(t, src)
+}
 
-	// Test 107: Empty list and tuple
-	src107 := `var empty_list = list(); var empty_tuple = tuple(); empty_list; empty_tuple;`
-	root107 := parser.NewParser(src107).Parse()
-	visitor107 := &PrintingVisitor{}
-	root107.Accept(visitor107)
-	fmt.Println(visitor107)
+// Test 107: Empty list and tuple
 
-	// Test 108: List and tuple with different data types
-	src108 := `
+func TestSrc107(t *testing.T) {
+	src := `var empty_list = list(); var empty_tuple = tuple(); empty_list; empty_tuple;`
+	runParseTest(t, src)
+}
+
+// Test 108: List and tuple with different data types
+
+func TestSrc108(t *testing.T) {
+	src := `
 	var mixed_list = list(1, "two", 3.0, true, func() { return "hello"; });
 	var mixed_tuple = tuple("start", 42, false, func() { return "world"; });
 	mixed_list; mixed_tuple;
 	`
-	root108 := parser.NewParser(src108).Parse()
-	visitor108 := &PrintingVisitor{}
-	root108.Accept(visitor108)
-	fmt.Println(visitor108)
+	runParseTest(t, src)
+}
 
-	// Test 109: struct creation
-	src109 := `var Point = struct Data {}`
-	root109 := parser.NewParser(src109).Parse()
-	visitor109 := &PrintingVisitor{}
-	root109.Accept(visitor109)
-	fmt.Println(visitor109)
+// Test 109: struct creation
 
-	// Test 110: struct with init
-	src110 := `var Point = struct Data { func init(){} }`
-	root110 := parser.NewParser(src110).Parse()
-	visitor110 := &PrintingVisitor{}
-	root110.Accept(visitor110)
-	fmt.Println(visitor110)
+func TestSrc109(t *testing.T) {
+	src := `var Point = struct Data {}`
+	runParseTest(t, src)
+}
 
-	// Test 111: struct with other methods
-	src111 := `struct Data { func init(){} func move(x, y){} }`
-	root111 := parser.NewParser(src111).Parse()
-	visitor111 := &PrintingVisitor{}
-	root111.Accept(visitor111)
-	fmt.Println(visitor111)
+// Test 110: struct with init
 
-	// Test 112: new keyword with struct
-	src112 := `struct Data {}; var p = new Point(10, 20);`
-	root112 := parser.NewParser(src112).Parse()
-	visitor112 := &PrintingVisitor{}
-	root112.Accept(visitor112)
-	fmt.Println(visitor112)
+func TestSrc110(t *testing.T) {
+	src := `var Point = struct Data { func init(){} }`
+	runParseTest(t, src)
+}
 
-	// Test 113: struct with fields and methods
-	src113 := `
+// Test 111: struct with other methods
+
+func TestSrc111(t *testing.T) {
+	src := `struct Data { func init(){} func move(x, y){} }`
+	runParseTest(t, src)
+}
+
+// Test 112: new keyword with struct
+
+func TestSrc112(t *testing.T) {
+	src := `struct Data {}; var p = new Point(10, 20);`
+	runParseTest(t, src)
+}
+
+// Test 113: struct with fields and methods
+
+func TestSrc113(t *testing.T) {
+	src := `
 	struct Point {
 		func init(x, y) {
 			this.x = x;
@@ -1199,12 +1198,11 @@ func TestMain_Main(t *testing.T) {
 	p.move(5, -5);
 	p
 	`
-	root113 := parser.NewParser(src113).Parse()
-	visitor113 := &PrintingVisitor{}
-	root113.Accept(visitor113)
-	fmt.Println(visitor113)
+	runParseTest(t, src)
+}
 
-	src114 := `
+func TestSrc114(t *testing.T) {
+	src := `
 	// Struct with new constructor
 	var aa = 10;
 	struct A { 
@@ -1217,32 +1215,32 @@ func TestMain_Main(t *testing.T) {
 	var a = new A();
 	println(a);
 	`
-	root114 := parser.NewParser(src114).Parse()
-	visitor114 := &PrintingVisitor{}
-	root114.Accept(visitor114)
-	fmt.Println(visitor114)
+	runParseTest(t, src)
+}
 
-	// Test 115: Struct with multiple methods and field access
-	src115 := `struct A{ func init(){} func hello(){ return 12 } } var a=new A(); var res=a.hello(); println(res);`
-	root115 := parser.NewParser(src115).Parse()
-	visitor115 := &PrintingVisitor{}
-	root115.Accept(visitor115)
-	fmt.Println(visitor115)
+// Test 115: Struct with multiple methods and field access
 
-	// Test 116: Struct with nested struct
-	src116 := `
+func TestSrc115(t *testing.T) {
+	src := `struct A{ func init(){} func hello(){ return 12 } } var a=new A(); var res=a.hello(); println(res);`
+	runParseTest(t, src)
+}
+
+// Test 116: Struct with nested struct
+
+func TestSrc116(t *testing.T) {
+	src := `
 	struct C { func add(x, y) { return x + y } }
 	var c = new C();
 	var d = c.add(3, 4);
 	println(d);
 	`
-	root116 := parser.NewParser(src116).Parse()
-	visitor116 := &PrintingVisitor{}
-	root116.Accept(visitor116)
-	fmt.Println(visitor116)
+	runParseTest(t, src)
+}
 
-	// Test 117: struct with new and calling method
-	src117 := `
+// Test 117: struct with new and calling method
+
+func TestSrc117(t *testing.T) {
+	src := `
 	struct Point {
 		func init(x, y) {
 			this.x = x;
@@ -1255,13 +1253,13 @@ func TestMain_Main(t *testing.T) {
 	var p = new Point(10, 20);
 	p.sum();
 	`
-	root117 := parser.NewParser(src117).Parse()
-	visitor117 := &PrintingVisitor{}
-	root117.Accept(visitor117)
-	fmt.Println(visitor117)
+	runParseTest(t, src)
+}
 
-	// Test 118: struct with new and field access
-	src118 := `
+// Test 118: struct with new and field access
+
+func TestSrc118(t *testing.T) {
+	src := `
 	func foo(){
 		var m = [[0,0], [1, 1], [2, 2]]
 		return m;
@@ -1289,96 +1287,94 @@ func TestMain_Main(t *testing.T) {
 	t.setter(0, map{1:11, 2:22})
 	println(t.getter(0)[1])
 	`
-	root118 := parser.NewParser(src118).Parse()
-	visitor118 := &PrintingVisitor{}
-	root118.Accept(visitor118)
-	fmt.Println(visitor118)
+	runParseTest(t, src)
+}
 
-	src119 := `
+func TestSrc119(t *testing.T) {
+	src := `
 	struct Logic { func run(x) { if (x > 0) { while(x > 0) { x = x - 1; } } return x; } }
 	`
-	root119 := parser.NewParser(src119).Parse()
-	visitor119 := &PrintingVisitor{}
-	root119.Accept(visitor119)
-	fmt.Println(visitor119)
+	runParseTest(t, src)
+}
 
-	src120 := `
+func TestSrc120(t *testing.T) {
+	src := `
 	struct S { func init(v) { this.v = v; } func get() { return this.v; } } var s = new S(5); s.get()
 	`
-	root120 := parser.NewParser(src120).Parse()
-	visitor120 := &PrintingVisitor{}
-	root120.Accept(visitor120)
-	fmt.Println(visitor120)
+	runParseTest(t, src)
+}
 
-	// Test 121: import statement basic
-	src121 := `
+// Test 121: import statement basic
+
+func TestSrc121(t *testing.T) {
+	src := `
 	import math;
 	`
-	root121 := parser.NewParser(src121).Parse()
-	visitor121 := &PrintingVisitor{}
-	root121.Accept(visitor121)
-	fmt.Println(visitor121)
+	runParseTest(t, src)
+}
 
-	// Test 122: import with package function call
-	src122 := `
+// Test 122: import with package function call
+
+func TestSrc122(t *testing.T) {
+	src := `
 	import math;
 	math.abs(-5);
 	`
-	root122 := parser.NewParser(src122).Parse()
-	visitor122 := &PrintingVisitor{}
-	root122.Accept(visitor122)
-	fmt.Println(visitor122)
+	runParseTest(t, src)
+}
 
-	// Test 123: import with variable assignment from package function
-	src123 := `
+// Test 123: import with variable assignment from package function
+
+func TestSrc123(t *testing.T) {
+	src := `
 	import math;
 	var result = math.abs(-10);
 	println(result);
 	`
-	root123 := parser.NewParser(src123).Parse()
-	visitor123 := &PrintingVisitor{}
-	root123.Accept(visitor123)
-	fmt.Println(visitor123)
+	runParseTest(t, src)
+}
 
-	// Test 124: import with multiple package function calls
-	src124 := `
+// Test 124: import with multiple package function calls
+
+func TestSrc124(t *testing.T) {
+	src := `
 	import math;
 	var x = math.pow(2, 3);
 	var y = math.sqrt(16);
 	var z = math.min(x, y);
 	println(z);
 	`
-	root124 := parser.NewParser(src124).Parse()
-	visitor124 := &PrintingVisitor{}
-	root124.Accept(visitor124)
-	fmt.Println(visitor124)
+	runParseTest(t, src)
+}
 
-	// Test 125: import with nested package function calls
-	src125 := `
+// Test 125: import with nested package function calls
+
+func TestSrc125(t *testing.T) {
+	src := `
 	import math;
 	var a = math.pow(2, 3);
 	var b = math.sqrt(a);
 	var c = math.abs(-b);
 	println(c);
 	`
-	root125 := parser.NewParser(src125).Parse()
-	visitor125 := &PrintingVisitor{}
-	root125.Accept(visitor125)
-	fmt.Println(visitor125)
+	runParseTest(t, src)
+}
 
-	// Test 126: import with package function calls in expressions
-	src126 := `
+// Test 126: import with package function calls in expressions
+
+func TestSrc126(t *testing.T) {
+	src := `
 	import math;
 	var result = math.pow(2, 3) + math.sqrt(16) - math.abs(-5);
 	println(result);
 	`
-	root126 := parser.NewParser(src126).Parse()
-	visitor126 := &PrintingVisitor{}
-	root126.Accept(visitor126)
-	fmt.Println(visitor126)
+	runParseTest(t, src)
+}
 
-	// Test 127: import with package function calls in loops
-	src127 := `
+// Test 127: import with package function calls in loops
+
+func TestSrc127(t *testing.T) {
+	src := `
 	import math;
 	var sum = 0;
 	for(i = 1; i <= 5; i = i + 1) {
@@ -1386,13 +1382,13 @@ func TestMain_Main(t *testing.T) {
 	}
 	println(sum);
 	`
-	root127 := parser.NewParser(src127).Parse()
-	visitor127 := &PrintingVisitor{}
-	root127.Accept(visitor127)
-	fmt.Println(visitor127)
+	runParseTest(t, src)
+}
 
-	// Test 128: import with package function calls in conditionals
-	src128 := `
+// Test 128: import with package function calls in conditionals
+
+func TestSrc128(t *testing.T) {
+	src := `
 	import math;
 	var x = -10;
 	if (math.abs(x) > 5) {
@@ -1401,13 +1397,13 @@ func TestMain_Main(t *testing.T) {
 		println("Small");
 	}
 	`
-	root128 := parser.NewParser(src128).Parse()
-	visitor128 := &PrintingVisitor{}
-	root128.Accept(visitor128)
-	fmt.Println(visitor128)
+	runParseTest(t, src)
+}
 
-	// Test 129: import with package function calls in functions
-	src129 := `
+// Test 129: import with package function calls in functions
+
+func TestSrc129(t *testing.T) {
+	src := `
 	import math;
 	func calculate(a, b) {
 		return math.pow(a, 2) + math.pow(b, 2);
@@ -1415,13 +1411,13 @@ func TestMain_Main(t *testing.T) {
 	var result = calculate(3, 4);
 	println(result);
 	`
-	root129 := parser.NewParser(src129).Parse()
-	visitor129 := &PrintingVisitor{}
-	root129.Accept(visitor129)
-	fmt.Println(visitor129)
+	runParseTest(t, src)
+}
 
-	// Test 130: import with package function calls in struct methods
-	src130 := `
+// Test 130: import with package function calls in struct methods
+
+func TestSrc130(t *testing.T) {
+	src := `
 	import math;
 	struct Circle {
 		func init(radius) {
@@ -1434,35 +1430,35 @@ func TestMain_Main(t *testing.T) {
 	var c = new Circle(5);
 	println(c.area());
 	`
-	root130 := parser.NewParser(src130).Parse()
-	visitor130 := &PrintingVisitor{}
-	root130.Accept(visitor130)
-	fmt.Println(visitor130)
+	runParseTest(t, src)
+}
 
-	// Test131: enums
-	src131 := `enum Color { RED, GREEN, BLUE }
+// Test131: enums
+
+func TestSrc131(t *testing.T) {
+	src := `enum Color { RED, GREEN, BLUE }
 			var c = Color.RED;
 			c;
 			`
-	root131 := parser.NewParser(src131).Parse()
-	visitor131 := &PrintingVisitor{}
-	root131.Accept(visitor131)
-	fmt.Println(visitor131)
+	runParseTest(t, src)
+}
 
-	// Test132: enums
-	src132 := `enum Direction { NORTH, EAST = 1, SOUTH = 100, WEST }
+// Test132: enums
+
+func TestSrc132(t *testing.T) {
+	src := `enum Direction { NORTH, EAST = 1, SOUTH = 100, WEST }
 			var d = Direction.SOUTH;
 			var e = Direction.EAST;
 			var x = d + e;
 			x;
 			`
-	root132 := parser.NewParser(src132).Parse()
-	visitor132 := &PrintingVisitor{}
-	root132.Accept(visitor132)
-	fmt.Println(visitor132)
+	runParseTest(t, src)
+}
 
-	// Test133: switch
-	src133 := `
+// Test133: switch
+
+func TestSrc133(t *testing.T) {
+	src := `
 	var x = 2;
 	switch(x) {
 		case 1:
@@ -1478,13 +1474,13 @@ func TestMain_Main(t *testing.T) {
 			println("Other");
 	}
 	`
-	root133 := parser.NewParser(src133).Parse()
-	visitor133 := &PrintingVisitor{}
-	root133.Accept(visitor133)
-	fmt.Println(visitor133)
+	runParseTest(t, src)
+}
 
-	// Test134: switch with multiple cases
-	src134 := `
+// Test134: switch with multiple cases
+
+func TestSrc134(t *testing.T) {
+	src := `
 	var x = 3;
 	switch(x) {
 		case 1:
@@ -1492,9 +1488,5 @@ func TestMain_Main(t *testing.T) {
 			println("One or Two");
 			break;
 		}`
-	root134 := parser.NewParser(src134).Parse()
-	visitor134 := &PrintingVisitor{}
-	root134.Accept(visitor134)
-	fmt.Println(visitor134)
-
+	runParseTest(t, src)
 }
