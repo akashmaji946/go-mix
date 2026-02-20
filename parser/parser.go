@@ -185,6 +185,9 @@ func (par *Parser) init() {
 	// new keyword for struct instantiation: new Name(args)
 	par.registerUnaryFuncs(par.parseNewCallExpression, lexer.NEW_KEY)
 
+	// enum keyword for enum declarations: enum Name { MEMBER1, MEMBER2 }
+	par.registerUnaryFuncs(par.parseEnumDeclaration, lexer.ENUM_KEY)
+
 	// memebr access operator: obj.field or obj.method()
 	par.registerBinaryFuncs(par.parseMemberAccess, lexer.DOT_OP)
 

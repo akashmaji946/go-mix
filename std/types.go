@@ -61,6 +61,8 @@ const (
 	PackageType GoMixType = "package"
 	// ServerType represents an HTTP server instance
 	ServerType GoMixType = "server"
+	// EnumType represents an enum type definition
+	EnumType GoMixType = "enum"
 )
 
 // GoMixObject is the core interface that all Go-Mix objects must implement.

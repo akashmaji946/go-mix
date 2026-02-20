@@ -1,0 +1,11 @@
+// Basic enum declaration and usage
+enum Color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+// Access enum members
+println(Color.RED);
+println(Color.GREEN);
+println(Color.BLUE);

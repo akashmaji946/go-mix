@@ -96,6 +96,7 @@ const (
 	MAP_KEY    TokenType = "map"    // Map literal keyword
 	SET_KEY    TokenType = "set"    // Set literal keyword
 	STRUCT_KEY TokenType = "struct" // Struct declaration keyword
+	ENUM_KEY   TokenType = "enum"   // Enum declaration keyword
 
 	// Identifiers
 	// Token types for user-defined names and character classes
@@ -167,6 +168,7 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"continue": CONTINUE_KEY, // Continue to next iteration
 	"array":    ARRAY_KEY,    // Array literal
 	"struct":   STRUCT_KEY,   // Struct declaration
+	"enum":     ENUM_KEY,     // Enum declaration
 	"map":      MAP_KEY,      // Map literal
 	"set":      SET_KEY,      // Set literal
 	"nil":      NIL_LIT,      // Nil/null value
