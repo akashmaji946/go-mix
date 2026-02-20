@@ -1,6 +1,6 @@
 ---
 layout: default
-title: File I/O Package - Go-Mix
+title: Path Package - Go-Mix
 description: File operations including read, write, mkdir, list_dir, and more
 ---
 
@@ -39,7 +39,7 @@ description: File operations including read, write, mkdir, list_dir, and more
     </aside>
     
     <div class="content-body">
-        <h1>File I/O Package</h1>
+        <h1>File I Package</h1>
         <p>Comprehensive file system operations (17 functions).</p>
         
         <div class="function-card" id="import">

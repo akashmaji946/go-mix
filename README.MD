@@ -2512,7 +2512,7 @@ upper(), lower(), split(), join(), contains_string(), substring()
 // Math Functions
 abs(), min(), max(), floor(), ceil(), sqrt(), pow()
 
-// File I/O
+// File I/O ()
 read_file(), write_file(), append_file(), file_exists()
 
 // Collections

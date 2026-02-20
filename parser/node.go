@@ -6,6 +6,8 @@ Contact : akashmaji(@iisc.ac.in)
 package parser
 
 import (
+	"strconv"
+
 	"github.com/akashmaji946/go-mix/lexer"
 	"github.com/akashmaji946/go-mix/std"
 )
@@ -1296,7 +1298,7 @@ type SwitchStatementNode struct {
 
 // Literal returns a string representation of the switch statement for debugging.
 func (ssn SwitchStatementNode) Literal() string {
-	return "switch (" + ssn.Expression.Literal() + ") { ..." + string(len(ssn.Cases)) + " cases... }"
+	return "switch (" + ssn.Expression.Literal() + ") { ..." + strconv.Itoa(len(ssn.Cases)) + " cases... }"
 }
 
 // Statement marks this as a statement node.

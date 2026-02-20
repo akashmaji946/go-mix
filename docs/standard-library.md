@@ -19,7 +19,7 @@ permalink: /standard-library/
                 <li><a href="{{ '/packages/tuples/' | relative_url }}">Tuples</a></li>
                 <li><a href="{{ '/packages/sets/' | relative_url }}">Sets</a></li>
                 <li><a href="{{ '/packages/time/' | relative_url }}">Time</a></li>
-                <li><a href="{{ '/packages/file/' | relative_url }}">File I/O</a></li>
+                <li><a href="{{ '/packages/file/' | relative_url }}">Path</a></li>
                 <li><a href="{{ '/packages/io/' | relative_url }}">I/O</a></li>
                 <li><a href="{{ '/packages/os/' | relative_url }}">OS</a></li>
                 <li><a href="{{ '/packages/format/' | relative_url }}">Format</a></li>
@@ -123,7 +123,7 @@ import strings;</code></pre>
                 <div class="package-icon">
                     <i class="fas fa-file-alt"></i>
                 </div>
-                <h3>File I/O</h3>
+                <h3>Path</h3>
                 <p>File operations: read_file, write_file, mkdir, list_dir, 17 functions.</p>
             </a>
             

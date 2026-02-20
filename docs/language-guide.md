@@ -1,3 +1,4 @@
+
 ---
 layout: default
 title: Language Guide - Go-Mix
@@ -14,7 +15,10 @@ permalink: /language-guide/
                 <li><a href="#variables">Variables</a></li>
                 <li><a href="#operators">Operators</a></li>
                 <li><a href="#control-flow">Control Flow</a></li>
+                <li><a href="#switch">Switch Statements</a></li>
                 <li><a href="#collections">Collections</a></li>
+                <li><a href="#path-operations">Path Operations</a></li>
+                <li><a href="#enums">Enums</a></li>
                 <li><a href="#functions">Functions</a></li>
                 <li><a href="#closures">Closures</a></li>
                 <li><a href="#oop">Object-Oriented</a></li>
@@ -23,7 +27,7 @@ permalink: /language-guide/
     </aside>
     
     <div class="content-body">
-        <h1>Language Guide</h1>
+        <h1>Language Guide</h>
         
         <p>Complete reference for Go-Mix programming language syntax, types, and features.</p>
         
@@ -316,10 +320,150 @@ foreach val in arr {
 }
 
 // Array iteration with index and value
-foreach idx, val in arr {
-    println(idx, val);    // 0, 10; 1, 20; 2, 30
+foreach val in arr {
+    println(val);    // 10, 20, 30/O
 }
 {% endhighlight %}
+        </div>
+        
+        <h2 id="switch">Switch Statements</h2>
+        
+        <p>Go-Mix supports switch statements for multi-way branching. Each case requires a <code>break</code> statement to exit.</p>
+        
+        <h3>Basic Switch</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">switch_basic.gm</span>
+            </div>
+{% highlight go %}
+var dayNum = 3;
+var dayName = "";
+
+switch (dayNum) {
+    case 1:
+        dayName = "Monday";
+        break;
+    case 2:
+        dayName = "Tuesday";
+        break;
+    case 3:
+        dayName = "Wednesday";
+        break;
+    case 4:
+        dayName = "Thursday";
+        break;
+    case 5:
+        dayName = "Friday";
+        break;
+    default:
+        dayName = "Weekend";
+}
+
+println(dayName);  // Wednesday
+{% endhighlight %}
+        </div>
+        
+        <h3>Switch on Enums</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">switch_enum.gm</span>
+            </div>
+{% highlight go %}
+enum TrafficLight {
+    RED,
+    YELLOW,
+    GREEN
+}
+
+var light = TrafficLight.GREEN;
+var action = "";
+
+switch (light) {
+    case TrafficLight.RED:
+        action = "Stop";
+        break;
+    case TrafficLight.YELLOW:
+        action = "Caution";
+        break;
+    case TrafficLight.GREEN:
+        action = "Go";
+        break;
+    default:
+        action = "Signal is broken!";
+}
+
+println(action);  // Go
+{% highlight %}
+        </div>
+        
+        <h3>Switch with String Values</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">switch_string.gm</span>
+            </div>
+{% highlight go %}
+var fruit = "apple";
+var color = "";
+
+switch (fruit) {
+    case "apple":
+        color = "red";
+        break;
+    case "banana":
+        color = "yellow";
+        break;
+    case "orange":
+        color = "orange";
+        break;
+    default:
+        color = "unknown";
+}
+
+println(color);  // red
+{% highlight %}
+        </div>
+        
+        <h3>Switch with Fallthrough</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">switch_fallthrough.gm</span>
+            </div>
+{% highlight go %}
+var num = 2;
+switch (num) {
+    case 1:
+        println("One");
+        fallthrough;
+    case 2:
+        println("Two");
+        fallthrough;
+    case 3:
+        println("Three");
+        break;
+    default:
+        println("Other");
+}
+
+// Output:
+// Two
+// Three
+{% highlight %}
         </div>
         
         <h2 id="collections">Collections</h2>
@@ -432,6 +576,178 @@ println(coords[1]);        // 20
 // Immutable - cannot be modified
 coords[0] = 15;            // ERROR
 {% endhighlight %}
+        </div>
+        
+        <h2 id="path-operations">Path Operations</h2>
+        
+        <p>Go-Mix provides a comprehensive <code>path</code> package for file system operations. These functions work with files, directories, and path manipulation.</p>
+        
+        <h3>File I/O Functions</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">file_io.gm</span>
+            </div>
+{% highlight go %}
+// Reading and writing files
+var content = read_file("data.txt");
+write_file("output.txt", "Hello, World!");
+append_file("log.txt", "New entry\n");
+
+// File operations
+file_exists("path.txt");     // Check if file exists
+is_file("path.txt");         // Check if it's a file
+is_dir("path.txt");          // Check if it's a directory
+
+// Directory operations
+mkdir("new_folder");         // Create directory
+list_dir("folder");          // List directory contents
+remove_file("old.txt");      // Remove file
+{% highlight %}
+        </div>
+        
+        <h3>Path Manipulation Functions</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">path_manipulation.gm</span>
+            </div>
+{% highlight go %}
+// Path manipulation
+var fullPath = path_join("home", "user", "docs", "file.txt");
+// "home/user/docs/file.txt" (Unix) or "home\user\docs\file.txt" (Windows)
+
+var fileName = path_base("/home/user/docs/file.txt");
+// "file.txt"
+
+var dirPath = path_dir("/home/user/docs/file.txt");
+// "/home/user/docs"
+
+var ext = path_ext("/home/user/docs/file.txt");
+// ".txt"
+
+var absPath = path_abs("relative/path");
+// "/current/working/dir/relative/path"
+
+// Pattern matching
+var txtFiles = glob("*.txt");
+// ["file1.txt", "file2.txt", ...]
+{% highlight %}
+        </div>
+        
+        <h3>Advanced File Operations</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">advanced_file.gm</span>
+            </div>
+{% highlight go %}
+// Get current directory
+var cwd = pwd();
+
+// Get home directory
+var homeDir = home();
+
+// Copy and rename files
+copy_file("source.txt", "destination.txt");
+rename_file("old_name.txt", "new_name.txt");
+
+// Change permissions
+chmod("script.gm", 0755);
+
+// Truncate file
+truncate_file("log.txt", 0);  // Clear file content
+
+// Remove directories recursively
+remove_all("temp_folder", true);
+{% highlight %}
+        </div>
+        
+        <h2 id="enums">Enums</h2>
+        
+        <p>Go-Mix supports enumerated types (enums) for defining named constant values.</p>
+        
+        <h3>Basic Enum</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">basic_enum.gm</span>
+            </div>
+{% highlight go %}
+// Basic enum declaration
+enum Color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+// Access enum members
+println(Color.RED);    // 0
+println(Color.GREEN);  // 1
+println(Color.BLUE);   // 2
+{% highlight %}
+        </div>
+        
+        <h3>Enum with Explicit Values</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">enum_values.gm</span>
+            </div>
+{% highlight go %}
+// Enum with explicit integer values
+enum Status {
+    PENDING = 0,
+    ACTIVE = 1,
+    COMPLETED = 2,
+    CANCELLED = 3
+}
+
+println(Status.PENDING);    // 0
+println(Status.ACTIVE);    // 1
+println(Status.COMPLETED); // 2
+println(Status.CANCELLED); // 3
+{% highlight %}
+        </div>
+        
+        <h3>Enum with Mixed Values</h3>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-dot red"></span>
+                <span class="code-dot yellow"></span>
+                <span class="code-dot green"></span>
+                <span class="code-title">enum_mixed.gm</span>
+            </div>
+{% highlight go %}
+// Enum with mixed auto and explicit values
+enum Priority {
+    LOW = 10,
+    MEDIUM,      // Auto-assigned: 11
+    HIGH = 50,
+    CRITICAL     // Auto-assigned: 51
+}
+
+println(Priority.LOW);      // 10
+println(Priority.MEDIUM);   // 11
+println(Priority.HIGH);     // 50
+println(Priority.CRITICAL); // 51
+{% highlight %}
         </div>
         
         <h2 id="functions">Functions</h2>
