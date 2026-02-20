@@ -1,3 +1,9 @@
+/*
+File    : go-mix/parser/parser_literals.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
+
 package parser
 
 import (

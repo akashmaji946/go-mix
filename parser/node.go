@@ -1286,7 +1286,7 @@ type SwitchStatementNode struct {
 
 // Literal returns a string representation of the switch statement for debugging.
 func (ssn SwitchStatementNode) Literal() string {
-	return "switch"
+	return "switch (" + ssn.Expression.Literal() + ") { ..." + string(len(ssn.Cases)) + " cases... }"
 }
 
 // Statement marks this as a statement node.

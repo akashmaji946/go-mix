@@ -1,3 +1,9 @@
+/*
+File    : go-mix/parser/parser_conditionals.go
+Author  : Akash Maji
+Contact : akashmaji(@iisc.ac.in)
+*/
+
 package parser
 
 import (
