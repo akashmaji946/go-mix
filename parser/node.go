@@ -6,6 +6,8 @@ Contact : akashmaji(@iisc.ac.in)
 package parser
 
 import (
+	"strconv"
+
 	"github.com/akashmaji946/go-mix/lexer"
 	"github.com/akashmaji946/go-mix/std"
 )
@@ -25,7 +27,6 @@ type NodeVisitor interface {
 	VisitFloatLiteralExpressionNode(node FloatLiteralExpressionNode)     // Float literals: 3.14, -2.5
 	VisitStringLiteralExpressionNode(node StringLiteralExpressionNode)   // String literals: "hello", 'world'
 	VisitNilLiteralExpressionNode(node NilLiteralExpressionNode)         // Nil/null literal
-	// VisitFunctionLiteralExpressionNode(node FunctionLiteralExpressionNode) // Anonymous function literals: func(params) { body }
 
 	// Expression visitors - handle operations and computations
 	VisitBinaryExpressionNode(node BinaryExpressionNode)               // Binary operations: +, -, *, /, %
@@ -36,41 +37,58 @@ type NodeVisitor interface {
 	// Statement and identifier visitors
 	VisitDeclarativeStatementNode(node DeclarativeStatementNode) // Variable declarations: var x = 10, let y = 5
 	VisitIdentifierExpressionNode(node IdentifierExpressionNode) // Variable/function identifiers: x, myVar
-	VisitReturnStatementNode(node ReturnStatementNode)           // Return statements: return expr
 	VisitBlockStatementNode(node BlockStatementNode)             // Code blocks: { stmt1; stmt2; }
 	VisitAssignmentExpressionNode(node AssignmentExpressionNode) // Assignments: x = 10
 
 	// Conditional control flow visitors
+	// If statement visitor
 	VisitIfExpressionNode(node IfExpressionNode) // If-else conditionals: if (cond) { ... } else { ... }
+	// Switch statement visitor
+	VisitSwitchStatementNode(node SwitchStatementNode) // Switch statements: switch (expr) { case x: ... default: ... }
 
 	// Function-related visitors
+	// Function statement visitor
 	VisitFunctionStatementNode(node FunctionStatementNode) // Function definitions: func name(params) { body }
-	VisitCallExpressionNode(node CallExpressionNode)       // Function calls: funcName(arg1, arg2)
+	// Function call visitor
+	VisitCallExpressionNode(node CallExpressionNode) // Function calls: funcName(arg1, arg2)
 
 	// Loop control flow visitors
-	VisitForLoopStatementNode(node ForLoopStatementNode)     // For loops: for(init; cond; update) { ... }
+	// For loop visitor
+	VisitForLoopStatementNode(node ForLoopStatementNode) // For loops: for(init; cond; update) { ... }
+	// While loop visitor
 	VisitWhileLoopStatementNode(node WhileLoopStatementNode) // While loops: while(cond) { ... }
+	// Foreach loop visitor
+	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
 
-	// Data structure visitors - handle collections
+	// Collections/Data structure visitors - handle collections
+	// Array visitors
 	VisitArrayExpressionNode(node ArrayExpressionNode) // Array literals: [1, 2, 3]
-	VisitMapExpressionNode(node MapExpressionNode)     // Map literals: map{key: value}
-	VisitSetExpressionNode(node SetExpressionNode)     // Set literals: set{1, 2, 3}
+	// Map and set visitors
+	VisitMapExpressionNode(node MapExpressionNode) // Map literals: map{key: value}
+	VisitSetExpressionNode(node SetExpressionNode) // Set literals: set{1, 2, 3}
+	// Indexing and slicing visitors
 	VisitIndexExpressionNode(node IndexExpressionNode) // Array indexing: arr[0], arr[-1]
 	VisitSliceExpressionNode(node SliceExpressionNode) // Array slicing: arr[1:3], arr[:5], arr[2:]
-	// Structs
-	VisitStructDeclarationNode(node StructDeclarationNode) // Struct definitions: struct Name { method1, method2, ... }
-	VisitNewCallExpressionNode(node NewCallExpressionNode) // Struct instantiation: new Name(args)
+	// Range expression visitor
+	VisitRangeExpressionNode(node RangeExpressionNode) // Range expressions: 2...5
 
-	// Control flow
+	// Structures and related visitors
+	// Struct declarartion visitors
+	VisitStructDeclarationNode(node StructDeclarationNode) // Struct definitions: struct Name { method1, method2, ... }
+	// Struct instantiation visitor
+	VisitNewCallExpressionNode(node NewCallExpressionNode) // Struct instantiation: new Name(args)
+	// Enum statement visitor
+	VisitEnumDeclarationNode(node EnumDeclarationNode) // Enum definitions: enum Name { Variant1, Variant2, ... }
+
+	// Control flow related visitors
+	// Break and continue visitors
 	VisitBreakStatementNode(node BreakStatementNode)       // break
 	VisitContinueStatementNode(node ContinueStatementNode) // continue
-
+	// Return statement visitor
+	VisitReturnStatementNode(node ReturnStatementNode) // Return statements: return expr
 	// Import statement
 	VisitImportStatementNode(node ImportStatementNode) // import package
 
-	// Range and foreach visitors
-	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
-	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
 }
 
 // Node: base interface for all nodes of the AST
@@ -1113,27 +1131,180 @@ func (node *CharLiteralExpressionNode) Statement() {
 func (node *CharLiteralExpressionNode) Expression() {
 }
 
-// // FunctionLiteral represents a function definition.
-// type FunctionLiteralExpressionNode struct {
-// 	Token      lexer.Token // The 'func' token
-// 	Name       string
-// 	Parameters []*IdentifierExpressionNode
-// 	Body       *BlockStatementNode
-// 	Value      std.GoMixObject
-// }
+// EnumDeclarationNode represents an enum declaration statement
+// Example: enum Color { RED, GREEN, BLUE }
+// Example: enum Status { PENDING = 0, ACTIVE = 1, COMPLETED = 2 }
+type EnumDeclarationNode struct {
+	EnumToken lexer.Token              // The 'enum' keyword token
+	EnumName  IdentifierExpressionNode // The enum name identifier
+	Members   []*EnumMemberNode        // List of enum members
+	Value     std.GoMixObject          // The enum type object value
+}
 
-// func (fl *FunctionLiteralExpressionNode) Literal() string {
-// 	return fl.Token.Literal
-// }
-// func (fl *FunctionLiteralExpressionNode) String() string {
-// 	return "func"
-// }
-// func (fl *FunctionLiteralExpressionNode) Expression() {
+// EnumMemberNode represents a single enum member
+// Example: RED or RED = 1
+type EnumMemberNode struct {
+	Name  string          // The member name
+	Value std.GoMixObject // The member value (auto-assigned or explicit)
+	Token lexer.Token     // The token for this member
+}
 
-// }
-// func (fl *FunctionLiteralExpressionNode) Statement() {
+// EnumMemberNode.Literal returns string representation of the enum member
+func (member *EnumMemberNode) Literal() string {
+	if member.Value != nil && member.Value.GetType() != std.NilType {
+		return member.Name + " = " + member.Value.ToString()
+	}
+	return member.Name
+}
 
-// }
-// func (fl *FunctionLiteralExpressionNode) Accept(visitor NodeVisitor) {
-// 	visitor.VisitFunctionLiteralExpressionNode(*fl)
-// }
+// EnumMemberNode.Accept accepts a visitor
+func (member *EnumMemberNode) Accept(visitor NodeVisitor) {
+	if v, ok := visitor.(interface {
+		VisitEnumMemberNode(node EnumMemberNode)
+	}); ok {
+		v.VisitEnumMemberNode(*member)
+	}
+}
+
+// EnumMemberNode.Statement marks this as a statement
+func (member *EnumMemberNode) Statement() {}
+
+// EnumMemberNode.Expression marks this as an expression
+func (member *EnumMemberNode) Expression() {}
+
+// EnumDeclarationNode.Literal returns string representation
+func (node *EnumDeclarationNode) Literal() string {
+	res := node.EnumToken.Literal + " " + node.EnumName.Name + " {"
+	for i, member := range node.Members {
+		if i > 0 {
+			res += ", "
+		}
+		res += member.Name
+		if member.Value != nil && member.Value.GetType() != std.NilType {
+			res += " = " + member.Value.ToString()
+		}
+	}
+	res += "}"
+	return res
+}
+
+// EnumDeclarationNode.Accept accepts a visitor
+func (node *EnumDeclarationNode) Accept(visitor NodeVisitor) {
+	// Add this method to NodeVisitor interface
+	if v, ok := visitor.(interface {
+		VisitEnumDeclarationNode(node EnumDeclarationNode)
+	}); ok {
+		v.VisitEnumDeclarationNode(*node)
+	}
+}
+
+// EnumDeclarationNode.Statement marks this as a statement
+func (node *EnumDeclarationNode) Statement() {}
+
+// EnumDeclarationNode.Expression marks this as an expression
+func (node *EnumDeclarationNode) Expression() {}
+
+// EnumAccessExpressionNode represents accessing an enum member
+// Example: Color.RED or Status.ACTIVE
+type EnumAccessExpressionNode struct {
+	EnumName   IdentifierExpressionNode // The enum name
+	MemberName IdentifierExpressionNode // The member name
+	Value      std.GoMixObject          // The enum member value
+}
+
+// EnumAccessExpressionNode.Literal returns string representation
+func (node *EnumAccessExpressionNode) Literal() string {
+	return node.EnumName.Name + "." + node.MemberName.Name
+}
+
+// EnumAccessExpressionNode.Accept accepts a visitor
+func (node *EnumAccessExpressionNode) Accept(visitor NodeVisitor) {
+	// Add this method to NodeVisitor interface
+	if v, ok := visitor.(interface {
+		VisitEnumAccessExpressionNode(node EnumAccessExpressionNode)
+	}); ok {
+		v.VisitEnumAccessExpressionNode(*node)
+	}
+}
+
+// EnumAccessExpressionNode.Statement marks this as a statement
+func (node *EnumAccessExpressionNode) Statement() {}
+
+// EnumAccessExpressionNode.Expression marks this as an expression
+func (node *EnumAccessExpressionNode) Expression() {}
+
+// SwitchCaseNode represents a single case clause in a switch statement.
+// It contains the value to match against and the block of statements to execute.
+type SwitchCaseNode struct {
+	// Value is the expression that the switch value is compared against.
+	// For case clauses, this is the literal or expression after "case".
+	Value ExpressionNode
+
+	// Body is the block of statements to execute when this case matches.
+	Body BlockStatementNode
+
+	// Token is the "case" keyword token for error reporting.
+	Token lexer.Token
+}
+
+// Literal returns a string representation of the case clause for debugging.
+func (scn SwitchCaseNode) Literal() string {
+	return "case"
+}
+
+// Accept allows the visitor pattern to process this node.
+func (scn SwitchCaseNode) Accept(visitor NodeVisitor) {
+	// SwitchCaseNode is not visited directly, its components are visited separately
+}
+
+// SwitchDefaultNode represents the default clause in a switch statement.
+// It contains the block of statements to execute when no case matches.
+type SwitchDefaultNode struct {
+	// Body is the block of statements to execute when no case matches.
+	Body BlockStatementNode
+
+	// Token is the "default" keyword token for error reporting.
+	Token lexer.Token
+}
+
+// Literal returns a string representation of the default clause for debugging.
+func (sdn SwitchDefaultNode) Literal() string {
+	return "default"
+}
+
+// Accept allows the visitor pattern to process this node.
+func (sdn SwitchDefaultNode) Accept(visitor NodeVisitor) {
+	// SwitchDefaultNode is not visited directly, its components are visited separately
+}
+
+// SwitchStatementNode represents a complete switch statement.
+// It contains the expression to evaluate, case clauses, and an optional default clause.
+type SwitchStatementNode struct {
+	// Expression is the value being switched on.
+	Expression ExpressionNode
+
+	// Cases is a slice of case clauses to match against.
+	Cases []SwitchCaseNode
+
+	// Default is the optional default clause (nil if not present).
+	Default *SwitchDefaultNode
+
+	// Token is the "switch" keyword token for error reporting.
+	Token lexer.Token
+
+	// Value stores the result of evaluating the switch statement.
+	Value std.GoMixObject
+}
+
+// Literal returns a string representation of the switch statement for debugging.
+func (ssn SwitchStatementNode) Literal() string {
+	return "switch (" + ssn.Expression.Literal() + ") { ..." + strconv.Itoa(len(ssn.Cases)) + " cases... }"
+}
+
+// Statement marks this as a statement node.
+func (ssn SwitchStatementNode) Statement() {}
+
+// Accept allows the visitor pattern to process this node.
+func (ssn SwitchStatementNode) Accept(visitor NodeVisitor) {
+	visitor.VisitSwitchStatementNode(ssn)
+}

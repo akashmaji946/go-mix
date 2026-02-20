@@ -55,12 +55,16 @@ const (
 	ObjectType GoMixType = "object"
 	// BreakType represents a break statement signal
 	BreakType GoMixType = "break"
+	// ReturnValueType represents a return value signal
+	ReturnValueType GoMixType = "return_value"
 	// ContinueType represents a continue statement signal
 	ContinueType GoMixType = "continue"
 	// PackageType represents an imported package module
 	PackageType GoMixType = "package"
 	// ServerType represents an HTTP server instance
 	ServerType GoMixType = "server"
+	// EnumType represents an enum type definition
+	EnumType GoMixType = "enum"
 )
 
 // GoMixObject is the core interface that all Go-Mix objects must implement.
@@ -270,7 +274,7 @@ type ReturnValue struct {
 
 // GetType returns the type of the wrapped value
 func (r *ReturnValue) GetType() GoMixType {
-	return r.Value.GetType()
+	return ReturnValueType
 }
 
 // ToString returns the string representation of the wrapped value

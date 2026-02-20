@@ -1,0 +1,29 @@
+// Basic switch statement example
+var dayNum = 3;
+var dayName = "";
+
+switch (dayNum) {
+    case 1:
+        dayName = "Monday";
+        break;
+    case 2:
+        dayName = "Tuesday";
+        break;
+    case 3:
+        dayName = "Wednesday";
+        if(false) {
+            break;  // This break will exit the switch statement
+        }
+        dayName += " (midweek)";  // This will execute after the break, demonstrating that break only exits the switch
+        break;
+    case 4:
+        dayName = "Thursday";
+        break;
+    case 5:
+        dayName = "Friday";
+        break;
+    default:
+        dayName = "Weekend";
+}
+
+println(dayName);  // Should now correctly print: Wednesday

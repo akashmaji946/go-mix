@@ -1,0 +1,19 @@
+// Switch on a boolean expression
+var isReady = true;
+var hasError = false;
+var systemStatus = "";
+
+// The switch expression is a boolean result of logical AND
+switch (isReady && !hasError) {
+    case true:
+        systemStatus = "System is operational.";
+        break;
+    case false:
+        systemStatus = "System is not ready or has an error.";
+        break;
+    // A default here would be redundant but is valid
+    default:
+        systemStatus = "This should not be reached.";
+}
+
+println(systemStatus); // Should print: System is operational.

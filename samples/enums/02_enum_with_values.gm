@@ -1,0 +1,14 @@
+// Enum with explicit values
+enum Status {
+    PENDING = 0,
+    ACTIVE = 1,
+    COMPLETED = 2,
+    CANCELLED = 3
+}
+
+// Access enum members with values
+println(Status.PENDING);
+println(Status.ACTIVE);
+println(Status.COMPLETED);
+println(Status.CANCELLED);
+    

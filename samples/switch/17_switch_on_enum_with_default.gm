@@ -1,0 +1,27 @@
+// Test switch on an enum that hits the default case
+enum TrafficLight {
+    RED,
+    YELLOW,
+    GREEN
+}
+
+// Let's imagine we get a value that is not a valid enum member
+// Since gomix is dynamically typed, we can assign any integer.
+var currentLight = TrafficLight.GREEN; // Not a valid TrafficLight enum value
+var action = "";
+
+switch (currentLight) {
+    case TrafficLight.RED:
+        action = "Stop";
+        break;
+    case TrafficLight.YELLOW:
+        action = "Caution";
+        break;
+    case TrafficLight.GREEN:
+        action = "Go";
+        break;
+    default:
+        action = "Signal is broken!";
+}
+
+println(action); // Should print: Signal is broken!

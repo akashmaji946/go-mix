@@ -575,7 +575,53 @@ func (v *TestingVisitor) VisitImportStatementNode(node ImportStatementNode) {
 	v.Ptr++
 }
 
+// VisitSwitchStatementNode visits a switch statement node and recursively visits expression, cases, and default
+func (v *TestingVisitor) VisitSwitchStatementNode(node SwitchStatementNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*SwitchStatementNode)
+	assert.True(v.T, ok)
+	v.Ptr++
+
+	// Visit the switch expression
+	node.Expression.Accept(v)
+
+	// Visit all case clauses
+	for _, caseNode := range node.Cases {
+		caseNode.Value.Accept(v)
+		caseNode.Body.Accept(v)
+	}
+
+	// Visit default clause if present
+	if node.Default != nil {
+		node.Default.Body.Accept(v)
+	}
+}
+
 // String returns the string representation of the visitor (empty string)
 func (v *TestingVisitor) String() string {
 	return ""
+}
+
+// VisitEnumDeclarationNode visits an enum declaration node and asserts the enum name matches expected, then visits all members
+func (v *TestingVisitor) VisitEnumDeclarationNode(node EnumDeclarationNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*EnumDeclarationNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.EnumName.Literal(), curr.(*EnumDeclarationNode).EnumName.Literal())
+	v.Ptr++
+
+	for _, member := range node.Members {
+		member.Accept(v)
+	}
+
 }

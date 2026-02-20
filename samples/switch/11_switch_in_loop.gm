@@ -1,0 +1,28 @@
+// Switch statement inside a loop
+var commands = ["start", "process", "process", "stop", "invalid"];
+var started = 0;
+var processed = 0;
+var stopped = 0;
+
+foreach cmd in commands {
+    switch (cmd) {
+        case "start":
+            started += 1;
+            println("Service started.");
+            break;
+        case "process":
+            processed += 1;
+            // no break, fallthrough to log
+        case "log": // This case is never hit directly in the loop
+            println("Processing command...");
+            break;
+        case "stop":
+            stopped += 1;
+            println("Service stopped.");
+            break;
+        default:
+            println("Ignoring invalid command: " + cmd);
+    }
+}
+
+println("Summary: " + started + " started, " + processed + " processed, " + stopped + " stopped.");

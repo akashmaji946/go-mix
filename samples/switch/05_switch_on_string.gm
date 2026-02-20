@@ -1,0 +1,19 @@
+// Switch on a string value
+var command = "start";
+var status = "";
+
+switch (command) {
+    case "start":
+        status = "Service is starting...";
+        break;
+    case "stop":
+        status = "Service is stopping...";
+        break;
+    case "restart":
+        status = "Service is restarting...";
+        break;
+    default:
+        status = "Unknown command";
+}
+
+println(status); // Should print: Service is starting...

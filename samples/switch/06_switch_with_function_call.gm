@@ -1,0 +1,23 @@
+// Switch on the result of a function call
+func getStatusCode(x) {
+    return x;
+}
+
+var code = ""
+var meaning = "";
+
+switch (code = getStatusCode(200)) {
+    case 200:
+        meaning = "OK";
+        break;
+    case 404:
+        meaning = "Not Found";
+        break;
+    case 500:
+        meaning = "Internal Server Error";
+        break;
+    default:
+        meaning = "Unknown Status Code";
+}
+
+println("Status " + code + ": " + meaning); // Should print: Status 404: Not Found

@@ -1,0 +1,30 @@
+// Switch statement inside a function
+func getDayType(dayNum) {
+    var dayType = "";
+    switch (dayNum) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            dayType = "Weekday";
+            break;
+        case 6:
+        case 7:
+            dayType = "Weekend";
+            break;
+        default:
+            dayType = "Invalid Day";
+    }
+    return dayType;
+}
+
+// println(daytype)
+
+var type1 = getDayType(3);  // Wednesday
+var type2 = getDayType(7);  // Sunday
+var type3 = getDayType(99); // Invalid
+
+println("Day 3 is a " + type1); // Should print: Day 3 is a Weekday
+println("Day 7 is a " + type2); // Should print: Day 7 is a Weekend
+println("Day 99 is an " + type3); // Should print: Day 99 is an Invalid Day

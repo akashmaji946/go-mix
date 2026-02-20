@@ -1,0 +1,15 @@
+// Switch with no matching case and no default
+var value = 99;
+var result = "initial";
+
+switch (value) {
+    case 1:
+        result = "one";
+        break;
+    case 10:
+        result = "ten";
+        break;
+}
+
+// The switch does nothing, so result remains "initial"
+println(result); // Should print: initial

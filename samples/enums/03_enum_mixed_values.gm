@@ -1,0 +1,13 @@
+// Enum with mixed auto and explicit values
+enum Priority {
+    LOW = 10,
+    MEDIUM,      // Auto-assigned: 11
+    HIGH = 50,
+    CRITICAL     // Auto-assigned: 51
+}
+
+// Access enum members
+println(Priority.LOW);
+println(Priority.MEDIUM);
+println(Priority.HIGH);
+println(Priority.CRITICAL);

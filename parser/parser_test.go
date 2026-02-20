@@ -4797,3 +4797,495 @@ func TestParser_ImportWithAliasAndFunctionCall(t *testing.T) {
 	// Second statement should be the function call
 	_ = root.Statements[1]
 }
+
+// TestParseBasicEnum tests parsing of basic enum declarations
+func TestParseBasicEnum(t *testing.T) {
+	input := `enum Color { RED, GREEN, BLUE }`
+	par := NewParser(input)
+
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Errorf("Parser has errors: %v", par.GetErrors())
+	}
+
+	if len(root.Statements) != 1 {
+		t.Fatalf("Expected 1 statement, got %d", len(root.Statements))
+	}
+
+	enumNode, ok := root.Statements[0].(*EnumDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected EnumDeclarationNode, got %T", root.Statements[0])
+	}
+
+	if enumNode.EnumName.Name != "Color" {
+		t.Errorf("Expected enum name 'Color', got '%s'", enumNode.EnumName.Name)
+	}
+
+	if len(enumNode.Members) != 3 {
+		t.Errorf("Expected 3 members, got %d", len(enumNode.Members))
+	}
+
+	expectedMembers := []string{"RED", "GREEN", "BLUE"}
+	for i, member := range enumNode.Members {
+		if member.Name != expectedMembers[i] {
+			t.Errorf("Expected member '%s', got '%s'", expectedMembers[i], member.Name)
+		}
+		// Check auto-assigned values (0, 1, 2)
+		intVal, ok := member.Value.(*std.Integer)
+		if !ok {
+			t.Errorf("Expected Integer value for member %s, got %T", member.Name, member.Value)
+			continue
+		}
+		if intVal.Value != int64(i) {
+			t.Errorf("Expected value %d for member %s, got %d", i, member.Name, intVal.Value)
+		}
+	}
+}
+
+// TestParseEnumWithValues tests parsing of enum with explicit values
+func TestParseEnumWithValues(t *testing.T) {
+	input := `enum Status { PENDING = 0, ACTIVE = 1, COMPLETED = 2 }`
+	par := NewParser(input)
+
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Errorf("Parser has errors: %v", par.GetErrors())
+	}
+
+	enumNode, ok := root.Statements[0].(*EnumDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected EnumDeclarationNode, got %T", root.Statements[0])
+	}
+
+	if enumNode.EnumName.Name != "Status" {
+		t.Errorf("Expected enum name 'Status', got '%s'", enumNode.EnumName.Name)
+	}
+
+	if len(enumNode.Members) != 3 {
+		t.Errorf("Expected 3 members, got %d", len(enumNode.Members))
+	}
+
+	expectedValues := map[string]int64{
+		"PENDING":   0,
+		"ACTIVE":    1,
+		"COMPLETED": 2,
+	}
+
+	for _, member := range enumNode.Members {
+		expectedVal, ok := expectedValues[member.Name]
+		if !ok {
+			t.Errorf("Unexpected member: %s", member.Name)
+			continue
+		}
+		intVal, ok := member.Value.(*std.Integer)
+		if !ok {
+			t.Errorf("Expected Integer value for member %s, got %T", member.Name, member.Value)
+			continue
+		}
+		if intVal.Value != expectedVal {
+			t.Errorf("Expected value %d for member %s, got %d", expectedVal, member.Name, intVal.Value)
+		}
+	}
+}
+
+// TestParseEnumMixedValues tests parsing of enum with mixed auto and explicit values
+func TestParseEnumMixedValues(t *testing.T) {
+	input := `enum Priority { LOW = 10, MEDIUM, HIGH = 50, CRITICAL }`
+	par := NewParser(input)
+
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Errorf("Parser has errors: %v", par.GetErrors())
+	}
+
+	enumNode, ok := root.Statements[0].(*EnumDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected EnumDeclarationNode, got %T", root.Statements[0])
+	}
+
+	expectedValues := map[string]int64{
+		"LOW":      10,
+		"MEDIUM":   11, // Auto-assigned after 10
+		"HIGH":     50,
+		"CRITICAL": 51, // Auto-assigned after 50
+	}
+
+	for _, member := range enumNode.Members {
+		expectedVal, ok := expectedValues[member.Name]
+		if !ok {
+			t.Errorf("Unexpected member: %s", member.Name)
+			continue
+		}
+		intVal, ok := member.Value.(*std.Integer)
+		if !ok {
+			t.Errorf("Expected Integer value for member %s, got %T", member.Name, member.Value)
+			continue
+		}
+		if intVal.Value != expectedVal {
+			t.Errorf("Expected value %d for member %s, got %d", expectedVal, member.Name, intVal.Value)
+		}
+	}
+}
+
+// TestParseEmptyEnum tests parsing of empty enum
+func TestParseEmptyEnum(t *testing.T) {
+	input := `enum Empty { }`
+	par := NewParser(input)
+
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Errorf("Parser has errors: %v", par.GetErrors())
+	}
+
+	enumNode, ok := root.Statements[0].(*EnumDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected EnumDeclarationNode, got %T", root.Statements[0])
+	}
+
+	if len(enumNode.Members) != 0 {
+		t.Errorf("Expected 0 members, got %d", len(enumNode.Members))
+	}
+}
+
+// TestParseEnumAccessExpression tests parsing of enum member access
+func TestParseEnumAccessExpression(t *testing.T) {
+	input := `enum Color { RED, GREEN, BLUE }
+var c = Color.RED`
+	par := NewParser(input)
+
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Errorf("Parser has errors: %v", par.GetErrors())
+	}
+
+	if len(root.Statements) != 2 {
+		t.Fatalf("Expected 2 statements, got %d", len(root.Statements))
+	}
+
+	// First statement should be enum declaration
+	_, ok := root.Statements[0].(*EnumDeclarationNode)
+	if !ok {
+		t.Fatalf("Expected EnumDeclarationNode, got %T", root.Statements[0])
+	}
+
+	// Second statement should be variable declaration with enum access
+	declNode, ok := root.Statements[1].(*DeclarativeStatementNode)
+	if !ok {
+		t.Fatalf("Expected DeclarativeStatementNode, got %T", root.Statements[1])
+	}
+
+	// The expression is parsed as a binary expression with DOT_OP
+	// This is the expected behavior - the evaluator handles the enum access
+	binExpr, ok := declNode.Expr.(*BinaryExpressionNode)
+	if !ok {
+		t.Fatalf("Expected BinaryExpressionNode for enum access, got %T", declNode.Expr)
+	}
+
+	// Check left side is the enum name (Color)
+	leftIdent, ok := binExpr.Left.(*IdentifierExpressionNode)
+	if !ok {
+		t.Fatalf("Expected IdentifierExpressionNode on left, got %T", binExpr.Left)
+	}
+	if leftIdent.Name != "Color" {
+		t.Errorf("Expected enum name 'Color', got '%s'", leftIdent.Name)
+	}
+
+	// Check right side is the member name (RED)
+	rightIdent, ok := binExpr.Right.(*IdentifierExpressionNode)
+	if !ok {
+		t.Fatalf("Expected IdentifierExpressionNode on right, got %T", binExpr.Right)
+	}
+	if rightIdent.Name != "RED" {
+		t.Errorf("Expected member name 'RED', got '%s'", rightIdent.Name)
+	}
+}
+
+// TestParseBasicSwitchStatement tests parsing of a basic switch statement with integer cases.
+func TestParseBasicSwitchStatement(t *testing.T) {
+	input := `
+        switch (day) {
+            case 1:
+                dayName = "Monday";
+                break;
+            case 2:
+                dayName = "Tuesday";
+                break;
+        }
+    `
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	if len(root.Statements) != 1 {
+		t.Fatalf("Expected 1 statement, got %d", len(root.Statements))
+	}
+
+	switchNode, ok := root.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Expected SwitchStatementNode, got %T", root.Statements[0])
+	}
+
+	assert.NotNil(t, switchNode.Expression, "Switch expression should not be nil")
+	ident, ok := switchNode.Expression.(*IdentifierExpressionNode)
+	assert.True(t, ok, "Switch expression should be an identifier")
+	assert.Equal(t, "day", ident.Name, "Switch expression identifier should be 'day'")
+
+	assert.Equal(t, 2, len(switchNode.Cases), "Expected 2 case clauses")
+	assert.Nil(t, switchNode.Default, "Expected no default clause")
+
+	// Case 1
+	case1 := switchNode.Cases[0]
+	case1Val, ok := case1.Value.(*IntegerLiteralExpressionNode)
+	assert.True(t, ok, "Case 1 value should be an integer literal")
+	assert.Equal(t, int64(1), case1Val.Value.(*std.Integer).Value, "Case 1 value should be 1")
+	assert.Equal(t, 2, len(case1.Body.Statements), "Case 1 body should have 2 statements")
+	_, ok = case1.Body.Statements[0].(*AssignmentExpressionNode)
+	assert.True(t, ok, "First statement in case 1 should be an assignment")
+	_, ok = case1.Body.Statements[1].(*BreakStatementNode)
+	assert.True(t, ok, "Second statement in case 1 should be a break")
+
+	// Case 2
+	case2 := switchNode.Cases[1]
+	case2Val, ok := case2.Value.(*IntegerLiteralExpressionNode)
+	assert.True(t, ok, "Case 2 value should be an integer literal")
+	assert.Equal(t, int64(2), case2Val.Value.(*std.Integer).Value, "Case 2 value should be 2")
+	assert.Equal(t, 2, len(case2.Body.Statements), "Case 2 body should have 2 statements")
+}
+
+// TestParseSwitchWithDefault tests parsing of a switch statement with string cases and a default clause.
+func TestParseSwitchWithDefault(t *testing.T) {
+	input := `
+        switch (grade) {
+            case "A":
+                message = "Excellent!";
+                break;
+            default:
+                message = "Invalid grade";
+        }
+    `
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	if len(root.Statements) != 1 {
+		t.Fatalf("Expected 1 statement, got %d", len(root.Statements))
+	}
+
+	switchNode, ok := root.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Expected SwitchStatementNode, got %T", root.Statements[0])
+	}
+
+	assert.Equal(t, 1, len(switchNode.Cases), "Expected 1 case clause")
+	assert.NotNil(t, switchNode.Default, "Expected a default clause")
+
+	// Case "A"
+	caseA := switchNode.Cases[0]
+	caseAVal, ok := caseA.Value.(*StringLiteralExpressionNode)
+	assert.True(t, ok, "Case value should be a string literal")
+	assert.Equal(t, "A", caseAVal.Value.(*std.String).Value, "Case value should be 'A'")
+	assert.Equal(t, 2, len(caseA.Body.Statements), "Case 'A' body should have 2 statements")
+
+	// Default
+	defaultNode := switchNode.Default
+	assert.Equal(t, 1, len(defaultNode.Body.Statements), "Default body should have 1 statement")
+	_, ok = defaultNode.Body.Statements[0].(*AssignmentExpressionNode)
+	assert.True(t, ok, "Statement in default should be an assignment")
+}
+
+// TestParseSwitchFallthrough tests parsing of a switch statement with fallthrough cases.
+func TestParseSwitchFallthrough(t *testing.T) {
+	input := `
+        switch (month) {
+            case 12:
+            case 1:
+            case 2:
+                season = "Winter";
+                break;
+        }
+    `
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	switchNode, ok := root.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Expected SwitchStatementNode, got %T", root.Statements[0])
+	}
+
+	assert.Equal(t, 3, len(switchNode.Cases), "Expected 3 case clauses")
+
+	// Case 12 (fallthrough)
+	case12 := switchNode.Cases[0]
+	assert.Equal(t, 0, len(case12.Body.Statements), "Case 12 body should be empty")
+
+	// Case 1 (fallthrough)
+	case1 := switchNode.Cases[1]
+	assert.Equal(t, 0, len(case1.Body.Statements), "Case 1 body should be empty")
+
+	// Case 2
+	case2 := switchNode.Cases[2]
+	assert.Equal(t, 2, len(case2.Body.Statements), "Case 2 body should have 2 statements")
+}
+
+// TestParseNestedSwitch tests parsing of a nested switch statement.
+func TestParseNestedSwitch(t *testing.T) {
+	input := `
+        switch (category) {
+            case "fruit":
+                description = "It's a fruit.";
+                switch (item) {
+                    case "apple":
+                        description += " an apple.";
+                        break;
+                    default:
+                        description += " an unknown fruit.";
+                }
+                break;
+        }
+    `
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	outerSwitch, ok := root.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Expected outer SwitchStatementNode, got %T", root.Statements[0])
+	}
+
+	assert.Equal(t, 1, len(outerSwitch.Cases), "Outer switch should have 1 case")
+	outerCase := outerSwitch.Cases[0]
+	assert.Equal(t, 3, len(outerCase.Body.Statements), "Outer case body should have 3 statements")
+
+	// Check for nested switch
+	nestedSwitch, ok := outerCase.Body.Statements[1].(*SwitchStatementNode)
+	assert.True(t, ok, "Second statement in outer case should be a SwitchStatementNode")
+
+	assert.Equal(t, 1, len(nestedSwitch.Cases), "Nested switch should have 1 case")
+	assert.NotNil(t, nestedSwitch.Default, "Nested switch should have a default clause")
+}
+
+// TestParseSwitchWithExpression tests parsing a switch on a complex expression.
+func TestParseSwitchWithExpression(t *testing.T) {
+	input := `
+        switch (a - b) {
+            case 5:
+                result = "is 5";
+                break;
+        }
+    `
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	switchNode, ok := root.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Expected SwitchStatementNode, got %T", root.Statements[0])
+	}
+
+	// Check switch expression
+	_, ok = switchNode.Expression.(*BinaryExpressionNode)
+	assert.True(t, ok, "Switch expression should be a BinaryExpressionNode")
+}
+
+// TestParseEmptySwitch tests parsing an empty switch statement.
+func TestParseEmptySwitch(t *testing.T) {
+	input := `switch (x) {}`
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	switchNode, ok := root.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Expected SwitchStatementNode, got %T", root.Statements[0])
+	}
+
+	assert.Equal(t, 0, len(switchNode.Cases), "Expected 0 case clauses")
+	assert.Nil(t, switchNode.Default, "Expected no default clause")
+}
+
+// TestParseSwitchWithOnlyDefault tests parsing a switch with only a default clause.
+func TestParseSwitchWithOnlyDefault(t *testing.T) {
+	input := `
+        switch (x) {
+            default:
+                y = "default";
+        }
+    `
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	switchNode, ok := root.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Expected SwitchStatementNode, got %T", root.Statements[0])
+	}
+
+	assert.Equal(t, 0, len(switchNode.Cases), "Expected 0 case clauses")
+	assert.NotNil(t, switchNode.Default, "Expected a default clause")
+	assert.Equal(t, 1, len(switchNode.Default.Body.Statements), "Default body should have 1 statement")
+}
+
+// TestParseSwitchInLoop tests parsing a switch statement inside a foreach loop.
+func TestParseSwitchInLoop(t *testing.T) {
+	input := `
+        foreach cmd in commands {
+            switch (cmd) {
+                case "start":
+                    break;
+            }
+        }
+    `
+	par := NewParser(input)
+	root := par.Parse()
+
+	if par.HasErrors() {
+		t.Fatalf("Parser has errors: %v", par.GetErrors())
+	}
+
+	if len(root.Statements) != 1 {
+		t.Fatalf("Expected 1 statement, got %d", len(root.Statements))
+	}
+
+	loopNode, ok := root.Statements[0].(*ForeachLoopStatementNode)
+	if !ok {
+		t.Fatalf("Expected ForeachLoopStatementNode, got %T", root.Statements[0])
+	}
+
+	if len(loopNode.Body.Statements) != 1 {
+		t.Fatalf("Loop body should have 1 statement, got %d", len(loopNode.Body.Statements))
+	}
+
+	switchNode, ok := loopNode.Body.Statements[0].(*SwitchStatementNode)
+	if !ok {
+		t.Fatalf("Statement in loop body should be a SwitchStatementNode, got %T", loopNode.Body.Statements[0])
+	}
+
+	assert.Equal(t, 1, len(switchNode.Cases), "Switch in loop should have 1 case")
+}

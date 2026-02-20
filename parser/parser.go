@@ -185,6 +185,9 @@ func (par *Parser) init() {
 	// new keyword for struct instantiation: new Name(args)
 	par.registerUnaryFuncs(par.parseNewCallExpression, lexer.NEW_KEY)
 
+	// enum keyword for enum declarations: enum Name { MEMBER1, MEMBER2 }
+	par.registerUnaryFuncs(par.parseEnumDeclaration, lexer.ENUM_KEY)
+
 	// memebr access operator: obj.field or obj.method()
 	par.registerBinaryFuncs(par.parseMemberAccess, lexer.DOT_OP)
 
@@ -316,7 +319,7 @@ func (par *Parser) Parse() *RootNode {
 		lastStmt := root.Statements[len(root.Statements)-1]
 		// Try to extract a value from different statement types
 		if exprNode, ok := lastStmt.(ExpressionNode); ok {
-			root.Value = eval(par, exprNode)
+			root.Value = parseEval(par, exprNode)
 		} else if declNode, ok := lastStmt.(*DeclarativeStatementNode); ok {
 			root.Value = declNode.Value
 		} else if returnNode, ok := lastStmt.(*ReturnStatementNode); ok {
@@ -338,4 +341,212 @@ func (par *Parser) Parse() *RootNode {
 	}
 
 	return root
+}
+
+// parseInternal is the core of the Pratt parsing algorithm.
+// It parses expressions while respecting operator precedence.
+//
+// Parameters:
+//
+//	currPrecedence - The minimum precedence level for operators to parse
+//
+// Returns:
+//
+//	An ExpressionNode representing the parsed expression
+//
+// Algorithm:
+//  1. Parse a prefix expression (unary operator or primary expression)
+//  2. While the next operator has higher precedence than currPrecedence:
+//     a. Parse the operator as an infix expression
+//     b. The result becomes the new left operand
+//  3. Return the final expression
+//
+// This elegant algorithm handles operator precedence and associativity
+// without needing separate precedence levels or recursive descent for each level.
+func (par *Parser) parseInternal(currPrecedence int) ExpressionNode {
+	unary, has := par.UnaryFuncs[par.CurrToken.Type]
+	if !has {
+		msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected token: %s",
+			par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
+		par.addError(msg)
+		return nil
+	}
+	left := unary()
+	if left == nil {
+		return nil
+	}
+	for par.NextToken.Type != lexer.EOF_TYPE && getPrecedence(&par.NextToken) >= currPrecedence {
+		binary, has := par.BinaryFuncs[par.NextToken.Type]
+		par.advance()
+		if !has {
+			msg := fmt.Sprintf("[%d:%d] PARSER ERROR: unexpected operator: %s",
+				par.CurrToken.Line, par.CurrToken.Column, par.CurrToken.Literal)
+			par.addError(msg)
+			return nil
+		}
+		left = binary(left)
+		if left == nil {
+			return nil
+		}
+	}
+	return left
+}
+
+// parseStatement parses a single statement.
+// This is the main dispatcher that determines what type of statement to parse
+// based on the current token.
+//
+// Returns:
+//
+//	A StatementNode representing the parsed statement, or nil for empty statements
+//
+// Supported statement types:
+//   - Variable declarations (var, let, const)
+//   - Block statements ({ ... })
+//   - If statements
+//   - Function declarations
+//   - For loops
+//   - While loops
+//   - Expression statements (any expression followed by semicolon)
+func (par *Parser) parseStatement() StatementNode {
+	switch par.CurrToken.Type {
+
+	// ignore semicolons
+	case lexer.SEMICOLON_DELIM:
+		return nil
+
+	// var a = (expression); // dynamically typed variable declaration
+	case lexer.VAR_KEY:
+		return par.parseDeclarativeStatement()
+	// let a = (expression);  // statically typed variable declaration
+	case lexer.LET_KEY:
+		return par.parseDeclarativeStatement()
+	// const a = (expression); // immutable variable declaration
+	case lexer.CONST_KEY:
+		return par.parseDeclarativeStatement()
+
+	// {.....}
+	case lexer.LEFT_BRACE:
+		return par.parseBlockStatement()
+	// if (condition) { ... } [ [else if () {...} ] [else if () {...} ]... [else { ... }] ]
+	case lexer.IF_KEY:
+		return par.parseIfStatement()
+
+	// func functionName(params) { ... }
+	case lexer.FUNC_KEY:
+		return par.parseFunctionStatement()
+
+	// for (init; condition; update) { ... }
+	case lexer.FOR_KEY:
+		return par.parseForLoop()
+
+	// while (condition) { ... }
+	case lexer.WHILE_KEY:
+		return par.parseWhileLoop()
+
+	// foreach item in iterable { ... }
+	case lexer.FOREACH_KEY:
+		return par.parseForeachLoop()
+
+	// struct StructName { field1; field2; ... func foo(params){...} ... }
+	case lexer.STRUCT_KEY:
+		return par.parseStructDeclaration()
+
+	// break;
+	case lexer.BREAK_KEY:
+		return par.parseBreakStatement()
+
+	// continue;
+	case lexer.CONTINUE_KEY:
+		return par.parseContinueStatement()
+
+	// import "module" as alias;
+	case lexer.IMPORT_KEY:
+		return par.parseImportStatement()
+
+	// switch (expression) { case value: ... default: ... }
+	case lexer.SWITCH_KEY:
+		return par.parseSwitchStatement()
+
+	default:
+		return par.parseExpression()
+	}
+}
+
+// parseEval evaluates an expression node during parsing.
+// This enables constant folding and early error detection.
+//
+// Parameters:
+//
+//	par  - The parser instance (for accessing environment)
+//	node - The expression node to evaluate
+//
+// Returns:
+//
+//	The evaluated GoMixObject value
+//
+// Note: This is a simplified evaluator used during parsing.
+// The full evaluator in the parseEval package handles more complex cases.
+func parseEval(par *Parser, node ExpressionNode) std.GoMixObject {
+	switch n := node.(type) {
+	case *IntegerLiteralExpressionNode:
+		return n.Value
+	case *BinaryExpressionNode:
+		return n.Value
+	case *UnaryExpressionNode:
+		return n.Value
+	case *BooleanLiteralExpressionNode:
+		return n.Value
+	case *ParenthesizedExpressionNode:
+		return parseEval(par, n.Expr)
+	case *IdentifierExpressionNode:
+		if val, ok := par.Env[n.Name]; ok {
+			return val
+		}
+		return &std.Nil{}
+	case *ReturnStatementNode:
+		return parseEval(par, n.Expr)
+	case *BooleanExpressionNode:
+		return n.Value
+	case *BlockStatementNode:
+		var result std.GoMixObject = &std.Nil{}
+		for _, stmt := range n.Statements {
+			if expr, ok := stmt.(ExpressionNode); ok {
+				val := parseEval(par, expr)
+				if _, isRet := stmt.(*ReturnStatementNode); isRet {
+					return val
+				}
+				result = val
+			}
+		}
+		return result
+	case *AssignmentExpressionNode:
+		return n.Value
+	case *IfExpressionNode:
+		cond := parseEval(par, n.Condition)
+		n.ConditionValue = cond
+		// Check truthiness
+		var isTrue bool
+		if cond.GetType() == std.BooleanType {
+			isTrue = cond.(*std.Boolean).Value
+		} else if cond.GetType() == std.IntegerType {
+			isTrue = cond.(*std.Integer).Value != 0
+		} else {
+			isTrue = false
+		}
+
+		if isTrue {
+			return parseEval(par, &n.ThenBlock)
+		}
+		return parseEval(par, &n.ElseBlock)
+	case *StringLiteralExpressionNode:
+		return n.Value
+	case *FunctionStatementNode:
+		return n.Value
+	case *CallExpressionNode:
+		return n.Value
+	case *FloatLiteralExpressionNode:
+		return n.Value
+	}
+	return &std.Nil{}
 }

@@ -19,6 +19,7 @@ Access comprehensive documentation here: [DOCS](https://akashmaji946.github.io/g
 - [Language Features](#-language-features)
 - [Data Types](#data-types)
 - [Variables & Scoping](#variables--scoping)
+- [Enumerations](#enumerations-enums)
 - [Control Flow](#control-flow--iteration)
 - [Functions](#functions--higher-order-programming)
 - [Object-Oriented Programming](#object-oriented-programming)
@@ -252,6 +253,105 @@ func testScope() {
 println(x);                 // "global"
 ```
 
+### Enumerations (Enums)
+
+Enumerations allow you to define a type with a fixed set of named constants. They provide a clean way to work with related constant values.
+
+#### Basic Enum
+
+```go
+// Define an enum with named constants
+enum Color {
+    RED,
+    GREEN,
+    BLUE
+}
+
+// Access enum members using dot notation
+println(Color.RED);    // 0
+println(Color.GREEN);  // 1
+println(Color.BLUE);   // 2
+```
+
+#### Enum with Custom Values
+
+You can assign explicit values to enum members:
+
+```go
+enum Status {
+    PENDING = 0,
+    ACTIVE = 1,
+    COMPLETED = 2,
+    FAILED = 3
+}
+
+var current = Status.ACTIVE;
+println(current);  // 1
+
+// Using in conditions
+if (current == Status.ACTIVE) {
+    println("Task is active");
+}
+```
+
+#### Enum in Switch Statements
+
+Enums work seamlessly with switch statements:
+
+```go
+enum Direction {
+    NORTH,
+    EAST,
+    SOUTH,
+    WEST
+}
+
+var dir = Direction.EAST;
+
+switch (dir) {
+    case Direction.NORTH:
+        println("Going north");
+        break;
+    case Direction.EAST:
+        println("Going east");
+        break;
+    case Direction.SOUTH:
+        println("Going south");
+        break;
+    case Direction.WEST:
+        println("Going west");
+        break;
+}
+
+// Output: "Going east"
+```
+
+#### Enum for State Machines
+
+Enums are excellent for state machines:
+
+```go
+enum TrafficLight {
+    RED = 0,
+    YELLOW = 1,
+    GREEN = 2
+}
+
+func getNextState(current) {
+    switch (current) {
+        case TrafficLight.RED:
+            return TrafficLight.GREEN;
+        case TrafficLight.YELLOW:
+            return TrafficLight.RED;
+        case TrafficLight.GREEN:
+            return TrafficLight.YELLOW;
+    }
+}
+
+var light = TrafficLight.RED;
+light = getNextState(light);  // Now GREEN
+```
+
 ---
 
 ## Control Flow & Iteration
@@ -297,6 +397,153 @@ if (!isError) {
 if ((x > 0 && x < 10) || (x > 100 && x < 110)) {
     println("Valid");
 }
+```
+
+### Switch Statement
+
+The `switch` statement provides a clean way to match a value against multiple conditions. It's an alternative to chained if-else statements.
+
+```go
+// Basic switch statement
+var day = 3;
+var dayName = "";
+
+switch (day) {
+    case 1:
+        dayName = "Monday";
+        break;
+    case 2:
+        dayName = "Tuesday";
+        break;
+    case 3:
+        dayName = "Wednesday";
+        break;
+    case 4:
+        dayName = "Thursday";
+        break;
+    case 5:
+        dayName = "Friday";
+        break;
+    default:
+        dayName = "Weekend";
+}
+
+println(dayName);  // "Wednesday"
+```
+
+#### Switch with Enum
+
+Switch statements work seamlessly with enums:
+
+```go
+enum Grade {
+    A,
+    B,
+    C,
+    D,
+    F
+}
+
+var grade = Grade.B;
+var message = "";
+
+switch (grade) {
+    case Grade.A:
+        message = "Excellent!";
+        break;
+    case Grade.B:
+        message = "Good job!";
+        break;
+    case Grade.C:
+        message = "Passed";
+        break;
+    case Grade.D:
+        message = "Needs improvement";
+        break;
+    default:
+        message = "Failed";
+}
+
+println(message);  // "Good job!"
+```
+
+#### Switch with String
+
+Switch can also work with string values:
+
+```go
+var color = "red";
+
+switch (color) {
+    case "red":
+        println("Color is red");
+        break;
+    case "blue":
+        println("Color is blue");
+        break;
+    case "green":
+        println("Color is green");
+        break;
+    default:
+        println("Unknown color");
+}
+```
+
+#### Switch Without Break
+
+Each case requires a `break` statement to prevent fall-through:
+
+```go
+var num = 1;
+
+switch (num) {
+    case 1:
+        println("One");
+        // break is required to exit
+    case 2:
+        println("Two");
+        break;
+}
+
+// Output: "One" (no break, but switch exits after case body)
+```
+
+#### Switch with Expression in Case
+
+Cases can contain expressions:
+
+```go
+var x = 5;
+
+switch (x) {
+    case 1 + 1:
+        println("x is 2");
+        break;
+    case 5:
+        println("x is 5");
+        break;
+    default:
+        println("x is something else");
+}
+```
+
+#### Switch with No Match
+
+When no case matches and there's no default, the switch returns nil:
+
+```go
+var status = 999;
+
+var result = switch (status) {
+    case 200:
+        "OK";
+        break;
+    case 404:
+        "Not Found";
+        break;
+};
+
+println(result);  // nil (no match, no default)
 ```
 
 ### Loops
@@ -737,7 +984,7 @@ import maps;        // Access map functions
 import time;        // Access time functions
 import http;        // Access HTTP client/server functions
 import regex;       // Access regex functions
-import file;        // Access file I/O functions
+import path;        // Access file I/O functions
 import os;          // Access OS functions
 import io;          // Access input/output functions
 import format;      // Access type conversion functions
@@ -797,13 +1044,13 @@ The `strings` package provides comprehensive string manipulation and analysis ut
 | `rtrim(str)` | string | string | Remove trailing whitespace |
 | `split(str, sep)` | string, string | array | Split by separator |
 | `join(arr, sep)` | array, string | string | Join array with separator |
-| `contains(str, sub)` | string, string | bool | Check if contains substring |
+| `contains_string(str, sub)` | string, string | bool | Check if contains substring |
 | `starts_with(str, prefix)` | string, string | bool | Check if starts with |
 | `ends_with(str, suffix)` | string, string | bool | Check if ends with |
-| `index(str, sub)` | string, string | int | Find first occurrence (-1 if not found) |
+| `index_string(str, sub)` | string, string | int | Find first occurrence (-1 if not found) |
 | `substring(str, start, length)` | string, int, int | string | Extract substring |
-| `replace(str, old, new)` | string, string, string | string | Replace all occurrences |
-| `reverse(str)` | string | string | Reverse string characters |
+| `replace_string(str, old, new)` | string, string, string | string | Replace all occurrences |
+| `reverse_string(str)` | string | string | Reverse string characters |
 | `capitalize(str)` | string | string | Capitalize first letter |
 | `ord(char)` | char/string | int | Get Unicode code point |
 | `chr(code)` | int | char | Get character from code point |
@@ -830,10 +1077,10 @@ split("hello world", " ");  // ["hello", "world"]
 join(["apple", "banana", "cherry"], ", ");  // "apple, banana, cherry"
 
 // Searching and matching
-contains("hello world", "world");  // true
+contains_string("hello world", "world");  // true
 starts_with("go-mix", "go");       // true
 ends_with("filename.gm", ".gm");   // true
-index("hello world", "world");     // 6
+index_string("hello world", "world");     // 6
 count("mississippi", "s");         // 4
 
 // Substring extraction
@@ -856,8 +1103,8 @@ strcmp("hello", "hello");   // 0 (equal)
 strcmp("zebra", "apple");   // 1 (zebra > apple)
 
 // String reversal
-reverse("hello");           // "olleh"
-reverse("12345");           // "54321"
+reverse_string("hello");           // "olleh"
+reverse_string("12345");           // "54321"
 ```
 
 ### Array Functions
@@ -1281,9 +1528,9 @@ var end_time = now();
 var elapsed = end_time - start_time;  // ~2 seconds
 ```
 
-### File I/O Functions
+### Path Functions
 
-The `file` package provides comprehensive file system operations.
+The `path` package provides comprehensive file system operations.
 
 | Function | Parameters | Returns | Description |
 |:---------|:-----------|:--------|:------------|
@@ -1791,8 +2038,8 @@ if (result.GetType() == "error") {
 **6. Strings Package (`strings.go`)**
 - Complete string manipulation suite (21 functions)
 - Case: `upper`, `lower`, `capitalize`
-- Searching: `contains`, `starts_with`, `ends_with`, `index`, `count`
-- Manipulation: `split`, `join`, `replace`, `reverse`, `substring`
+- Searching: `contains_string`, `starts_with`, `ends_with`, `index_string`, `count`
+- Manipulation: `split`, `join`, `replace_string`, `reverse_string`, `substring`
 - Character operations: `ord`, `chr`
 - Type checking: `is_digit`, `is_alpha`
 - Comparison: `strcmp`
@@ -1810,7 +2057,7 @@ if (result.GetType() == "error") {
 - Functions: `now`, `now_ms`, `utc_now`, `format_time`, `parse_time`, `timezone`
 - Support for flexible time formatting with Go's reference layout
 
-**9. File I/O Package (`file_io.go`)**
+**9. Path Package (`path.go`)**
 - Comprehensive file system operations (17 functions)
 - Reading/Writing: `read_file`, `write_file`, `append_file`, `cat`
 - File properties: `file_exists`, `is_dir`, `is_file`
@@ -1948,7 +2195,7 @@ The `samples/` directory contains 200+ example programs organized by topic:
 - **strings/01_test_string_operations.gm** — String manipulation examples
 - **format/01_sprintf_demo.gm** — String formatting with printf
 
-### File I/O & System (`samples/files/`, `samples/os/`)
+### Path & System (`samples/path/`, `samples/os/`)
 
 - **files/04_file_basics.gm** — File reading and writing
 - **os/01_environment_demo.gm** — Environment variables and process info
@@ -1956,6 +2203,33 @@ The `samples/` directory contains 200+ example programs organized by topic:
 ### Objects & Structs (`samples/structs/`)
 
 Examples demonstrating object-oriented programming with structs and methods.
+
+### Enums (`samples/enums/`)
+
+- **01_basic_enum.gm** — Basic enum declaration and usage
+
+### Switch (`samples/switch/`)
+
+- **01_basic_switch.gm** — Basic switch statement
+- **02_switch_with_default.gm** — Switch with default case
+- **03_switch_fallthrough.gm** — Switch with fallthrough behavior
+- **04_switch_with_expression.gm** — Switch with expressions in cases
+- **05_switch_on_string.gm** — Switch on string values
+- **06_switch_with_function_call.gm** — Switch with function calls
+- **07_nested_switch.gm** — Nested switch statements
+- **08_switch_with_no_match.gm** — Switch with no matching case
+- **09_switch_with_default_only.gm** — Switch with only default case
+- **10_switch_empty.gm** — Empty switch statement
+- **11_switch_in_loop.gm** — Switch inside loops
+- **12_switch_with_boolean_logic.gm** — Switch with boolean expressions
+- **13_switch_in_function.gm** — Switch in function context
+- **14_switch_returning_from_function.gm** — Switch returning values
+- **15_switch_with_nested_if.gm** — Switch with nested if statements
+- **16_switch_with_mixed_fallthrough.gm** — Mixed fallthrough cases
+- **17_switch_on_enum_with_default.gm** — Switch on enum values with default
+- **18_switch_with_complex_case_expressions.gm** — Complex case expressions
+- **19_switch_modifying_outer_scope.gm** — Modifying outer scope variables
+- **20_switch_with_dead_code.gm** — Dead code in switch cases
 
 ---
 
@@ -1998,110 +2272,97 @@ go test -run TestName ./package
 ### Project Directory Structure
 
 ```bash
-go-mix/
-├── main/                  # REPL & File Execution Entry Point
-│   ├── main.go           # Main interpreter logic (REPL & file execution modes)
-│   ├── print_visitor.go  # AST printing utilities for debugging
-│   └── main_test.go      # Main function tests
-│
-├── lexer/                 # Lexical Analysis (Source → Tokens)
-│   ├── lexer.go          # Core lexer implementation, tokenization logic
-│   ├── token.go          # Token type definitions and constants
-│   ├── lexer_utils.go    # Helper functions for lexing
-│   └── lexer_test.go     # Lexer unit tests
-│
-├── parser/                # Parsing & AST (Tokens → Abstract Syntax Tree)
-│   ├── parser.go         # Pratt parser main implementation
-│   ├── parser_expressions.go   # Expression parsing logic
-│   ├── parser_precedence.go    # Operator precedence definitions
-│   ├── node.go           # AST node structures (all node types)
-│   ├── test_visitor.go   # AST visitor for testing
-│   └── parser_test.go    # Parser unit tests
-│
-├── eval/                  # Evaluation Engine (AST → Execution)
-│   ├── evaluator.go      # Core evaluator & runtime state management
-│   ├── evaluator_expressions.go  # Expression evaluation logic
-│   ├── evaluator_helpers.go      # Helper utilities for evaluation
-│   └── evaluator_test.go # Evaluator unit tests
-│
-├── repl/                  # Interactive REPL Loop
-│   └── repl.go           # Read-Eval-Print-Loop implementation
-│
-├── std/                   # Standard Library & Builtins
-│   ├── builtins.go       # Builtin function registry and interface
-│   ├── common.go         # Common utilities (print, println, length, typeof, etc.)
-│   ├── arrays.go         # Array manipulation (push, pop, slice, map, filter, reduce, sort, etc.)
-│   ├── list.go           # List operations (heterogeneous mutable sequences)
-│   ├── tuple.go          # Tuple operations (fixed immutable sequences)
-│   ├── map.go            # Map/Dictionary operations (key-value pairs)
-│   ├── set.go            # Set operations (unique value collections)
-│   ├── strings.go        # String utilities (upper, lower, split, join, substring, etc.)
-│   ├── math.go           # Mathematical functions (abs, sqrt, pow, floor, ceil, min, max, etc.)
-│   ├── file_io.go        # File operations (read_file, write_file, append_file, file_exists, etc.)
-│   ├── io.go             # Input/output utilities (scanf, input from stdin)
-│   ├── os.go             # OS interactions (getenv, setenv, exec, getpid, sleep, user, etc.)
-│   ├── time.go           # Time handling (now, now_ms, format_time, sleep, etc.)
-│   ├── format.go         # Type conversion & formatting (sprintf, json_encode, etc.)
-│   ├── struct.go         # Struct/object utilities
-│   ├── regex.go          # Regular expression support
-│   ├── http.go           # HTTP client and server implementation
-│   └── types.go          # Type system utilities
-│
-├── file/                  # Stateful File I/O Handles
-│   └── file.go           # File object implementation (file handles for advanced I/O)
-│
-├── scope/                 # Lexical Scoping & Variable Management
-│   └── scope.go          # Scope management, variable binding, environment handling
-│
-├── function/              # Function Objects & Closures
-│   └── function.go       # Function representation, closure implementation
-│
-├── samples/               # Example Programs (50+ .gm files)
-│   ├── algo/             # Algorithms & Data Structures (50 examples)
-│   │
-│   ├── arrays/           # Array Operations & Features (11 examples)
-│   │
-│   ├── functions/        # Function Examples (14 examples)
-│   │
-│   ├── loops/            # Loop Constructs (20 examples)
-│   │
-│   ├── maps/             # Map/Dictionary Operations (8 examples)
-│   │
-│   ├── lists/            # List Operations (7 examples)
-│   │
-│   ├── sets/             # Set Operations (4 examples)
-│   │
-│   ├── tuples/           # Tuple Operations (6 examples)
-│   │
-│   ├── strings/          # String Manipulation (5 examples)
-│   │
-│   ├── format/           # Formatting Examples (5 examples)
-│   │
-│   ├── files/            # File I/O Examples (10 examples + test files)
-│   │
-│   ├── structs/          # Object-Oriented Examples (40 examples)
-│   │
-│   ├── os/               # OS & Environment Examples (5 examples)
-│   │
-│   ├── time/             # Time Handling Examples (5 examples)
-│   │
-│   ├── range/            # Range Iteration Examples (7 examples)
-│   │
-│   └── typeof/           # Type Checking Examples (3 examples)
-│
-├── vscode-ext/            # VS Code Extension Source
-│   ├── package.json      # Extension manifest
-│   ├── language-configuration.json # Language config
-│   └── syntaxes/         # TextMate grammar files
-│
-├── go.mod                 # Go module definition (github.com/akashmaji946/go-mix)
-├── go.sum                 # Go dependencies lock file
-├── build.sh              # Build script (runs tests + compiles binary)
-├── run.sh                # Test + Executable runner script
-├── LICENSE               # MIT License
-├── logo.PNG              # Project logo
-├── README.md             # This comprehensive documentation
-└── PROJECT_STRUCTURE.md  # Detailed project structure documentation
+.
+└── test.sh
+├── build.sh
+├── run.sh
+├── docker
+│   └── Dockerfile
+├── DOCKER.MD
+├── eval
+│   ├── eval_access.go
+│   ├── eval_assignments.go
+│   ├── eval_collections.go
+│   ├── eval_conditionals.go
+│   ├── eval_controls.go
+│   ├── eval_expressions.go
+│   ├── eval.go
+│   ├── eval_helpers.go
+│   ├── eval_loops.go
+│   ├── eval_statements.go
+│   ├── eval_structs.go
+│   └── eval_test.go
+├── file
+│   └── file.go
+├── function
+│   └── function.go
+├── go-mix
+├── go-mix-v1.0.0.vsix
+├── go.mod
+├── go.sum
+├── INSTALL.MD
+├── install.sh
+├── lexer
+│   ├── lexer.go
+│   ├── lexer_test.go
+│   ├── lexer_utils.go
+│   └── token.go
+├── LICENSE
+├── logo.PNG
+├── main
+│   ├── main.go
+│   ├── main_test.go
+│   └── print_visitor.go
+├── parser
+│   ├── node.go
+│   ├── parser_assignments.go
+│   ├── parser_collections.go
+│   ├── parser_conditionals.go
+│   ├── parser_controls.go
+│   ├── parser_expressions.go
+│   ├── parser_functions.go
+│   ├── parser.go
+│   ├── parser_helpers.go
+│   ├── parser_literals.go
+│   ├── parser_loops.go
+│   ├── parser_precedence.go
+│   ├── parser_statements.go
+│   ├── parser_structs.go
+│   ├── parser_test.go
+│   └── test_visitor.go
+├── README.MD
+├── repl
+│   └── repl.go
+├── scope
+│   └── scope.go
+├── std
+│   ├── arrays.go
+│   ├── builtins.go
+│   ├── common.go
+│   ├── crypto.go
+│   ├── enum.go
+│   ├── format.go
+│   ├── http.go
+│   ├── io.go
+│   ├── json.go
+│   ├── list.go
+│   ├── maps.go
+│   ├── math.go
+│   ├── os.go
+│   ├── path.go
+│   ├── regex.go
+│   ├── sets.go
+│   ├── strings.go
+│   ├── struct.go
+│   ├── time.go
+│   ├── tuple.go
+│   └── types.go
+|
+└── samples
+    ├── algo
+    │   ├── 01_linear_search.gm
+    ...
+
 ```
 
 ### Key Module Responsibilities
@@ -2246,12 +2507,12 @@ var obj = new Name();
 print(), println(), printf(), length(), typeof(), tostring()
 
 // String Methods
-upper(), lower(), split(), join(), contains(), substring()
+upper(), lower(), split(), join(), contains_string(), substring()
 
 // Math Functions
 abs(), min(), max(), floor(), ceil(), sqrt(), pow()
 
-// File I/O
+// File I/O ()
 read_file(), write_file(), append_file(), file_exists()
 
 // Collections

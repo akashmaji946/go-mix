@@ -1,0 +1,9 @@
+// An empty switch statement (should be valid and do nothing)
+var x = 10;
+var y = "unchanged";
+
+switch (x) {
+    // No cases
+}
+
+println(y); // Should print: unchanged
