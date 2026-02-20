@@ -7,3 +7,4 @@ vscode-ext/
 *.log
 docs/vendor/
 docs/.bundle/
+docs/_site/

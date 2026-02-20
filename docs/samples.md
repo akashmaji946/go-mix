@@ -1,37 +1,30 @@
 ---
+title: Samples
 layout: default
-title: Sample Programs - Go-Mix
-description: Example programs demonstrating Go-Mix language features
+nav_order: 5
+description: "Example programs demonstrating Go-Mix language features"
 permalink: /samples/
 ---
 
-<div class="content-page">
-    <aside class="sidebar">
-        <nav class="sidebar-nav">
-            <div class="sidebar-title">Categories</div>
-            <ul class="sidebar-menu">
-                <li><a href="#algorithms">Algorithms</a></li>
-                <li><a href="#data-structures">Data Structures</a></li>
-                <li><a href="#functions">Functions</a></li>
-                <li><a href="#collections">Collections</a></li>
-                <li><a href="#loops">Loops</a></li>
-                <li><a href="#oop">OOP</a></li>
-                <li><a href="#file-io">File I/O</a></li>
-                <li><a href="#http">HTTP</a></li>
-            </ul>
-        </nav>
-    </aside>
-    
-    <div class="content-body">
-        <h1>Sample Programs</h1>
-        <p>Explore Go-Mix through practical examples organized by category.</p>
-        
-        <h2 id="algorithms">Algorithms</h2>
-        
-        <div class="sample-card">
-            <h3>Factorial</h3>
-            <div class="code-block">
-{% highlight go %}
+# Sample Programs
+{: .no_toc }
+
+Explore Go-Mix through practical examples organized by category.
+{: .fs-6 .fw-300 }
+
+## Table of Contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## Algorithms
+
+### Factorial
+
+```go
 func factorial(n) {
     if (n <= 1) {
         return 1;
@@ -40,14 +33,11 @@ func factorial(n) {
 }
 
 println(factorial(5));  // 120
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <div class="sample-card">
-            <h3>Fibonacci</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+### Fibonacci
+
+```go
 func fibonacci(n) {
     if (n <= 1) {
         return n;
@@ -59,18 +49,15 @@ for (var i = 0; i < 10; i = i + 1) {
     print(fibonacci(i) + " ");
 }
 // 0 1 1 2 3 5 8 13 21 34
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <div class="sample-card">
-            <h3>Binary Search</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+### Binary Search
+
+```go
 func binary_search(arr, target) {
     var left = 0;
     var right = length(arr) - 1;
-    
+
     while (left <= right) {
         var mid = (left + right) / 2;
         if (arr[mid] == target) {
@@ -87,35 +74,34 @@ func binary_search(arr, target) {
 
 var sorted = [1, 3, 5, 7, 9, 11, 13];
 println(binary_search(sorted, 7));  // 3
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <h2 id="data-structures">Data Structures</h2>
-        
-        <div class="sample-card">
-            <h3>Stack Implementation</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+---
+
+## Data Structures
+
+### Stack Implementation
+
+```go
 struct Stack {
     var items;
-    
+
     func init() {
         this.items = [];
     }
-    
+
     func push(item) {
         push(this.items, item);
     }
-    
+
     func pop() {
         return pop(this.items);
     }
-    
+
     func peek() {
         return this.items[-1];
     }
-    
+
     func is_empty() {
         return length(this.items) == 0;
     }
@@ -125,18 +111,15 @@ var stack = new Stack();
 stack.push(10);
 stack.push(20);
 println(stack.pop());   // 20
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <div class="sample-card">
-            <h3>Linked List</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+### Linked List
+
+```go
 struct Node {
     var data;
     var next;
-    
+
     func init(data) {
         this.data = data;
         this.next = nil;
@@ -145,7 +128,7 @@ struct Node {
 
 struct LinkedList {
     var head;
-    
+
     func append(data) {
         var new_node = new Node(data);
         if (this.head == nil) {
@@ -158,7 +141,7 @@ struct LinkedList {
         }
         current.next = new_node;
     }
-    
+
     func print_list() {
         var current = this.head;
         while (current != nil) {
@@ -174,16 +157,15 @@ list.append(1);
 list.append(2);
 list.append(3);
 list.print_list();  // 1 -> 2 -> 3 -> nil
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <h2 id="functions">Functions</h2>
-        
-        <div class="sample-card">
-            <h3>Higher-Order Functions</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+---
+
+## Functions
+
+### Higher-Order Functions
+
+```go
 func apply_twice(f, x) {
     return f(f(x));
 }
@@ -204,16 +186,15 @@ func make_multiplier(factor) {
 
 var triple = make_multiplier(3);
 println(triple(4));  // 12
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <h2 id="collections">Collections</h2>
-        
-        <div class="sample-card">
-            <h3>Array Operations</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+---
+
+## Collections
+
+### Array Operations
+
+```go
 var numbers = [1, 2, 3, 4, 5];
 
 // Map
@@ -232,14 +213,11 @@ println(sum);      // 15
 var unsorted = [3, 1, 4, 1, 5, 9, 2, 6];
 sort(unsorted);
 println(unsorted); // [1, 1, 2, 3, 4, 5, 6, 9]
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <div class="sample-card">
-            <h3>Map Operations</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+### Map Operations
+
+```go
 var user = map{
     "name": "Alice",
     "age": 30,
@@ -253,16 +231,15 @@ var keys = keys_map(user);
 foreach key in keys {
     println(key + ": " + user[key]);
 }
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <h2 id="loops">Loops</h2>
-        
-        <div class="sample-card">
-            <h3>Loop Patterns</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+---
+
+## Loops
+
+### Loop Patterns
+
+```go
 // For loop
 for (var i = 0; i < 5; i = i + 1) {
     print(i + " ");
@@ -297,33 +274,32 @@ for (var i = 0; i < 3; i = i + 1) {
         print("(" + i + "," + j + ") ");
     }
 }
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <h2 id="oop">Object-Oriented Programming</h2>
-        
-        <div class="sample-card">
-            <h3>Class with Methods</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+---
+
+## Object-Oriented Programming
+
+### Class with Methods
+
+```go
 struct Rectangle {
     var width;
     var height;
-    
+
     func init(w, h) {
         this.width = w;
         this.height = h;
     }
-    
+
     func area() {
         return this.width * this.height;
     }
-    
+
     func perimeter() {
         return 2 * (this.width + this.height);
     }
-    
+
     func scale(factor) {
         this.width = this.width * factor;
         this.height = this.height * factor;
@@ -336,39 +312,24 @@ println("Perimeter: " + rect.perimeter()); // 16
 
 rect.scale(2);
 println("New area: " + rect.area());       // 60
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <div class="sample-card">
-            <h3>Inheritance Pattern</h3>
-            <div class="code-block">
-{% highlight go %}
-struct Animal {
-    var name;
-    
-    func init(name) {
-        this.name = name;
-    }
-    
-    func speak() {
-        return "Some sound";
-    }
-}
+```
 
+### Inheritance Pattern
+
+```go
 struct Dog {
     var name;
     var breed;
-    
+
     func init(name, breed) {
         this.name = name;
         this.breed = breed;
     }
-    
+
     func speak() {
         return "Woof!";
     }
-    
+
     func fetch() {
         return this.name + " is fetching";
     }
@@ -377,16 +338,15 @@ struct Dog {
 var dog = new Dog("Buddy", "Golden Retriever");
 println(dog.speak());   // Woof!
 println(dog.fetch());   // Buddy is fetching
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <h2 id="file-io">File I/O</h2>
-        
-        <div class="sample-card">
-            <h3>File Operations</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+---
+
+## File I/O
+
+### File Operations
+
+```go
 // Write to file
 write_file("data.txt", "Hello, World!");
 
@@ -408,16 +368,15 @@ var files = list_dir(".");
 foreach file in files {
     println(file);
 }
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <h2 id="http">HTTP</h2>
-        
-        <div class="sample-card">
-            <h3>HTTP Client</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+---
+
+## HTTP
+
+### HTTP Client
+
+```go
 // GET request
 var response = get_http("https://api.example.com/users");
 println(response);
@@ -426,14 +385,11 @@ println(response);
 var body = '{"name": "John", "age": 30}';
 var result = post_http("https://api.example.com/users", body);
 println(result);
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <div class="sample-card">
-            <h3>HTTP Server</h3>
-            <div class="code-block">
-{% highlight go %}
+```
+
+### HTTP Server
+
+```go
 var srv = create_server();
 
 handle_server(srv, "/", func(req) {
@@ -450,15 +406,7 @@ handle_server(srv, "/api/echo", func(req) {
 
 println("Server starting on http://localhost:8080");
 start_server(srv, ":8080");
-{% endhighlight %}
-            </div>
-        </div>
-        
-        <div class="callout callout-success">
-            <div class="callout-title">
-                <i class="fas fa-lightbulb"></i> More Examples
-            </div>
-            <p>Check the <code>samples/</code> directory in the Go-Mix repository for 50+ complete example programs covering algorithms, data structures, and language features.</p>
-        </div>
-    </div>
-</div>
+```
+
+{: .tip }
+> Check the `samples/` directory in the Go-Mix repository for 50+ complete example programs covering algorithms, data structures, and language features.
