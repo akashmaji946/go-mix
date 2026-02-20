@@ -707,13 +707,6 @@ func TestSrc71(t *testing.T) {
 	runParseTest(t, src)
 }
 
-// array with function element
-// src72 := `var a = [1, 2, func(){2+3;}]; var b = a[2]; b();`
-// root72 := parser.NewParser(src72).Parse()
-// visitor72 := &PrintingVisitor{}
-// root72.Accept(visitor72)
-// fmt.Println(visitor72)
-
 // chained function and array access
 
 func TestSrc73(t *testing.T) {
