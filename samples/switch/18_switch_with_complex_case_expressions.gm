@@ -1,0 +1,21 @@
+// Test case clauses with expressions
+var x = 2;
+var y = 3;
+var result = "";
+
+// The switch value is 5
+switch (x + y) {
+    case 1 + 1:
+        result = "Is 2";
+        break;
+    case 2 * 2:
+        result = "Is 4";
+        break;
+    case 10 / 2: // This should match
+        result = "Is 5";
+        break;
+    default:
+        result = "Is something else";
+}
+
+println("Result is: " + result); // Should print: Result is: Is 5

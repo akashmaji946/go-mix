@@ -1,0 +1,29 @@
+// A case block containing an if-else statement
+var userRole = "admin";
+var canDelete = false;
+var message = "";
+var hasPermission = false; // some other check
+
+switch (userRole) {
+    case "admin":
+        if (hasPermission) {
+            message = "Admin has permissions.";
+            canDelete = true;
+        } else {
+            message = "Admin permissions revoked.";
+            canDelete = false;
+        }
+        hasPermission = "LALALALA"; // This will not affect the current case since it's after the if-else, but demonstrates that code after the if-else still executes
+        break;
+    case "editor":
+        message = "Editor can edit, not delete.";
+        canDelete = false;
+        break;
+    default:
+        message = "Guest has no permissions.";
+        canDelete = false;
+}
+
+println(hasPermission); // Should print: LALALALA
+println(message);      // Should print: Admin has permissions.
+println("Can delete: " + canDelete); // Should print: Can delete: true

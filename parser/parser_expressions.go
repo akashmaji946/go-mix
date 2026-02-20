@@ -81,6 +81,9 @@ func (par *Parser) parseStatement() StatementNode {
 	case lexer.IMPORT_KEY:
 		return par.parseImportStatement()
 
+	case lexer.SWITCH_KEY:
+		return par.parseSwitchStatement()
+
 	default:
 		return par.parseExpression()
 	}

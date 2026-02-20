@@ -1,0 +1,30 @@
+// Switch statement with default case
+enum Grade {
+    A,
+    B,
+    C,
+    D
+}
+
+var grade = Grade.B;
+var message = "";
+
+switch (grade) {
+    case Grade.A:
+        message = "Excellent!";
+        break;
+    case Grade.B:
+        message = "Good job!";
+        break;
+        message = "Excellent!";
+    case Grade.C:
+        message = "Passed";
+        break;
+    case Grade.D:
+        message = "Needs improvement";
+        break;
+    default:
+        message = "Invalid grade";
+}
+
+println(message);  // Should print: Good job!

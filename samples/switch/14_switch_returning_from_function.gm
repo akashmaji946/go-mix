@@ -1,0 +1,32 @@
+// Using return directly from within a switch case
+func findValue(key) {
+    switch (key) {
+        case "A":
+            return 100; // Directly returns from the function
+        case "B":
+            println("Found B, but not returning yet.");
+            var result = 200;
+            // No return here, will fall through if no break
+            break;
+        case "C":
+            return 300;
+        default:
+            return -1; // Default return value
+    }
+    // This line is only reached if case "B" is hit and breaks.
+    println("Exiting function after switch.");
+    return 999;
+}
+
+var valA = findValue("A");
+println("Value for A: " + valA); // Should print: Value for A: 100
+
+println("---");
+
+var valB = findValue("B");
+println("Value for B: " + valB); // Should print: Value for B: 999
+
+println("---");
+
+var valD = findValue("D");
+println("Value for D: " + valD); // Should print: Value for D: -1

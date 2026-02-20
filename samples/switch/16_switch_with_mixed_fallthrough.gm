@@ -1,0 +1,34 @@
+// Complex fallthrough logic
+var level = 2;
+var permissions = "";
+
+switch (level) {
+    case 4:
+        permissions += "DELETE ";
+        // fallthrough
+    case 3:
+        permissions += "WRITE ";
+        // fallthrough
+    case 2:
+        permissions += "READ ";
+        break; // Stop here
+    case 1:
+        permissions += "GUEST ";
+        // fallthrough
+    default:
+        permissions += "NONE";
+}
+
+println("Level " + level + " permissions: " + permissions); // Should print: Level 2 permissions: READ 
+
+// --- Test another path ---
+level = 4;
+permissions = "";
+switch (level) {
+    case 4: permissions += "DELETE ";
+    case 3: permissions += "WRITE ";
+    case 2: permissions += "READ "; break;
+    case 1: permissions += "GUEST ";
+    default: permissions += "NONE";
+}
+println("Level " + level + " permissions: " + permissions); // Should print: Level 4 permissions: DELETE WRITE READ 

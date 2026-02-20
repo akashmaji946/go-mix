@@ -1,0 +1,28 @@
+// Demonstrates nested switch statements
+var category = "fruit";
+var item = "apple";
+var description = "";
+
+switch (category) {
+    case "fruit":
+        description = "It's a fruit. ";
+        switch (item) {
+            case "apple":
+                description += "Specifically, an apple.";
+                break;
+            case "banana":
+                description += "Specifically, a banana.";
+                break;
+            default:
+                description += "An unknown fruit.";
+        }
+        break;
+        description = "It's not a fruit. ";
+    case "vegetable":
+        description = "It's a vegetable.";
+        break;
+    default:
+        description = "It's something else.";
+}
+
+println(description); // Should print: It's a fruit. Specifically, an apple.

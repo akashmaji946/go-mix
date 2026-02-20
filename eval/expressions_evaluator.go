@@ -114,6 +114,8 @@ func (e *Evaluator) Eval(n parser.Node) std.GoMixObject {
 		return e.evalEnumDeclaration(n)
 	case *parser.EnumAccessExpressionNode:
 		return e.evalEnumAccessExpression(n)
+	case *parser.SwitchStatementNode:
+		return e.evalSwitchStatement(*n)
 	default:
 		return &std.Nil{}
 	}

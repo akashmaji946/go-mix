@@ -71,6 +71,9 @@ type NodeVisitor interface {
 	// Range and foreach visitors
 	VisitRangeExpressionNode(node RangeExpressionNode)           // Range expressions: 2...5
 	VisitForeachLoopStatementNode(node ForeachLoopStatementNode) // Foreach loops: foreach i in range { ... }
+
+	// Switch statement visitor
+	VisitSwitchStatementNode(node SwitchStatementNode) // Switch statements: switch (expr) { case x: ... default: ... }
 }
 
 // Node: base interface for all nodes of the AST

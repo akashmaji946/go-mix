@@ -1,0 +1,24 @@
+// Switch on a complex expression
+var a = 10;
+var b = 5;
+var result = "";
+
+switch (a - b) {
+    case 5:
+        result = "a - b is 5";
+        {
+                // This block is just to demonstrate that we can have complex code here
+                var temp = "This is a nested block.";
+                println(temp); // Should print: This is a nested block.
+                // break;
+        }
+        println(result)
+        // break;
+    case 10:
+        result = "a - b is 10";
+        break;
+    default:
+        result = "a - b is something else";
+}
+
+println(result); // Should print: a - b is 5

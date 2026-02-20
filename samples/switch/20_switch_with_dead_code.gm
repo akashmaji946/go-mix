@@ -1,0 +1,27 @@
+// Demonstrating dead code within a switch case
+var value = "A";
+var result = "";
+
+switch (value) {
+    case "A":
+        result = "Case A was hit.";
+        break;
+        // This code is "dead" because it's after a break in the same block.
+        result = "This should never be assigned.";
+        println("This should never be printed.");
+    case "B":
+        result = "Case B was hit.";
+        break;
+}
+
+println(result); // Should print: Case A was hit.
+
+// --- Another example with return ---
+func testDeadCode() {
+    switch (1) {
+        case 1: return "Returned from case 1"; println("This is dead code.");
+        default: return "Returned from default";
+    }
+}
+
+println(testDeadCode()); // Should print: Returned from case 1

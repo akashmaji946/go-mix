@@ -393,6 +393,31 @@ func (p *PrintingVisitor) VisitImportStatementNode(node parser.ImportStatementNo
 	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s]\n", "Import", node.Literal()))
 }
 
+// VisitSwitchStatementNode visits a switch statement node and prints the switch details
+func (p *PrintingVisitor) VisitSwitchStatementNode(node parser.SwitchStatementNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Switch",
+		node.Literal(), node.Literal(), node.Value.ToString()))
+	p.Indent += INDENT_SIZE
+	node.Expression.Accept(p)
+	for _, caseNode := range node.Cases {
+		p.indent()
+		p.Buf.WriteString(fmt.Sprintf("Case:\n"))
+		p.Indent += INDENT_SIZE
+		caseNode.Value.Accept(p)
+		caseNode.Body.Accept(p)
+		p.Indent -= INDENT_SIZE
+	}
+	if node.Default != nil {
+		p.indent()
+		p.Buf.WriteString(fmt.Sprintf("Default:\n"))
+		p.Indent += INDENT_SIZE
+		node.Default.Body.Accept(p)
+		p.Indent -= INDENT_SIZE
+	}
+	p.Indent -= INDENT_SIZE
+}
+
 // // VisitFunctionLiteralExpressionNode visits a function literal node and prints the function details
 // func (p *PrintingVisitor) VisitFunctionLiteralExpressionNode(node parser.FunctionLiteralExpressionNode) {
 // 	p.indent()

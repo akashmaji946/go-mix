@@ -1,0 +1,10 @@
+// Switch with only a default case
+var input = "anything";
+var output = "";
+
+switch (input) {
+    default:
+        output = "This always runs.";
+}
+
+println(output); // Should print: This always runs.

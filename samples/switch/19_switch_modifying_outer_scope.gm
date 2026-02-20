@@ -1,0 +1,48 @@
+// Switch inside a function modifying a variable in a higher scope
+var globalCounter = 100;
+
+func processEvent(event) {
+    var localStatus = "";
+    switch (event) {
+        case "increment":
+            globalCounter = globalCounter + 1;
+            localStatus = "incremented";
+            break;
+        case "decrement":
+            globalCounter = globalCounter - 1;
+            localStatus = "decremented";
+            break;
+        default:
+            localStatus = "ignored";
+    }
+    println("Event '" + event + "' processed, status: " + localStatus);
+}
+
+println("Initial globalCounter: " + globalCounter); // 100
+
+for(var i = 0; i < 5; i += 1) {
+    processEvent("increment");
+}
+println("After 5 increments: " + globalCounter); // 105
+
+for(var i = 0; i < 5; i += 1) {
+    processEvent("decrement");
+}
+println("After 5 decrements: " + globalCounter); // 100
+
+processEvent("increment");
+println("After increment: " + globalCounter); // 101
+
+processEvent("decrement");
+println("After decrement: " + globalCounter); // 100
+
+processEvent("invalid");
+println("After invalid: " + globalCounter); // 100
+
+for(var i = 0; i < 10; i += 1) {
+    processEvent("increment");
+    processEvent("decrement");
+}
+
+processEvent("unknown");
+println("After unknown: " + globalCounter); // 100

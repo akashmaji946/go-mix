@@ -90,6 +90,9 @@ const (
 	BREAK_KEY    TokenType = "break"    // Loop break keyword
 	CONTINUE_KEY TokenType = "continue" // Loop continue keyword
 	IMPORT_KEY   TokenType = "import"   // Import package keyword
+	SWITCH_KEY   TokenType = "switch"   // Switch statement keyword
+	CASE_KEY     TokenType = "case"     // Case clause keyword
+	DEFAULT_KEY  TokenType = "default"  // Default clause keyword
 
 	// Data Structure Literals
 	ARRAY_KEY  TokenType = "array"  // Array literal keyword
@@ -175,6 +178,9 @@ var KEYWORDS_MAP = map[string]TokenType{
 	"this":     THIS_KEY,     // 'this' keyword
 	"self":     SELF_KEY,     // 'self' keyword
 	"import":   IMPORT_KEY,   // Import package keyword
+	"switch":   SWITCH_KEY,   // Switch statement keyword
+	"case":     CASE_KEY,     // Case clause keyword
+	"default":  DEFAULT_KEY,  // Default clause keyword
 }
 
 // Token represents a single lexical token in the Go-Mix source code.
