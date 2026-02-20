@@ -606,3 +606,22 @@ func (v *TestingVisitor) VisitSwitchStatementNode(node SwitchStatementNode) {
 func (v *TestingVisitor) String() string {
 	return ""
 }
+
+// VisitEnumDeclarationNode visits an enum declaration node and asserts the enum name matches expected, then visits all members
+func (v *TestingVisitor) VisitEnumDeclarationNode(node EnumDeclarationNode) {
+	// Check bounds before accessing ExpectedNodes
+	if v.Ptr >= len(v.ExpectedNodes) {
+		return
+	}
+	// assert on type
+	curr := v.ExpectedNodes[v.Ptr]
+	_, ok := curr.(*EnumDeclarationNode)
+	assert.True(v.T, ok)
+	assert.Equal(v.T, node.EnumName.Literal(), curr.(*EnumDeclarationNode).EnumName.Literal())
+	v.Ptr++
+
+	for _, member := range node.Members {
+		member.Accept(v)
+	}
+
+}

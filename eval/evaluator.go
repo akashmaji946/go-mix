@@ -252,38 +252,3 @@ func (e *Evaluator) CreateError(format string, a ...interface{}) *std.Error {
 	fullMsg := fmt.Sprintf("[%d:%d] %s", e.Par.Lex.Line, e.Par.Lex.Column, msg)
 	return &std.Error{Message: fullMsg}
 }
-
-// NamedParameter represents a parameter passed to a function or method call.
-//
-// It encapsulates both the parameter name (from the function definition) and
-// the evaluated value passed as an argument. This structure is primarily used
-// during method invocation on objects to bind argument values to parameter names
-// in the method's execution scope.
-//
-// Fields:
-//   - Name: The name of the parameter as defined in the function signature.
-//     Used for binding the value in the function's scope.
-//   - Value: The evaluated runtime object passed as an argument.
-type NamedParameter struct {
-	Name  string          // The name of the parameter (e.g., "a", "b")
-	Value std.GoMixObject //  The value of the parameter, which can be any GoMixObject (e.g., Integer, String, Array)
-}
-
-// IndexOfDot finds the index of the first period (.) character in a string.
-//
-// This helper function is used by the evaluator to detect method calls in
-// identifier names (e.g., "obj.method"). It scans the string from left to right.
-//
-// Parameters:
-//   - s: The string to search
-//
-// Returns:
-//   - int: The index of the first dot, or -1 if no dot is found
-func IndexOfDot(s string) int {
-	for i, c := range s {
-		if c == '.' {
-			return i
-		}
-	}
-	return -1
-}

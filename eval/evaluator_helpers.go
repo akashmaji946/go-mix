@@ -261,3 +261,32 @@ func AssertString(t *testing.T, obj std.GoMixObject, expected string) {
 		t.Errorf("object has wrong value. got=%q, want=%q", result.Value, expected)
 	}
 }
+
+// IndexOfDot finds the index of the first period (.) character in a string.
+//
+// This helper function is used by the evaluator to detect method calls in
+// identifier names (e.g., "obj.method"). It scans the string from left to right.
+//
+// Parameters:
+//   - s: The string to search
+//
+// Returns:
+//   - int: The index of the first dot, or -1 if no dot is found
+func IndexOfDot(s string) int {
+	for i, c := range s {
+		if c == '.' {
+			return i
+		}
+	}
+	return -1
+}
+
+// switchToFloat64 converts a GoMixObject to float64 for numeric comparisons.
+func switchToFloat64(obj std.GoMixObject) float64 {
+	if obj.GetType() == std.IntegerType {
+		return float64(obj.(*std.Integer).Value)
+	} else if obj.GetType() == std.FloatType {
+		return obj.(*std.Float).Value
+	}
+	return 0
+}

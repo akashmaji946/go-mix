@@ -397,7 +397,7 @@ func (p *PrintingVisitor) VisitImportStatementNode(node parser.ImportStatementNo
 func (p *PrintingVisitor) VisitSwitchStatementNode(node parser.SwitchStatementNode) {
 	p.indent()
 	p.Buf.WriteString(fmt.Sprintf("Visiting %10s Node [%s] (%s => %v)\n", "Switch",
-		node.Literal(), node.Literal(), node.Value.ToString()))
+		node.Literal(), node.Literal(), node.Value))
 	p.Indent += INDENT_SIZE
 	node.Expression.Accept(p)
 	for _, caseNode := range node.Cases {
@@ -418,21 +418,31 @@ func (p *PrintingVisitor) VisitSwitchStatementNode(node parser.SwitchStatementNo
 	p.Indent -= INDENT_SIZE
 }
 
-// // VisitFunctionLiteralExpressionNode visits a function literal node and prints the function details
-// func (p *PrintingVisitor) VisitFunctionLiteralExpressionNode(node parser.FunctionLiteralExpressionNode) {
-// 	p.indent()
-// 	p.Buf.WriteString(fmt.Sprintf("Visiting %15s Node [%s] (%s => %v)\n", "FunctionLiteral",
-// 		node.Literal(), node.Literal(), node.Value))
-// 	p.Indent += INDENT_SIZE
-// 	node.Name = "<anonymous>" // Set a default name for anonymous functions
-// 	for _, param := range node.Parameters {
-// 		param.Accept(p)
-// 	}
-// 	node.Body.Accept(p)
-// 	p.Indent -= INDENT_SIZE
-// }
-
 // String returns the accumulated formatted output as a string
 func (p *PrintingVisitor) String() string {
 	return p.Buf.String()
+}
+
+// VisitEnumDeclarationNode visits an enum declaration node and prints the enum details
+func (p *PrintingVisitor) VisitEnumDeclarationNode(node parser.EnumDeclarationNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %15s Node [%s] (%s => %v)\n", "Enum",
+		node.Literal(), node.Literal(), node.Value.ToObject()))
+	p.Indent += INDENT_SIZE
+	for _, member := range node.Members {
+		p.indent()
+		p.Buf.WriteString(fmt.Sprintf("Member: %s = %v\n", member.Name, member.Value))
+	}
+	p.Indent -= INDENT_SIZE
+}
+
+// VisitEnumAccessExpressionNode visits an enum access expression node and prints the access details
+func (p *PrintingVisitor) VisitEnumAccessExpressionNode(node parser.EnumAccessExpressionNode) {
+	p.indent()
+	p.Buf.WriteString(fmt.Sprintf("Visiting %15s Node [%s] (%s => %v)\n", "Enum Access",
+		node.Literal(), node.Literal(), node.Value.ToObject()))
+	p.Indent += INDENT_SIZE
+	node.EnumName.Accept(p)
+	node.MemberName.Accept(p)
+	p.Indent -= INDENT_SIZE
 }

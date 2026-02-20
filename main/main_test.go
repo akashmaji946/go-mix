@@ -1439,4 +1439,62 @@ func TestMain_Main(t *testing.T) {
 	root130.Accept(visitor130)
 	fmt.Println(visitor130)
 
+	// Test131: enums
+	src131 := `enum Color { RED, GREEN, BLUE }
+			var c = Color.RED;
+			c;
+			`
+	root131 := parser.NewParser(src131).Parse()
+	visitor131 := &PrintingVisitor{}
+	root131.Accept(visitor131)
+	fmt.Println(visitor131)
+
+	// Test132: enums
+	src132 := `enum Direction { NORTH, EAST = 1, SOUTH = 100, WEST }
+			var d = Direction.SOUTH;
+			var e = Direction.EAST;
+			var x = d + e;
+			x;
+			`
+	root132 := parser.NewParser(src132).Parse()
+	visitor132 := &PrintingVisitor{}
+	root132.Accept(visitor132)
+	fmt.Println(visitor132)
+
+	// Test133: switch
+	src133 := `
+	var x = 2;
+	switch(x) {
+		case 1:
+			println("One");
+			break;
+		case 2:
+			println("Two");
+			break;
+		case 3:
+			println("Three");
+			break;
+		default:
+			println("Other");
+	}
+	`
+	root133 := parser.NewParser(src133).Parse()
+	visitor133 := &PrintingVisitor{}
+	root133.Accept(visitor133)
+	fmt.Println(visitor133)
+
+	// Test134: switch with multiple cases
+	src134 := `
+	var x = 3;
+	switch(x) {
+		case 1:
+		case 2:
+			println("One or Two");
+			break;
+		}`
+	root134 := parser.NewParser(src134).Parse()
+	visitor134 := &PrintingVisitor{}
+	root134.Accept(visitor134)
+	fmt.Println(visitor134)
+
 }
