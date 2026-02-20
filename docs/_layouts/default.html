@@ -98,10 +98,9 @@
                     <div class="footer-section">
                         <h4>Documentation</h4>
                         <ul>
-                            <li><a href="{{ '/getting-started/' | relative_url }}">Getting Started</a></li>
-                            <li><a href="{{ '/language-guide/' | relative_url }}">Language Guide</a></li>
-                            <li><a href="{{ '/standard-library/' | relative_url }}">Standard Library</a></li>
-                            <li><a href="{{ '/samples/' | relative_url }}">Sample Programs</a></li>
+                            {% for item in site.nav %}
+                            <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
+                            {% endfor %}
                         </ul>
                     </div>
                     
