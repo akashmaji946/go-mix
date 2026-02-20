@@ -1,91 +1,41 @@
-
 ---
+title: Language Guide
 layout: default
-title: Language Guide - Go-Mix
-description: Complete guide to Go-Mix programming language syntax, features, and constructs.
+nav_order: 3
+description: "Complete guide to Go-Mix programming language syntax, features, and constructs"
 permalink: /language-guide/
 ---
 
-<div class="content-page">
-    <aside class="sidebar">
-        <nav class="sidebar-nav">
-            <div class="sidebar-title">On This Page</div>
-            <ul class="sidebar-menu">
-                <li><a href="#types">Data Types</a></li>
-                <li><a href="#variables">Variables</a></li>
-                <li><a href="#operators">Operators</a></li>
-                <li><a href="#control-flow">Control Flow</a></li>
-                <li><a href="#switch">Switch Statements</a></li>
-                <li><a href="#collections">Collections</a></li>
-                <li><a href="#path-operations">Path Operations</a></li>
-                <li><a href="#enums">Enums</a></li>
-                <li><a href="#functions">Functions</a></li>
-                <li><a href="#closures">Closures</a></li>
-                <li><a href="#oop">Object-Oriented</a></li>
-            </ul>
-        </nav>
-    </aside>
-    <div class="content-body">
-        <h1>Language Guide</h1>
-        
-        <p>Complete reference for Go-Mix programming language syntax, types, and features.</p>
-        
-        <h2 id="types">Data Types</h2>
-        
-        <p>Go-Mix supports six primitive types plus <code>nil</code>:</p>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Example</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>int</code></td>
-                    <td><code>42</code>, <code>0xFF</code></td>
-                    <td>64-bit signed integers; hex (0x) and octal (0o) support</td>
-                </tr>
-                <tr>
-                    <td><code>float</code></td>
-                    <td><code>3.14</code>, <code>1.2e3</code></td>
-                    <td>64-bit IEEE-754 double precision</td>
-                </tr>
-                <tr>
-                    <td><code>bool</code></td>
-                    <td><code>true</code>, <code>false</code></td>
-                    <td>Boolean logic values</td>
-                </tr>
-                <tr>
-                    <td><code>string</code></td>
-                    <td><code>"Hello"</code></td>
-                    <td>UTF-8 strings with escape sequences</td>
-                </tr>
-                <tr>
-                    <td><code>char</code></td>
-                    <td><code>'A'</code>, <code>'\n'</code></td>
-                    <td>Single Unicode character</td>
-                </tr>
-                <tr>
-                    <td><code>nil</code></td>
-                    <td><code>nil</code></td>
-                    <td>Represents absence of value</td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <h3>Type Checking</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">types.gm</span>
-            </div>
-{% highlight go %}
+# Language Guide
+{: .no_toc }
+
+Complete reference for Go-Mix programming language syntax, types, and features.
+{: .fs-6 .fw-300 }
+
+## Table of Contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## Data Types
+
+Go-Mix supports six primitive types plus `nil`:
+
+| Type | Example | Description |
+|:-----|:--------|:------------|
+| `int` | `42`, `0xFF` | 64-bit signed integers; hex (0x) and octal (0o) support |
+| `float` | `3.14`, `1.2e3` | 64-bit IEEE-754 double precision |
+| `bool` | `true`, `false` | Boolean logic values |
+| `string` | `"Hello"` | UTF-8 strings with escape sequences |
+| `char` | `'A'`, `'\n'` | Single Unicode character |
+| `nil` | `nil` | Represents absence of value |
+
+### Type Checking
+
+```go
 typeof(42);                 // "int"
 typeof(3.14);              // "float"
 typeof("text");            // "string"
@@ -93,136 +43,85 @@ typeof(true);              // "bool"
 typeof(nil);               // "nil"
 typeof([1, 2, 3]);         // "array"
 typeof(func() {});           // "func"
-{% endhighlight %}
-        </div>
-        
-        <h2 id="variables">Variables</h2>
-        
-        <p>Go-Mix provides three variable kinds with different semantics:</p>
-        
-        <h3>Dynamic Variables (<code>var</code>)</h3>
-        
-        <p>Type can change during execution. Ideal for rapid prototyping.</p>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">dynamic.gm</span>
-            </div>
-{% highlight go %}
+```
+
+---
+
+## Variables
+
+Go-Mix provides three variable kinds with different semantics:
+
+### Dynamic Variables (`var`)
+
+Type can change during execution. Ideal for rapid prototyping.
+
+```go
 var x = 42;        // x is an integer
 x = "hello";       // x is now a string
 x = [1, 2, 3];     // x is now an array
-{% endhighlight %}
-        </div>
-        
-        <h3>Static Variables (<code>let</code>)</h3>
-        
-        <p>Type is locked on first assignment. Provides safety without explicit type annotations.</p>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">static.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Static Variables (`let`)
+
+Type is locked on first assignment. Provides safety without explicit type annotations.
+
+```go
 let count = 0;
 count = count + 1;     // OK
 count = "text";        // ERROR: type mismatch
-{% endhighlight %}
-        </div>
-        
-        <h3>Immutable Constants (<code>const</code>)</h3>
-        
-        <p>Cannot be reassigned after initial binding.</p>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">constants.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Immutable Constants (`const`)
+
+Cannot be reassigned after initial binding.
+
+```go
 const PI = 3.14159;
 const MAX_SIZE = 100;
 MAX_SIZE = 200;        // ERROR: constants are immutable
-{% endhighlight %}
-        </div>
-        
-        <h2 id="operators">Operators</h2>
-        
-        <h3>Arithmetic Operators</h3>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Operator</th>
-                    <th>Description</th>
-                    <th>Example</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td><code>+</code></td><td>Addition</td><td><code>5 + 3 // 8</code></td></tr>
-                <tr><td><code>-</code></td><td>Subtraction</td><td><code>5 - 3 // 2</code></td></tr>
-                <tr><td><code>*</code></td><td>Multiplication</td><td><code>5 * 3 // 15</code></td></tr>
-                <tr><td><code>/</code></td><td>Division</td><td><code>5 / 2 // 2.5</code></td></tr>
-                <tr><td><code>%</code></td><td>Modulo</td><td><code>5 % 2 // 1</code></td></tr>
-                <tr><td><code>**</code></td><td>Power</td><td><code>2 ** 3 // 8</code></td></tr>
-            </tbody>
-        </table>
-        
-        <h3>Comparison Operators</h3>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Operator</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td><code>==</code></td><td>Equal to</td></tr>
-                <tr><td><code>!=</code></td><td>Not equal to</td></tr>
-                <tr><td><code><</code></td><td>Less than</td></tr>
-                <tr><td><code>></code></td><td>Greater than</td></tr>
-                <tr><td><code><=</code></td><td>Less than or equal</td></tr>
-                <tr><td><code>>=</code></td><td>Greater than or equal</td></tr>
-            </tbody>
-        </table>
-        
-        <h3>Logical Operators</h3>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Operator</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td><code>&&</code></td><td>Logical AND (short-circuit)</td></tr>
-                <tr><td><code>||</code></td><td>Logical OR (short-circuit)</td></tr>
-                <tr><td><code>!</code></td><td>Logical NOT</td></tr>
-            </tbody>
-        </table>
-        
-        <h2 id="control-flow">Control Flow</h2>
-        
-        <h3>If-Else Statements</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">conditionals.gm</span>
-            </div>
-{% highlight go %}
+```
+
+---
+
+## Operators
+
+### Arithmetic Operators
+
+| Operator | Description | Example |
+|:---------|:------------|:--------|
+| `+` | Addition | `5 + 3 // 8` |
+| `-` | Subtraction | `5 - 3 // 2` |
+| `*` | Multiplication | `5 * 3 // 15` |
+| `/` | Division | `5 / 2 // 2.5` |
+| `%` | Modulo | `5 % 2 // 1` |
+| `**` | Power | `2 ** 3 // 8` |
+
+### Comparison Operators
+
+| Operator | Description |
+|:---------|:------------|
+| `==` | Equal to |
+| `!=` | Not equal to |
+| `<` | Less than |
+| `>` | Greater than |
+| `<=` | Less than or equal |
+| `>=` | Greater than or equal |
+
+### Logical Operators
+
+| Operator | Description |
+|:---------|:------------|
+| `&&` | Logical AND (short-circuit) |
+| `\|\|` | Logical OR (short-circuit) |
+| `!` | Logical NOT |
+
+---
+
+## Control Flow
+
+### If-Else Statements
+
+```go
 if (age >= 18) {
     println("Adult");
 } else if (age >= 13) {
@@ -233,19 +132,11 @@ if (age >= 18) {
 
 // Ternary-like expression
 var status = if (x > 0) { "positive"; } else { "non-positive"; };
-{% endhighlight %}
-        </div>
-        
-        <h3>For Loops</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">loops.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### For Loops
+
+```go
 // Standard for loop
 for (var i = 0; i < 5; i = i + 1) {
     println(i);  // 0, 1, 2, 3, 4
@@ -257,19 +148,11 @@ for (var i = 0; i < 10; i = i + 1) {
     if (i == 7) { break; }       // Exit loop
     println(i);
 }
-{% endhighlight %}
-        </div>
-        
-        <h3>While Loops</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">while.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### While Loops
+
+```go
 var count = 0;
 while (count < 5) {
     println(count);
@@ -289,19 +172,11 @@ while (true) {
     if (i >= 100) { break; }
     i = i + 1;
 }
-{% endhighlight %}
-        </div>
-        
-        <h3>Foreach Loops</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">foreach.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Foreach Loops
+
+```go
 // Range iteration (inclusive)
 foreach i in 1...5 {      // 1, 2, 3, 4, 5
     println(i);
@@ -322,23 +197,17 @@ foreach val in arr {
 foreach idx, val in arr {
     println(idx, val);
 }
-{% endhighlight %}
-        </div>
-        
-        <h2 id="switch">Switch Statements</h2>
-        
-        <p>Go-Mix supports switch statements for multi-way branching. Each case requires a <code>break</code> statement to exit.</p>
-        
-        <h3>Basic Switch</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">switch_basic.gm</span>
-            </div>
-{% highlight go %}
+```
+
+---
+
+## Switch Statements
+
+Go-Mix supports switch statements for multi-way branching. Each case requires a `break` statement to exit.
+
+### Basic Switch
+
+```go
 var dayNum = 3;
 var dayName = "";
 
@@ -352,30 +221,16 @@ switch (dayNum) {
     case 3:
         dayName = "Wednesday";
         break;
-    case 4:
-        dayName = "Thursday";
-        break;
-    case 5:
-        dayName = "Friday";
-        break;
     default:
         dayName = "Weekend";
 }
 
 println(dayName);  // Wednesday
-{% endhighlight %}
-        </div>
-        
-        <h3>Switch on Enums</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">switch_enum.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Switch on Enums
+
+```go
 enum TrafficLight {
     RED,
     YELLOW,
@@ -400,50 +255,11 @@ switch (light) {
 }
 
 println(action);  // Go
-{% endhighlight %}
-        </div>
-        
-        <h3>Switch with String Values</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">switch_string.gm</span>
-            </div>
-{% highlight go %}
-var fruit = "apple";
-var color = "";
+```
 
-switch (fruit) {
-    case "apple":
-        color = "red";
-        break;
-    case "banana":
-        color = "yellow";
-        break;
-    case "orange":
-        color = "orange";
-        break;
-    default:
-        color = "unknown";
-}
+### Switch with Fallthrough
 
-println(color);  // red
-{% endhighlight %}
-        </div>
-        
-        <h3>Switch with Fallthrough</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">switch_fallthrough.gm</span>
-            </div>
-{% highlight go %}
+```go
 var num = 2;
 switch (num) {
     case 1:
@@ -458,27 +274,20 @@ switch (num) {
     default:
         println("Other");
 }
-
 // Output:
 // Two
 // Three
-{% endhighlight %}
-        </div>
-        
-        <h2 id="collections">Collections</h2>
-        
-        <h3>Arrays</h3>
-        
-        <p>Mutable sequences with homogeneous elements (typically).</p>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">arrays.gm</span>
-            </div>
-{% highlight go %}
+```
+
+---
+
+## Collections
+
+### Arrays
+
+Mutable sequences with homogeneous elements (typically).
+
+```go
 // Array literals
 var empty = [];
 var numbers = [1, 2, 3, 4, 5];
@@ -502,19 +311,11 @@ pop(arr);                  // Remove from end
 unshift(arr, 5);           // Add to start
 shift(arr);                // Remove from start
 sort(arr);                 // Sort in-place
-{% endhighlight %}
-        </div>
-        
-        <h3>Maps (Dictionaries)</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">maps.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Maps (Dictionaries)
+
+```go
 // Map literals
 var user = map{
     "name": "Alice",
@@ -528,42 +329,26 @@ println(user["name"]);     // "Alice"
 // Adding/updating keys
 user["email"] = "alice@example.com";
 user["age"] = 31;
-{% endhighlight %}
-        </div>
-        
-        <h3>Lists</h3>
-        
-        <p>Mutable, heterogeneous sequences.</p>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">lists.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Lists
+
+Mutable, heterogeneous sequences.
+
+```go
 // Creating lists
 var list = list(1, "two", 3.0, true);
 
 // Access like arrays
 println(list[0]);          // 1
 println(list[1]);          // "two"
-{% endhighlight %}
-        </div>
-        
-        <h3>Tuples</h3>
-        
-        <p>Immutable, fixed-size sequences.</p>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">tuples.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Tuples
+
+Immutable, fixed-size sequences.
+
+```go
 // Creating tuples
 var coords = tuple(10, 20);
 var rgb = tuple(255, 128, 64);
@@ -574,23 +359,17 @@ println(coords[1]);        // 20
 
 // Immutable - cannot be modified
 coords[0] = 15;            // ERROR
-{% endhighlight %}
-        </div>
-        
-        <h2 id="path-operations">Path Operations</h2>
-        
-        <p>Go-Mix provides a comprehensive <code>path</code> package for file system operations. These functions work with files, directories, and path manipulation.</p>
-        
-        <h3>File I/O Functions</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">file_io.gm</span>
-            </div>
-{% highlight go %}
+```
+
+---
+
+## Path Operations
+
+Go-Mix provides a comprehensive `path` package for file system operations.
+
+### File I/O Functions
+
+```go
 // Reading and writing files
 var content = read_file("data.txt");
 write_file("output.txt", "Hello, World!");
@@ -605,162 +384,68 @@ is_dir("path.txt");          // Check if it's a directory
 mkdir("new_folder");         // Create directory
 list_dir("folder");          // List directory contents
 remove_file("old.txt");      // Remove file
-{% endhighlight %}
-        </div>
-        
-        <h3>Path Manipulation Functions</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">path_manipulation.gm</span>
-            </div>
-{% highlight go %}
-// Path manipulation
+```
+
+### Path Manipulation Functions
+
+```go
 var fullPath = path_join("home", "user", "docs", "file.txt");
-// "home/user/docs/file.txt" (Unix) or "home\user\docs\file.txt" (Windows)
-
-var fileName = path_base("/home/user/docs/file.txt");
-// "file.txt"
-
-var dirPath = path_dir("/home/user/docs/file.txt");
-// "/home/user/docs"
-
-var ext = path_ext("/home/user/docs/file.txt");
-// ".txt"
-
+var fileName = path_base("/home/user/docs/file.txt");   // "file.txt"
+var dirPath = path_dir("/home/user/docs/file.txt");      // "/home/user/docs"
+var ext = path_ext("/home/user/docs/file.txt");          // ".txt"
 var absPath = path_abs("relative/path");
-// "/current/working/dir/relative/path"
-
-// Pattern matching
 var txtFiles = glob("*.txt");
-// ["file1.txt", "file2.txt", ...]
-{% endhighlight %}
-        </div>
-        
-        <h3>Advanced File Operations</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">advanced_file.gm</span>
-            </div>
-{% highlight go %}
-// Get current directory
-var cwd = pwd();
+```
 
-// Get home directory
-var homeDir = home();
+---
 
-// Copy and rename files
-copy_file("source.txt", "destination.txt");
-rename_file("old_name.txt", "new_name.txt");
+## Enums
 
-// Change permissions
-chmod("script.gm", 0755);
+Go-Mix supports enumerated types (enums) for defining named constant values.
 
-// Truncate file
-truncate_file("log.txt", 0);  // Clear file content
+### Basic Enum
 
-// Remove directories recursively
-remove_all("temp_folder", true);
-{% endhighlight %}
-        </div>
-        
-        <h2 id="enums">Enums</h2>
-        
-        <p>Go-Mix supports enumerated types (enums) for defining named constant values.</p>
-        
-        <h3>Basic Enum</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">basic_enum.gm</span>
-            </div>
-{% highlight go %}
-// Basic enum declaration
+```go
 enum Color {
     RED,
     GREEN,
     BLUE
 }
 
-// Access enum members
 println(Color.RED);    // 0
 println(Color.GREEN);  // 1
 println(Color.BLUE);   // 2
-{% endhighlight %}
-        </div>
-        
-        <h3>Enum with Explicit Values</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">enum_values.gm</span>
-            </div>
-{% highlight go %}
-// Enum with explicit integer values
+```
+
+### Enum with Explicit Values
+
+```go
 enum Status {
     PENDING = 0,
     ACTIVE = 1,
     COMPLETED = 2,
     CANCELLED = 3
 }
+```
 
-println(Status.PENDING);    // 0
-println(Status.ACTIVE);    // 1
-println(Status.COMPLETED); // 2
-println(Status.CANCELLED); // 3
-{% endhighlight %}
-        </div>
-        
-        <h3>Enum with Mixed Values</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">enum_mixed.gm</span>
-            </div>
-{% highlight go %}
-// Enum with mixed auto and explicit values
+### Enum with Mixed Values
+
+```go
 enum Priority {
     LOW = 10,
     MEDIUM,      // Auto-assigned: 11
     HIGH = 50,
     CRITICAL     // Auto-assigned: 51
 }
+```
 
-println(Priority.LOW);      // 10
-println(Priority.MEDIUM);   // 11
-println(Priority.HIGH);     // 50
-println(Priority.CRITICAL); // 51
-{% endhighlight %}
-        </div>
-        
-        <h2 id="functions">Functions</h2>
-        
-        <h3>Function Definitions</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">functions.gm</span>
-            </div>
-{% highlight go %}
+---
+
+## Functions
+
+### Function Definitions
+
+```go
 // Basic function
 func greet(name) {
     return "Hello, " + name;
@@ -771,29 +456,16 @@ func add(a, b) {
     return a + b;
 }
 
-// No return (returns nil)
-func printInfo(x) {
-    println("Value: " + x);
-}
-
 // Recursive function
 func factorial(n) {
     if (n <= 1) { return 1; }
     return n * factorial(n - 1);
 }
-{% endhighlight %}
-        </div>
-        
-        <h3>Function Expressions (Lambda)</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">lambda.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Function Expressions (Lambda)
+
+```go
 // Anonymous functions
 var double = func(x) { return x * 2; };
 var add = func(a, b) { return a + b; };
@@ -805,19 +477,11 @@ var makeMultiplier = func(factor) {
 
 var times5 = makeMultiplier(5);
 println(times5(3));        // 15
-{% endhighlight %}
-        </div>
-        
-        <h3>Higher-Order Functions</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">higher-order.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Higher-Order Functions
+
+```go
 var numbers = [1, 2, 3, 4, 5];
 
 // Map - transform each element
@@ -839,26 +503,20 @@ var firstEven = find(numbers, func(x) { return x % 2 == 0; });
 // Check predicates
 var hasEven = some(numbers, func(x) { return x % 2 == 0; });     // true
 var allPositive = every(numbers, func(x) { return x > 0; });       // true
-{% endhighlight %}
-        </div>
-        
-        <h2 id="closures">Closures</h2>
-        
-        <p>Functions are first-class citizens with full support for lexical closures:</p>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">closures.gm</span>
-            </div>
-{% highlight go %}
+```
+
+---
+
+## Closures
+
+Functions are first-class citizens with full support for lexical closures:
+
+```go
 func makeCounter(start) {
     var count = start;
-    func increment() { 
-        count = count + 1; 
-        return count; 
+    func increment() {
+        count = count + 1;
+        return count;
     }
     return increment;
 }
@@ -871,21 +529,15 @@ println(counter()); // 3
 // Each counter maintains its own 'count' variable
 var counter2 = makeCounter(100);
 println(counter2()); // 101
-{% endhighlight %}
-        </div>
-        
-        <h2 id="oop">Object-Oriented Programming</h2>
-        
-        <h3>Struct Definition</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">structs.gm</span>
-            </div>
-{% highlight go %}
+```
+
+---
+
+## Object-Oriented Programming
+
+### Struct Definition
+
+```go
 struct Circle {
     var radius = 0;
 
@@ -916,19 +568,11 @@ println(c.circumference()); // 31.4159
 
 // Method chaining
 c.scale(2).scale(2);       // radius becomes 20
-{% endhighlight %}
-        </div>
-        
-        <h3>Complex Example</h3>
-        
-        <div class="code-block">
-            <div class="code-header">
-                <span class="code-dot red"></span>
-                <span class="code-dot yellow"></span>
-                <span class="code-dot green"></span>
-                <span class="code-title">bank-account.gm</span>
-            </div>
-{% highlight go %}
+```
+
+### Complex Example
+
+```go
 struct BankAccount {
     var balance = 0;
     var owner = "Unknown";
@@ -967,7 +611,4 @@ var account = new BankAccount("Alice", 1000);
 account.deposit(500);      // 1500
 account.withdraw(200);     // 1300
 println(account.getInfo()); // Alice has $1300
-{% endhighlight %}
-        </div>
-    </div>
-</div>
+```
